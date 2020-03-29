@@ -1,0 +1,66 @@
+{
+	"developer": {
+		"emails": ["bast@maleexcel.com"]
+	},
+
+	"domain": {
+		"primary": "mems.local",
+		"protocol": "http"
+	},
+
+	"email": {
+		"errors": "webmaster@mems.local",
+		"from": "noreply@m.maleexcelmail.com",
+		"method": "queue",
+		"smtp": {
+			"host": "localhost",
+			"port": 587,
+			"tls": true,
+			"user": "postmaster@localhost",
+			"passwd": "password"
+		}
+	},
+
+	"redis": {
+		"primary": {
+			"host": "localhost",
+			"port": 6879,
+			"db": 0,
+			"charset": "utf8"
+		}
+	},
+
+	"rest": {
+		"allowed": "mems.local",
+		"default": {
+			"domain": "localhost",
+			"host": "0.0.0.0",
+			"port": 8000,
+			"protocol": "http",
+			"workers": 2
+		},
+		"services": {
+			"auth": {"port": 3},
+			"webpoll": {"port": 2}
+		}
+	},
+
+	"mysql": {
+		"hosts": {
+			"primary": {
+				"host": "localhost",
+				"port": 3306
+			}
+		},
+		"db": "mems"
+	},
+
+	"services": {
+		"salt": null
+	},
+
+	"websocket": {
+		"host": "0.0.0.0",
+		"port": 8001
+	}
+}
