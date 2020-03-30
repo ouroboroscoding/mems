@@ -30,20 +30,52 @@ _r_pubsub = None
 _r_clients = {}
 _verbose = False
 
-def signalCatch(signum, frame):
-	"""Signal Catch
+# Init function
+def init(verbose=False):
+	"""Init
 
-	Called when a signal is passed to the program
+	Called to initialize the service
 
 	Arguments:
-		signum {int} -- The signal value
-		frame {object} -- The current frame
+		verbose {bool} -- Optional verbose argument
+			if set to True, the service will print out what's going on
 
 	Returns:
 		None
 	"""
 
-	print('Got %d signal' % signum)
+	# Import the global redis instance
+	global _r, _r_pubsub, _verbose
+
+	# Create a new Redis instance
+	_r = StrictRedis(**Conf.get(('redis', 'primary'), {
+		"host": "localhost",
+		"port": 6379,
+		"db": 0
+	}))
+
+	# Get the pubsub instance
+	_r_pubsub = _r.pubsub()
+
+	# Subscribe to an empty channel just to get things started
+	_r_pubsub.subscribe('sync')
+
+	# Set the verbose flag
+	_verbose = verbose and True or False
+
+# Stop function
+def stop():
+	"""Stop
+
+	Unsubscribes from all messages and disconnects all websockets
+
+	Returns:
+		None
+	"""
+
+	global _r, _r_pubsub
+
+	if _verbose: print('close called')
 
 	# Go through each tracking code
 	for track in _r_clients:
@@ -58,38 +90,20 @@ def signalCatch(signum, frame):
 			if not _r_clients[track][i].ws.closed:
 				_r_clients[track][i].ws.close()
 
-# Init function
-def init(verbose=False):
-	"""Init
-
-	Called to initialize the service
-
-	Args:
-		verbose (bool): Optional verbose argument
-			if set to True, the service will print out what's going on
-	"""
-
-	# Import the global redis instance
-	global _r, _r_pubsub, _verbose
-
-	# Create a new Redis instance
-	_r = StrictRedis(**Conf.get(('redis', 'sync'), {
-		"host": "localhost",
-		"port": 6379,
-		"db": 1
-	}))
-
-	# Get the pubsub instance
-	_r_pubsub = _r.pubsub()
-
-	# Subscribe to an empty channel just to get things started
-	_r_pubsub.subscribe('sync')
-
-	# Set the verbose flag
-	_verbose = verbose and True or False
+	# Delete the connections
+	_r_pubsub.close()
+	del _r_pubsub
+	del _r
 
 # Redis thread
-def redisThread():
+def thread():
+	"""Thread
+
+	Listens for incoming redis pubsub messages
+
+	Returns:
+		None
+	"""
 
 	if _verbose: print('Threading starting')
 
@@ -131,9 +145,9 @@ class SyncApplication(WebSocketApplication):
 
 		Called to close the current connection with the default error message
 
-		Args:
-			code (uint): The error code
-			msg (str): The error msg
+		Arguments:
+			code {uint} -- The error code
+			msg {str} -- The error msg
 
 		Returns:
 			None
@@ -148,8 +162,8 @@ class SyncApplication(WebSocketApplication):
 
 		Called when an existing client websocket is closed
 
-		Args:
-			reason (str?): The reason the connection closed?
+		Arguments:
+			reason {str?} -- The reason the connection closed?
 		"""
 		if _verbose: print('Connection closed: %s' % reason)
 
@@ -374,8 +388,8 @@ class SyncApplication(WebSocketApplication):
 		Called when new pubsub messages arrive on a channel this web socket
 		is subscribed to
 
-		Args:
-			message (str): A published message
+		Arguments:
+			message {str} -- A published message
 
 		Returns:
 			None

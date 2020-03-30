@@ -30,16 +30,12 @@ if os.path.isfile(sConfOverride):
 	Conf.load_merge(sConfOverride)
 
 # Import service modules
-from . import init as wsInit, redisThread, signalCatch, SyncApplication
+from . import init as wsInit, stop as wsStop, thread as wsThread, SyncApplication
 
 # If verbose mode is requested
 verbose	= False
 if 'VERBOSE' in os.environ and os.environ['VERBOSE'] == '1':
 	verbose	= True
-
-# Catch SIGNTERM and
-signal.signal(signal.SIGINT, signalCatch)
-signal.signal(signal.SIGTERM, signalCatch)
 
 # Init the sync application
 wsInit(verbose)
@@ -47,7 +43,7 @@ wsInit(verbose)
 # Start the Redis thread
 try:
 	if verbose: print('Starting the Redis thread')
-	thread = threading.Thread(target=redisThread)
+	thread = threading.Thread(target=wsThread)
 	thread.daemon = True
 	thread.start()
 except Exception as e:
@@ -69,6 +65,7 @@ server = WebSocketServer(
 try:
 	server.serve_forever()
 except KeyboardInterrupt:
+	wsStop()
 	pass
 
 server.close()

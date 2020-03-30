@@ -27,12 +27,12 @@ sConfOverride = '../config.%s.json' % platform.node()
 if os.path.isfile(sConfOverride):
 	Conf.load_merge(sConfOverride)
 
-# Add the global prepend and primary host to rethinkdb
-Record_Base.dbPrepend(Conf.get(("rethinkdb", "prepend"), ''))
-Record_ReDB.addHost('primary', Conf.get(("rethinkdb", "hosts", "primary")))
+# Add the global prepend and primary host to mysql
+Record_Base.dbPrepend(Conf.get(("mysql", "prepend"), ''))
+Record_MySQL.addHost('primary', Conf.get(("mysql", "hosts", "primary")))
 
 # Init the Sesh module
-Sesh.init(Conf.get(("redis", "session")))
+Sesh.init(Conf.get(("redis", "primary")))
 
 # Create the REST config instance
 oRestConf = REST.Config(Conf.get("rest"))
