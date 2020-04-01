@@ -64,8 +64,7 @@ REST.Server({
 
 	"/login": {"methods": REST.READ | REST.UPDATE, "session": True},
 	"/login/email": {"methods": REST.UPDATE, "session": True},
-	"/login/passwd": {"methods": REST.UPDATE, "session": True},
-	"/login/verify": {"methods": REST.UPDATE}
+	"/login/passwd": {"methods": REST.UPDATE, "session": True}
 
 }, 'auth', "https?://(.*\\.)?%s" % Conf.get(("rest","allowed")).replace('.', '\\.')).run(
 	host=oRestConf['auth']['host'],

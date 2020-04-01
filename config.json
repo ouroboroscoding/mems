@@ -9,9 +9,9 @@
 	},
 
 	"email": {
-		"errors": "webmaster@mems.local",
-		"from": "noreply@m.maleexcelmail.com",
-		"method": "queue",
+		"errors": "webmaster@localhost",
+		"from": "noreply@localhost",
+		"method": "direct",
 		"smtp": {
 			"host": "localhost",
 			"port": 587,
@@ -19,6 +19,16 @@
 			"user": "postmaster@localhost",
 			"passwd": "password"
 		}
+	},
+
+	"mysql": {
+		"hosts": {
+			"primary": {
+				"host": "localhost",
+				"port": 3306
+			}
+		},
+		"db": "mems"
 	},
 
 	"redis": {
@@ -41,22 +51,23 @@
 		},
 		"services": {
 			"auth": {"port": 3},
+			"communications": {"port": 4},
 			"webpoll": {"port": 2}
 		}
 	},
 
-	"mysql": {
-		"hosts": {
-			"primary": {
-				"host": "localhost",
-				"port": 3306
-			}
+	"services": {
+		"salt": null,
+		"auth": {
+			"forgot_expire": 600
 		},
-		"db": "mems"
+		"queue": {
+			"key": null
+		}
 	},
 
-	"services": {
-		"salt": null
+	"sms": {
+		"method": "direct"
 	},
 
 	"websocket": {

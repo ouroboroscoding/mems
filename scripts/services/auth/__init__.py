@@ -5,22 +5,20 @@ Handles all Authorization / Login requests
 """
 
 __author__		= "Chris Nasr"
-__copyright__	= ""
+__copyright__	= "MaleExcelMedical"
 __version__		= "1.0.0"
 __maintainer__	= "Chris Nasr"
 __email__		= "chris@fuelforthefire.ca"
-__created__		= "2018-09-09"
+__created__		= "2020-03-29"
 
 # Python imports
 import re
 from time import time
 
 # Pip imports
+from redis import StrictRedis
 from RestOC import Conf, DictHelper, Errors, Services, \
 					Sesh, StrHelper, Templates
-
-# Project imports
-from shared import Sync
 
 # Service imports
 from .records import Forgot, Login
@@ -36,7 +34,7 @@ class Auth(Services.Service):
 	Extends: shared.Services.Service
 	"""
 
-	_install = [Forgot, Login]
+	_install = [Forgot, Login, Permission]
 	"""Record types called in install"""
 
 	def initialise(self):
@@ -48,12 +46,15 @@ class Auth(Services.Service):
 			Auth
 		"""
 
-		# Init the sync module
-		Sync.init(Conf.get(('redis', 'primary'), {
+		# Create a connection to Redis
+		self._redis = StrictRedis(**Conf.get(('redis', 'primary'), {
 			"host": "localhost",
 			"port": 6379,
 			"db": 0
 		}))
+
+		# Pass the Redis connection to Login
+		Login.redis(self._redis)
 
 	@classmethod
 	def install(cls):
@@ -70,7 +71,7 @@ class Auth(Services.Service):
 		for o in cls._install:
 
 			# Install the table
-			if not o.table_create():
+			if not o.tableCreate():
 				print("Failed to create `%s` table" % o.tableName())
 
 	def passwdForgot_create(self, data):
@@ -87,39 +88,39 @@ class Auth(Services.Service):
 		"""
 
 		# Verify fields
-		try: DictHelper.eval(data, ['email'])
+		try: DictHelper.eval(data, ['email', 'url'])
 		except ValueError as e: return Services.Effect(error=(1001, [(f, "missing") for f in e.args]))
 
 		# Look for the login by email
-		oLogin = Login.filter({"email": data['email']}, limit=1)
-		if not oLogin:
-			return Services.Effect(True)
+		dLogin = Login.filter({"email": data['email']}, raw=['_id', 'locale'], limit=1)
+		if not dLogin:
+			return Services.Effect(False)
+
+		# Look for a forgot record by login id
+		oForgot = Forgot.get(dLogin['_id'])
 
 		# Is there already a key in the login?
-		if 'forgot' in oLogin and 'regenerate' not in data:
+		if oForgot and 'regenerate' not in data:
 
 			# Is it not expired?
-			if oLogin['forgot']['expires'] > int(time()):
+			if oForgot['expires'] > int(time()):
 				return Services.Effect(True)
 
-		# Update the login with a timestamp (for expiry) and the key
+		# Upsert the forgot record with a timestamp (for expiry) and the key
 		sKey = StrHelper.random(32, '_0x')
-		oLogin['forgot'] = {
-			"expires": int(time()) + 300,
+		oForgot = Forgot({
+			"_login": dLogin['_id'],
+			"expires": int(time()) + Conf.get(("services", "auth", "forgot_expire"), 600),
 			"key": sKey
-		}
-		if not oLogin.save(changes=False):
-			return Services.Effect(error=1103)
-
-		# Get the domain config
-		dConf = Conf.get("domain")
+		})
+		if not oForgot.create(conflict="replace"):
+			return Services.Effect(error=1100)
 
 		# Forgot email template variables
 		dTpl = {
 			"key": sKey,
-			"url": "%s://%s/#forgot=%s" % (
-				dConf['protocol'],
-				dConf['primary'],
+			"url": "%s%s" % (
+				data['url'],
 				sKey
 			)
 		}
@@ -127,8 +128,8 @@ class Auth(Services.Service):
 		# Email the user the key
 		oEffect = Services.create('communications', 'email', {
 			"_internal_": Services.internalKey(),
-			"html_body": Templates.generate('email/forgot.html', dTpl, oLogin['locale']),
-			"subject": Templates.generate('email/forgot_subject.txt', {}, oLogin['locale']),
+			"html_body": Templates.generate('email/forgot.html', dTpl, dLogin['locale']),
+			"subject": Templates.generate('email/forgot_subject.txt', {}, dLogin['locale']),
 			"to": data['email'],
 		})
 		if oEffect.errorExists():
@@ -153,26 +154,30 @@ class Auth(Services.Service):
 		try: DictHelper.eval(data, ['passwd', 'key'])
 		except ValueError as e: return Services.Effect(error=(1001, [(f, "missing") for f in e.args]))
 
-		# Look for the login by the key
-		oLogin = Login.get(filter={"forgot": {"key": data['key']}}, limit=1)
-		if not oLogin:
+		# Look for the forgot by the key
+		oForgot = Forgot.filter({"key": data['key']}, limit=1)
+		if not oForgot:
 			return Services.Effect(error=1203) # Don't let people know if the key exists or not
 
-		# Check if we even have a forgot section, or the key has expired, or the
-		#	key is invalid
-		if 'forgot' not in oLogin or \
-			oLogin['forgot']['expires'] <= int(time()) or \
-			oLogin['forgot']['key'] != data['key']:
+		# Check if the key has expired
+		if oForgot['expires'] <= int(time()):
 			return Services.Effect(error=1203)
 
 		# Make sure the new password is strong enough
 		if not Login.passwordStrength(data['passwd']):
 			return Services.Effect(error=1204)
 
+		# Find the Login
+		oLogin = Login.get(oForgot['_login'])
+		if not oLogin:
+			return Services.Effect(error=1203)
+
 		# Store the new password and update
 		oLogin['passwd'] = Login.passwordHash(data['passwd'])
-		oLogin.fieldDelete('forgot')
 		oLogin.save(changes=False)
+
+		# Delete the forgot record
+		oForgot.delete()
 
 		# Return OK
 		return Services.Effect(True)
@@ -194,10 +199,15 @@ class Auth(Services.Service):
 		try: DictHelper.eval(data, ['q'])
 		except ValueError as e: return Services.Effect(error=(1001, [(f, "missing") for f in e.args]))
 
+		# Fetch the IDs
+		lRecords = Login.search(data['q'])
+
+		# If we got something, fetch the records from the cache
+		if not lRecords:
+			lRecords = Login.cache(lRecords, raw=True)
+
 		# Run a search and return the results
-		return Services.Effect(
-			Login.search(data['q'])
-		)
+		return Services.Effect(lRecords)
 
 	def session_read(self, data, sesh):
 		"""Session
@@ -212,10 +222,7 @@ class Auth(Services.Service):
 			Services.Effect
 		"""
 		return Services.Effect({
-			"_id": sesh['login']['_id'],
-			"email": sesh['login']['email'],
-			"firstName": sesh['login']['firstName'],
-			"lastName": sesh['login']['lastName']
+			"_id": sesh['login']['_id']
 		})
 
 	def signin_create(self, data):
@@ -256,10 +263,7 @@ class Auth(Services.Service):
 		return Services.Effect({
 			"session": oSesh.id(),
 			"login": {
-				"_id": oSesh['login']['_id'],
-				"email": oSesh['login']['email'],
-				"firstName": oSesh['login']['firstName'],
-				"lastName": oSesh['login']['lastName']
+				"_id": oSesh['login']['_id']
 			}
 		})
 
@@ -327,23 +331,6 @@ class Auth(Services.Service):
 		# Update the login
 		oLogin.save(changes={"creator":sesh['login']['_id']})
 
-		# Send en e-mail for verification
-		dConf = Conf.get("domain")
-		sURL = "%s://external.%s/verify/%s/%s" % (
-			dConf['protocol'],
-			dConf['primary'],
-			oLogin['_id'],
-			oLogin['verified']
-		)
-		oEffect = Services.create('communications', 'email', {
-			"_internal_": Services.internalKey(),
-			"html_body": Templates.generate('email/verify.html', {"url":sURL}, oLogin['locale']),
-			"subject": Templates.generate('email/verify_subject.txt', {}, oLogin['locale']),
-			"to": data['email'],
-		})
-		if oEffect.errorExists():
-			return oEffect
-
 		# Return OK
 		return Services.Effect(True)
 
@@ -380,49 +367,6 @@ class Auth(Services.Service):
 		# Set the new password and save
 		oLogin['passwd'] = Login.passwordHash(data['new_passwd'])
 		oLogin.save(changes={"creator":sesh['login']['_id']})
-
-		# Return OK
-		return Services.Effect(True)
-
-	def loginVerify_update(self, data):
-		"""Login Verify
-
-		Sets the login's email to verified if the key is valid
-
-		Arguments:
-			data {dict} -- Data sent with the request
-
-		Returns:
-			Services.Effect
-		"""
-
-		# Verify fields
-		try: DictHelper.eval(data, ['_internal_', 'id', 'verify'])
-		except ValueError as e: return Services.Effect(error=(1001, [(f, "missing") for f in e.args]))
-
-		# Verify the key, remove it if it's ok
-		if not Services.internalKey(data['_internal_']):
-			return Services.Effect(error=Errors.SERVICE_INTERNAL_KEY)
-		del data['_internal_']
-
-		# Find the login
-		oLogin = Login.get(data['id'])
-
-		# If it doesn't exist
-		if not oLogin:
-			return Services.Effect(error=(1104, data['id']))
-
-		# If the login is already verified
-		if oLogin['verified'] == True:
-			return Services.Effect(True)
-
-		# If the code is not valid
-		if data['verify'] != oLogin['verified']:
-			return Services.Effect(error=1205)
-
-		# Update the login
-		oLogin['verified'] = True
-		oLogin.save(changes=False)
 
 		# Return OK
 		return Services.Effect(True)
