@@ -55,6 +55,8 @@ Templates.init('../templates')
 REST.Server({
 	"/passwd/forgot": {"methods": REST.CREATE | REST.UPDATE},
 
+	"/permissions": {"methods": REST.READ | REST.UPDATE, "session": True},
+
 	"/search": {"methods": REST.READ, "session": True},
 
 	"/session": {"methods": REST.READ, "session": True},
@@ -62,9 +64,11 @@ REST.Server({
 	"/signin": {"methods": REST.POST},
 	"/signout": {"methods": REST.POST, "session": True},
 
-	"/login": {"methods": REST.READ | REST.UPDATE, "session": True},
-	"/login/email": {"methods": REST.UPDATE, "session": True},
-	"/login/passwd": {"methods": REST.UPDATE, "session": True}
+	"/user": {"methods": REST.CREATE | REST.READ | REST.UPDATE, "session": True},
+	"/user/email": {"methods": REST.UPDATE, "session": True},
+	"/user/passwd": {"methods": REST.UPDATE, "session": True},
+
+	"/verify": {"methods": REST.READ, "session": True}
 
 }, 'auth', "https?://(.*\\.)?%s" % Conf.get(("rest","allowed")).replace('.', '\\.')).run(
 	host=oRestConf['auth']['host'],

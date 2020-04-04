@@ -12,6 +12,7 @@ __email__		= "bast@maleexecl.com"
 __created__		= "2020-03-29"
 
 # Python imports
+import copy
 from hashlib import sha1
 import re
 
@@ -26,15 +27,15 @@ _mdForgotConf = Record_MySQL.Record.generateConfig(
 	'mysql'
 )
 
-# Login structure and config
-_mdLoginConf = Record_MySQL.Record.generateConfig(
-	Tree.fromFile('../definitions/auth/login.json'),
-	'mysql'
-)
-
 # Permission structure and config
 _mdPermissionConf = Record_MySQL.Record.generateConfig(
 	Tree.fromFile('../definitions/auth/permission.json'),
+	'mysql'
+)
+
+# User structure and config
+_mdUserConf = Record_MySQL.Record.generateConfig(
+	Tree.fromFile('../definitions/auth/user.json'),
 	'mysql'
 )
 
@@ -58,9 +59,48 @@ class Forgot(Record_MySQL.Record):
 		"""
 		return _mdForgotConf
 
-# Login class
-class Login(Record_MySQL.Record):
-	"""Login
+# Permission class
+class Permission(Record_MySQL.Record):
+	"""Permission
+
+	Represents a single permission record associated with a user
+
+	Extends: RestOC.Record_MySQL.Record
+	"""
+
+	@classmethod
+	def byUser(cls, _id):
+		"""By User
+
+		Fetches the permissions as a name => rights dict by user._id
+
+		Arguments:
+			_id {str} -- The ID of the User
+
+		Returns:
+			dict
+		"""
+
+		# Generate a dict from the name and rights
+		return {
+			d['name']:d['rights']
+			for d in cls.filter({"user": _id}, raw=['name', 'rights'])
+		}
+
+	@classmethod
+	def config(cls):
+		"""Config
+
+		Returns the configuration data associated with the record type
+
+		Returns:
+			dict
+		"""
+		return _mdPermissionConf
+
+# User class
+class User(Record_MySQL.Record):
+	"""User
 
 	Represents a single user in the system
 
@@ -73,67 +113,68 @@ class Login(Record_MySQL.Record):
 	Holds a connection to the Redis db
 	"""
 
-	def __init__(self, record):
+	def __init__(self, record, custom={}):
 		"""Constructor
 
 		Overwrites Record_Base constructor to add permissions records
 
 		Arguments:
-			record {dict} -- The data associated with the login
+			record {dict} -- The data associated with the user
 
 		Returns:
-			Login
+			User
 		"""
 
-		# If there's a permissions key
-		if 'permissions' in record:
-			self.__permissions = record.pop('permissions')
+		# Store the permissions if they were passed
+		self.__permissions = 'permissions' in record and \
+								record.pop('permissions') or \
+								None
 
 		# Call the parent constructor
-		super().__init__(record)
+		super().__init__(record, custom)
 
 	@classmethod
 	def cache(cls, _id, raw=False):
 		"""Cache
 
-		Fetches the Logins from the cache and returns them
+		Fetches the Users from the cache and returns them
 
 		Arguments:
 			_id {str|str[]} -- The ID(s) to fetch
-			raw {bool} -- Return raw records or Logins
+			raw {bool} -- Return raw records or Users
 
 		Returns:
-			Login|Login[]|dict|dict[]
+			User|User[]|dict|dict[]
 		"""
 
 		# If we got a single ID
 		if isinstance(_id, str):
 
 			# Fetch a single key
-			dLogin = cls._redis.get('login:%s' % _id)
+			dUser = cls._redis.get('user:%s' % _id)
 
 			# If we didn't get the key
-			if not dLogin:
+			if not dUser:
 
 				# Fetch the record from the DB
-				dLogin = cls.get(_id, raw=True)
+				dUser = cls.get(_id, raw=True)
 
 				# Fetch and store the permissions
-				dLogin['permissions'] = Permission.byLogin(_id)
+				dUser['permissions'] = Permission.byUser(_id)
 
 				# Store it in the cache
-				cls._redis.set(_id, JSON.encode(dLogin))
+				cls._redis.set(_id, JSON.encode(dUser))
 
 			# If we still don't have a record
-			if not dLogin:
+			if not dUser:
 				return None
 
 			# If we want raw
 			if raw:
-				return dLogin
+				return dUser
 
 			# Return an instance
-			return cls(dLogin)
+			return cls(dUser)
 
 		# Else, fetch multiple
 		else:
@@ -142,34 +183,34 @@ class Login(Record_MySQL.Record):
 			lRet = []
 
 			# Fetch multiple keys
-			lLogins = cls._regis.mget(["login:%s" % k for k in _id])
+			lUsers = cls._regis.mget(["user:%s" % k for k in _id])
 
 			# Go through each one
 			for i in range(len(_id)):
 
 				# If we have a record
-				if lLogins[i]:
+				if lUsers[i]:
 
 					# Decode it
-					lLogins[i] = JSON.decode(lLogins[i])
+					lUsers[i] = JSON.decode(lUsers[i])
 
 				else:
 
 					# Fetch the record from the DB
-					lLogins[i] = cls.get(_id, raw=True)
+					lUsers[i] = cls.get(_id[i], raw=True)
 
 					# Fetch and store the permissions
-					lLogins[i]['permissions'] = Permission.byLogin(_id)
+					lUsers[i]['permissions'] = Permission.byUser(_id[i])
 
 					# Store it in the cache
-					cls._redis.set(_id, JSON.encode(lLogins[i]))
+					cls._redis.set(_id[i], JSON.encode(lUsers[i]))
 
 			# If we want raw
 			if raw:
-				return lLogins
+				return lUsers
 
 			# Return instances
-			return [d and cls(d) or None for d in lLogins]
+			return [d and cls(d) or None for d in lUsers]
 
 	@classmethod
 	def config(cls):
@@ -180,7 +221,7 @@ class Login(Record_MySQL.Record):
 		Returns:
 			dict
 		"""
-		return _mdLoginConf
+		return _mdUserConf
 
 	@staticmethod
 	def passwordHash(passwd):
@@ -251,11 +292,63 @@ class Login(Record_MySQL.Record):
 		# Return OK if the rehashed password matches
 		return sHash == sha1(sSalt.encode('utf-8') + passwd.encode('utf-8')).hexdigest()
 
+	def permissions(self, new = None):
+		"""Permissions
+
+		Get or set the permissions associated with the user
+
+		Arguments:
+			new {dict} -- If passed, this is a setter
+
+		Returns:
+			None|dict
+		"""
+
+		# If new permissions passed, store them
+		if new:
+
+			# Store the permissions
+			self.__permissions = new.copy()
+
+			# If we have an ID
+			if '_id' in self._dRecord:
+
+				# Update the cache
+				dUser = copy.deepcopy(self._dRecord)
+				dUser['permissions'] = self.__permissions
+				self._redis.set(
+					'user:%s' % dUser['_id'],
+					JSON.encode(dUser)
+				)
+
+		# Else, fetch the permissions associated
+		else:
+
+			# If we don't have the permissions
+			if self.__permissions is None:
+
+				# If we have an ID
+				if '_id' in self._dRecord:
+
+					# Fetch them and store them in the cache
+					self.__permissions = Permission.byUser(self._dRecord['_id'])
+
+					# Update the cache
+					dUser = copy.deepcopy(self._dRecord)
+					dUser['permissions'] = self.__permissions
+					self._redis.set(
+						'user:%s' % dUser['_id'],
+						JSON.encode(dUser)
+					)
+
+			# Return the permissions
+			return self.__permissions
+
 	@classmethod
 	def redis(cls, redis):
 		"""Redis
 
-		Stores the Redis connection to be used to fetch and store Logins
+		Stores the Redis connection to be used to fetch and store Users
 
 		Arguments:
 			redis {StrictRedis} -- A Redis instance
@@ -295,51 +388,3 @@ class Login(Record_MySQL.Record):
 
 		# Fetch any records
 		return Record_MySQL.Commands.select(dStruct['host'], sSQL, Record_MySQL.ESelect.COLUMN)
-
-# Permission class
-class Permission(Record_MySQL.Record):
-	"""Permission
-
-	Represents a single permission record associated with a login
-
-	Extends: RestOC.Record_MySQL.Record
-	"""
-
-	READ	= 0x01
-	UPDATE	= 0x02
-	CREATE	= 0x04
-	DELETE	= 0x08
-	ALL		= 0x0F
-	"""Right Types
-
-	The bits for individual CRUD rights
-	"""
-
-	def byLogin(cls, _id):
-		"""By Login
-
-		Fetches the permissions as a name => rights dict by login.id
-
-		Arguments:
-			_id {str} -- The ID of the Login
-
-		Returns:
-			dict
-		"""
-
-		# Generate a dict from the name and rights
-		return {
-			d['name']:d['rights']
-			for d in cls.filter({"login_id": _id}, raw=['name', 'rights'])
-		}
-
-	@classmethod
-	def config(cls):
-		"""Config
-
-		Returns the configuration data associated with the record type
-
-		Returns:
-			dict
-		"""
-		return _mdPermissionConf

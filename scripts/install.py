@@ -29,11 +29,17 @@ Record_MySQL.dbCreate(Conf.get(("mysql", "db"), "mems"))
 auth.Auth.install()
 
 # Install admin
-oLogin = auth.records.Login({
+oUser = auth.records.User({
 	"email": "admin@maleexcel.com",
-	"passwd": auth.records.Login.passwordHash('Admin123'),
+	"passwd": auth.records.User.passwordHash('Admin123'),
 	"locale": "en-US",
 	"firstName": "Admin",
 	"lastName": "Istrator"
 })
-oLogin.create(changes={"login": "system"})
+sUserId = oUser.create(changes={"user": "system"})
+
+# Add admin permission
+auth.records.Permission.createMany([
+	auth.records.Permission({"user": sUserId, "name": "user", "rights": 15}),
+	auth.records.Permission({"user": sUserId, "name": "permission", "rights": 15})
+])
