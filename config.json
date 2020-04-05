@@ -41,7 +41,7 @@
 	},
 
 	"rest": {
-		"allowed": "mems.local",
+		"allowed": "mecrm.local",
 		"default": {
 			"domain": "localhost",
 			"host": "0.0.0.0",

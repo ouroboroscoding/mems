@@ -330,7 +330,9 @@ class Auth(Services.Service):
 			Services.Effect
 		"""
 		return Services.Effect({
-			"user_id": sesh['user_id']
+			"user" : {
+				"id": sesh['user_id']
+			}
 		})
 
 	def signin_create(self, data):
@@ -370,7 +372,9 @@ class Auth(Services.Service):
 		# Return the session ID and primary user data
 		return Services.Effect({
 			"session": oSesh.id(),
-			"user_id": oSesh['user_id']
+			"user": {
+				"id": oSesh['user_id']
+			}
 		})
 
 	def signout_create(self, data, sesh):
@@ -514,7 +518,22 @@ class Auth(Services.Service):
 		# Remove fields that can't be changed
 		del data['_id']
 		if '_created' in data: del data['_created']
+		if 'email' in data: del data['passwd']
 
+		# Step through each field passed and update/validate it
+		lErrors = []
+		for f in data:
+			try: oUser[f] = data[f]
+			except ValueError as e: lErrors.append(e.args[0])
+
+		# If there was any errors
+		if lErrors:
+			return Services.Effect(error=(1001, lErrors))
+
+		# Update the record and return the result
+		return Services.Effect(
+			oUser.save(changes={"user": sesh['user_id']})
+		)
 
 	def userEmail_update(self, data, sesh):
 		"""User Email
