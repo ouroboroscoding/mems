@@ -21,7 +21,7 @@ from FormatOC import Tree
 from RestOC import Conf, Record_MySQL, StrHelper
 from shared import JSON
 
-# Forst structure and config
+# Forgot structure and config
 _mdForgotConf = Record_MySQL.Record.generateConfig(
 	Tree.fromFile('../definitions/auth/forgot.json'),
 	'mysql'

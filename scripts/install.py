@@ -11,7 +11,7 @@ import os, platform
 from RestOC import Conf, Record_MySQL
 
 # Services
-from services import auth
+from services import auth, payments
 
 # Load the config
 Conf.load('../config.json')
@@ -21,12 +21,15 @@ if os.path.isfile(sConfOverride):
 
 # Add primary host
 Record_MySQL.addHost('primary', Conf.get(("mysql", "hosts", "primary")))
+Record_MySQL.addHost('payments', Conf.get(("mysql", "hosts", "payments")))
 
-# Add the DB
-Record_MySQL.dbCreate(Conf.get(("mysql", "db"), "mems"))
+# Add the DBs
+Record_MySQL.dbCreate(Conf.get(("mysql", "primary", "db"), "mems"), 'primary', 'utf8mb4', 'utf8mb4_bin')
+Record_MySQL.dbCreate(Conf.get(("mysql", "payment", "db"), "payments"), 'payments', 'utf8mb4', 'utf8mb4_bin')
 
 # Install
 auth.Auth.install()
+payments.Payments.install()
 
 # Install admin
 oUser = auth.records.User({

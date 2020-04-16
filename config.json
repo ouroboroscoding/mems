@@ -26,9 +26,18 @@
 			"primary": {
 				"host": "localhost",
 				"port": 3306
+			},
+			"payments": {
+				"host": "localhost",
+				"port": 3306
 			}
-		},
-		"db": "mems"
+		}
+	},
+
+	"payments": {
+		"nmi": {
+			"domain": "https://secure.networkmerchants.com/api/"
+		}
 	},
 
 	"redis": {
@@ -52,6 +61,7 @@
 		"services": {
 			"auth": {"port": 3},
 			"communications": {"port": 4},
+			"payments": {"port": 5},
 			"webpoll": {"port": 2}
 		}
 	},
