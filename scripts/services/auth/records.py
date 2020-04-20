@@ -183,7 +183,7 @@ class User(Record_MySQL.Record):
 			lRet = []
 
 			# Fetch multiple keys
-			lUsers = cls._regis.mget(["user:%s" % k for k in _id])
+			lUsers = cls._redis.mget(["user:%s" % k for k in _id])
 
 			# Go through each one
 			for i in range(len(_id)):

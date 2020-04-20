@@ -304,15 +304,27 @@ class Auth(Services.Service):
 		"""
 
 		# Verify fields
-		try: DictHelper.eval(data, ['q'])
+		try: DictHelper.eval(data, ['filter'])
 		except ValueError as e: return Services.Effect(error=(1001, [(f, "missing") for f in e.args]))
 
-		# Fetch the IDs
-		lRecords = User.search(data['q'])
+		# If the filter isn't a dict
+		if not isinstance(data['filter'], dict):
+			return Services.Effect(error=(1001, [('filter', "must be a key:value store")]))
+
+		# If fields is not a list
+		if 'fields' in data and not isinstance(data['fields'], list):
+			return Services.Effect(error=(1001, [('filter', "must be an list")]))
+
+		# Search based on the data passed
+		lRecords = [d['_id'] for d in User.filter(data['filter'], raw=['_id'])]
 
 		# If we got something, fetch the records from the cache
-		if not lRecords:
-			lRecords = User.cache(lRecords, raw=True)
+		if lRecords:
+			lRecords = User.cache(lRecords, raw=('fields' in data and data['fields'] or True))
+
+		# Remove the passwd
+		for d in lRecords:
+			del d['passwd']
 
 		# Run a search and return the results
 		return Services.Effect(lRecords)
@@ -478,7 +490,7 @@ class Auth(Services.Service):
 		if not dUser:
 			return Services.Effect(error=1104)
 
-		# Remove the passwd field
+		# Remove the passwd
 		del dUser['passwd']
 
 		# Return the user data
@@ -500,6 +512,10 @@ class Auth(Services.Service):
 		# If there's an ID, check permissions
 		if '_id' in data or data['_id'] != sesh['user_id']:
 
+			# If the ID isn't set
+			if not data['_id']:
+				return Services.Effect(error=(1001, [('_id', 'missing')]))
+
 			# Make sure the user has the proper permission to do this
 			oEff = self.verify_read({
 				"name": "user",
@@ -518,7 +534,11 @@ class Auth(Services.Service):
 		# Remove fields that can't be changed
 		del data['_id']
 		if '_created' in data: del data['_created']
-		if 'email' in data: del data['passwd']
+		if 'email' in data: del data['email']
+		if 'passwd' in data: del data['passwd']
+
+		# If passed, store permissions for later
+		mPermissions = 'permissions' in data and data.pop('permissions') or None
 
 		# Step through each field passed and update/validate it
 		lErrors = []

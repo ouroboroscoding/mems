@@ -26,7 +26,7 @@ apt-get -qq install python3-pip &>> $LOGFILE
 pip3 -q install virtualenv &>> $LOGFILE
 mkdir -p /root/venvs/mems
 virtualenv -p /usr/bin/python3 /root/venvs/mems &>> $LOGFILE
-/root/venvs/mems/bin/pip install -r /mems/services/requirements.txt &>> $LOGFILE
+/root/venvs/mems/bin/pip install -r /mems/scripts/requirements.txt &>> $LOGFILE
 
 # Make folders and copy etc files
 echo -e "${G}Making folders, copying server config files, and creating aliases...${R}"
