@@ -151,10 +151,15 @@ class User(Record_MySQL.Record):
 		if isinstance(_id, str):
 
 			# Fetch a single key
-			dUser = cls._redis.get('user:%s' % _id)
+			sUser = cls._redis.get('user:%s' % _id)
 
-			# If we didn't get the key
-			if not dUser:
+			# If we have a record
+			if sUser:
+
+				# Decode it
+				dUser = JSON.decode(sUser);
+
+			else:
 
 				# Fetch the record from the DB
 				dUser = cls.get(_id, raw=True)
@@ -163,9 +168,9 @@ class User(Record_MySQL.Record):
 				dUser['permissions'] = Permission.byUser(_id)
 
 				# Store it in the cache
-				cls._redis.set(_id, JSON.encode(dUser))
+				cls._redis.set('user:%s' % _id, JSON.encode(dUser))
 
-			# If we still don't have a record
+			# If we don't have a record
 			if not dUser:
 				return None
 
@@ -203,7 +208,7 @@ class User(Record_MySQL.Record):
 					lUsers[i]['permissions'] = Permission.byUser(_id[i])
 
 					# Store it in the cache
-					cls._redis.set(_id[i], JSON.encode(lUsers[i]))
+					cls._redis.set('user:%s' % _id[i], JSON.encode(lUsers[i]))
 
 			# If we want raw
 			if raw:
@@ -211,6 +216,22 @@ class User(Record_MySQL.Record):
 
 			# Return instances
 			return [d and cls(d) or None for d in lUsers]
+
+	@classmethod
+	def cacheClear(cls, _id):
+		"""Cache Clear
+
+		Removes a user from the cache
+
+		Arguments:
+			_id {str} -- The ID of the user to remove
+
+		Returns:
+			None
+		"""
+
+		# Delete the key in Redis
+		cls._redis.delete('user:%s' % _id)
 
 	@classmethod
 	def config(cls):

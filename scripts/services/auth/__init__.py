@@ -235,7 +235,7 @@ class Auth(Services.Service):
 
 		# Make sure the user has the proper rights
 		oEff = self.verify_read({
-			"name": "permissions",
+			"name": "permission",
 			"right": Rights.UPDATE
 		}, sesh)
 		if not oEff.data:
@@ -249,19 +249,15 @@ class Auth(Services.Service):
 		oUser = User.get(data['user'])
 		dOldPermissions = oUser.permissions()
 
-		# Init the new permissions
-		dPermissions = {}
-
 		# Validate and store the new permissions
 		lRecords = []
-		for d in data['permissions']:
+		for sName,iRights in data['permissions'].items():
 			lErrors = []
 			try:
-				dPermissions[d['name']] = d['rights']
 				lRecords.append(Permission({
 					"user": data['user'],
-					"name": d['name'],
-					"rights": d['rights']
+					"name": sName,
+					"rights": iRights
 				}))
 			except ValueError as e:
 				lErrors.append(e.args[0])
@@ -272,20 +268,24 @@ class Auth(Services.Service):
 
 		# Delete all the existing permissions if there are any
 		if dOldPermissions:
-			Permission.deleteGet(data['user_id'], 'user_id')
+			Permission.deleteGet(data['user'], 'user')
 
-		# Create the new permissions
-		Permission.createMany(lRecords)
+		# Create the new permissions if there are any
+		if lRecords:
+			Permission.createMany(lRecords)
 
 		# Get and store the changes
 		dChanges = {"user": sesh['user_id']}
-		if dOldPermissions and dPermissions:
-			dChanges['permissions'] = self.generateChanges(dOldPermissions, dPermissions)
-		elif dPermissions:
+		if dOldPermissions and data['permissions']:
+			dChanges['permissions'] = User.generateChanges(dOldPermissions, data['permissions'])
+		elif data['permissions']:
 			dChanges['permissions'] = {"old": None, "new": "inserted"}
 		else:
 			dChanges['permissions'] = {"old": dOldPermissions, "new": None}
 		User.addChanges(data['user'], dChanges)
+
+		# Clear the user from the cache
+		User.cacheClear(data['user'])
 
 		# Return OK
 		return Services.Effect(True)
@@ -444,6 +444,10 @@ class Auth(Services.Service):
 		# Hash the password
 		data['passwd'] = User.passwordHash(data['passwd'])
 
+		# Add defaults
+		if 'locale' not in data: data['locale'] = 'en-US'
+		if 'country' not in data: data['country'] = 'US'
+
 		# Validate by creating a Record instance
 		try:
 			oUser = User(data)
@@ -550,10 +554,15 @@ class Auth(Services.Service):
 		if lErrors:
 			return Services.Effect(error=(1001, lErrors))
 
-		# Update the record and return the result
-		return Services.Effect(
-			oUser.save(changes={"user": sesh['user_id']})
-		)
+		# Update the record
+		bRes = oUser.save(changes={"user": sesh['user_id']})
+
+		# If it was updated, clear the cache
+		if bRes:
+			User.cacheClear(oUser['_id'])
+
+		# Return the result
+		return Services.Effect(bRes)
 
 	def userEmail_update(self, data, sesh):
 		"""User Email
