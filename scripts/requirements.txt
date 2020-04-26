@@ -1,3 +1,4 @@
-rest-oc==0.3.32
+bcrypt==3.1.7
+rest-oc==0.3.33
 gevent==1.4.0
 gevent-websocket==0.10.1

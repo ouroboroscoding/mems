@@ -23,6 +23,10 @@
 
 	"mysql": {
 		"hosts": {
+			"memo": {
+				"host": "localhost",
+				"port": 3306
+			},
 			"primary": {
 				"host": "localhost",
 				"port": 3306
@@ -50,7 +54,7 @@
 	},
 
 	"rest": {
-		"allowed": "mecrm.local",
+		"allowed": "(?:mecrm.local|mecsr.local)",
 		"default": {
 			"domain": "localhost",
 			"host": "0.0.0.0",
@@ -61,6 +65,7 @@
 		"services": {
 			"auth": {"port": 3},
 			"communications": {"port": 4},
+			"memo": {"port": 6},
 			"payments": {"port": 5},
 			"webpoll": {"port": 2}
 		}
