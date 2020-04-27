@@ -20,6 +20,24 @@ import re
 from FormatOC import Tree
 from RestOC import Conf, Record_MySQL
 
+# CUstomerClaimed structure and config
+_mdCUstomerClaimedConf = Record_MySQL.Record.generateConfig(
+	Tree.fromFile('../definitions/memo/customer_claimedforgot.json'),
+	'mysql'
+)
+
+# CustomerCommunication structure and config
+_mdCustomerCommunicationConf = Record_MySQL.Record.generateConfig(
+	Tree.fromFile('../definitions/memo/customer_communication.json'),
+	'mysql'
+)
+
+# CustomerMsgPhone structure and config
+_mdCustomerMsgPhoneConf = Record_MySQL.Record.generateConfig(
+	Tree.fromFile('../definitions/memo/customer_msg_phone.json'),
+	'mysql'
+)
+
 # Forgot structure and config
 _mdForgotConf = Record_MySQL.Record.generateConfig(
 	Tree.fromFile('../definitions/memo/forgot.json'),
@@ -31,6 +49,67 @@ _mdUserConf = Record_MySQL.Record.generateConfig(
 	Tree.fromFile('../definitions/memo/user.json'),
 	'mysql'
 )
+
+# CustomerClaimed class
+class CustomerClaimed(Record_MySQL.Record):
+	"""CustomerClaimed
+
+	Represents a customer conversation that has been claimed
+
+	Extends: RestOC.Record_MySQL.Record
+	"""
+
+	@classmethod
+	def config(cls):
+		"""Config
+
+		Returns the configuration data associated with the record type
+
+		Returns:
+			dict
+		"""
+		return _mdCustomerClaimedConf
+
+# CustomerCommunication class
+class CustomerCommunication(Record_MySQL.Record):
+	"""CustomerCommunication
+
+	Represents a message to or from a customer or potential customer
+
+	Extends: RestOC.Record_MySQL.Record
+	"""
+
+	@classmethod
+	def config(cls):
+		"""Config
+
+		Returns the configuration data associated with the record type
+
+		Returns:
+			dict
+		"""
+		return _mdCustomerCommunicationConf
+
+# CustomerMsgPhone class
+class CustomerMsgPhone(Record_MySQL.Record):
+	"""CustomerMsgPhone
+
+	Represents a summary of all messages to and from a customer or potential
+	customer
+
+	Extends: RestOC.Record_MySQL.Record
+	"""
+
+	@classmethod
+	def config(cls):
+		"""Config
+
+		Returns the configuration data associated with the record type
+
+		Returns:
+			dict
+		"""
+		return _mdCustomerMsgPhoneConf
 
 # Forgot class
 class Forgot(Record_MySQL.Record):
