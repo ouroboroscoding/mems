@@ -63,6 +63,9 @@ REST.Server({
 	"/user": {"methods": REST.READ | REST.UPDATE, "session": True},
 	"/user/passwd": {"methods": REST.UPDATE, "session": True},
 
+	"/msgs/claimed": {"methods": REST.READ, "session": True},
+	"/msgs/unclaimed": {"methods": REST.READ, "session": True}
+
 }, 'memo', "https?://(.*\\.)?%s" % Conf.get(("rest","allowed")).replace('.', '\\.')).run(
 	host=oRestConf['memo']['host'],
 	port=oRestConf['memo']['port'],

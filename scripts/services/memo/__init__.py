@@ -22,7 +22,8 @@ from RestOC import Conf, DictHelper, Errors, Services, \
 					Sesh, StrHelper, Templates
 
 # Service imports
-from .records import Forgot, User
+from .records import CustomerClaimed, CustomerCommunication, CustomerMsgPhone, \
+						Forgot, User
 
 # Regex for validating email
 _emailRegex = re.compile(r"[^@\s]+@[^@\s]+\.[a-zA-Z0-9]{2,}$")
@@ -71,6 +72,44 @@ class Memo(Services.Service):
 			# Install the table
 			if not o.tableCreate():
 				print("Failed to create `%s` table" % o.tableName())
+
+	def msgsClaimed_read(self, data, sesh):
+		"""Messages: Claimed
+
+		Fetches the list of phone numbers and name associated that the
+		user has claimed
+
+		Arguments:
+			data {dict} -- Data sent with the request
+			sesh {Sesh._Session} -- The session associated with the request
+
+		Returns:
+			Services.Effect
+		"""
+
+		# Fetch and return the data
+		return Services.Effect(
+			CustomerMsgPhone.claimed(sesh['user_id'])
+		)
+
+	def msgsUnclaimed_read(self, data, sesh):
+		"""Messages: Unclaimed
+
+		Fetches all summaries with incoming messages that have not been hidden
+		or already claimed by a rep
+
+		Arguments:
+			data {dict} -- Data sent with the request
+			sesh {Sesh._Session} -- The session associated with the request
+
+		Returns:
+			Services.Effect
+		"""
+
+		# Fetch and return the data
+		return Services.Effect(
+			CustomerMsgPhone.unclaimed()
+		)
 
 	def passwdForgot_create(self, data):
 		"""Password Forgot (Generate)

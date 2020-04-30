@@ -20,9 +20,15 @@ import re
 from FormatOC import Tree
 from RestOC import Conf, Record_MySQL
 
-# CUstomerClaimed structure and config
-_mdCUstomerClaimedConf = Record_MySQL.Record.generateConfig(
-	Tree.fromFile('../definitions/memo/customer_claimedforgot.json'),
+# SQL files
+with open('./services/memo/sql/unclaimed.sql') as oF:
+	sUnclaimedSQL = oF.read()
+with open('./services/memo/sql/claimed.sql') as oF:
+	sClaimedSQL = oF.read()
+
+# CustomerClaimed structure and config
+_mdCustomerClaimedConf = Record_MySQL.Record.generateConfig(
+	Tree.fromFile('../definitions/memo/customer_claimed.json'),
 	'mysql'
 )
 
@@ -110,6 +116,60 @@ class CustomerMsgPhone(Record_MySQL.Record):
 			dict
 		"""
 		return _mdCustomerMsgPhoneConf
+
+	@classmethod
+	def claimed(cls, user, custom={}):
+		"""Claimed
+
+		Returns all the conversations the user has claimed
+
+		Arguments:
+			user {int} -- The ID of the user
+			custom {dict} -- Custom Host and DB info
+				'host' the name of the host to get/set data on
+				'append' optional postfix for dynamic DBs
+
+		Returns:
+			list
+		"""
+
+		# Fetch the record structure
+		dStruct = cls.struct(custom)
+
+		# Fetch and return the data
+		return Record_MySQL.Commands.select(
+			dStruct['host'],
+			sClaimedSQL % {
+				"db": dStruct['db'],
+				"user": user
+			}
+		)
+
+	@classmethod
+	def unclaimed(cls, custom={}):
+		"""Unclaimed
+
+		Fetches open conversations that have not been claimed by any agent
+
+		Arguments:
+			custom {dict} -- Custom Host and DB info
+				'host' the name of the host to get/set data on
+				'append' optional postfix for dynamic DBs
+
+		Returns:
+			list
+		"""
+
+		# Fetch the record structure
+		dStruct = cls.struct(custom)
+
+		# Fetch and return the data
+		return Record_MySQL.Commands.select(
+			dStruct['host'],
+			sUnclaimedSQL % {
+				"db": dStruct['db']
+			}
+		)
 
 # Forgot class
 class Forgot(Record_MySQL.Record):

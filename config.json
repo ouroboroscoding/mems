@@ -25,7 +25,8 @@
 		"hosts": {
 			"memo": {
 				"host": "localhost",
-				"port": 3306
+				"port": 3306,
+				"charset": "utf8mb4"
 			},
 			"primary": {
 				"host": "localhost",
@@ -41,6 +42,9 @@
 	"payments": {
 		"nmi": {
 			"domain": "https://secure.networkmerchants.com/api/"
+		},
+		"spreedly": {
+			"key": null
 		}
 	},
 
