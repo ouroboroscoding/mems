@@ -25,6 +25,8 @@ with open('./services/memo/sql/unclaimed.sql') as oF:
 	sUnclaimedSQL = oF.read()
 with open('./services/memo/sql/claimed.sql') as oF:
 	sClaimedSQL = oF.read()
+with open('./services/memo/sql/conversation.sql') as oF:
+	sConversationSQL = oF.read()
 
 # CustomerClaimed structure and config
 _mdCustomerClaimedConf = Record_MySQL.Record.generateConfig(
@@ -95,6 +97,36 @@ class CustomerCommunication(Record_MySQL.Record):
 			dict
 		"""
 		return _mdCustomerCommunicationConf
+
+	@classmethod
+	def thread(cls, number, custom={}):
+		"""Thread
+
+		Fetches all the records in or out associated with a phone number in
+		chronological order
+
+		Arguments:
+			number {string} -- The phone number to look up
+			custom {dict} -- Custom Host and DB info
+				'host' the name of the host to get/set data on
+				'append' optional postfix for dynamic DBs
+
+		Returns:
+			list
+		"""
+
+		# Fetch the record structure
+		dStruct = cls.struct(custom)
+
+		# Fetch and return the data
+		return Record_MySQL.Commands.select(
+			dStruct['host'],
+			sConversationSQL % {
+				"db": dStruct['db'],
+				"table": dStruct['table'],
+				"number": number
+			}
+		)
 
 # CustomerMsgPhone class
 class CustomerMsgPhone(Record_MySQL.Record):

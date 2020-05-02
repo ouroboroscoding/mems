@@ -14,6 +14,7 @@ __created__		= "2020-04-26"
 # Python imports
 import re
 from time import time
+import uuid
 
 # Pip imports
 import bcrypt
@@ -73,6 +74,60 @@ class Memo(Services.Service):
 			if not o.tableCreate():
 				print("Failed to create `%s` table" % o.tableName())
 
+	def claimed_create(self, data, sesh):
+		"""Claimed Create
+
+		Stores a record to claim a customer conversation for a user
+
+		Arguments:
+			data {dict} -- Data sent with the request
+			sesh {Sesh._Session} -- The session associated with the request
+
+		Returns:
+			Services.Effect
+		"""
+
+				# Verify fields
+		try: DictHelper.eval(data, ['phoneNumber'])
+		except ValueError as e: return Services.Effect(error=(1001, [(f, "missing") for f in e.args]))
+
+		# Attempt to create the record
+		try:
+			oCustomerClaimed = CustomerClaimed({
+				"phoneNumber": data['phoneNumber'],
+				"user": sesh['user_id']
+			})
+		except ValueError as e:
+			return Services.Effect(error=(1001, e.args[0]))
+
+		# Create the record and return the result
+		return Services.Effect(
+			oCustomerClaimed.create()
+		)
+
+	def claimed_delete(self, data, sesh):
+		"""Claimed Delete
+
+		Deletes a record to claim a customer conversation by a user
+
+		Arguments:
+			data {dict} -- Data sent with the request
+			sesh {Sesh._Session} -- The session associated with the request
+
+		Returns:
+			Services.Effect
+		"""
+
+		# Verify fields
+		try: DictHelper.eval(data, ['phoneNumber'])
+		except ValueError as e: return Services.Effect(error=(1001, [(f, "missing") for f in e.args]))
+
+		# Attempt to delete the record
+		CustomerClaimed.deleteGet(data['phoneNumber'])
+
+		# Return OK
+		return Services.Effect(True)
+
 	def msgsClaimed_read(self, data, sesh):
 		"""Messages: Claimed
 
@@ -90,6 +145,28 @@ class Memo(Services.Service):
 		# Fetch and return the data
 		return Services.Effect(
 			CustomerMsgPhone.claimed(sesh['user_id'])
+		)
+
+	def msgsCustomer_read(self, data, sesh):
+		"""Messages: Customer
+
+		Fetches all messages associated with a customer (phone number)
+
+		Arguments:
+			data {dict} -- Data sent with the request
+			sesh {Sesh._Session} -- The session associated with the request
+
+		Returns:
+			Services.Effect
+		"""
+
+		# Verify fields
+		try: DictHelper.eval(data, ['phoneNumber'])
+		except ValueError as e: return Services.Effect(error=(1001, [(f, "missing") for f in e.args]))
+
+		# Fetch and return all the messages associated with the number
+		return Services.Effect(
+			CustomerCommunication.thread(data['phoneNumber'])
 		)
 
 	def msgsUnclaimed_read(self, data, sesh):
@@ -263,7 +340,7 @@ class Memo(Services.Service):
 			return Services.Effect(error=1201)
 
 		# Create a new session
-		oSesh = Sesh.create()
+		oSesh = Sesh.create("memo:" + uuid.uuid4().hex)
 
 		# Store the user ID and information in it
 		oSesh['user_id'] = oUser['id']
