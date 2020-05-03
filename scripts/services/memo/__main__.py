@@ -63,8 +63,8 @@ REST.Server({
 	"/user": {"methods": REST.READ | REST.UPDATE, "session": True},
 	"/user/passwd": {"methods": REST.UPDATE, "session": True},
 
-	"/claimed": {"methods": REST.CREATE | REST.DELETE, "session": True},
-
+	"/customer/hide": {"methods": REST.UPDATE, "session": True},
+	"/customer/claim": {"methods": REST.CREATE | REST.DELETE, "session": True},
 	"/msgs/customer": {"methods": REST.READ, "session": True},
 	"/msgs/claimed": {"methods": REST.READ, "session": True},
 	"/msgs/unclaimed": {"methods": REST.READ, "session": True}

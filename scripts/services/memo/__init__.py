@@ -74,8 +74,8 @@ class Memo(Services.Service):
 			if not o.tableCreate():
 				print("Failed to create `%s` table" % o.tableName())
 
-	def claimed_create(self, data, sesh):
-		"""Claimed Create
+	def customerClaim_create(self, data, sesh):
+		"""Customer Claim Create
 
 		Stores a record to claim a customer conversation for a user
 
@@ -102,11 +102,11 @@ class Memo(Services.Service):
 
 		# Create the record and return the result
 		return Services.Effect(
-			oCustomerClaimed.create()
+			oCustomerClaimed.create(conflict='replace')
 		)
 
-	def claimed_delete(self, data, sesh):
-		"""Claimed Delete
+	def customerClaim_delete(self, data, sesh):
+		"""Customer Claim Delete
 
 		Deletes a record to claim a customer conversation by a user
 
@@ -124,6 +124,29 @@ class Memo(Services.Service):
 
 		# Attempt to delete the record
 		CustomerClaimed.deleteGet(data['phoneNumber'])
+
+		# Return OK
+		return Services.Effect(True)
+
+	def customerHide_update(self, data, sesh):
+		"""Customer Hide
+
+		Marks a customer conversation as hidden
+
+		Arguments:
+			data {dict} -- Data sent with the request
+			sesh {Sesh._Session} -- The session associated with the request
+
+		Returns:
+			Services.Effect
+		"""
+
+		# Verify fields
+		try: DictHelper.eval(data, ['customerPhone'])
+		except ValueError as e: return Services.Effect(error=(1001, [(f, "missing") for f in e.args]))
+
+		# Update the records hidden field
+		CustomerMsgPhone.updateField('hiddenFlag', 'Y', filter={"customerPhone": data['customerPhone']})
 
 		# Return OK
 		return Services.Effect(True)
