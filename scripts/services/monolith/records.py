@@ -1,7 +1,7 @@
 # coding=utf8
-""" Memo Records
+""" Monolith Records
 
-Handles the record structures for the memo service
+Handles the record structures for the monolith service
 """
 
 __author__		= "Chris Nasr"
@@ -21,40 +21,48 @@ from FormatOC import Tree
 from RestOC import Conf, Record_MySQL
 
 # SQL files
-with open('./services/memo/sql/unclaimed.sql') as oF:
+with open('./services/monolith/sql/unclaimed.sql') as oF:
 	sUnclaimedSQL = oF.read()
-with open('./services/memo/sql/claimed.sql') as oF:
+with open('./services/monolith/sql/claimed.sql') as oF:
 	sClaimedSQL = oF.read()
-with open('./services/memo/sql/conversation.sql') as oF:
+with open('./services/monolith/sql/conversation.sql') as oF:
 	sConversationSQL = oF.read()
+with open('./services/monolith/sql/msg_phone_update.sql') as oF:
+	sMsgPhoneUpdateSQL = oF.read()
 
 # CustomerClaimed structure and config
 _mdCustomerClaimedConf = Record_MySQL.Record.generateConfig(
-	Tree.fromFile('../definitions/memo/customer_claimed.json'),
+	Tree.fromFile('../definitions/monolith/customer_claimed.json'),
 	'mysql'
 )
 
 # CustomerCommunication structure and config
 _mdCustomerCommunicationConf = Record_MySQL.Record.generateConfig(
-	Tree.fromFile('../definitions/memo/customer_communication.json'),
+	Tree.fromFile('../definitions/monolith/customer_communication.json'),
 	'mysql'
 )
 
 # CustomerMsgPhone structure and config
 _mdCustomerMsgPhoneConf = Record_MySQL.Record.generateConfig(
-	Tree.fromFile('../definitions/memo/customer_msg_phone.json'),
+	Tree.fromFile('../definitions/monolith/customer_msg_phone.json'),
 	'mysql'
 )
 
 # Forgot structure and config
 _mdForgotConf = Record_MySQL.Record.generateConfig(
-	Tree.fromFile('../definitions/memo/forgot.json'),
+	Tree.fromFile('../definitions/monolith/forgot.json'),
+	'mysql'
+)
+
+# SMSStop structure and config
+_mdSMSStopConf = Record_MySQL.Record.generateConfig(
+	Tree.fromFile('../definitions/monolith/sms_stop.json'),
 	'mysql'
 )
 
 # User structure and config
 _mdUserConf = Record_MySQL.Record.generateConfig(
-	Tree.fromFile('../definitions/memo/user.json'),
+	Tree.fromFile('../definitions/monolith/user.json'),
 	'mysql'
 )
 
@@ -203,6 +211,39 @@ class CustomerMsgPhone(Record_MySQL.Record):
 			}
 		)
 
+	@classmethod
+	def addMessage(cls, customerPhone, date, message, custom={}):
+		"""Add Message
+
+		Adds an outgoing message to the conversation summary
+
+		Arguments:
+			customerPhone {string} -- The number associated with the conversation
+			message {string} -- The message to prepend to the conversation
+			custom {dict} -- Custom Host and DB info
+				'host' the name of the host to get/set data on
+				'append' optional postfix for dynamic DBs
+
+		Returns:
+			None
+		"""
+
+		# Fetch the record structure
+		dStruct = cls.struct(custom)
+
+		# Generate SQL
+		sSQL = sMsgPhoneUpdateSQL % {
+			"db": dStruct['db'],
+			"table": dStruct['table'],
+			"date": date,
+			"message": message,
+			"customerPhone": customerPhone
+		}
+		print(sSQL)
+
+		# Execute the update
+		Record_MySQL.Commands.execute(dStruct['host'], sSQL)
+
 # Forgot class
 class Forgot(Record_MySQL.Record):
 	"""Forgot
@@ -223,11 +264,31 @@ class Forgot(Record_MySQL.Record):
 		"""
 		return _mdForgotConf
 
+# SMSStop class
+class SMSStop(Record_MySQL.Record):
+	"""SMSStop
+
+	Represents a customer phone number that should be blocked
+
+	Extends: RestOC.Record_MySQL.Record
+	"""
+
+	@classmethod
+	def config(cls):
+		"""Config
+
+		Returns the configuration data associated with the record type
+
+		Returns:
+			dict
+		"""
+		return _mdSMSStopConf
+
 # User class
 class User(Record_MySQL.Record):
 	"""User
 
-	Represents a Memo user
+	Represents a Monolith user
 
 	Extends: RestOC.Record_MySQL.Record
 	"""

@@ -16,6 +16,8 @@ from hashlib import md5
 
 # Pip imports
 from RestOC import Conf, DictHelper, Errors, Services, SMTP, StrHelper
+from twilio.rest import Client
+from twilio.base.exceptions import TwilioRestException
 
 class Service(Services.Service):
 	"""Service
@@ -37,6 +39,10 @@ class Service(Services.Service):
 
 		# Key for encrypting messages between communications and queue
 		self._queue_key = None
+
+		# Twilio client
+		self._twilio = None
+		self._smsServices = {}
 
 	def _queueKey(self, data, key=None):
 		"""Queue Key
@@ -238,6 +244,15 @@ class Service(Services.Service):
 		if self.smsMethod not in ['direct']:
 			raise ValueError('Communications.smsMethod', self.smsMethod)
 
+		# Create client
+		self._twilio = Client(
+			Conf.get(('twilio', 'account_sid')),
+			Conf.get(('twilio', 'auth_token'))
+		)
+
+		# Store services
+		self._smsServices = Conf.get(('twilio', 'services'))
+
 	def sms(self, data):
 		"""SMS
 
@@ -252,13 +267,17 @@ class Service(Services.Service):
 		"""
 
 		# Verify fields
-		try: DictHelper.eval(data, ['_internal_', 'to', 'content'])
+		try: DictHelper.eval(data, ['_internal_', 'to', 'content', 'service'])
 		except ValueError as e: return Services.Effect(error=(1001, [(f, 'missing') for f in e.args]))
 
 		# Verify the key, remove it if it's ok
 		if not Services.internalKey(data['_internal_']):
 			return Services.Effect(error=Errors.SERVICE_INTERNAL_KEY)
 		del data['_internal_']
+
+		# If the service is invalid
+		if data['service'] not in self._smsServices:
+			return Services.Effect(error=(1001, [('service', 'invalid')]))
 
 		# If we got a _queue_ value
 		if '_queue_' in data:
@@ -276,10 +295,14 @@ class Service(Services.Service):
 		# If we are sending direct, or we got a valid request from the queue
 		if self.smsMethod == 'direct' or '_queue_' in data:
 
-			#!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-			# Setup twilio here
-			#!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-			pass
+			try:
+				self._twilio.messages.create(
+					to=data['to'],
+					body=data['content'],
+					messaging_service_sid=self._smsServices[data['service']]
+				)
+			except TwilioRestException as e:
+				return Services.Effect(error=(1304, str(e)))
 
 		# Else, we are sending to the queue first
 		else:

@@ -1,7 +1,7 @@
 # coding=utf8
-""" Memo Service
+""" Monolith Service
 
-Handles all Memo requests
+Handles all Monolith requests
 """
 
 __author__		= "Chris Nasr"
@@ -17,27 +17,31 @@ from time import time
 import uuid
 
 # Pip imports
+import arrow
 import bcrypt
 from redis import StrictRedis
 from RestOC import Conf, DictHelper, Errors, Services, \
 					Sesh, StrHelper, Templates
 
+# Shared imports
+from shared import Memo
+
 # Service imports
 from .records import CustomerClaimed, CustomerCommunication, CustomerMsgPhone, \
-						Forgot, User
+						Forgot, SMSStop, User
 
 # Regex for validating email
 _emailRegex = re.compile(r"[^@\s]+@[^@\s]+\.[a-zA-Z0-9]{2,}$")
 
-class Memo(Services.Service):
-	"""Memo Service class
+class Monolith(Services.Service):
+	"""Monolith Service class
 
-	Service for Memoorization, sign in, sign up, etc.
+	Service for Monolith, sign in, sign up, etc.
 
 	Extends: shared.Services.Service
 	"""
 
-	_install = [Forgot]
+	_install = [CustomerClaimed, Forgot]
 	"""Record types called in install"""
 
 	def initialise(self):
@@ -46,7 +50,7 @@ class Memo(Services.Service):
 		Initialises the instance and returns itself for chaining
 
 		Returns:
-			Memo
+			Monolith
 		"""
 
 		# Create a connection to Redis
@@ -147,6 +151,76 @@ class Memo(Services.Service):
 
 		# Update the records hidden field
 		CustomerMsgPhone.updateField('hiddenFlag', 'Y', filter={"customerPhone": data['customerPhone']})
+
+		# Return OK
+		return Services.Effect(True)
+
+	def message_create(self, data, sesh):
+		"""Message
+
+		Sends a message to the customer
+
+		Arguments:
+			data {dict} -- Data sent with the request
+			sesh {Sesh._Session} -- The session associated with the request
+
+		Returns:
+			Services.Effect
+		"""
+
+		# Verify fields
+		try: DictHelper.eval(data, ['customerPhone', 'content', 'type'])
+		except ValueError as e: return Services.Effect(error=(1001, [(f, "missing") for f in e.args]))
+
+		# Check the number isn't blocked
+		if SMSStop.get(filter={"phoneNumber": data['customerPhone'], "service": data['type']}):
+			return Services.Effect(error=1500)
+
+		# Get the user's name
+		dUser = User.get(sesh['user_id'], raw=['firstName', 'lastName'])
+		sName = '%s %s' % (dUser['firstName'], dUser['lastName'])
+
+		# Get current date/time
+		sDT = arrow.get().to('US/Eastern').format('YYYY-MM-DD HH:mm:ss')
+
+		# Validate values by creating an instance
+		try:
+			oCustomerCommunication = CustomerCommunication({
+				"type": "Outgoing",
+				"fromName": sName,
+				"toPhone": data['customerPhone'],
+				"notes": data['content'],
+				"createdAt": sDT,
+				"updatedAt": sDT
+			})
+		except ValueError as e:
+			return Services.Effect(error=(1001, e.args[0]))
+
+		# Send the SMS
+		oEff = Services.create('communications', 'sms', {
+			"_internal_": Services.internalKey(),
+			"to": data['customerPhone'],
+			"content": data['content'],
+			"service": data['type']
+		})
+
+		# If we got an error
+		if oEff.errorExists():
+			return oEff
+
+		# Store the message record
+		oCustomerCommunication.create()
+
+		# Update the conversations
+		CustomerMsgPhone.addMessage(
+			data['customerPhone'],
+			sDT,
+			'\n--------\nSent by %s at %s\n%s\n' % (
+				sName,
+				sDT,
+				data['content']
+			)
+		)
 
 		# Return OK
 		return Services.Effect(True)
@@ -363,7 +437,7 @@ class Memo(Services.Service):
 			return Services.Effect(error=1201)
 
 		# Create a new session
-		oSesh = Sesh.create("memo:" + uuid.uuid4().hex)
+		oSesh = Sesh.create("mono:" + uuid.uuid4().hex)
 
 		# Store the user ID and information in it
 		oSesh['user_id'] = oUser['id']

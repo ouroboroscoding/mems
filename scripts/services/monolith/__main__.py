@@ -1,5 +1,5 @@
 # coding=utf8
-""" Memo Service
+""" Monolith Service
 
 Handles everything in the old memo system
 """
@@ -19,7 +19,7 @@ from RestOC import Conf, Record_Base, Record_MySQL, REST, \
 					Services, Sesh, Templates
 
 # App imports
-from services.memo import Memo
+from services.monolith import Monolith
 
 # Load the config
 Conf.load('../config.json')
@@ -29,7 +29,7 @@ if os.path.isfile(sConfOverride):
 
 # Add the global prepend and primary host to mysql
 Record_Base.dbPrepend(Conf.get(("mysql", "prepend"), ''))
-Record_MySQL.addHost('memo', Conf.get(("mysql", "hosts", "memo")))
+Record_MySQL.addHost('monolith', Conf.get(("mysql", "hosts", "monolith")))
 
 # Init the Sesh module
 Sesh.init(Conf.get(("redis", "primary")))
@@ -43,7 +43,7 @@ if 'VERBOSE' in os.environ and os.environ['VERBOSE'] == '1':
 
 # Get all the services
 dServices = {k:None for k in Conf.get(('rest', 'services'))}
-dServices['memo'] = Memo()
+dServices['monolith'] = Monolith()
 
 # Register all services
 Services.register(dServices, oRestConf, Conf.get(('services', 'salt')))
@@ -65,12 +65,13 @@ REST.Server({
 
 	"/customer/hide": {"methods": REST.UPDATE, "session": True},
 	"/customer/claim": {"methods": REST.CREATE | REST.DELETE, "session": True},
+	"/message": {"methods": REST.CREATE, "session": True},
 	"/msgs/customer": {"methods": REST.READ, "session": True},
 	"/msgs/claimed": {"methods": REST.READ, "session": True},
 	"/msgs/unclaimed": {"methods": REST.READ, "session": True}
 
-}, 'memo', "https?://(.*\\.)?%s" % Conf.get(("rest","allowed")).replace('.', '\\.')).run(
-	host=oRestConf['memo']['host'],
-	port=oRestConf['memo']['port'],
-	workers=oRestConf['memo']['workers']
+}, 'monolith', "https?://(.*\\.)?%s" % Conf.get(("rest","allowed")).replace('.', '\\.')).run(
+	host=oRestConf['monolith']['host'],
+	port=oRestConf['monolith']['port'],
+	workers=oRestConf['monolith']['workers']
 )
