@@ -21,6 +21,12 @@
 		}
 	},
 
+	"konnektive": {
+		"host": "api.konnektive.com",
+		"user": "",
+		"pass": ""
+	},
+
 	"memo": {
 		"host": "https://35.168.130.38/rest/",
 		"user": "memsAPI",
@@ -30,6 +36,11 @@
 	"mysql": {
 		"hosts": {
 			"monolith": {
+				"host": "localhost",
+				"port": 3306,
+				"charset": "utf8mb4"
+			},
+			"monolith_prod": {
 				"host": "localhost",
 				"port": 3306,
 				"charset": "utf8mb4"
@@ -75,6 +86,7 @@
 		"services": {
 			"auth": {"port": 3},
 			"communications": {"port": 4},
+			"konnektive": {"port": 7},
 			"monolith": {"port": 6},
 			"payments": {"port": 5},
 			"webpoll": {"port": 2}

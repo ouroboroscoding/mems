@@ -48,9 +48,27 @@ _mdCustomerMsgPhoneConf = Record_MySQL.Record.generateConfig(
 	'mysql'
 )
 
+# DsPatient structure and config
+_mdDsPatientConf = Record_MySQL.Record.generateConfig(
+	Tree.fromFile('../definitions/monolith/ds_patient.json'),
+	'mysql'
+)
+
 # Forgot structure and config
 _mdForgotConf = Record_MySQL.Record.generateConfig(
 	Tree.fromFile('../definitions/monolith/forgot.json'),
+	'mysql'
+)
+
+# KtCustomer structure and config
+_mdKtCustomerConf = Record_MySQL.Record.generateConfig(
+	Tree.fromFile('../definitions/monolith/kt_customer.json'),
+	'mysql'
+)
+
+# KtOrder structure and config
+_mdKtOrderConf = Record_MySQL.Record.generateConfig(
+	Tree.fromFile('../definitions/monolith/kt_order.json'),
 	'mysql'
 )
 
@@ -70,7 +88,7 @@ _mdUserConf = Record_MySQL.Record.generateConfig(
 class CustomerClaimed(Record_MySQL.Record):
 	"""CustomerClaimed
 
-	Represents a customer conversation that has been claimed
+	Represents a customer conversation that has been claimed by an agent
 
 	Extends: RestOC.Record_MySQL.Record
 	"""
@@ -114,7 +132,7 @@ class CustomerCommunication(Record_MySQL.Record):
 		chronological order
 
 		Arguments:
-			number {string} -- The phone number to look up
+			number {str} -- The phone number to look up
 			custom {dict} -- Custom Host and DB info
 				'host' the name of the host to get/set data on
 				'append' optional postfix for dynamic DBs
@@ -218,8 +236,8 @@ class CustomerMsgPhone(Record_MySQL.Record):
 		Adds an outgoing message to the conversation summary
 
 		Arguments:
-			customerPhone {string} -- The number associated with the conversation
-			message {string} -- The message to prepend to the conversation
+			customerPhone {str} -- The number associated with the conversation
+			message {str} -- The message to prepend to the conversation
 			custom {dict} -- Custom Host and DB info
 				'host' the name of the host to get/set data on
 				'append' optional postfix for dynamic DBs
@@ -243,6 +261,26 @@ class CustomerMsgPhone(Record_MySQL.Record):
 
 		# Execute the update
 		Record_MySQL.Commands.execute(dStruct['host'], sSQL)
+
+# DsPatient class
+class DsPatient(Record_MySQL.Record):
+	"""DsPatient
+
+	Represents a customer in DoseSpot
+
+	Extends: RestOC.Record_MySQL.Record
+	"""
+
+	@classmethod
+	def config(cls):
+		"""Config
+
+		Returns the configuration data associated with the record type
+
+		Returns:
+			dict
+		"""
+		return _mdDsPatientConf
 
 # Forgot class
 class Forgot(Record_MySQL.Record):
@@ -284,11 +322,51 @@ class SMSStop(Record_MySQL.Record):
 		"""
 		return _mdSMSStopConf
 
+# KtCustomer class
+class KtCustomer(Record_MySQL.Record):
+	"""KtCustomer
+
+	Represents a customer in konnektive
+
+	Extends: RestOC.Record_MySQL.Record
+	"""
+
+	@classmethod
+	def config(cls):
+		"""Config
+
+		Returns the configuration data associated with the record type
+
+		Returns:
+			dict
+		"""
+		return _mdKtCustomerConf
+
+# KtOrder class
+class KtOrder(Record_MySQL.Record):
+	"""KtOrder
+
+	Represents a customer's order in konnektive
+
+	Extends: RestOC.Record_MySQL.Record
+	"""
+
+	@classmethod
+	def config(cls):
+		"""Config
+
+		Returns the configuration data associated with the record type
+
+		Returns:
+			dict
+		"""
+		return _mdKtOrderConf
+
 # User class
 class User(Record_MySQL.Record):
 	"""User
 
-	Represents a Monolith user
+	Represents a Memo user
 
 	Extends: RestOC.Record_MySQL.Record
 	"""

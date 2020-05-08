@@ -23,12 +23,9 @@ from redis import StrictRedis
 from RestOC import Conf, DictHelper, Errors, Services, \
 					Sesh, StrHelper, Templates
 
-# Shared imports
-from shared import Memo
-
 # Service imports
 from .records import CustomerClaimed, CustomerCommunication, CustomerMsgPhone, \
-						Forgot, SMSStop, User
+						DsPatient, Forgot, KtCustomer, KtOrder, SMSStop, User
 
 # Regex for validating email
 _emailRegex = re.compile(r"[^@\s]+@[^@\s]+\.[a-zA-Z0-9]{2,}$")
@@ -59,6 +56,9 @@ class Monolith(Services.Service):
 			"port": 6379,
 			"db": 0
 		}))
+
+		# Return self for chaining
+		return self
 
 	@classmethod
 	def install(cls):
@@ -155,6 +155,28 @@ class Monolith(Services.Service):
 		# Return OK
 		return Services.Effect(True)
 
+	def customerMessages_read(self, data, sesh):
+		"""Customer Messages
+
+		Fetches all messages associated with a customer (phone number)
+
+		Arguments:
+			data {dict} -- Data sent with the request
+			sesh {Sesh._Session} -- The session associated with the request
+
+		Returns:
+			Services.Effect
+		"""
+
+		# Verify fields
+		try: DictHelper.eval(data, ['customerPhone'])
+		except ValueError as e: return Services.Effect(error=(1001, [(f, "missing") for f in e.args]))
+
+		# Fetch and return all the messages associated with the number
+		return Services.Effect(
+			CustomerCommunication.thread(data['customerPhone'])
+		)
+
 	def message_create(self, data, sesh):
 		"""Message
 
@@ -242,28 +264,6 @@ class Monolith(Services.Service):
 		# Fetch and return the data
 		return Services.Effect(
 			CustomerMsgPhone.claimed(sesh['user_id'])
-		)
-
-	def msgsCustomer_read(self, data, sesh):
-		"""Messages: Customer
-
-		Fetches all messages associated with a customer (phone number)
-
-		Arguments:
-			data {dict} -- Data sent with the request
-			sesh {Sesh._Session} -- The session associated with the request
-
-		Returns:
-			Services.Effect
-		"""
-
-		# Verify fields
-		try: DictHelper.eval(data, ['phoneNumber'])
-		except ValueError as e: return Services.Effect(error=(1001, [(f, "missing") for f in e.args]))
-
-		# Fetch and return all the messages associated with the number
-		return Services.Effect(
-			CustomerCommunication.thread(data['phoneNumber'])
 		)
 
 	def msgsUnclaimed_read(self, data, sesh):

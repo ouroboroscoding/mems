@@ -30,6 +30,7 @@ if os.path.isfile(sConfOverride):
 # Add the global prepend and primary host to mysql
 Record_Base.dbPrepend(Conf.get(("mysql", "prepend"), ''))
 Record_MySQL.addHost('monolith', Conf.get(("mysql", "hosts", "monolith")))
+Record_MySQL.addHost('monolith_prod', Conf.get(("mysql", "hosts", "monolith_prod")))
 
 # Init the Sesh module
 Sesh.init(Conf.get(("redis", "primary")))
@@ -63,10 +64,11 @@ REST.Server({
 	"/user": {"methods": REST.READ | REST.UPDATE, "session": True},
 	"/user/passwd": {"methods": REST.UPDATE, "session": True},
 
-	"/customer/hide": {"methods": REST.UPDATE, "session": True},
 	"/customer/claim": {"methods": REST.CREATE | REST.DELETE, "session": True},
+	"/customer/hide": {"methods": REST.UPDATE, "session": True},
+	"/customer/messages": {"methods": REST.READ, "session": True},
+
 	"/message": {"methods": REST.CREATE, "session": True},
-	"/msgs/customer": {"methods": REST.READ, "session": True},
 	"/msgs/claimed": {"methods": REST.READ, "session": True},
 	"/msgs/unclaimed": {"methods": REST.READ, "session": True}
 

@@ -28,7 +28,6 @@ LEFT JOIN (
     GROUP BY `cmp1`.`id`
 ) `ktot` ON `ktot`.`id` = `cmp`.`id`
 LEFT JOIN `%(db)s`.`customer_claimed` as `cc` ON `cc`.`phoneNumber` = `cmp`.`customerPhone`
-WHERE `numberOfOrders` > 0
-AND `hiddenFlag` = 'N'
+WHERE `hiddenFlag` = 'N'
 AND `lastMsgDir` = 'Incoming'
 AND `cc`.`user` IS NULL
