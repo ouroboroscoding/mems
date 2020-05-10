@@ -248,37 +248,45 @@ class Konnektive(Services.Service):
 			"sortDir": 0
 		});
 
+		print(lOrders)
+
 		# Return what ever's found after removing unnecessary data
 		return Services.Effect([{
 			"billing": {
-				"address1": d['address1'],
-				"address2": d['address2'],
-				"city": d['city'],
-				"company": d['companyName'],
-				"country": d['country'],
-				"name": d['firstName'] + ' ' + d['lastName'],
-				"postalCode": d['postalCode'],
-				"state": d['state']
+				"address1": dO['address1'],
+				"address2": dO['address2'],
+				"city": dO['city'],
+				"company": dO['companyName'],
+				"country": dO['country'],
+				"name": dO['firstName'] + ' ' + dO['lastName'],
+				"postalCode": dO['postalCode'],
+				"state": dO['state']
 			},
-			"campaign": d['campaignName'],
-			"couponCode": d['couponCode'],
-			"date": d['dateUpdated'],
-			"email": d['emailAddress'],
-			"encounter": self._encounters[d['state']],
-			"id": d['orderId'],
-			"phone": d['phoneNumber'],
-			"price": d['price'],
+			"campaign": dO['campaignName'],
+			"couponCode": dO['couponCode'],
+			"date": dO['dateUpdated'],
+			"email": dO['emailAddress'],
+			"encounter": self._encounters[dO['state']],
+			"id": dO['orderId'],
+			"items": 'items' in dO and [{
+				"campaign": dI['name'],
+				"description": dI['productDescription'],
+				"price": dI['price'],
+				"shipping": dI['shipping']
+			} for dI in dO['items'].values()] or [],
+			"phone": dO['phoneNumber'],
+			"price": dO['price'],
 			"shipping": {
-				"address1": d['shipAddress1'],
-				"address2": d['shipAddress2'],
-				"city": d['shipCity'],
-				"company": d['shipCompanyName'],
-				"country": d['shipCountry'],
-				"name": d['shipFirstName'] + ' ' + d['shipLastName'],
-				"postalCode": d['shipPostalCode'],
-				"state": d['shipState']
+				"address1": dO['shipAddress1'],
+				"address2": dO['shipAddress2'],
+				"city": dO['shipCity'],
+				"company": dO['shipCompanyName'],
+				"country": dO['shipCountry'],
+				"name": dO['shipFirstName'] + ' ' + dO['shipLastName'],
+				"postalCode": dO['shipPostalCode'],
+				"state": dO['shipState']
 			},
-			"status": d['orderStatus'],
-			"type": d['orderType'],
-			"totalAmount": d['totalAmount']
-		} for d in lOrders])
+			"status": dO['orderStatus'],
+			"type": dO['orderType'],
+			"totalAmount": dO['totalAmount']
+		} for dO in lOrders])

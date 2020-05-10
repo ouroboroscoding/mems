@@ -25,10 +25,14 @@ with open('./services/monolith/sql/unclaimed.sql') as oF:
 	sUnclaimedSQL = oF.read()
 with open('./services/monolith/sql/claimed.sql') as oF:
 	sClaimedSQL = oF.read()
+with open('./services/monolith/sql/claimed_new.sql') as oF:
+	sClaimedNewSQL = oF.read()
 with open('./services/monolith/sql/conversation.sql') as oF:
 	sConversationSQL = oF.read()
 with open('./services/monolith/sql/msg_phone_update.sql') as oF:
 	sMsgPhoneUpdateSQL = oF.read()
+with open('./services/monolith/sql/landing.sql') as oF:
+	sLandingSQL = oF.read()
 
 # CustomerClaimed structure and config
 _mdCustomerClaimedConf = Record_MySQL.Record.generateConfig(
@@ -78,6 +82,30 @@ _mdSMSStopConf = Record_MySQL.Record.generateConfig(
 	'mysql'
 )
 
+# TfAnswer structure and config
+_mdTfAnswerConf = Record_MySQL.Record.generateConfig(
+	Tree.fromFile('../definitions/monolith/tf_answer.json'),
+	'mysql'
+)
+
+# TfLanding structure and config
+_mdTfLandingConf = Record_MySQL.Record.generateConfig(
+	Tree.fromFile('../definitions/monolith/tf_landing.json'),
+	'mysql'
+)
+
+# TfQuestion structure and config
+_mdTfQuestionConf = Record_MySQL.Record.generateConfig(
+	Tree.fromFile('../definitions/monolith/tf_question.json'),
+	'mysql'
+)
+
+# TfQuestionOption structure and config
+_mdTfQuestionOptionConf = Record_MySQL.Record.generateConfig(
+	Tree.fromFile('../definitions/monolith/tf_question_option.json'),
+	'mysql'
+)
+
 # User structure and config
 _mdUserConf = Record_MySQL.Record.generateConfig(
 	Tree.fromFile('../definitions/monolith/user.json'),
@@ -123,6 +151,57 @@ class CustomerCommunication(Record_MySQL.Record):
 			dict
 		"""
 		return _mdCustomerCommunicationConf
+
+	@classmethod
+	def newMessages(cls, numbers, ts, custom={}):
+		"""New Messages
+
+		Checks for new messages from the given numbers
+
+		Arguments:
+			numbers {str[]} -- List of phone numbers to check
+			ts {uint} -- Timestamp indicating last check
+			custom {dict} -- Custom Host and DB info
+				'host' the name of the host to get/set data on
+				'append' optional postfix for dynamic DBs
+
+		Returns:
+			dict
+		"""
+
+		# Init the return
+		dRet = {}
+
+		# Fetch the record structure
+		dStruct = cls.struct(custom)
+
+		# Generate the list of numbers
+		lNumbers = []
+		for s in numbers:
+			lNumbers.extend([s, '1%s' % s])
+
+		# Generate SQL
+		sSQL = sClaimedNewSQL % {
+			"db": dStruct['db'],
+			"table": dStruct['table'],
+			"ts": ts,
+			"numbers": "'%s'" % "','".join(lNumbers)
+		}
+
+		# Fetch the data
+		lRecords = Record_MySQL.Commands.select(dStruct['host'], sSQL)
+
+		# Go through each record
+		for d in lRecords:
+			if d['type'] == 'Incoming':
+				if d['fromPhone'] in dRet: dRet[d['fromPhone']] += 1
+				else: dRet[d['fromPhone']] = 1
+			elif d['type'] == 'Outgoing':
+				if d['toPhone'] in dRet: dRet[d['toPhone']] += 1
+				else: dRet[d['toPhone']] = 1
+
+		# Return
+		return dRet
 
 	@classmethod
 	def thread(cls, number, custom={}):
@@ -257,7 +336,6 @@ class CustomerMsgPhone(Record_MySQL.Record):
 			"message": message,
 			"customerPhone": customerPhone
 		}
-		print(sSQL)
 
 		# Execute the update
 		Record_MySQL.Commands.execute(dStruct['host'], sSQL)
@@ -302,26 +380,6 @@ class Forgot(Record_MySQL.Record):
 		"""
 		return _mdForgotConf
 
-# SMSStop class
-class SMSStop(Record_MySQL.Record):
-	"""SMSStop
-
-	Represents a customer phone number that should be blocked
-
-	Extends: RestOC.Record_MySQL.Record
-	"""
-
-	@classmethod
-	def config(cls):
-		"""Config
-
-		Returns the configuration data associated with the record type
-
-		Returns:
-			dict
-		"""
-		return _mdSMSStopConf
-
 # KtCustomer class
 class KtCustomer(Record_MySQL.Record):
 	"""KtCustomer
@@ -361,6 +419,143 @@ class KtOrder(Record_MySQL.Record):
 			dict
 		"""
 		return _mdKtOrderConf
+
+# SMSStop class
+class SMSStop(Record_MySQL.Record):
+	"""SMSStop
+
+	Represents a customer phone number that should be blocked
+
+	Extends: RestOC.Record_MySQL.Record
+	"""
+
+	@classmethod
+	def config(cls):
+		"""Config
+
+		Returns the configuration data associated with the record type
+
+		Returns:
+			dict
+		"""
+		return _mdSMSStopConf
+
+# TfAnswer class
+class TfAnswer(Record_MySQL.Record):
+	"""TfAnswer
+
+	Represents a customer phone number that should be blocked
+
+	Extends: RestOC.Record_MySQL.Record
+	"""
+
+	@classmethod
+	def config(cls):
+		"""Config
+
+		Returns the configuration data associated with the record type
+
+		Returns:
+			dict
+		"""
+		return _mdTfAnswerConf
+
+# TfLanding class
+class TfLanding(Record_MySQL.Record):
+	"""TfLanding
+
+	Represents a customer phone number that should be blocked
+
+	Extends: RestOC.Record_MySQL.Record
+	"""
+
+	@classmethod
+	def config(cls):
+		"""Config
+
+		Returns the configuration data associated with the record type
+
+		Returns:
+			dict
+		"""
+		return _mdTfLandingConf
+
+	@classmethod
+	def find(cls, last_name, email, phone, custom={}):
+		"""Find
+
+		Attempts to find a landing using customer info
+
+		Arguments:
+			last_name {str} -- The last name of the customer
+			email {str} -- The email of the customer
+			phone {str} -- The phone number of the customer
+			custom {dict} -- Custom Host and DB info
+				'host' the name of the host to get/set data on
+				'append' optional postfix for dynamic DBs
+
+		Returns:
+			dict
+		"""
+
+		# Fetch the record structure
+		dStruct = cls.struct(custom)
+
+		# Generate SQL
+		sSQL = sLandingSQL % {
+			"db": dStruct['db'],
+			"table": dStruct['table'],
+			"lastName": last_name,
+			"email": email,
+			"phone": phone
+		}
+
+		# Execute and return the select
+		return Record_MySQL.Commands.select(
+			dStruct['host'],
+			sSQL,
+			Record_MySQL.ESelect.ROW
+		)
+
+# TfQuestion class
+class TfQuestion(Record_MySQL.Record):
+	"""TfQuestion
+
+	Represents a customer phone number that should be blocked
+
+	Extends: RestOC.Record_MySQL.Record
+	"""
+
+	@classmethod
+	def config(cls):
+		"""Config
+
+		Returns the configuration data associated with the record type
+
+		Returns:
+			dict
+		"""
+		return _mdTfQuestionConf
+
+# TfQuestionOption class
+class TfQuestionOption(Record_MySQL.Record):
+	"""TfQuestionOption
+
+	Represents a customer phone number that should be blocked
+
+	Extends: RestOC.Record_MySQL.Record
+	"""
+
+	@classmethod
+	def config(cls):
+		"""Config
+
+		Returns the configuration data associated with the record type
+
+		Returns:
+			dict
+		"""
+		return _mdTfQuestionOptionConf
 
 # User class
 class User(Record_MySQL.Record):

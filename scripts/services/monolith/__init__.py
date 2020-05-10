@@ -25,10 +25,14 @@ from RestOC import Conf, DictHelper, Errors, Services, \
 
 # Service imports
 from .records import CustomerClaimed, CustomerCommunication, CustomerMsgPhone, \
-						DsPatient, Forgot, KtCustomer, KtOrder, SMSStop, User
+						DsPatient, Forgot, KtCustomer, KtOrder, SMSStop, \
+						TfAnswer, TfLanding, TfQuestion, User
 
 # Regex for validating email
 _emailRegex = re.compile(r"[^@\s]+@[^@\s]+\.[a-zA-Z0-9]{2,}$")
+
+# mip forms
+_mipForms = ['MIP-H1', 'MIP-A2', 'MIP-A1']
 
 class Monolith(Services.Service):
 	"""Monolith Service class
@@ -177,6 +181,72 @@ class Monolith(Services.Service):
 			CustomerCommunication.thread(data['customerPhone'])
 		)
 
+	def customerMip_read(self, data, sesh):
+		"""Customer MIP
+
+		Fetches the medical intake path questions/answers associated with a
+		customer
+
+		Arguments:
+			data {dict} -- Data sent with the request
+			sesh {Sesh._Session} -- The session associated with the request
+
+		Returns:
+			Services.Effect
+		"""
+
+		# Verify fields
+		try: DictHelper.eval(data, ['customerPhone'])
+		except ValueError as e: return Services.Effect(error=(1001, [(f, "missing") for f in e.args]))
+
+		# Attempt to find the customer by phone number
+		dCustomer = KtCustomer.filter(
+			{"phoneNumber": [data['customerPhone'], '1%s' % data['customerPhone']]},
+			raw=['lastName', 'emailAddress'],
+			orderby=[('dateUpdated', 'DESC')],
+			limit=1
+		)
+
+		# Try to find the landing
+		dLanding = TfLanding.find(
+			dCustomer['lastName'],
+			dCustomer['emailAddress'],
+			data['customerPhone']
+		)
+
+		# Init return
+		dRet = {
+			"landing_id": dLanding['landing_id'],
+		}
+
+		# Get the questions associated with the landing form
+		dRet['questions'] = TfQuestion.filter(
+			{"formId": dLanding['formId'], "activeFlag": 'Y'},
+			raw=['questionId', 'title', 'type'],
+			orderby='questionNumber'
+		)
+
+		# Fetch the answers
+		dAnswers = {
+			d['questionId']: d['value']
+			for d in TfAnswer.filter(
+				{"landing_id": dLanding['landing_id']},
+				raw=['questionId', 'value']
+			)
+		}
+
+		# Match the answer to the questions
+		for d in dRet['questions']:
+			d['answer'] = d['questionId'] in dAnswers and \
+							(d['type'] == 'yes_no' and \
+								(dAnswers[d['questionId']] and 'Yes' or 'No') or \
+								dAnswers[d['questionId']]
+							) or \
+							''
+
+		# Return what we found
+		return Services.Effect(dRet)
+
 	def message_create(self, data, sesh):
 		"""Message
 
@@ -261,9 +331,46 @@ class Monolith(Services.Service):
 			Services.Effect
 		"""
 
+		# Store the current time in the session
+		sesh['claimed_last'] = time();
+		sesh.save()
+
 		# Fetch and return the data
 		return Services.Effect(
 			CustomerMsgPhone.claimed(sesh['user_id'])
+		)
+
+	def msgsClaimedNew_read(self, data, sesh):
+		"""Messages Claimed New
+
+		Checks if there's any new messages in the given conversations
+
+		Arguments:
+			data {dict} -- Data sent with the request
+			sesh {Sesh._Session} -- The session associated with the request
+
+		Returns:
+			Services.Effect
+		"""
+
+		# Verify fields
+		try: DictHelper.eval(data, ['numbers'])
+		except ValueError as e: return Services.Effect(error=(1001, [(f, "missing") for f in e.args]))
+
+		# If it's not a list
+		if not isinstance(data['numbers'], (list,tuple)):
+			return Services.Effect(error=(1001, [('numbers', 'invalid')]))
+
+		# Fetch the last claimed time
+		iTS = sesh['claimed_last']
+
+		# Store the new time
+		sesh['claimed_last'] = time();
+		sesh.save()
+
+		# Fetch and return the list of numbers with new messages
+		return Services.Effect(
+			CustomerCommunication.newMessages(data['numbers'], iTS)
 		)
 
 	def msgsUnclaimed_read(self, data, sesh):

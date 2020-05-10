@@ -67,9 +67,11 @@ REST.Server({
 	"/customer/claim": {"methods": REST.CREATE | REST.DELETE, "session": True},
 	"/customer/hide": {"methods": REST.UPDATE, "session": True},
 	"/customer/messages": {"methods": REST.READ, "session": True},
+	"/customer/mip": {"methods": REST.READ, "session": True},
 
 	"/message": {"methods": REST.CREATE, "session": True},
 	"/msgs/claimed": {"methods": REST.READ, "session": True},
+	"/msgs/claimed/new": {"methods": REST.READ, "session": True},
 	"/msgs/unclaimed": {"methods": REST.READ, "session": True}
 
 }, 'monolith', "https?://(.*\\.)?%s" % Conf.get(("rest","allowed")).replace('.', '\\.')).run(
