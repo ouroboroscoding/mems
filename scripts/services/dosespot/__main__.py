@@ -1,7 +1,7 @@
 # coding=utf8
-""" Konnektive Service
+""" Dosespot Service
 
-Handles interactions with Konnektive
+Handles interactions with Dosespot
 """
 
 __author__		= "Chris Nasr"
@@ -9,7 +9,7 @@ __copyright__	= "MaleExcelMedical"
 __version__		= "1.0.0"
 __maintainer__	= "Chris Nasr"
 __email__		= "bast@maleexcel.com"
-__created__		= "2020-05-09"
+__created__		= "2020-05-10"
 
 # Python imports
 import os, platform
@@ -18,7 +18,7 @@ import os, platform
 from RestOC import Conf, REST, Services, Sesh, Templates
 
 # App imports
-from services.konnektive import Konnektive
+from services.dosespot import Dosespot
 
 # Load the config
 Conf.load('../config.json')
@@ -37,7 +37,7 @@ if 'VERBOSE' in os.environ and os.environ['VERBOSE'] == '1':
 	Services.verbose()
 
 # Get all the services
-dServices = {"konnektive": Konnektive()}
+dServices = {"dosespot": Dosespot()}
 
 # Register all services
 Services.register(dServices, oRestConf, Conf.get(('services', 'salt')))
@@ -47,11 +47,10 @@ Templates.init('../templates')
 
 # Create the HTTP server and map requests to service
 REST.Server({
-	"/customer": {"methods": REST.READ, "session": True},
-	"/customer/orders": {"methods": REST.READ, "session": True}
+	"/patient/prescriptions": {"methods": REST.READ}
 
-}, 'konnektive', "https?://(.*\\.)?%s" % Conf.get(("rest","allowed")).replace('.', '\\.')).run(
-	host=oRestConf['konnektive']['host'],
-	port=oRestConf['konnektive']['port'],
-	workers=oRestConf['konnektive']['workers']
+}, 'dosespot', "https?://(.*\\.)?%s" % Conf.get(("rest","allowed")).replace('.', '\\.')).run(
+	host=oRestConf['dosespot']['host'],
+	port=oRestConf['dosespot']['port'],
+	workers=oRestConf['dosespot']['workers']
 )

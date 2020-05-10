@@ -8,6 +8,13 @@
 		"protocol": "http"
 	},
 
+	"dosespot": {
+		"host": "my.dosespot.com/webapi",
+		"clinic_id": null,
+		"clinic_key": null,
+		"clinician_id": null
+	},
+
 	"email": {
 		"errors": "webmaster@localhost",
 		"from": "noreply@localhost",
@@ -86,6 +93,7 @@
 		"services": {
 			"auth": {"port": 3},
 			"communications": {"port": 4},
+			"dosespot": {"port": 8},
 			"konnektive": {"port": 7},
 			"monolith": {"port": 6},
 			"payments": {"port": 5},

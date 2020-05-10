@@ -136,6 +136,69 @@ class Monolith(Services.Service):
 		# Return OK
 		return Services.Effect(True)
 
+	def customerDsid_read(self, data, sesh):
+		"""Customer DoseSpot ID
+
+		Returns the ID of the DoseSpote patient based on their customer ID
+
+		Arguments:
+			data {dict} -- Data sent with the request
+			sesh {Sesh._Session} -- The session associated with the request
+
+		Returns:
+			Services.Effect
+		"""
+
+		# Verify fields
+		try: DictHelper.eval(data, ['customerId'])
+		except ValueError as e: return Services.Effect(error=(1001, [(f, "missing") for f in e.args]))
+
+		# Find the patient ID
+		dPatient = DsPatient.filter(
+			{"customerId": data['customerId']},
+			raw=['patientId'],
+			limit=1
+		)
+
+		# If there's no patient
+		if not dPatient:
+			return Services.Effect(0)
+
+		# Return the ID
+		return Services.Effect(dPatient['patientId'])
+
+	def customerIdByPhone_read(self, data, sesh):
+		"""Customer Hide
+
+		Marks a customer conversation as hidden
+
+		Arguments:
+			data {dict} -- Data sent with the request
+			sesh {Sesh._Session} -- The session associated with the request
+
+		Returns:
+			Services.Effect
+		"""
+
+		# Verify fields
+		try: DictHelper.eval(data, ['phoneNumber'])
+		except ValueError as e: return Services.Effect(error=(1001, [(f, "missing") for f in e.args]))
+
+		# Look for the latest customer with the given number
+		dCustomer = KtCustomer.filter(
+			{"phoneNumber": [data['phoneNumber'], '1%s' % data['phoneNumber']]},
+			raw=['customerId'],
+			orderby=[('updatedAt', 'DESC')],
+			limit=1
+		)
+
+		# If there's no customer
+		if not dCustomer:
+			return Services.Effect(0)
+
+		# Return the ID
+		return Services.Effect(dCustomer['customerId'])
+
 	def customerHide_update(self, data, sesh):
 		"""Customer Hide
 
@@ -196,13 +259,13 @@ class Monolith(Services.Service):
 		"""
 
 		# Verify fields
-		try: DictHelper.eval(data, ['customerPhone'])
+		try: DictHelper.eval(data, ['id'])
 		except ValueError as e: return Services.Effect(error=(1001, [(f, "missing") for f in e.args]))
 
 		# Attempt to find the customer by phone number
 		dCustomer = KtCustomer.filter(
-			{"phoneNumber": [data['customerPhone'], '1%s' % data['customerPhone']]},
-			raw=['lastName', 'emailAddress'],
+			{"customerId": data['id']},
+			raw=['lastName', 'emailAddress', 'phoneNumber'],
 			orderby=[('dateUpdated', 'DESC')],
 			limit=1
 		)
@@ -211,8 +274,12 @@ class Monolith(Services.Service):
 		dLanding = TfLanding.find(
 			dCustomer['lastName'],
 			dCustomer['emailAddress'],
-			data['customerPhone']
+			dCustomer['phoneNumber']
 		)
+
+		# If there's no mip
+		if not dLanding:
+			return Services.Effect(0)
 
 		# Init return
 		dRet = {

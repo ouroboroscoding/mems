@@ -65,7 +65,9 @@ REST.Server({
 	"/user/passwd": {"methods": REST.UPDATE, "session": True},
 
 	"/customer/claim": {"methods": REST.CREATE | REST.DELETE, "session": True},
+	"/customer/dsid": {"methods": REST.READ, "session": True},
 	"/customer/hide": {"methods": REST.UPDATE, "session": True},
+	"/customer/id/byPhone": {"methods": REST.READ, "session": True},
 	"/customer/messages": {"methods": REST.READ, "session": True},
 	"/customer/mip": {"methods": REST.READ, "session": True},
 

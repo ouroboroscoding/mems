@@ -12,7 +12,6 @@ __email__		= "chris@fuelforthefire.ca"
 __created__		= "2020-05-09"
 
 # Python imports
-import json
 import math
 import urllib.parse
 
@@ -88,7 +87,7 @@ class Konnektive(Services.Service):
 			oRes = requests.post(sURL, headers={"Content-Type": 'application/json; charset=utf-8'})
 
 			# Pull out the data
-			dData = json.loads(oRes.text)
+			dData = oRes.json()
 
 			# If we don't get success
 			if dData['result'] != 'SUCCESS':
@@ -159,29 +158,10 @@ class Konnektive(Services.Service):
 		try: DictHelper.eval(data, ['id'])
 		except ValueError as e: return Services.Effect(error=(1001, [(f, "missing") for f in e.args]))
 
-		pass
-
-	def customerByPhone_read(self, data, sesh):
-		"""Customer By Phone
-
-		Fetches a customer ID by their phone number
-
-		Arguments:
-			data {dict} -- Data sent with the request
-			sesh {Sesh._Session} -- The session associated with the request
-
-		Returns:
-			Services.Effect
-		"""
-
-		# Verify fields
-		try: DictHelper.eval(data, ['phoneNumber'])
-		except ValueError as e: return Services.Effect(error=(1001, [(f, "missing") for f in e.args]))
-
 		# Make the request to Konnektive
 		lCustomers = self.__request('customer/query', {
 			"dateRangeType": "dateUpdated",
-			"phoneNumber": data['phoneNumber'],
+			"customerId": data['id'],
 			"startDate": "01/01/2019",
 			"endDate": "01/01/3000"
 		});
