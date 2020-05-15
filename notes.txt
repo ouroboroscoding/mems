@@ -1,0 +1,31 @@
+python -m tools.fake_msg 5148026900 2564884325 "Hello ME" support
+
+python -m tools.fake_msg 5148026900 2564884325 "My name is Arthur Morgan" support
+
+python -m tools.fake_msg 5148026900 2564884325 "Fetch me a whiskey" support
+
+
+- JustCall
+	- Add a way to call out
+
+- Filter
+	- Sales vs Support
+		- Sales: some outgoing vs no outgoing
+
+- Prepopulate SMS templates
+
+- Add email functionality
+	- Dropdown - company
+		- Dropdown - templates
+
+- Show customers who have unsubscribed/blocked/whatever
+	- take over stop/start system from twilio
+
+
+
+!!! DEBUG THIS !!!
+Notification doesn't always work
+
+
+- Done
+	- Fix name in summary

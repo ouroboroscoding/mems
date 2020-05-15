@@ -1,11 +1,9 @@
 SELECT
-	`fromPhone`,
-	`toPhone`,
-	`type`
+	`fromPhone`, count(`fromPhone`) as `count`
 FROM
 	`%(db)s`.`%(table)s`
 WHERE
-	`createdAt` > FROM_UNIXTIME(%(ts)d) AND (
-		`fromPhone` IN (%(numbers)s) OR
-		`toPhone` IN (%(numbers)s)
-	)
+	`createdAt` > FROM_UNIXTIME(%(ts)d) AND
+	`fromPhone` IN (%(numbers)s)
+GROUP BY
+	`fromPhone`

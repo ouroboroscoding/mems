@@ -188,20 +188,13 @@ class CustomerCommunication(Record_MySQL.Record):
 			"numbers": "'%s'" % "','".join(lNumbers)
 		}
 
+		print(sSQL)
+
 		# Fetch the data
 		lRecords = Record_MySQL.Commands.select(dStruct['host'], sSQL)
 
-		# Go through each record
-		for d in lRecords:
-			if d['type'] == 'Incoming':
-				if d['fromPhone'] in dRet: dRet[d['fromPhone']] += 1
-				else: dRet[d['fromPhone']] = 1
-			elif d['type'] == 'Outgoing':
-				if d['toPhone'] in dRet: dRet[d['toPhone']] += 1
-				else: dRet[d['toPhone']] = 1
-
 		# Return
-		return dRet
+		return {d['fromPhone']:d['count'] for d in lRecords}
 
 	@classmethod
 	def thread(cls, number, custom={}):
@@ -309,8 +302,43 @@ class CustomerMsgPhone(Record_MySQL.Record):
 		)
 
 	@classmethod
-	def addMessage(cls, customerPhone, date, message, custom={}):
-		"""Add Message
+	def addIncoming(cls, customerPhone, date, message, custom={}):
+		"""Add Incoming
+
+		Adds an incoming message to the conversation summary
+
+		Arguments:
+			customerPhone {str} -- The number associated with the conversation
+			message {str} -- The message to prepend to the conversation
+			custom {dict} -- Custom Host and DB info
+				'host' the name of the host to get/set data on
+				'append' optional postfix for dynamic DBs
+
+		Returns:
+			None
+		"""
+
+		# Fetch the record structure
+		dStruct = cls.struct(custom)
+
+		# Generate SQL
+		sSQL = sMsgPhoneUpdateSQL % {
+			"db": dStruct['db'],
+			"table": dStruct['table'],
+			"date": date,
+			"direction": 'Incoming',
+			"message": message,
+			"customerPhone": customerPhone,
+			"hidden": 'N',
+			"increment": 'totalIncoming'
+		}
+
+		# Execute the update
+		Record_MySQL.Commands.execute(dStruct['host'], sSQL)
+
+	@classmethod
+	def addOutgoing(cls, customerPhone, date, message, custom={}):
+		"""Add Outgoing
 
 		Adds an outgoing message to the conversation summary
 
@@ -333,8 +361,11 @@ class CustomerMsgPhone(Record_MySQL.Record):
 			"db": dStruct['db'],
 			"table": dStruct['table'],
 			"date": date,
+			"direction": 'Outgoing',
 			"message": message,
-			"customerPhone": customerPhone
+			"customerPhone": customerPhone,
+			"hidden": 'Y',
+			"increment": 'totalOutGoing'
 		}
 
 		# Execute the update

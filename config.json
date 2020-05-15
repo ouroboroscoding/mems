@@ -56,7 +56,7 @@
 				"host": "localhost",
 				"port": 3306
 			},
-			"payments": {
+			"payment": {
 				"host": "localhost",
 				"port": 3306
 			}
@@ -70,6 +70,12 @@
 		"spreedly": {
 			"key": null
 		}
+	},
+
+	"rocketgate": {
+		"merchant_id": null,
+		"merchant_pass": null,
+		"test_mode": true
 	},
 
 	"redis": {
@@ -96,7 +102,7 @@
 			"dosespot": {"port": 8},
 			"konnektive": {"port": 7},
 			"monolith": {"port": 6},
-			"payments": {"port": 5},
+			"payment": {"port": 5},
 			"webpoll": {"port": 2}
 		}
 	},

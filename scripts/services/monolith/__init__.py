@@ -289,33 +289,100 @@ class Monolith(Services.Service):
 		# Get the questions associated with the landing form
 		dRet['questions'] = TfQuestion.filter(
 			{"formId": dLanding['formId'], "activeFlag": 'Y'},
-			raw=['questionId', 'title', 'type'],
+			raw=['ref', 'title', 'type'],
 			orderby='questionNumber'
 		)
 
 		# Fetch the answers
 		dAnswers = {
-			d['questionId']: d['value']
+			d['ref']: d['value']
 			for d in TfAnswer.filter(
 				{"landing_id": dLanding['landing_id']},
-				raw=['questionId', 'value']
+				raw=['ref', 'value']
 			)
 		}
 
 		# Match the answer to the questions
 		for d in dRet['questions']:
-			d['answer'] = d['questionId'] in dAnswers and \
+			d['answer'] = d['ref'] in dAnswers and \
 							(d['type'] == 'yes_no' and \
-								(dAnswers[d['questionId']] and 'Yes' or 'No') or \
-								dAnswers[d['questionId']]
+								(dAnswers[d['ref']] and 'Yes' or 'No') or \
+								dAnswers[d['ref']]
 							) or \
 							''
 
 		# Return what we found
 		return Services.Effect(dRet)
 
-	def message_create(self, data, sesh):
-		"""Message
+	def messageIncoming_create(self, data):
+		"""Message Incoming
+
+		Adds a new message from a customer
+
+		Arguments:
+			data {dict} -- Data sent with the request
+
+		Returns:
+			Services.Effect
+		"""
+
+		# Verify fields
+		try: DictHelper.eval(data, ['_internal_', 'customerPhone', 'recvPhone', 'content', 'type'])
+		except ValueError as e: return Services.Effect(error=(1001, [(f, "missing") for f in e.args]))
+
+		# Verify the key, remove it if it's ok
+		if not Services.internalKey(data['_internal_']):
+			return Services.Effect(error=Errors.SERVICE_INTERNAL_KEY)
+		del data['_internal_']
+
+		# Get current date/time
+		sDT = arrow.get().format('YYYY-MM-DD HH:mm:ss')
+
+		# Try to find a customer name
+		dCustomer = KtCustomer.filter(
+			{"phoneNumber": [data['customerPhone'], '1%s' % data['customerPhone']]},
+			raw=['firstName', 'lastName'],
+			orderby=[('updatedAt', 'DESC')],
+			limit=1
+		)
+
+		# If we have one
+		mName = dCustomer and \
+				'%s %s' % (dCustomer['firstName'], dCustomer['lastName']) or \
+				None
+
+		# Validate values by creating an instance
+		try:
+			oCustomerCommunication = CustomerCommunication({
+				"type": "Incoming",
+				"fromName": mName,
+				"fromPhone": data['customerPhone'][-10:],
+				"toPhone": data['recvPhone'][-10:],
+				"notes": data['content'],
+				"createdAt": sDT,
+				"updatedAt": sDT
+			})
+		except ValueError as e:
+			return Services.Effect(error=(1001, e.args[0]))
+
+		# Store the message record
+		oCustomerCommunication.create()
+
+		# Update the conversations
+		CustomerMsgPhone.addIncoming(
+			data['customerPhone'],
+			sDT,
+			'\n--------\nReceived at %s\n%s\n' % (
+				sDT,
+				data['content']
+			)
+		)
+
+		# Return OK
+		return Services.Effect(True)
+
+	def messageOutgoing_create(self, data, sesh):
+		"""Message Outgoing
 
 		Sends a message to the customer
 
@@ -340,7 +407,7 @@ class Monolith(Services.Service):
 		sName = '%s %s' % (dUser['firstName'], dUser['lastName'])
 
 		# Get current date/time
-		sDT = arrow.get().to('US/Eastern').format('YYYY-MM-DD HH:mm:ss')
+		sDT = arrow.get().format('YYYY-MM-DD HH:mm:ss')
 
 		# Validate values by creating an instance
 		try:
@@ -371,7 +438,7 @@ class Monolith(Services.Service):
 		oCustomerCommunication.create()
 
 		# Update the conversations
-		CustomerMsgPhone.addMessage(
+		CustomerMsgPhone.addOutgoing(
 			data['customerPhone'],
 			sDT,
 			'\n--------\nSent by %s at %s\n%s\n' % (

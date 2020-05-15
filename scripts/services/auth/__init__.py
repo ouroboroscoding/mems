@@ -20,7 +20,7 @@ from redis import StrictRedis
 from RestOC import Conf, DictHelper, Errors, Services, \
 					Sesh, StrHelper, Templates
 
-# Local imports
+# Shared imports
 from shared import Rights
 
 # Service imports
@@ -76,6 +76,9 @@ class Auth(Services.Service):
 			# Install the table
 			if not o.tableCreate():
 				print("Failed to create `%s` table" % o.tableName())
+
+		# Return OK
+		return True
 
 	def passwdForgot_create(self, data):
 		"""Password Forgot (Generate)

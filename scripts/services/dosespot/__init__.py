@@ -74,7 +74,7 @@ _dProviders = {
 class Dosespot(Services.Service):
 	"""Dosespot Service class
 
-	Service for Dosespot CRM access
+	Service for Dosespot access
 
 	Extends: shared.Services.Service
 	"""

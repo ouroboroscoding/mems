@@ -11,12 +11,12 @@ __maintainer__	= "Chris Nasr"
 __email__		= "bast@maleexcel.com"
 __created__		= "2017-06-26"
 
-# Import python modules
+# Python imports
 from http.cookies import SimpleCookie
 import json
 import time
 
-# Import pip modules
+# Pip imports
 from gevent import monkey; monkey.patch_all()
 import gevent
 from geventwebsocket import WebSocketApplication, WebSocketError

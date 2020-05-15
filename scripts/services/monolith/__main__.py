@@ -71,7 +71,8 @@ REST.Server({
 	"/customer/messages": {"methods": REST.READ, "session": True},
 	"/customer/mip": {"methods": REST.READ, "session": True},
 
-	"/message": {"methods": REST.CREATE, "session": True},
+	"/message/incoming": {"methods": REST.CREATE},
+	"/message/outgoing": {"methods": REST.CREATE, "session": True},
 	"/msgs/claimed": {"methods": REST.READ, "session": True},
 	"/msgs/claimed/new": {"methods": REST.READ, "session": True},
 	"/msgs/unclaimed": {"methods": REST.READ, "session": True}

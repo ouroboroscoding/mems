@@ -1,7 +1,7 @@
 UPDATE `%(db)s`.`%(table)s` SET
-	`lastMsgDir` = 'Outgoing',
+	`lastMsgDir` = '%(direction)s',
 	`lastMsgAt` = '%(date)s',
-	`hiddenFlag` = 'Y',
-	`totalOutGoing` = `totalOutGoing` + 1,
+	`hiddenFlag` = '%(hidden)s',
+	`%(increment)s` = `%(increment)s` + 1,
 	`lastMsg` = CONCAT('%(message)s', IFNULL(`lastMsg`, ''))
 WHERE `customerPhone` = '%(customerPhone)s'

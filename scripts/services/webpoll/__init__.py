@@ -19,7 +19,7 @@ from time import time
 from redis import StrictRedis
 from RestOC import Conf, DictHelper, Services, Sesh, StrHelper
 
-# Project imports
+# Shared imports
 from shared import Sync
 
 # WebPoll class
