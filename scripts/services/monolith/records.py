@@ -21,18 +21,20 @@ from FormatOC import Tree
 from RestOC import Conf, Record_MySQL
 
 # SQL files
-with open('./services/monolith/sql/unclaimed.sql') as oF:
-	sUnclaimedSQL = oF.read()
 with open('./services/monolith/sql/claimed.sql') as oF:
 	sClaimedSQL = oF.read()
 with open('./services/monolith/sql/claimed_new.sql') as oF:
 	sClaimedNewSQL = oF.read()
 with open('./services/monolith/sql/conversation.sql') as oF:
 	sConversationSQL = oF.read()
-with open('./services/monolith/sql/msg_phone_update.sql') as oF:
-	sMsgPhoneUpdateSQL = oF.read()
 with open('./services/monolith/sql/landing.sql') as oF:
 	sLandingSQL = oF.read()
+with open('./services/monolith/sql/msg_phone_update.sql') as oF:
+	sMsgPhoneUpdateSQL = oF.read()
+with open('./services/monolith/sql/number_of_orders.sql') as oF:
+	sNumOfOrdersSQL = oF.read()
+with open('./services/monolith/sql/unclaimed.sql') as oF:
+	sUnclaimedSQL = oF.read()
 
 # CustomerClaimed structure and config
 _mdCustomerClaimedConf = Record_MySQL.Record.generateConfig(
@@ -248,60 +250,6 @@ class CustomerMsgPhone(Record_MySQL.Record):
 		return _mdCustomerMsgPhoneConf
 
 	@classmethod
-	def claimed(cls, user, custom={}):
-		"""Claimed
-
-		Returns all the conversations the user has claimed
-
-		Arguments:
-			user {int} -- The ID of the user
-			custom {dict} -- Custom Host and DB info
-				'host' the name of the host to get/set data on
-				'append' optional postfix for dynamic DBs
-
-		Returns:
-			list
-		"""
-
-		# Fetch the record structure
-		dStruct = cls.struct(custom)
-
-		# Fetch and return the data
-		return Record_MySQL.Commands.select(
-			dStruct['host'],
-			sClaimedSQL % {
-				"db": dStruct['db'],
-				"user": user
-			}
-		)
-
-	@classmethod
-	def unclaimed(cls, custom={}):
-		"""Unclaimed
-
-		Fetches open conversations that have not been claimed by any agent
-
-		Arguments:
-			custom {dict} -- Custom Host and DB info
-				'host' the name of the host to get/set data on
-				'append' optional postfix for dynamic DBs
-
-		Returns:
-			list
-		"""
-
-		# Fetch the record structure
-		dStruct = cls.struct(custom)
-
-		# Fetch and return the data
-		return Record_MySQL.Commands.select(
-			dStruct['host'],
-			sUnclaimedSQL % {
-				"db": dStruct['db']
-			}
-		)
-
-	@classmethod
 	def addIncoming(cls, customerPhone, date, message, custom={}):
 		"""Add Incoming
 
@@ -370,6 +318,60 @@ class CustomerMsgPhone(Record_MySQL.Record):
 
 		# Execute the update
 		Record_MySQL.Commands.execute(dStruct['host'], sSQL)
+
+	@classmethod
+	def claimed(cls, user, custom={}):
+		"""Claimed
+
+		Returns all the conversations the user has claimed
+
+		Arguments:
+			user {int} -- The ID of the user
+			custom {dict} -- Custom Host and DB info
+				'host' the name of the host to get/set data on
+				'append' optional postfix for dynamic DBs
+
+		Returns:
+			list
+		"""
+
+		# Fetch the record structure
+		dStruct = cls.struct(custom)
+
+		# Fetch and return the data
+		return Record_MySQL.Commands.select(
+			dStruct['host'],
+			sClaimedSQL % {
+				"db": dStruct['db'],
+				"user": user
+			}
+		)
+
+	@classmethod
+	def unclaimed(cls, custom={}):
+		"""Unclaimed
+
+		Fetches open conversations that have not been claimed by any agent
+
+		Arguments:
+			custom {dict} -- Custom Host and DB info
+				'host' the name of the host to get/set data on
+				'append' optional postfix for dynamic DBs
+
+		Returns:
+			list
+		"""
+
+		# Fetch the record structure
+		dStruct = cls.struct(custom)
+
+		# Fetch and return the data
+		return Record_MySQL.Commands.select(
+			dStruct['host'],
+			sUnclaimedSQL % {
+				"db": dStruct['db']
+			}
+		)
 
 # DsPatient class
 class DsPatient(Record_MySQL.Record):
@@ -450,6 +452,37 @@ class KtOrder(Record_MySQL.Record):
 			dict
 		"""
 		return _mdKtOrderConf
+
+	@classmethod
+	def ordersByPhone(cls, phone, custom={}):
+		"""Orders By Phone
+
+		Returns the count of orders by a specific phone number
+
+		Arguments:
+			phone {str} -- The phone number associated with the
+				conversation
+			custom {dict} -- Custom Host and DB info
+				'host' the name of the host to get/set data on
+				'append' optional postfix for dynamic DBs
+
+		Returns:
+			dict
+		"""
+
+		# Fetch the record structure
+		dStruct = cls.struct(custom)
+
+		# Fetch the orders
+		return Record_MySQL.Commands.select(
+			dStruct['host'],
+			sNumOfOrdersSQL % {
+				"db": dStruct['db'],
+				"table": dStruct['table'],
+				"phone": phone
+			},
+			Record_MySQL.ESelect.COLUMN
+		)
 
 # SMSStop class
 class SMSStop(Record_MySQL.Record):

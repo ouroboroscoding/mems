@@ -239,10 +239,21 @@ class Monolith(Services.Service):
 		try: DictHelper.eval(data, ['customerPhone'])
 		except ValueError as e: return Services.Effect(error=(1001, [(f, "missing") for f in e.args]))
 
+		# Get the messages
+		lMsgs = CustomerCommunication.thread(data['customerPhone'])
+
+		# Get the type
+		sType = len(KtOrder.ordersByPhone(data['customerPhone'])) and 'support' or 'sales'
+
+		# Find out if the user is blocked anywhere
+		bStop = SMSStop.filter({"phoneNumber": data['customerPhone'], "service": sType}) and True or False
+
 		# Fetch and return all the messages associated with the number
-		return Services.Effect(
-			CustomerCommunication.thread(data['customerPhone'])
-		)
+		return Services.Effect({
+			"messages": CustomerCommunication.thread(data['customerPhone']),
+			"stop": bStop,
+			"type": sType
+		})
 
 	def customerMip_read(self, data, sesh):
 		"""Customer MIP
@@ -399,7 +410,7 @@ class Monolith(Services.Service):
 		except ValueError as e: return Services.Effect(error=(1001, [(f, "missing") for f in e.args]))
 
 		# Check the number isn't blocked
-		if SMSStop.get(filter={"phoneNumber": data['customerPhone'], "service": data['type']}):
+		if SMSStop.filter({"phoneNumber": data['customerPhone'], "service": data['type']}):
 			return Services.Effect(error=1500)
 
 		# Get the user's name
