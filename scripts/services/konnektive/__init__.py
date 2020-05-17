@@ -17,7 +17,7 @@ import urllib.parse
 
 # Pip imports
 import requests
-from RestOC import Conf, DictHelper, Errors, Services, Sesh
+from RestOC import Conf, DictHelper, Errors, Services
 
 # Shared imports
 from shared import JSON

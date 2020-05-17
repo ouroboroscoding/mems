@@ -15,7 +15,7 @@ __created__		= "2020-04-08"
 from FormatOC import Tree
 from RestOC import Conf, Record_MySQL
 
-# Merchant structure and config
+# Customer structure and config
 _mdCustomerConf = Record_MySQL.Record.generateConfig(
 	Tree.fromFile('../definitions/payment/customer.json'),
 	'mysql'

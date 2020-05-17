@@ -18,7 +18,7 @@ import urllib.parse
 
 # Pip imports
 import requests
-from RestOC import Conf, DictHelper, Errors, Services, Sesh, StrHelper
+from RestOC import Conf, DictHelper, Errors, Services, StrHelper
 
 _dPharmacies = {
 	6141: "Belmar Pharmacy",

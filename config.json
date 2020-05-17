@@ -99,6 +99,7 @@
 		"services": {
 			"auth": {"port": 3},
 			"communications": {"port": 4},
+			"csr": {"port": 9},
 			"dosespot": {"port": 8},
 			"konnektive": {"port": 7},
 			"monolith": {"port": 6},

@@ -11,7 +11,7 @@ import os, platform
 from RestOC import Conf, Record_MySQL
 
 # Services
-from services import auth, payment
+from services import auth, csr, payment
 
 # Load the config
 Conf.load('../config.json')
@@ -30,6 +30,7 @@ Record_MySQL.dbCreate(Conf.get(("mysql", "payment", "db"), "payment"), 'payment'
 # Install
 auth.Auth.install()
 payment.Payment.install()
+csr.CSR.install()
 
 # Install admin
 oUser = auth.records.User({

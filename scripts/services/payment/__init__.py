@@ -15,8 +15,7 @@ __created__		= "2020-05-10"
 import re
 
 # Pip imports
-import requests
-from RestOC import Conf, DictHelper, Errors, Services, Sesh, StrHelper
+from RestOC import Conf, DictHelper, Errors, Services
 
 # Shared imports
 from shared import JSON
