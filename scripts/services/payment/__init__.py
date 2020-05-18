@@ -15,6 +15,7 @@ __created__		= "2020-05-10"
 import re
 
 # Pip imports
+from FormatOC import Node
 from RestOC import Conf, DictHelper, Errors, Services
 
 # Shared imports
@@ -61,6 +62,9 @@ class Payment(Services.Service):
 
 		# Load RocketGate errors file
 		self._error_codes = JSON.load('../definitions/rocketgate_errors.json')
+
+		# Create a price node for testing
+		self._price = Node('price')
 
 		# Return self for chaining
 		return self
@@ -110,6 +114,10 @@ class Payment(Services.Service):
 		# Make sure the customer ID is valid before doing anything
 		if not self._customer_regex.match(data['customer_id']):
 			return Services.Effect(error=1700)
+
+		# Make sure the amount is valid
+		if not self._price.valid(data['amount']):
+			return Services.Effect(error=(1001, [('amount', 'invalid')]))
 
 		# Create a RG service instance
 		oService = GatewayService()
@@ -164,7 +172,7 @@ class Payment(Services.Service):
 			oRequest.Set(GatewayRequest.CARD_HASH, oCustomer['card_hash'])
 
 		# Set the amount
-		oRequest.Set(GatewayRequest.AMOUNT, 10.97)
+		oRequest.Set(GatewayRequest.AMOUNT, data['amount'])
 
 		# Create a RG response instance
 		oResponse = GatewayResponse()
@@ -261,6 +269,16 @@ class Payment(Services.Service):
 		oRequest.Set(GatewayRequest.MERCHANT_ID, self._merchant_id)
 		oRequest.Set(GatewayRequest.MERCHANT_PASSWORD, self._merchant_pass)
 		oRequest.Set(GatewayRequest.TRANSACT_ID, data['transaction_id'])
+
+		# If there's an amount
+		if 'amount' in data:
+
+			# If it's invalid
+			if not self._price.valid(data['amount']):
+				return Services.Effect(error=(1001, [('amount', 'invalid')]))
+
+			# Else add it to the request
+			oRequest.Set(GatewayRequest.AMOUNT, data['amount'])
 
 		# Create a RG response instance
 		oResponse = GatewayResponse()
@@ -383,6 +401,10 @@ class Payment(Services.Service):
 		if not self._customer_regex.match(data['customer_id']):
 			return Services.Effect(error=1700)
 
+		# Make sure the amount is valid
+		if not self._price.valid(data['amount']):
+			return Services.Effect(error=(1001, [('amount', 'invalid')]))
+
 		# Create a RG service instance
 		oService = GatewayService()
 
@@ -436,7 +458,7 @@ class Payment(Services.Service):
 			oRequest.Set(GatewayRequest.CARD_HASH, oCustomer['card_hash'])
 
 		# Set the amount
-		oRequest.Set(GatewayRequest.AMOUNT, 10.97)
+		oRequest.Set(GatewayRequest.AMOUNT, data['amount'])
 
 		# Create a RG response instance
 		oResponse = GatewayResponse()
@@ -481,7 +503,6 @@ class Payment(Services.Service):
 		print ("Purchase succeeded")
 		print ("CVV2:", oResponse.Get(GatewayResponse.CVV2_CODE))
 		print ("CardHash:", oResponse.Get(GatewayResponse.CARD_HASH))
-		print ("Scrub:", oResponse.Get(GatewayResponse.SCRUB_RESULTS))
 
 		# Return Success
 		return Services.Effect({
