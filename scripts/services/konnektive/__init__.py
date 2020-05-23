@@ -174,12 +174,13 @@ class Konnektive(Services.Service):
 		return Services.Effect({
 			"id": lCustomers[0]['customerId'],
 			"billing": {
-				"address1": lCustomers[0]['address2'],
+				"address1": lCustomers[0]['address1'],
 				"address2": lCustomers[0]['address2'],
 				"city": lCustomers[0]['city'],
 				"company": lCustomers[0]['companyName'],
 				"country": lCustomers[0]['country'],
-				"name": lCustomers[0]['firstName'] + ' ' + lCustomers[0]['lastName'],
+				"firstName": lCustomers[0]['firstName'],
+				"lastName": lCustomers[0]['lastName'],
 				"postalCode": lCustomers[0]['postalCode'],
 				"state": lCustomers[0]['state']
 			},
@@ -192,12 +193,13 @@ class Konnektive(Services.Service):
 			"notes": lCustomers[0]['notes'],
 			"phone": lCustomers[0]['phoneNumber'],
 			"shipping": {
-				"address1": lCustomers[0]['shipAddress2'],
+				"address1": lCustomers[0]['shipAddress1'],
 				"address2": lCustomers[0]['shipAddress2'],
 				"city": lCustomers[0]['shipCity'],
 				"company": lCustomers[0]['shipCompanyName'],
 				"country": lCustomers[0]['shipCountry'],
-				"name": lCustomers[0]['shipFirstName'] + ' ' + lCustomers[0]['shipLastName'],
+				"firstName": lCustomers[0]['shipFirstName'],
+				"lastName": lCustomers[0]['shipLastName'],
 				"postalCode": lCustomers[0]['shipPostalCode'],
 				"state": lCustomers[0]['shipState']
 			},
@@ -238,7 +240,8 @@ class Konnektive(Services.Service):
 				"city": dO['city'],
 				"company": dO['companyName'],
 				"country": dO['country'],
-				"name": dO['firstName'] + ' ' + dO['lastName'],
+				"firstName": dO['firstName'],
+				"lastName": dO['lastName'],
 				"postalCode": dO['postalCode'],
 				"state": dO['state']
 			},
@@ -262,7 +265,8 @@ class Konnektive(Services.Service):
 				"city": dO['shipCity'],
 				"company": dO['shipCompanyName'],
 				"country": dO['shipCountry'],
-				"name": dO['shipFirstName'] + ' ' + dO['shipLastName'],
+				"firstName": dO['shipFirstName'],
+				"lastName": dO['shipLastName'],
 				"postalCode": dO['shipPostalCode'],
 				"state": dO['shipState']
 			},

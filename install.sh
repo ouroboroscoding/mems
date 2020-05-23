@@ -15,7 +15,7 @@ LOGFILE=/mems/install/install.log
 echo '' > $LOGFILE
 
 # Ask about databases
-echo "Do you want to install databases locally?"
+echo "Do you want to install DB/Cache software locally?"
 select yn in "Yes" "No"; do
     case $yn in
         Yes ) install/databases.sh $LOGFILE; break;;
