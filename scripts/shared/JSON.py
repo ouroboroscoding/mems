@@ -47,7 +47,7 @@ def decodef(f):
 	return json.load(f, parse_float=Decimal, encoding='utf8')
 
 # encode function
-def encode(o):
+def encode(o, indent=0):
 	"""Encode
 
 	Handles encoding objects/values into a JSON string
@@ -58,10 +58,10 @@ def encode(o):
 	Returns:
 		str
 	"""
-	return json.dumps(o, cls=CEncoder)
+	return json.dumps(o, cls=CEncoder, indent=indent)
 
 # encodef function
-def encodef(o, f):
+def encodef(o, f, indent=0):
 	"""Encode File
 
 	Handles encoding objects/values into JSON and storing them in the given file
@@ -74,7 +74,7 @@ def encodef(o, f):
 	Returns:
 		None
 	"""
-	return json.dump(o, f, cls=CEncoder)
+	return json.dump(o, f, cls=CEncoder, indent=indent)
 
 # load function
 def load(filepath):
@@ -100,7 +100,7 @@ def load(filepath):
 		return decode(oFile.read())
 
 # store function
-def store(data, filepath):
+def store(data, filepath, indent=0):
 	"""Store
 
 	Converts an object/value into JSON and stores it in the file path given
@@ -120,7 +120,7 @@ def store(data, filepath):
 	with open(filepath, 'w') as oFile:
 
 		# Write the JSON to the file
-		oFile.write(encode(data))
+		oFile.write(encode(data, indent))
 
 # CEncoder class
 class CEncoder(json.JSONEncoder):

@@ -17,13 +17,13 @@ from RestOC import Conf, Record_MySQL
 
 # TemplateEmail structure and config
 _mdTemplateEmailConf = Record_MySQL.Record.generateConfig(
-	Tree.fromFile('../definitions/csr/template_email.json'),
+	Tree.fromFile('../definitions/csr/tpl_email.json'),
 	'mysql'
 )
 
 # TemplateSMS structure and config
 _mdTemplateSMSConf = Record_MySQL.Record.generateConfig(
-	Tree.fromFile('../definitions/csr/template_sms.json'),
+	Tree.fromFile('../definitions/csr/tpl_sms.json'),
 	'mysql'
 )
 
