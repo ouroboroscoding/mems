@@ -78,6 +78,12 @@ _mdKtOrderConf = Record_MySQL.Record.generateConfig(
 	'mysql'
 )
 
+# ShippingInfo structure and config
+_mdShippingInfoConf = Record_MySQL.Record.generateConfig(
+	Tree.fromFile('../definitions/monolith/shipping_info.json'),
+	'mysql'
+)
+
 # SMSStop structure and config
 _mdSMSStopConf = Record_MySQL.Record.generateConfig(
 	Tree.fromFile('../definitions/monolith/sms_stop.json'),
@@ -189,8 +195,6 @@ class CustomerCommunication(Record_MySQL.Record):
 			"ts": ts,
 			"numbers": "'%s'" % "','".join(lNumbers)
 		}
-
-		print(sSQL)
 
 		# Fetch the data
 		lRecords = Record_MySQL.Commands.select(dStruct['host'], sSQL)
@@ -483,6 +487,26 @@ class KtOrder(Record_MySQL.Record):
 			},
 			Record_MySQL.ESelect.COLUMN
 		)
+
+# ShippingInfo class
+class ShippingInfo(Record_MySQL.Record):
+	"""ShippingInfo
+
+	Represents a tracking code associated with a customer
+
+	Extends: RestOC.Record_MySQL.Record
+	"""
+
+	@classmethod
+	def config(cls):
+		"""Config
+
+		Returns the configuration data associated with the record type
+
+		Returns:
+			dict
+		"""
+		return _mdShippingInfoConf
 
 # SMSStop class
 class SMSStop(Record_MySQL.Record):

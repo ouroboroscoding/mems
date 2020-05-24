@@ -25,8 +25,9 @@ from RestOC import Conf, DictHelper, Errors, Services, \
 
 # Service imports
 from .records import CustomerClaimed, CustomerCommunication, CustomerMsgPhone, \
-						DsPatient, Forgot, KtCustomer, KtOrder, SMSStop, \
-						TfAnswer, TfLanding, TfQuestion, User
+						DsPatient, Forgot, KtCustomer, KtOrder, ShippingInfo, \
+						SMSStop, TfAnswer, TfLanding, TfQuestion, \
+						TfQuestionOption, User
 
 # Regex for validating email
 _emailRegex = re.compile(r"[^@\s]+@[^@\s]+\.[a-zA-Z0-9]{2,}$")
@@ -44,6 +45,12 @@ class Monolith(Services.Service):
 
 	_install = [CustomerClaimed, Forgot]
 	"""Record types called in install"""
+
+	_TRACKING_LINKS = {
+		"UPS": "https://www.ups.com/track?tracknum=%s",
+		"USPS": "https://tools.usps.com/go/TrackConfirmAction?qtc_tLabels1=%s"
+	}
+	"""Tracking links"""
 
 	def initialise(self):
 		"""Initialise
@@ -304,6 +311,19 @@ class Monolith(Services.Service):
 			orderby='questionNumber'
 		)
 
+		# Get the options for the questions
+		lOptions = TfQuestionOption.filter(
+			{"questionRef": [d['ref'] for d in dRet['questions']], "activeFlag": 'Y'},
+			raw=['questionRef', 'displayOrder', 'option'],
+			orderby=['questionRef', 'displayOrder']
+		)
+
+		# Create lists of options by question
+		dRet['options'] = {}
+		for d in lOptions:
+			try: dRet['options'][d['questionRef']].append(d['option'])
+			except KeyError: dRet['options'][d['questionRef']] = [d['option']]
+
 		# Fetch the answers
 		dAnswers = {
 			d['ref']: d['value']
@@ -316,14 +336,81 @@ class Monolith(Services.Service):
 		# Match the answer to the questions
 		for d in dRet['questions']:
 			d['answer'] = d['ref'] in dAnswers and \
-							(d['type'] == 'yes_no' and \
-								(dAnswers[d['ref']] and 'Yes' or 'No') or \
-								dAnswers[d['ref']]
-							) or \
+							dAnswers[d['ref']] or \
 							''
 
 		# Return what we found
 		return Services.Effect(dRet)
+
+	def customerMip_update(self, data, sesh):
+		"""Customer MIP Update
+
+		Updates the answer to a single MIP question
+
+		Arguments:
+			data {dict} -- Data sent with the request
+			sesh {Sesh._Session} -- The session associated with the request
+
+		Returns:
+			Services.Effect
+		"""
+
+		# Verify fields
+		try: DictHelper.eval(data, ['landing_id', 'ref', 'value'])
+		except ValueError as e: return Services.Effect(error=(1001, [(f, "missing") for f in e.args]))
+
+		# Find the answer
+		oTfAnswer = TfAnswer.filter({
+			"landing_id": data['landing_id'],
+			"ref": data['ref']
+		}, limit=1)
+
+		# If it's not found
+		if not oTfAnswer:
+			return Services.Effect(error=1104)
+
+		# Update the value
+		try:
+			oTfAnswer['value'] = data['value']
+		except ValueError as e:
+			return Services.Effect(error=(1001, [e.args[0]]))
+
+		# Save the record and return the result
+		return Services.Effect(
+			oTfAnswer.save()
+		)
+
+	def customerShipping_read(self, data, sesh):
+		"""Customer Shipping
+
+		Fetches all shipping (tracking code) associated with the customer
+
+		Arguments:
+			data {dict} -- Data sent with the request
+			sesh {Sesh._Session} -- The session associated with the request
+
+		Returns:
+			Services.Effect
+		"""
+
+		# Verify fields
+		try: DictHelper.eval(data, ['customerId'])
+		except ValueError as e: return Services.Effect(error=(1001, [(f, "missing") for f in e.args]))
+
+		# Get all the records for the customer
+		lCodes = ShippingInfo.filter(
+			{"customerId": data['customerId']},
+			raw=['code', 'type', 'date'],
+			orderby=[['date', 'desc']]
+		)
+
+		# Go through and add the link
+		for d in lCodes:
+			try: d['link'] = self._TRACKING_LINKS[d['type']] % d['code']
+			except KeyError: d['link'] = None
+
+		# Return the records
+		return Services.Effect(lCodes)
 
 	def messageIncoming_create(self, data):
 		"""Message Incoming
@@ -739,8 +826,6 @@ class Monolith(Services.Service):
 
 		# Fetch it from the DB
 		dUser = User.get(sesh['user_id'], raw=True)
-
-		print(dUser)
 
 		# If it doesn't exist
 		if not dUser:

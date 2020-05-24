@@ -9,19 +9,15 @@ python -m tools.fake_msg 5148026900 2564884325 "Fetch me a whiskey" support
 - JustCall
 	- Add a way to call out
 
-- Prepopulate SMS templates
-
 - Add email functionality
 	- Dropdown - company
 		- Dropdown - templates
 
 - Take over stop/start system from twilio
 
-- Make MIP edittable
+- Add generalized notes
+	- save by agent/time
 
-
-!!! DEBUG THIS !!!
-Notification doesn't always work
 
 
 - Done
@@ -33,3 +29,6 @@ Notification doesn't always work
 		- Phone number (with copy)
 		- Service type: support vs sales
 		- Show customers who have unsubscribed/blocked/whatever
+	- Prepopulate SMS templates
+	- Make MIP edittable
+	- Add tracking codes
