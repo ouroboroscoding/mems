@@ -31,8 +31,12 @@ with open('./services/monolith/sql/landing.sql') as oF:
 	sLandingSQL = oF.read()
 with open('./services/monolith/sql/msg_phone_update.sql') as oF:
 	sMsgPhoneUpdateSQL = oF.read()
+with open('./services/monolith/sql/smp_notes.sql') as oF:
+	sSmpNotes = oF.read()
 with open('./services/monolith/sql/number_of_orders.sql') as oF:
 	sNumOfOrdersSQL = oF.read()
+with open('./services/monolith/sql/search.sql') as oF:
+	sSearchSQL = oF.read()
 with open('./services/monolith/sql/unclaimed.sql') as oF:
 	sUnclaimedSQL = oF.read()
 
@@ -81,6 +85,12 @@ _mdKtOrderConf = Record_MySQL.Record.generateConfig(
 # ShippingInfo structure and config
 _mdShippingInfoConf = Record_MySQL.Record.generateConfig(
 	Tree.fromFile('../definitions/monolith/shipping_info.json'),
+	'mysql'
+)
+
+# SmpNote structure and config
+_mdSmpNoteConf = Record_MySQL.Record.generateConfig(
+	Tree.fromFile('../definitions/monolith/smp_note.json'),
 	'mysql'
 )
 
@@ -348,7 +358,49 @@ class CustomerMsgPhone(Record_MySQL.Record):
 			sClaimedSQL % {
 				"db": dStruct['db'],
 				"user": user
-			}
+			},
+			Record_MySQL.ESelect.ALL
+		)
+
+	@classmethod
+	def search(cls, q, custom={}):
+		"""Search
+
+		Search conversations and return them
+
+		Arguments:
+			q {dict} -- The strings to query
+			custom {dict} -- Custom Host and DB info
+				'host' the name of the host to get/set data on
+				'append' optional postfix for dynamic DBs
+
+		Returns:
+			list
+		"""
+
+		# Fetch the record structure
+		dStruct = cls.struct(custom)
+
+		# Generate SQL Where
+		lWhere = []
+		if 'phone' in q and q['phone']:
+			lWhere.append("`customerPhone` LIKE '%%%s%%'" % q['phone'][-10:])
+		if 'name' in q and q['name']:
+			lWhere.append("`customerName` LIKE '%%%s%%'" % q['name'])
+		if 'content' in q and q['content']:
+			lWhere.append("`lastMsg` LIKE '%%%s%%'" % q['content'])
+
+		# Generate SQL
+		sSQL = sSearchSQL % {
+			"db": dStruct['db'],
+			"where": ' AND '.join(lWhere)
+		}
+
+		# Fetch and return the data
+		return Record_MySQL.Commands.select(
+			dStruct['host'],
+			sSQL,
+			Record_MySQL.ESelect.ALL
 		)
 
 	@classmethod
@@ -374,7 +426,8 @@ class CustomerMsgPhone(Record_MySQL.Record):
 			dStruct['host'],
 			sUnclaimedSQL % {
 				"db": dStruct['db']
-			}
+			},
+			Record_MySQL.ESelect.ALL
 		)
 
 # DsPatient class
@@ -507,6 +560,61 @@ class ShippingInfo(Record_MySQL.Record):
 			dict
 		"""
 		return _mdShippingInfoConf
+
+# SmpNote class
+class SmpNote(Record_MySQL.Record):
+	"""SmpNote
+
+	Represents an internal note associated with a customer
+
+	Extends: RestOC.Record_MySQL.Record
+	"""
+
+	@classmethod
+	def byCustomer(cls, customer_id, custom={}):
+		"""By Customer
+
+		Fetches all notes associated with the customer's orders
+
+		Arguments:
+			customer_id {int} -- The unique ID of the customer
+			custom {dict} -- Custom Host and DB info
+				'host' the name of the host to get/set data on
+				'append' optional postfix for dynamic DBs
+
+		Returns:
+			list
+		"""
+
+		# Fetch the record structure
+		dStruct = cls.struct(custom)
+
+		# Generate SQL
+		sSQL = sSmpNotes % {
+			"db": dStruct['db'],
+			"table": dStruct['table'],
+			"id": customer_id
+		}
+
+		print(sSQL)
+
+		# Execute and return the select
+		return Record_MySQL.Commands.select(
+			dStruct['host'],
+			sSQL,
+			Record_MySQL.ESelect.ALL
+		)
+
+	@classmethod
+	def config(cls):
+		"""Config
+
+		Returns the configuration data associated with the record type
+
+		Returns:
+			dict
+		"""
+		return _mdSmpNoteConf
 
 # SMSStop class
 class SMSStop(Record_MySQL.Record):

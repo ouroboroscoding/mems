@@ -70,12 +70,14 @@ REST.Server({
 	"/customer/id/byPhone": {"methods": REST.READ, "session": True},
 	"/customer/messages": {"methods": REST.READ, "session": True},
 	"/customer/mip": {"methods": REST.READ | REST.UPDATE, "session": True},
+	"/customer/notes": {"methods": REST.READ, "session": True},
 	"/customer/shipping": {"methods": REST.READ, "session": True},
 
 	"/message/incoming": {"methods": REST.CREATE},
 	"/message/outgoing": {"methods": REST.CREATE, "session": True},
 	"/msgs/claimed": {"methods": REST.READ, "session": True},
 	"/msgs/claimed/new": {"methods": REST.READ, "session": True},
+	"/msgs/search": {"methods": REST.READ, "session": True},
 	"/msgs/unclaimed": {"methods": REST.READ, "session": True}
 
 }, 'monolith', "https?://(.*\\.)?%s" % Conf.get(("rest","allowed")).replace('.', '\\.')).run(

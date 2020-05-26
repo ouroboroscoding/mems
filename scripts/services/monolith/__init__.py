@@ -26,7 +26,7 @@ from RestOC import Conf, DictHelper, Errors, Services, \
 # Service imports
 from .records import CustomerClaimed, CustomerCommunication, CustomerMsgPhone, \
 						DsPatient, Forgot, KtCustomer, KtOrder, ShippingInfo, \
-						SMSStop, TfAnswer, TfLanding, TfQuestion, \
+						SmpNote, SMSStop, TfAnswer, TfLanding, TfQuestion, \
 						TfQuestionOption, User
 
 # Regex for validating email
@@ -277,12 +277,12 @@ class Monolith(Services.Service):
 		"""
 
 		# Verify fields
-		try: DictHelper.eval(data, ['id'])
+		try: DictHelper.eval(data, ['customerId'])
 		except ValueError as e: return Services.Effect(error=(1001, [(f, "missing") for f in e.args]))
 
 		# Attempt to find the customer by phone number
 		dCustomer = KtCustomer.filter(
-			{"customerId": data['id']},
+			{"customerId": data['customerId']},
 			raw=['lastName', 'emailAddress', 'phoneNumber'],
 			orderby=[('dateUpdated', 'DESC')],
 			limit=1
@@ -338,6 +338,8 @@ class Monolith(Services.Service):
 			d['answer'] = d['ref'] in dAnswers and \
 							dAnswers[d['ref']] or \
 							''
+			if d['type'] == 'yes_no' and d['answer'] in ['0', '1']:
+				d['answer'] = d['answer'] == '1' and 'Yes' or 'No'
 
 		# Return what we found
 		return Services.Effect(dRet)
@@ -378,6 +380,32 @@ class Monolith(Services.Service):
 		# Save the record and return the result
 		return Services.Effect(
 			oTfAnswer.save()
+		)
+
+	def customerNotes_read(self, data, sesh):
+		"""Customer Notes
+
+		Fetches all notes associated with the customer
+
+		Arguments:
+			data {dict} -- Data sent with the request
+			sesh {Sesh._Session} -- The session associated with the request
+
+		Returns:
+			Services.Effect
+		"""
+
+		# Verify fields
+		try: DictHelper.eval(data, ['customerId'])
+		except ValueError as e: return Services.Effect(error=(1001, [(f, "missing") for f in e.args]))
+
+		# Convert ID to int
+		try: data['customerId'] = int(data['customerId'])
+		except ValueError: return Services.Effect(error=(1001, [('customerId', "invalid")]))
+
+		# Fetch and return all notes
+		return Services.Effect(
+			SmpNote.byCustomer(data['customerId'])
 		)
 
 	def customerShipping_read(self, data, sesh):
@@ -603,6 +631,30 @@ class Monolith(Services.Service):
 		# Fetch and return the list of numbers with new messages
 		return Services.Effect(
 			CustomerCommunication.newMessages(data['numbers'], iTS)
+		)
+
+	def msgsSearch_read(self, data, sesh):
+		"""Messages: Search
+
+		Searchs the message summaries and returns whatever's found
+
+		Arguments:
+			data {dict} -- Data sent with the request
+			sesh {Sesh._Session} -- The session associated with the request
+
+		Returns:
+			Services.Effect
+		"""
+
+		# Must search at least one
+		if 'phone' not in data and \
+			'name' not in data and \
+			'content' not in data:
+			return Services.Effect(error=(1001, [('content', 'missing')]))
+
+		# Fetch and return the data
+		return Services.Effect(
+			CustomerMsgPhone.search(data)
 		)
 
 	def msgsUnclaimed_read(self, data, sesh):

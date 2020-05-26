@@ -6,8 +6,11 @@ SELECT
 	`ktot`.`numberOfOrders` AS `numberOfOrders`,
 	`ktot`.`latest_kto_id` AS `latest_kto_id`,
 	`cmp`.`lastMsg` AS `lastMsg`,
+	`cmp`.`hiddenFlag` AS `hiddenFlag`,
 	`cmp`.`totalIncoming` AS `totalIncoming`,
-	`cmp`.`totalOutGoing` AS `totalOutGoing`
+	`cmp`.`totalOutGoing` AS `totalOutGoing`,
+	CONCAT_WS(' ', `user`.`firstName`, `user`.`lastName`) AS `claimedBy`,
+	`cc`.`createdAt` AS `claimedAt`
 FROM `%(db)s`.`customer_msg_phone` AS `cmp`
 LEFT JOIN (
 	SELECT `cmp1`.`id` AS `id`, COUNT(0) AS `numberOfOrders`,
@@ -21,6 +24,5 @@ LEFT JOIN (
 	GROUP BY `cmp1`.`id`
 ) `ktot` ON `ktot`.`id` = `cmp`.`id`
 LEFT JOIN `%(db)s`.`customer_claimed` as `cc` ON `cc`.`phoneNumber` = `cmp`.`customerPhone`
-WHERE `hiddenFlag` = 'N'
-AND `lastMsgDir` = 'Incoming'
-AND `cc`.`user` IS NULL
+LEFT JOIN `%(db)s`.`user`  ON `user`.`id` = `cc`.`user`
+WHERE %(where)s
