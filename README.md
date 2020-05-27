@@ -9,9 +9,9 @@ as production.
 
 ## RestOC
 The services in MeMS use a custom framework designed around RESTful API micro
-services called RestOC. Documentation for it can be found at (http://ouroboroscoding.com/rest-oc/)
+services called RestOC. Documentation for it can be found at http://ouroboroscoding.com/rest-oc/
 
 ## FormatOC
 RestOC itself uses another library called FormatOC which is used to load
 definition files that allow for easy validation and cleaning up of document or
-table structures. Documentation for it can be found at (http://ouroboroscoding.com/format-oc/)
+table structures. Documentation for it can be found at http://ouroboroscoding.com/format-oc/
