@@ -22,10 +22,10 @@ from RestOC import Conf, DictHelper, Errors, Services, StrHelper
 
 _dPharmacies = {
 	6141: "Belmar Pharmacy",
-	26493: "CastiaRx",
+	26493: "WellDyneRx",
 	76881: "Pavilion Compounding",
 	240931: "Anazao Health",
-	56387: "WellDyne"
+	56387: "WellDyneRx"
 }
 
 _dProviders = {
