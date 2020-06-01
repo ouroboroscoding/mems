@@ -197,8 +197,12 @@ class Dosespot(Services.Service):
 		"""
 
 		# Verify fields
-		try: DictHelper.eval(data, ['clinician_id', 'patient_id'])
+		try: DictHelper.eval(data, ['patient_id'])
 		except ValueError as e: return Services.Effect(error=(1001, [(f, "missing") for f in e.args]))
+
+		# If the clinician ID isn't passed
+		if 'clinician_id' not in data:
+			data['clinician_id'] = Conf.get(('dosespot', 'clinician_id'))
 
 		# Make sure we got ints
 		for s in ['clinician_id', 'patient_id']:

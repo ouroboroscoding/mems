@@ -316,7 +316,7 @@ class Auth(Services.Service):
 
 		# If fields is not a list
 		if 'fields' in data and not isinstance(data['fields'], list):
-			return Services.Effect(error=(1001, [('filter', "must be an list")]))
+			return Services.Effect(error=(1001, [('fields', "must be an list")]))
 
 		# Search based on the data passed
 		lRecords = [d['_id'] for d in User.filter(data['filter'], raw=['_id'])]
@@ -600,7 +600,7 @@ class Auth(Services.Service):
 		# Look for someone else with that email
 		dUser = User.filter({"email": data['email']}, raw=['_id'])
 		if dUser:
-			return Services.Effect(error=(1206, data['email']))
+			return Services.Effect(error=1200)
 
 		# Update the email and verified fields
 		try:
