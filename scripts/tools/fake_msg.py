@@ -13,31 +13,34 @@ from RestOC import Conf, Record_MySQL, REST, Services
 # Services
 from services import monolith
 
-# Load the config
-Conf.load('../config.json')
-sConfOverride = '../config.%s.json' % platform.node()
-if os.path.isfile(sConfOverride):
-	Conf.load_merge(sConfOverride)
+# Only run if called directly
+if __name__ == "__main__":
 
-# Add hosts
-Record_MySQL.addHost('monolith', Conf.get(("mysql", "hosts", "monolith")))
-Record_MySQL.addHost('monolith_prod', Conf.get(("mysql", "hosts", "monolith_prod")))
+	# Load the config
+	Conf.load('../config.json')
+	sConfOverride = '../config.%s.json' % platform.node()
+	if os.path.isfile(sConfOverride):
+		Conf.load_merge(sConfOverride)
 
-# Create the REST config instance
-oRestConf = REST.Config(Conf.get("rest"))
+	# Add hosts
+	Record_MySQL.addHost('monolith', Conf.get(("mysql", "hosts", "monolith")))
+	Record_MySQL.addHost('monolith_prod', Conf.get(("mysql", "hosts", "monolith_prod")))
 
-# Register all services
-Services.register({}, oRestConf, Conf.get(('services', 'salt')))
+	# Create the REST config instance
+	oRestConf = REST.Config(Conf.get("rest"))
 
-# Get an instance of the Monolith service and initialise it
-oMonolith = monolith.Monolith()
-oMonolith.initialise()
+	# Register all services
+	Services.register({}, oRestConf, Conf.get(('services', 'salt')))
 
-# Create a new message using the passed data
-oMonolith.messageIncoming_create({
-	"_internal_": Services.internalKey(),
-	"customerPhone": sys.argv[1],
-	"recvPhone": sys.argv[2],
-	"content": sys.argv[3],
-	"type": sys.argv[4]
-})
+	# Get an instance of the Monolith service and initialise it
+	oMonolith = monolith.Monolith()
+	oMonolith.initialise()
+
+	# Create a new message using the passed data
+	oMonolith.messageIncoming_create({
+		"_internal_": Services.internalKey(),
+		"customerPhone": sys.argv[1],
+		"recvPhone": sys.argv[2],
+		"content": sys.argv[3],
+		"type": sys.argv[4]
+	})

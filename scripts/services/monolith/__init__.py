@@ -27,7 +27,7 @@ from RestOC import Conf, DictHelper, Errors, Services, \
 from .records import CustomerClaimed, CustomerCommunication, CustomerMsgPhone, \
 						DsPatient, Forgot, KtCustomer, KtOrder, ShippingInfo, \
 						SmpNote, SMSStop, TfAnswer, TfLanding, TfQuestion, \
-						TfQuestionOption, User
+						TfQuestionOption, User, init as recInit
 
 # Regex for validating email
 _emailRegex = re.compile(r"[^@\s]+@[^@\s]+\.[a-zA-Z0-9]{2,}$")
@@ -39,8 +39,6 @@ class Monolith(Services.Service):
 	"""Monolith Service class
 
 	Service for Monolith, sign in, sign up, etc.
-
-	Extends: shared.Services.Service
 	"""
 
 	_install = [CustomerClaimed, Forgot]
@@ -60,6 +58,9 @@ class Monolith(Services.Service):
 		Returns:
 			Monolith
 		"""
+
+		# Init the records
+		recInit()
 
 		# Create a connection to Redis
 		self._redis = StrictRedis(**Conf.get(('redis', 'primary'), {
@@ -95,8 +96,8 @@ class Monolith(Services.Service):
 		Stores a record to claim a customer conversation for a user
 
 		Arguments:
-			data {dict} -- Data sent with the request
-			sesh {Sesh._Session} -- The session associated with the request
+			data (dict): Data sent with the request
+			sesh (Sesh._Session): The session associated with the request
 
 		Returns:
 			Services.Effect
@@ -126,8 +127,8 @@ class Monolith(Services.Service):
 		Deletes a record to claim a customer conversation by a user
 
 		Arguments:
-			data {dict} -- Data sent with the request
-			sesh {Sesh._Session} -- The session associated with the request
+			data (dict): Data sent with the request
+			sesh (Sesh._Session): The session associated with the request
 
 		Returns:
 			Services.Effect
@@ -149,8 +150,8 @@ class Monolith(Services.Service):
 		Returns the ID of the DoseSpote patient based on their customer ID
 
 		Arguments:
-			data {dict} -- Data sent with the request
-			sesh {Sesh._Session} -- The session associated with the request
+			data (dict): Data sent with the request
+			sesh (Sesh._Session): The session associated with the request
 
 		Returns:
 			Services.Effect
@@ -180,8 +181,8 @@ class Monolith(Services.Service):
 		Marks a customer conversation as hidden
 
 		Arguments:
-			data {dict} -- Data sent with the request
-			sesh {Sesh._Session} -- The session associated with the request
+			data (dict): Data sent with the request
+			sesh (Sesh._Session): The session associated with the request
 
 		Returns:
 			Services.Effect
@@ -212,8 +213,8 @@ class Monolith(Services.Service):
 		Marks a customer conversation as hidden
 
 		Arguments:
-			data {dict} -- Data sent with the request
-			sesh {Sesh._Session} -- The session associated with the request
+			data (dict): Data sent with the request
+			sesh (Sesh._Session): The session associated with the request
 
 		Returns:
 			Services.Effect
@@ -235,8 +236,8 @@ class Monolith(Services.Service):
 		Fetches all messages associated with a customer (phone number)
 
 		Arguments:
-			data {dict} -- Data sent with the request
-			sesh {Sesh._Session} -- The session associated with the request
+			data (dict): Data sent with the request
+			sesh (Sesh._Session): The session associated with the request
 
 		Returns:
 			Services.Effect
@@ -269,8 +270,8 @@ class Monolith(Services.Service):
 		customer
 
 		Arguments:
-			data {dict} -- Data sent with the request
-			sesh {Sesh._Session} -- The session associated with the request
+			data (dict): Data sent with the request
+			sesh (Sesh._Session): The session associated with the request
 
 		Returns:
 			Services.Effect
@@ -350,8 +351,8 @@ class Monolith(Services.Service):
 		Updates the answer to a single MIP question
 
 		Arguments:
-			data {dict} -- Data sent with the request
-			sesh {Sesh._Session} -- The session associated with the request
+			data (dict): Data sent with the request
+			sesh (Sesh._Session): The session associated with the request
 
 		Returns:
 			Services.Effect
@@ -388,8 +389,8 @@ class Monolith(Services.Service):
 		Fetches all notes associated with the customer
 
 		Arguments:
-			data {dict} -- Data sent with the request
-			sesh {Sesh._Session} -- The session associated with the request
+			data (dict): Data sent with the request
+			sesh (Sesh._Session): The session associated with the request
 
 		Returns:
 			Services.Effect
@@ -414,8 +415,8 @@ class Monolith(Services.Service):
 		Fetches all shipping (tracking code) associated with the customer
 
 		Arguments:
-			data {dict} -- Data sent with the request
-			sesh {Sesh._Session} -- The session associated with the request
+			data (dict): Data sent with the request
+			sesh (Sesh._Session): The session associated with the request
 
 		Returns:
 			Services.Effect
@@ -446,7 +447,7 @@ class Monolith(Services.Service):
 		Adds a new message from a customer
 
 		Arguments:
-			data {dict} -- Data sent with the request
+			data (dict): Data sent with the request
 
 		Returns:
 			Services.Effect
@@ -513,8 +514,8 @@ class Monolith(Services.Service):
 		Sends a message to the customer
 
 		Arguments:
-			data {dict} -- Data sent with the request
-			sesh {Sesh._Session} -- The session associated with the request
+			data (dict): Data sent with the request
+			sesh (Sesh._Session): The session associated with the request
 
 		Returns:
 			Services.Effect
@@ -584,8 +585,8 @@ class Monolith(Services.Service):
 		user has claimed
 
 		Arguments:
-			data {dict} -- Data sent with the request
-			sesh {Sesh._Session} -- The session associated with the request
+			data (dict): Data sent with the request
+			sesh (Sesh._Session): The session associated with the request
 
 		Returns:
 			Services.Effect
@@ -606,8 +607,8 @@ class Monolith(Services.Service):
 		Checks if there's any new messages in the given conversations
 
 		Arguments:
-			data {dict} -- Data sent with the request
-			sesh {Sesh._Session} -- The session associated with the request
+			data (dict): Data sent with the request
+			sesh (Sesh._Session): The session associated with the request
 
 		Returns:
 			Services.Effect
@@ -639,8 +640,8 @@ class Monolith(Services.Service):
 		Searchs the message summaries and returns whatever's found
 
 		Arguments:
-			data {dict} -- Data sent with the request
-			sesh {Sesh._Session} -- The session associated with the request
+			data (dict): Data sent with the request
+			sesh (Sesh._Session): The session associated with the request
 
 		Returns:
 			Services.Effect
@@ -664,8 +665,8 @@ class Monolith(Services.Service):
 		or already claimed by a rep
 
 		Arguments:
-			data {dict} -- Data sent with the request
-			sesh {Sesh._Session} -- The session associated with the request
+			data (dict): Data sent with the request
+			sesh (Sesh._Session): The session associated with the request
 
 		Returns:
 			Services.Effect
@@ -683,7 +684,7 @@ class Monolith(Services.Service):
 		password if they forgot it
 
 		Arguments:
-			data {dict} -- Data sent with the request
+			data (dict): Data sent with the request
 
 		Returns:
 			Services.Effect
@@ -746,7 +747,7 @@ class Monolith(Services.Service):
 		Validates the key and changes the password to the given value
 
 		Arguments:
-			data {dict} -- Data sent with the request
+			data (dict): Data sent with the request
 
 		Returns:
 			Services.Effect
@@ -790,8 +791,8 @@ class Monolith(Services.Service):
 		Returns the ID of the user logged into the current session
 
 		Arguments:
-			data {dict} -- Data sent with the request
-			sesh {Sesh._Session} -- The session associated with the request
+			data (dict): Data sent with the request
+			sesh (Sesh._Session): The session associated with the request
 
 		Returns:
 			Services.Effect
@@ -808,7 +809,7 @@ class Monolith(Services.Service):
 		Signs a user into the system
 
 		Arguments:
-			data {dict} -- The data passed to the request
+			data (dict): The data passed to the request
 
 		Returns:
 			Result
@@ -850,8 +851,8 @@ class Monolith(Services.Service):
 		Called to sign out a user and destroy their session
 
 		Arguments:
-			data {dict} -- Data sent with the request
-			sesh {Sesh._Session} -- The session associated with the user
+			data (dict): Data sent with the request
+			sesh (Sesh._Session): The session associated with the user
 
 		Returns:
 			Services.Effect
@@ -869,8 +870,8 @@ class Monolith(Services.Service):
 		Fetches the logged in user and returns their data
 
 		Arguments:
-			data {dict} -- Data sent with the request
-			sesh {Sesh._Session} -- The session associated with the user
+			data (dict): Data sent with the request
+			sesh (Sesh._Session): The session associated with the user
 
 		Returns:
 			Effect
@@ -895,8 +896,8 @@ class Monolith(Services.Service):
 		Updates the logged in user
 
 		Arguments:
-			data {dict} -- Data sent with the request
-			sesh {Sesh._Session} -- The session associated with the user
+			data (dict): Data sent with the request
+			sesh (Sesh._Session): The session associated with the user
 
 		Returns:
 			Effect
@@ -930,8 +931,8 @@ class Monolith(Services.Service):
 		Changes the password for the current signed in user
 
 		Arguments:
-			data {dict} -- Data sent with the request
-			sesh {Sesh._Session} -- The session associated with the user
+			data (dict): Data sent with the request
+			sesh (Sesh._Session): The session associated with the user
 
 		Returns:
 			Effect

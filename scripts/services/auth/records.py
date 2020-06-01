@@ -21,32 +21,15 @@ from FormatOC import Tree
 from RestOC import Conf, Record_MySQL, StrHelper
 from shared import JSON
 
-# Forgot structure and config
-_mdForgotConf = Record_MySQL.Record.generateConfig(
-	Tree.fromFile('../definitions/auth/forgot.json'),
-	'mysql'
-)
-
-# Permission structure and config
-_mdPermissionConf = Record_MySQL.Record.generateConfig(
-	Tree.fromFile('../definitions/auth/permission.json'),
-	'mysql'
-)
-
-# User structure and config
-_mdUserConf = Record_MySQL.Record.generateConfig(
-	Tree.fromFile('../definitions/auth/user.json'),
-	'mysql'
-)
-
 # Forgot class
 class Forgot(Record_MySQL.Record):
 	"""Forgot
 
 	Represents an attempt to reset a forgotten password
-
-	Extends: RestOC.Record_MySQL.Record
 	"""
+
+	_conf = None
+	"""Configuration"""
 
 	@classmethod
 	def config(cls):
@@ -57,16 +40,26 @@ class Forgot(Record_MySQL.Record):
 		Returns:
 			dict
 		"""
-		return _mdForgotConf
+
+		# If we haven loaded the config yet
+		if not cls._conf:
+			cls._conf = Record_MySQL.Record.generateConfig(
+				Tree.fromFile('../definitions/auth/forgot.json'),
+				'mysql'
+			)
+
+		# Return the config
+		return cls._conf
 
 # Permission class
 class Permission(Record_MySQL.Record):
 	"""Permission
 
 	Represents a single permission record associated with a user
-
-	Extends: RestOC.Record_MySQL.Record
 	"""
+
+	_conf = None
+	"""Configuration"""
 
 	@classmethod
 	def byUser(cls, _id):
@@ -75,7 +68,7 @@ class Permission(Record_MySQL.Record):
 		Fetches the permissions as a name => rights dict by user._id
 
 		Arguments:
-			_id {str} -- The ID of the User
+			_id (str): The ID of the User
 
 		Returns:
 			dict
@@ -96,16 +89,26 @@ class Permission(Record_MySQL.Record):
 		Returns:
 			dict
 		"""
-		return _mdPermissionConf
+
+		# If we haven loaded the config yet
+		if not cls._conf:
+			cls._conf = Record_MySQL.Record.generateConfig(
+				Tree.fromFile('../definitions/auth/permission.json'),
+				'mysql'
+			)
+
+		# Return the config
+		return cls._conf
 
 # User class
 class User(Record_MySQL.Record):
 	"""User
 
 	Represents a single user in the system
-
-	Extends: RestOC.Record_MySQL.Record
 	"""
+
+	_conf = None
+	"""Configuration"""
 
 	_redis = None
 	"""Redis
@@ -119,7 +122,7 @@ class User(Record_MySQL.Record):
 		Overwrites Record_Base constructor to add permissions records
 
 		Arguments:
-			record {dict} -- The data associated with the user
+			record (dict): The data associated with the user
 
 		Returns:
 			User
@@ -140,8 +143,8 @@ class User(Record_MySQL.Record):
 		Fetches the Users from the cache and returns them
 
 		Arguments:
-			_id {str|str[]} -- The ID(s) to fetch
-			raw {bool} -- Return raw records or Users
+			_id (str|str[]): The ID(s) to fetch
+			raw (bool): Return raw records or Users
 
 		Returns:
 			User|User[]|dict|dict[]
@@ -224,7 +227,7 @@ class User(Record_MySQL.Record):
 		Removes a user from the cache
 
 		Arguments:
-			_id {str} -- The ID of the user to remove
+			_id (str): The ID of the user to remove
 
 		Returns:
 			None
@@ -242,7 +245,16 @@ class User(Record_MySQL.Record):
 		Returns:
 			dict
 		"""
-		return _mdUserConf
+
+		# If we haven loaded the config yet
+		if not cls._conf:
+			cls._conf = Record_MySQL.Record.generateConfig(
+				Tree.fromFile('../definitions/auth/user.json'),
+				'mysql'
+			)
+
+		# Return the config
+		return cls._conf
 
 	@staticmethod
 	def passwordHash(passwd):
@@ -251,7 +263,7 @@ class User(Record_MySQL.Record):
 		Returns a hashed password with a unique salt
 
 		Arguments:
-			passwd {str} -- The password to hash
+			passwd (str): The password to hash
 
 		Returns:
 			str
@@ -273,7 +285,7 @@ class User(Record_MySQL.Record):
 		Returns true if a password is secure enough
 
 		Arguments:
-			passwd {str} -- The password to check
+			passwd (str): The password to check
 
 		Returns:
 			bool
@@ -297,7 +309,7 @@ class User(Record_MySQL.Record):
 		Validates the given password against the current instance
 
 		Arguments:
-			passwd {str} -- The password to validate
+			passwd (str): The password to validate
 
 		Returns:
 			bool
@@ -319,7 +331,7 @@ class User(Record_MySQL.Record):
 		Get or set the permissions associated with the user
 
 		Arguments:
-			new {dict} -- If passed, this is a setter
+			new (dict): If passed, this is a setter
 
 		Returns:
 			None|dict
@@ -372,7 +384,7 @@ class User(Record_MySQL.Record):
 		Stores the Redis connection to be used to fetch and store Users
 
 		Arguments:
-			redis {StrictRedis} -- A Redis instance
+			redis (StrictRedis): A Redis instance
 
 		Returns:
 			None

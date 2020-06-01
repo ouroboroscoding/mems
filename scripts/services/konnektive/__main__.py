@@ -48,7 +48,8 @@ Templates.init('../templates')
 # Create the HTTP server and map requests to service
 REST.Server({
 	"/customer": {"methods": REST.READ, "session": True},
-	"/customer/orders": {"methods": REST.READ, "session": True}
+	"/customer/orders": {"methods": REST.READ, "session": True},
+	"/customer/transactions": {"methods": REST.READ, "session": True}
 
 }, 'konnektive', "https?://(.*\\.)?%s" % Conf.get(("rest","allowed")).replace('.', '\\.')).run(
 	host=oRestConf['konnektive']['host'],

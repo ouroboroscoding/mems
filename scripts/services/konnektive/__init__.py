@@ -26,8 +26,6 @@ class Konnektive(Services.Service):
 	"""Konnektive Service class
 
 	Service for Konnektive CRM access
-
-	Extends: shared.Services.Service
 	"""
 
 	def __generateURL(self, path, params={}):
@@ -36,8 +34,8 @@ class Konnektive(Services.Service):
 		Takes a path and params and generates the full URL with query string
 
 		Arguments:
-			path {str} -- The path (without leading/trailing slashes)
-			params {dict} -- Name/value query pairs
+			path (str): The path (without leading/trailing slashes)
+			params (dict): Name/value query pairs
 
 		Returns:
 			str
@@ -60,8 +58,8 @@ class Konnektive(Services.Service):
 		Fetches every page of data for a specific query
 
 		Arguments:
-			path {str} -- The path of the http request
-			params {dict} -- The query params for the request
+			path (str): The path of the http request
+			params (dict): The query params for the request
 
 		Returns:
 			list
@@ -147,8 +145,8 @@ class Konnektive(Services.Service):
 		Fetches a customer's info by ID
 
 		Arguments:
-			data {dict} -- Data sent with the request
-			sesh {Sesh._Session} -- The session associated with the request
+			data (dict): Data sent with the request
+			sesh (Sesh._Session): The session associated with the request
 
 		Returns:
 			Services.Effect
@@ -212,8 +210,8 @@ class Konnektive(Services.Service):
 		Fetches the orders for a customer
 
 		Arguments:
-			data {dict} -- Data sent with the request
-			sesh {Sesh._Session} -- The session associated with the request
+			data (dict): Data sent with the request
+			sesh (Sesh._Session): The session associated with the request
 
 		Returns:
 			Services.Effect
@@ -223,6 +221,10 @@ class Konnektive(Services.Service):
 		try: DictHelper.eval(data, ['id'])
 		except ValueError as e: return Services.Effect(error=(1001, [(f, "missing") for f in e.args]))
 
+		# If transactions flag not passed, assume false
+		if 'transactions' not in data:
+			data['transactions'] = False
+
 		# Make the request to Konnektive
 		lOrders = self.__request('order/query', {
 			"dateRangeType": "dateUpdated",
@@ -230,7 +232,36 @@ class Konnektive(Services.Service):
 			"sortDir": 0
 		});
 
-		print(lOrders)
+		# If we also want the associated transactions
+		if data['transactions']:
+
+			# Get them from this service
+			oEff = self.customerTransactions_read({
+				"id": data['id']
+			}, sesh)
+
+			# If there's an error
+			if oEff.errorExists():
+				return oEff
+
+			# Store them by order
+			dTransactions = {}
+			for d in oEff.data:
+
+				# If we don't have the order
+				if d['orderId'] not in dTransactions:
+					dTransactions[d['orderId']] = []
+
+				# Append the transaction
+				dTransactions[d['orderId']].append({
+					"cycle": d['billingCycleNumber'],
+					"recycle": d['recycleNumber'],
+					"mid": d['merchant'],
+					"type": d['txnType'].capitalize(),
+					"result": d['responseType'].replace('_', ' ').capitlize(),
+					"response": d['responseText'],
+					"id": d['transactionId']
+				})
 
 		# Return what ever's found after removing unnecessary data
 		return Services.Effect([{
@@ -272,5 +303,39 @@ class Konnektive(Services.Service):
 			},
 			"status": dO['orderStatus'],
 			"type": dO['orderType'],
-			"totalAmount": dO['totalAmount']
+			"totalAmount": dO['totalAmount'],
+			"transactions": (
+				d['orderId'] in dTransactions and dTransactions[d['orderId']] or []
+			)
 		} for dO in lOrders])
+
+	def customerTransactions_read(self, data, sesh):
+		"""Customer Transactions
+
+		Fetches the orders for a customer
+
+		Arguments:
+			data (dict): Data sent with the request
+			sesh (Sesh._Session): The session associated with the request
+
+		Returns:
+			Services.Effect
+		"""
+
+		# Verify fields
+		try: DictHelper.eval(data, ['id'])
+		except ValueError as e: return Services.Effect(error=(1001, [(f, "missing") for f in e.args]))
+
+		# Make the request to Konnektive
+		lTransactions = self.__request('transactions/query', {
+			"dateRangeType": "dateUpdated",
+			"customerId": data['id'],
+			"sortDir": 0
+		});
+
+		print(lTransactions)
+
+		# Return what ever's found after removing unnecessary data
+		return Services.Effect([{
+			"orderId": d['orderId'],
+		} for d in lTransactions])

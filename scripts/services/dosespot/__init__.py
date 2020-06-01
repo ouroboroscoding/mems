@@ -75,8 +75,6 @@ class Dosespot(Services.Service):
 	"""Dosespot Service class
 
 	Service for Dosespot access
-
-	Extends: shared.Services.Service
 	"""
 
 	def __generateToken(self, clinician_id):
@@ -85,7 +83,7 @@ class Dosespot(Services.Service):
 		Generates the Auth token needed for all HTTP requests
 
 		Arguments:
-			clinician_id {uint} -- ID of the clinician making the request
+			clinician_id (uint): ID of the clinician making the request
 
 		Raises:
 			EffectException
@@ -190,7 +188,7 @@ class Dosespot(Services.Service):
 		key
 
 		Arguments:
-			data {dict} -- Data sent with the request
+			data (dict): Data sent with the request
 
 		Returns:
 			Services.Effect

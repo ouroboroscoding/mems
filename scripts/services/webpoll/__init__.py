@@ -27,8 +27,6 @@ class WebPoll(Services.Service):
 	"""Polling Service class
 
 	Service for long polling between connected clients and the DB
-
-	Extends: shared.Services.Service
 	"""
 
 	def clear_update(self, data, sesh):
@@ -37,8 +35,8 @@ class WebPoll(Services.Service):
 		Clears the given number of messages from the sync cache
 
 		Arguments:
-			data {dict} -- Data sent with the request
-			sesh {Sesh._Session} -- The session associated with the request
+			data (dict): Data sent with the request
+			sesh (Sesh._Session): The session associated with the request
 
 		Returns:
 			Services.Effect
@@ -66,8 +64,8 @@ class WebPoll(Services.Service):
 		associated with either are stored for later polling
 
 		Arguments:
-			data {dict} -- Data sent with the request
-			sesh {Sesh._Session} -- The session associated with the request
+			data (dict): Data sent with the request
+			sesh (Sesh._Session): The session associated with the request
 
 		Returns:
 			Services.Effect
@@ -94,8 +92,8 @@ class WebPoll(Services.Service):
 		no longer collected for it
 
 		Arguments:
-			data {dict} -- Data sent with the request
-			sesh {Sesh._Session} -- The session associated with the request
+			data (dict): Data sent with the request
+			sesh (Sesh._Session): The session associated with the request
 
 		Returns:
 			Services.Effect
@@ -121,8 +119,8 @@ class WebPoll(Services.Service):
 		A client is requesting an update on anything they might be looking at
 
 		Arguments:
-			data {dict} -- Data sent with the request
-			sesh {Sesh._Session} -- The session associated with the request
+			data (dict): Data sent with the request
+			sesh (Sesh._Session): The session associated with the request
 
 		Returns:
 			Services.Effect
@@ -158,8 +156,8 @@ class WebPoll(Services.Service):
 		websocket connection
 
 		Arguments:
-			data {dict} -- Data sent with the request
-			sesh {Sesh._Session} -- The session associated with the request
+			data (dict): Data sent with the request
+			sesh (Sesh._Session): The session associated with the request
 
 		Returns:
 			Services.Effect

@@ -21,8 +21,6 @@ class CSR(Services.Service):
 	"""CSR Service class
 
 	Service for CSR access
-
-	Extends: shared.Services.Service
 	"""
 
 	_install = [TemplateEmail, TemplateSMS]
@@ -67,9 +65,9 @@ class CSR(Services.Service):
 		Create a new template of the passed type
 
 		Arguments:
-			data {mixed} -- Data sent with the request
-			sesh {Sesh._Session} -- The session associated with the request
-			_class {class} -- The class to use
+			data (mixed): Data sent with the request
+			sesh (Sesh._Session): The session associated with the request
+			_class (class): The class to use
 
 		Returns:
 			Services.Effect
@@ -104,9 +102,9 @@ class CSR(Services.Service):
 		Delete an existing template for the passed type
 
 		Arguments:
-			data {mixed} -- Data sent with the request
-			sesh {Sesh._Session} -- The session associated with the request
-			_class {class} -- The class to use
+			data (mixed): Data sent with the request
+			sesh (Sesh._Session): The session associated with the request
+			_class (class): The class to use
 
 		Returns:
 			Services.Effect
@@ -141,9 +139,9 @@ class CSR(Services.Service):
 		Fetches an existing template of the passed type
 
 		Arguments:
-			data {mixed} -- Data sent with the request
-			sesh {Sesh._Session} -- The session associated with the request
-			_class {class} -- The class to use
+			data (mixed): Data sent with the request
+			sesh (Sesh._Session): The session associated with the request
+			_class (class): The class to use
 
 		Returns:
 			Services.Effect
@@ -177,9 +175,9 @@ class CSR(Services.Service):
 		Updated an existing template of the passed type
 
 		Arguments:
-			data {mixed} -- Data sent with the request
-			sesh {Sesh._Session} -- The session associated with the request
-			_class {class} -- The class to use
+			data (mixed): Data sent with the request
+			sesh (Sesh._Session): The session associated with the request
+			_class (class): The class to use
 
 		Returns:
 			Services.Effect
@@ -229,9 +227,9 @@ class CSR(Services.Service):
 		Fetches all existing templates of the passed type
 
 		Arguments:
-			data {mixed} -- Data sent with the request
-			sesh {Sesh._Session} -- The session associated with the request
-			_class {class} -- The class to use
+			data (mixed): Data sent with the request
+			sesh (Sesh._Session): The session associated with the request
+			_class (class): The class to use
 
 		Returns:
 			Services.Effect
@@ -256,8 +254,8 @@ class CSR(Services.Service):
 		Create a new email template
 
 		Arguments:
-			data {mixed} -- Data sent with the request
-			sesh {Sesh._Session} -- The session associated with the request
+			data (mixed): Data sent with the request
+			sesh (Sesh._Session): The session associated with the request
 
 		Returns:
 			Services.Effect
@@ -270,8 +268,8 @@ class CSR(Services.Service):
 		Delete an existing email template
 
 		Arguments:
-			data {mixed} -- Data sent with the request
-			sesh {Sesh._Session} -- The session associated with the request
+			data (mixed): Data sent with the request
+			sesh (Sesh._Session): The session associated with the request
 
 		Returns:
 			Services.Effect
@@ -284,8 +282,8 @@ class CSR(Services.Service):
 		Fetches an existing email template
 
 		Arguments:
-			data {mixed} -- Data sent with the request
-			sesh {Sesh._Session} -- The session associated with the request
+			data (mixed): Data sent with the request
+			sesh (Sesh._Session): The session associated with the request
 
 		Returns:
 			Services.Effect
@@ -298,8 +296,8 @@ class CSR(Services.Service):
 		Updated an existing email template
 
 		Arguments:
-			data {mixed} -- Data sent with the request
-			sesh {Sesh._Session} -- The session associated with the request
+			data (mixed): Data sent with the request
+			sesh (Sesh._Session): The session associated with the request
 
 		Returns:
 			Services.Effect
@@ -312,8 +310,8 @@ class CSR(Services.Service):
 		Fetches all existing email templates
 
 		Arguments:
-			data {mixed} -- Data sent with the request
-			sesh {Sesh._Session} -- The session associated with the request
+			data (mixed): Data sent with the request
+			sesh (Sesh._Session): The session associated with the request
 
 		Returns:
 			Services.Effect
@@ -326,8 +324,8 @@ class CSR(Services.Service):
 		Create a new sms template
 
 		Arguments:
-			data {mixed} -- Data sent with the request
-			sesh {Sesh._Session} -- The session associated with the request
+			data (mixed): Data sent with the request
+			sesh (Sesh._Session): The session associated with the request
 
 		Returns:
 			Services.Effect
@@ -340,8 +338,8 @@ class CSR(Services.Service):
 		Delete an existing sms template
 
 		Arguments:
-			data {mixed} -- Data sent with the request
-			sesh {Sesh._Session} -- The session associated with the request
+			data (mixed): Data sent with the request
+			sesh (Sesh._Session): The session associated with the request
 
 		Returns:
 			Services.Effect
@@ -354,8 +352,8 @@ class CSR(Services.Service):
 		Fetches an existing sms template
 
 		Arguments:
-			data {mixed} -- Data sent with the request
-			sesh {Sesh._Session} -- The session associated with the request
+			data (mixed): Data sent with the request
+			sesh (Sesh._Session): The session associated with the request
 
 		Returns:
 			Services.Effect
@@ -368,8 +366,8 @@ class CSR(Services.Service):
 		Updated an existing sms template
 
 		Arguments:
-			data {mixed} -- Data sent with the request
-			sesh {Sesh._Session} -- The session associated with the request
+			data (mixed): Data sent with the request
+			sesh (Sesh._Session): The session associated with the request
 
 		Returns:
 			Services.Effect
@@ -382,8 +380,8 @@ class CSR(Services.Service):
 		Fetches all existing sms templates
 
 		Arguments:
-			data {mixed} -- Data sent with the request
-			sesh {Sesh._Session} -- The session associated with the request
+			data (mixed): Data sent with the request
+			sesh (Sesh._Session): The session associated with the request
 
 		Returns:
 			Services.Effect

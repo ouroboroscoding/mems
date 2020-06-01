@@ -127,9 +127,6 @@ class CEncoder(json.JSONEncoder):
 	"""Encoder
 
 	Handles encoding types the default JSON encoder can't handle
-
-	Extends:
-		json.JSONEncoder
 	"""
 
 	# default method

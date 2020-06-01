@@ -20,124 +20,55 @@ import re
 from FormatOC import Tree
 from RestOC import Conf, Record_MySQL
 
-# SQL files
-with open('./services/monolith/sql/claimed.sql') as oF:
-	sClaimedSQL = oF.read()
-with open('./services/monolith/sql/claimed_new.sql') as oF:
-	sClaimedNewSQL = oF.read()
-with open('./services/monolith/sql/conversation.sql') as oF:
-	sConversationSQL = oF.read()
-with open('./services/monolith/sql/landing.sql') as oF:
-	sLandingSQL = oF.read()
-with open('./services/monolith/sql/msg_phone_update.sql') as oF:
-	sMsgPhoneUpdateSQL = oF.read()
-with open('./services/monolith/sql/smp_notes.sql') as oF:
-	sSmpNotes = oF.read()
-with open('./services/monolith/sql/number_of_orders.sql') as oF:
-	sNumOfOrdersSQL = oF.read()
-with open('./services/monolith/sql/search.sql') as oF:
-	sSearchSQL = oF.read()
-with open('./services/monolith/sql/unclaimed.sql') as oF:
-	sUnclaimedSQL = oF.read()
+sClaimedSQL = ''
+sClaimedNewSQL = ''
+sConversationSQL = ''
+sLandingSQL = ''
+sMsgPhoneUpdateSQL = ''
+sSmpNotes = ''
+sNumOfOrdersSQL = ''
+sSearchSQL = ''
+sUnclaimedSQL = ''
 
-# CustomerClaimed structure and config
-_mdCustomerClaimedConf = Record_MySQL.Record.generateConfig(
-	Tree.fromFile('../definitions/monolith/customer_claimed.json'),
-	'mysql'
-)
+def init():
+	"""Ugly Hack
 
-# CustomerCommunication structure and config
-_mdCustomerCommunicationConf = Record_MySQL.Record.generateConfig(
-	Tree.fromFile('../definitions/monolith/customer_communication.json'),
-	'mysql'
-)
+	Need to find a better way to do this
+	"""
 
-# CustomerMsgPhone structure and config
-_mdCustomerMsgPhoneConf = Record_MySQL.Record.generateConfig(
-	Tree.fromFile('../definitions/monolith/customer_msg_phone.json'),
-	'mysql'
-)
+	global sClaimedSQL, sClaimedNewSQL, sConversationSQL, sLandingSQL, \
+			sMsgPhoneUpdateSQL, sSmpNotes, sNumOfOrdersSQL, sSearchSQL, \
+			sUnclaimedSQL
 
-# DsPatient structure and config
-_mdDsPatientConf = Record_MySQL.Record.generateConfig(
-	Tree.fromFile('../definitions/monolith/ds_patient.json'),
-	'mysql'
-)
-
-# Forgot structure and config
-_mdForgotConf = Record_MySQL.Record.generateConfig(
-	Tree.fromFile('../definitions/monolith/forgot.json'),
-	'mysql'
-)
-
-# KtCustomer structure and config
-_mdKtCustomerConf = Record_MySQL.Record.generateConfig(
-	Tree.fromFile('../definitions/monolith/kt_customer.json'),
-	'mysql'
-)
-
-# KtOrder structure and config
-_mdKtOrderConf = Record_MySQL.Record.generateConfig(
-	Tree.fromFile('../definitions/monolith/kt_order.json'),
-	'mysql'
-)
-
-# ShippingInfo structure and config
-_mdShippingInfoConf = Record_MySQL.Record.generateConfig(
-	Tree.fromFile('../definitions/monolith/shipping_info.json'),
-	'mysql'
-)
-
-# SmpNote structure and config
-_mdSmpNoteConf = Record_MySQL.Record.generateConfig(
-	Tree.fromFile('../definitions/monolith/smp_note.json'),
-	'mysql'
-)
-
-# SMSStop structure and config
-_mdSMSStopConf = Record_MySQL.Record.generateConfig(
-	Tree.fromFile('../definitions/monolith/sms_stop.json'),
-	'mysql'
-)
-
-# TfAnswer structure and config
-_mdTfAnswerConf = Record_MySQL.Record.generateConfig(
-	Tree.fromFile('../definitions/monolith/tf_answer.json'),
-	'mysql'
-)
-
-# TfLanding structure and config
-_mdTfLandingConf = Record_MySQL.Record.generateConfig(
-	Tree.fromFile('../definitions/monolith/tf_landing.json'),
-	'mysql'
-)
-
-# TfQuestion structure and config
-_mdTfQuestionConf = Record_MySQL.Record.generateConfig(
-	Tree.fromFile('../definitions/monolith/tf_question.json'),
-	'mysql'
-)
-
-# TfQuestionOption structure and config
-_mdTfQuestionOptionConf = Record_MySQL.Record.generateConfig(
-	Tree.fromFile('../definitions/monolith/tf_question_option.json'),
-	'mysql'
-)
-
-# User structure and config
-_mdUserConf = Record_MySQL.Record.generateConfig(
-	Tree.fromFile('../definitions/monolith/user.json'),
-	'mysql'
-)
+	# SQL files
+	with open('./services/monolith/sql/claimed.sql') as oF:
+		sClaimedSQL = oF.read()
+	with open('./services/monolith/sql/claimed_new.sql') as oF:
+		sClaimedNewSQL = oF.read()
+	with open('./services/monolith/sql/conversation.sql') as oF:
+		sConversationSQL = oF.read()
+	with open('./services/monolith/sql/landing.sql') as oF:
+		sLandingSQL = oF.read()
+	with open('./services/monolith/sql/msg_phone_update.sql') as oF:
+		sMsgPhoneUpdateSQL = oF.read()
+	with open('./services/monolith/sql/smp_notes.sql') as oF:
+		sSmpNotes = oF.read()
+	with open('./services/monolith/sql/number_of_orders.sql') as oF:
+		sNumOfOrdersSQL = oF.read()
+	with open('./services/monolith/sql/search.sql') as oF:
+		sSearchSQL = oF.read()
+	with open('./services/monolith/sql/unclaimed.sql') as oF:
+		sUnclaimedSQL = oF.read()
 
 # CustomerClaimed class
 class CustomerClaimed(Record_MySQL.Record):
 	"""CustomerClaimed
 
 	Represents a customer conversation that has been claimed by an agent
-
-	Extends: RestOC.Record_MySQL.Record
 	"""
+
+	_conf = None
+	"""Configuration"""
 
 	@classmethod
 	def config(cls):
@@ -148,16 +79,26 @@ class CustomerClaimed(Record_MySQL.Record):
 		Returns:
 			dict
 		"""
-		return _mdCustomerClaimedConf
+
+		# If we haven loaded the config yet
+		if not cls._conf:
+			cls._conf = Record_MySQL.Record.generateConfig(
+				Tree.fromFile('../definitions/monolith/customer_claimed.json'),
+				'mysql'
+			)
+
+		# Return the config
+		return cls._conf
 
 # CustomerCommunication class
 class CustomerCommunication(Record_MySQL.Record):
 	"""CustomerCommunication
 
 	Represents a message to or from a customer or potential customer
-
-	Extends: RestOC.Record_MySQL.Record
 	"""
+
+	_conf = None
+	"""Configuration"""
 
 	@classmethod
 	def config(cls):
@@ -168,7 +109,16 @@ class CustomerCommunication(Record_MySQL.Record):
 		Returns:
 			dict
 		"""
-		return _mdCustomerCommunicationConf
+
+		# If we haven loaded the config yet
+		if not cls._conf:
+			cls._conf = Record_MySQL.Record.generateConfig(
+				Tree.fromFile('../definitions/monolith/customer_communication.json'),
+				'mysql'
+			)
+
+		# Return the config
+		return cls._conf
 
 	@classmethod
 	def newMessages(cls, numbers, ts, custom={}):
@@ -177,9 +127,9 @@ class CustomerCommunication(Record_MySQL.Record):
 		Checks for new messages from the given numbers
 
 		Arguments:
-			numbers {str[]} -- List of phone numbers to check
-			ts {uint} -- Timestamp indicating last check
-			custom {dict} -- Custom Host and DB info
+			numbers (str[]): List of phone numbers to check
+			ts (uint): Timestamp indicating last check
+			custom (dict): Custom Host and DB info
 				'host' the name of the host to get/set data on
 				'append' optional postfix for dynamic DBs
 
@@ -220,8 +170,8 @@ class CustomerCommunication(Record_MySQL.Record):
 		chronological order
 
 		Arguments:
-			number {str} -- The phone number to look up
-			custom {dict} -- Custom Host and DB info
+			number (str): The phone number to look up
+			custom (dict): Custom Host and DB info
 				'host' the name of the host to get/set data on
 				'append' optional postfix for dynamic DBs
 
@@ -248,9 +198,10 @@ class CustomerMsgPhone(Record_MySQL.Record):
 
 	Represents a summary of all messages to and from a customer or potential
 	customer
-
-	Extends: RestOC.Record_MySQL.Record
 	"""
+
+	_conf = None
+	"""Configuration"""
 
 	@classmethod
 	def config(cls):
@@ -261,7 +212,16 @@ class CustomerMsgPhone(Record_MySQL.Record):
 		Returns:
 			dict
 		"""
-		return _mdCustomerMsgPhoneConf
+
+		# If we haven loaded the config yet
+		if not cls._conf:
+			cls._conf = Record_MySQL.Record.generateConfig(
+				Tree.fromFile('../definitions/monolith/customer_msg_phone.json'),
+				'mysql'
+			)
+
+		# Return the config
+		return cls._conf
 
 	@classmethod
 	def addIncoming(cls, customerPhone, date, message, custom={}):
@@ -270,9 +230,9 @@ class CustomerMsgPhone(Record_MySQL.Record):
 		Adds an incoming message to the conversation summary
 
 		Arguments:
-			customerPhone {str} -- The number associated with the conversation
-			message {str} -- The message to prepend to the conversation
-			custom {dict} -- Custom Host and DB info
+			customerPhone (str): The number associated with the conversation
+			message (str): The message to prepend to the conversation
+			custom (dict): Custom Host and DB info
 				'host' the name of the host to get/set data on
 				'append' optional postfix for dynamic DBs
 
@@ -305,9 +265,9 @@ class CustomerMsgPhone(Record_MySQL.Record):
 		Adds an outgoing message to the conversation summary
 
 		Arguments:
-			customerPhone {str} -- The number associated with the conversation
-			message {str} -- The message to prepend to the conversation
-			custom {dict} -- Custom Host and DB info
+			customerPhone (str): The number associated with the conversation
+			message (str): The message to prepend to the conversation
+			custom (dict): Custom Host and DB info
 				'host' the name of the host to get/set data on
 				'append' optional postfix for dynamic DBs
 
@@ -340,8 +300,8 @@ class CustomerMsgPhone(Record_MySQL.Record):
 		Returns all the conversations the user has claimed
 
 		Arguments:
-			user {int} -- The ID of the user
-			custom {dict} -- Custom Host and DB info
+			user (int): The ID of the user
+			custom (dict): Custom Host and DB info
 				'host' the name of the host to get/set data on
 				'append' optional postfix for dynamic DBs
 
@@ -369,8 +329,8 @@ class CustomerMsgPhone(Record_MySQL.Record):
 		Search conversations and return them
 
 		Arguments:
-			q {dict} -- The strings to query
-			custom {dict} -- Custom Host and DB info
+			q (dict): The strings to query
+			custom (dict): Custom Host and DB info
 				'host' the name of the host to get/set data on
 				'append' optional postfix for dynamic DBs
 
@@ -410,7 +370,7 @@ class CustomerMsgPhone(Record_MySQL.Record):
 		Fetches open conversations that have not been claimed by any agent
 
 		Arguments:
-			custom {dict} -- Custom Host and DB info
+			custom (dict): Custom Host and DB info
 				'host' the name of the host to get/set data on
 				'append' optional postfix for dynamic DBs
 
@@ -435,9 +395,10 @@ class DsPatient(Record_MySQL.Record):
 	"""DsPatient
 
 	Represents a customer in DoseSpot
-
-	Extends: RestOC.Record_MySQL.Record
 	"""
+
+	_conf = None
+	"""Configuration"""
 
 	@classmethod
 	def config(cls):
@@ -448,16 +409,26 @@ class DsPatient(Record_MySQL.Record):
 		Returns:
 			dict
 		"""
-		return _mdDsPatientConf
+
+		# If we haven loaded the config yet
+		if not cls._conf:
+			cls._conf = Record_MySQL.Record.generateConfig(
+				Tree.fromFile('../definitions/monolith/ds_patient.json'),
+				'mysql'
+			)
+
+		# Return the config
+		return cls._conf
 
 # Forgot class
 class Forgot(Record_MySQL.Record):
 	"""Forgot
 
 	Represents an attempt to reset a forgotten password
-
-	Extends: RestOC.Record_MySQL.Record
 	"""
+
+	_conf = None
+	"""Configuration"""
 
 	@classmethod
 	def config(cls):
@@ -468,16 +439,26 @@ class Forgot(Record_MySQL.Record):
 		Returns:
 			dict
 		"""
-		return _mdForgotConf
+
+		# If we haven loaded the config yet
+		if not cls._conf:
+			cls._conf = Record_MySQL.Record.generateConfig(
+				Tree.fromFile('../definitions/monolith/forgot.json'),
+				'mysql'
+			)
+
+		# Return the config
+		return cls._conf
 
 # KtCustomer class
 class KtCustomer(Record_MySQL.Record):
 	"""KtCustomer
 
 	Represents a customer in konnektive
-
-	Extends: RestOC.Record_MySQL.Record
 	"""
+
+	_conf = None
+	"""Configuration"""
 
 	@classmethod
 	def config(cls):
@@ -488,16 +469,26 @@ class KtCustomer(Record_MySQL.Record):
 		Returns:
 			dict
 		"""
-		return _mdKtCustomerConf
+
+		# If we haven loaded the config yet
+		if not cls._conf:
+			cls._conf = Record_MySQL.Record.generateConfig(
+				Tree.fromFile('../definitions/monolith/kt_customer.json'),
+				'mysql'
+			)
+
+		# Return the config
+		return cls._conf
 
 # KtOrder class
 class KtOrder(Record_MySQL.Record):
 	"""KtOrder
 
 	Represents a customer's order in konnektive
-
-	Extends: RestOC.Record_MySQL.Record
 	"""
+
+	_conf = None
+	"""Configuration"""
 
 	@classmethod
 	def config(cls):
@@ -508,7 +499,16 @@ class KtOrder(Record_MySQL.Record):
 		Returns:
 			dict
 		"""
-		return _mdKtOrderConf
+
+		# If we haven loaded the config yet
+		if not cls._conf:
+			cls._conf = Record_MySQL.Record.generateConfig(
+				Tree.fromFile('../definitions/monolith/kt_order.json'),
+				'mysql'
+			)
+
+		# Return the config
+		return cls._conf
 
 	@classmethod
 	def ordersByPhone(cls, phone, custom={}):
@@ -517,9 +517,9 @@ class KtOrder(Record_MySQL.Record):
 		Returns the count of orders by a specific phone number
 
 		Arguments:
-			phone {str} -- The phone number associated with the
+			phone (str): The phone number associated with the
 				conversation
-			custom {dict} -- Custom Host and DB info
+			custom (dict): Custom Host and DB info
 				'host' the name of the host to get/set data on
 				'append' optional postfix for dynamic DBs
 
@@ -546,9 +546,10 @@ class ShippingInfo(Record_MySQL.Record):
 	"""ShippingInfo
 
 	Represents a tracking code associated with a customer
-
-	Extends: RestOC.Record_MySQL.Record
 	"""
+
+	_conf = None
+	"""Configuration"""
 
 	@classmethod
 	def config(cls):
@@ -559,16 +560,26 @@ class ShippingInfo(Record_MySQL.Record):
 		Returns:
 			dict
 		"""
-		return _mdShippingInfoConf
+
+		# If we haven loaded the config yet
+		if not cls._conf:
+			cls._conf = Record_MySQL.Record.generateConfig(
+				Tree.fromFile('../definitions/monolith/shipping_info.json'),
+				'mysql'
+			)
+
+		# Return the config
+		return cls._conf
 
 # SmpNote class
 class SmpNote(Record_MySQL.Record):
 	"""SmpNote
 
 	Represents an internal note associated with a customer
-
-	Extends: RestOC.Record_MySQL.Record
 	"""
+
+	_conf = None
+	"""Configuration"""
 
 	@classmethod
 	def byCustomer(cls, customer_id, custom={}):
@@ -577,8 +588,8 @@ class SmpNote(Record_MySQL.Record):
 		Fetches all notes associated with the customer's orders
 
 		Arguments:
-			customer_id {int} -- The unique ID of the customer
-			custom {dict} -- Custom Host and DB info
+			customer_id (int): The unique ID of the customer
+			custom (dict): Custom Host and DB info
 				'host' the name of the host to get/set data on
 				'append' optional postfix for dynamic DBs
 
@@ -614,16 +625,26 @@ class SmpNote(Record_MySQL.Record):
 		Returns:
 			dict
 		"""
-		return _mdSmpNoteConf
+
+		# If we haven loaded the config yet
+		if not cls._conf:
+			cls._conf = Record_MySQL.Record.generateConfig(
+				Tree.fromFile('../definitions/monolith/smp_note.json'),
+				'mysql'
+			)
+
+		# Return the config
+		return cls._conf
 
 # SMSStop class
 class SMSStop(Record_MySQL.Record):
 	"""SMSStop
 
 	Represents a customer phone number that should be blocked
-
-	Extends: RestOC.Record_MySQL.Record
 	"""
+
+	_conf = None
+	"""Configuration"""
 
 	@classmethod
 	def config(cls):
@@ -634,16 +655,26 @@ class SMSStop(Record_MySQL.Record):
 		Returns:
 			dict
 		"""
-		return _mdSMSStopConf
+
+		# If we haven loaded the config yet
+		if not cls._conf:
+			cls._conf = Record_MySQL.Record.generateConfig(
+				Tree.fromFile('../definitions/monolith/sms_stop.json'),
+				'mysql'
+			)
+
+		# Return the config
+		return cls._conf
 
 # TfAnswer class
 class TfAnswer(Record_MySQL.Record):
 	"""TfAnswer
 
 	Represents a customer phone number that should be blocked
-
-	Extends: RestOC.Record_MySQL.Record
 	"""
+
+	_conf = None
+	"""Configuration"""
 
 	@classmethod
 	def config(cls):
@@ -654,16 +685,26 @@ class TfAnswer(Record_MySQL.Record):
 		Returns:
 			dict
 		"""
-		return _mdTfAnswerConf
+
+		# If we haven loaded the config yet
+		if not cls._conf:
+			cls._conf = Record_MySQL.Record.generateConfig(
+				Tree.fromFile('../definitions/monolith/tf_answer.json'),
+				'mysql'
+			)
+
+		# Return the config
+		return cls._conf
 
 # TfLanding class
 class TfLanding(Record_MySQL.Record):
 	"""TfLanding
 
 	Represents a customer phone number that should be blocked
-
-	Extends: RestOC.Record_MySQL.Record
 	"""
+
+	_conf = None
+	"""Configuration"""
 
 	@classmethod
 	def config(cls):
@@ -674,7 +715,16 @@ class TfLanding(Record_MySQL.Record):
 		Returns:
 			dict
 		"""
-		return _mdTfLandingConf
+
+		# If we haven loaded the config yet
+		if not cls._conf:
+			cls._conf = Record_MySQL.Record.generateConfig(
+				Tree.fromFile('../definitions/monolith/tf_landing.json'),
+				'mysql'
+			)
+
+		# Return the config
+		return cls._conf
 
 	@classmethod
 	def find(cls, last_name, email, phone, custom={}):
@@ -683,10 +733,10 @@ class TfLanding(Record_MySQL.Record):
 		Attempts to find a landing using customer info
 
 		Arguments:
-			last_name {str} -- The last name of the customer
-			email {str} -- The email of the customer
-			phone {str} -- The phone number of the customer
-			custom {dict} -- Custom Host and DB info
+			last_name (str): The last name of the customer
+			email (str): The email of the customer
+			phone (str): The phone number of the customer
+			custom (dict): Custom Host and DB info
 				'host' the name of the host to get/set data on
 				'append' optional postfix for dynamic DBs
 
@@ -718,9 +768,10 @@ class TfQuestion(Record_MySQL.Record):
 	"""TfQuestion
 
 	Represents a customer phone number that should be blocked
-
-	Extends: RestOC.Record_MySQL.Record
 	"""
+
+	_conf = None
+	"""Configuration"""
 
 	@classmethod
 	def config(cls):
@@ -731,16 +782,26 @@ class TfQuestion(Record_MySQL.Record):
 		Returns:
 			dict
 		"""
-		return _mdTfQuestionConf
+
+		# If we haven loaded the config yet
+		if not cls._conf:
+			cls._conf = Record_MySQL.Record.generateConfig(
+				Tree.fromFile('../definitions/monolith/tf_question.json'),
+				'mysql'
+			)
+
+		# Return the config
+		return cls._conf
 
 # TfQuestionOption class
 class TfQuestionOption(Record_MySQL.Record):
 	"""TfQuestionOption
 
 	Represents a customer phone number that should be blocked
-
-	Extends: RestOC.Record_MySQL.Record
 	"""
+
+	_conf = None
+	"""Configuration"""
 
 	@classmethod
 	def config(cls):
@@ -751,16 +812,26 @@ class TfQuestionOption(Record_MySQL.Record):
 		Returns:
 			dict
 		"""
-		return _mdTfQuestionOptionConf
+
+		# If we haven loaded the config yet
+		if not cls._conf:
+			cls._conf =  Record_MySQL.Record.generateConfig(
+				Tree.fromFile('../definitions/monolith/tf_question_option.json'),
+				'mysql'
+			)
+
+		# Return the config
+		return cls._conf
 
 # User class
 class User(Record_MySQL.Record):
 	"""User
 
 	Represents a Memo user
-
-	Extends: RestOC.Record_MySQL.Record
 	"""
+
+	_conf = None
+	"""Configuration"""
 
 	@classmethod
 	def config(cls):
@@ -771,7 +842,16 @@ class User(Record_MySQL.Record):
 		Returns:
 			dict
 		"""
-		return _mdUserConf
+
+		# If we haven loaded the config yet
+		if not cls._conf:
+			cls._conf = Record_MySQL.Record.generateConfig(
+				Tree.fromFile('../definitions/monolith/user.json'),
+				'mysql'
+			)
+
+		# Return the config
+		return cls._conf
 
 	@classmethod
 	def passwordStrength(cls, passwd):
@@ -780,7 +860,7 @@ class User(Record_MySQL.Record):
 		Returns true if a password is secure enough
 
 		Arguments:
-			passwd {str} -- The password to check
+			passwd (str): The password to check
 
 		Returns:
 			bool

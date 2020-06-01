@@ -29,8 +29,6 @@ class Payment(Services.Service):
 	"""Payment Service class
 
 	Service for Payment access
-
-	Extends: shared.Services.Service
 	"""
 
 	_customer_regex = re.compile('^[a-zA-Z0-9_-]{6,32}$')
@@ -96,7 +94,7 @@ class Payment(Services.Service):
 		Check for funds
 
 		Arguments:
-			data {mixed} -- Data sent with the request
+			data (mixed): Data sent with the request
 
 		Returns:
 			Services.Effect
@@ -242,7 +240,7 @@ class Payment(Services.Service):
 		Credits a previous transaction
 
 		Arguments:
-			data {mixed} -- Data sent with the request
+			data (mixed): Data sent with the request
 
 		Returns:
 			Services.Effect
@@ -317,7 +315,7 @@ class Payment(Services.Service):
 		Captures a previous authrization
 
 		Arguments:
-			data {mixed} -- Data sent with the request
+			data (mixed): Data sent with the request
 
 		Returns:
 			Services.Effect
@@ -382,7 +380,7 @@ class Payment(Services.Service):
 		Immediately captures funds (if available)
 
 		Arguments:
-			data {mixed} -- Data sent with the request
+			data (mixed): Data sent with the request
 
 		Returns:
 			Services.Effect
@@ -521,7 +519,7 @@ class Payment(Services.Service):
 		Voids a previous Authorize transaction
 
 		Arguments:
-			data {mixed} -- Data sent with the request
+			data (mixed): Data sent with the request
 
 		Returns:
 			Services.Effect

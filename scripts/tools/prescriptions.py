@@ -13,48 +13,51 @@ from RestOC import Conf, Record_MySQL, REST, Services
 # Services
 from services import monolith, dosespot
 
-# Load the config
-Conf.load('../config.json')
-sConfOverride = '../config.%s.json' % platform.node()
-if os.path.isfile(sConfOverride):
-	Conf.load_merge(sConfOverride)
+# Only run if called directly
+if __name__ == "__main__":
 
-# Add hosts
-Record_MySQL.addHost('monolith', Conf.get(("mysql", "hosts", "monolith")))
-Record_MySQL.addHost('monolith_prod', Conf.get(("mysql", "hosts", "monolith_prod")))
+	# Load the config
+	Conf.load('../config.json')
+	sConfOverride = '../config.%s.json' % platform.node()
+	if os.path.isfile(sConfOverride):
+		Conf.load_merge(sConfOverride)
 
-# Create the REST config instance
-oRestConf = REST.Config(Conf.get("rest"))
+	# Add hosts
+	Record_MySQL.addHost('monolith', Conf.get(("mysql", "hosts", "monolith")))
+	Record_MySQL.addHost('monolith_prod', Conf.get(("mysql", "hosts", "monolith_prod")))
 
-# Register all services
-Services.register({}, oRestConf, Conf.get(('services', 'salt')))
+	# Create the REST config instance
+	oRestConf = REST.Config(Conf.get("rest"))
 
-# Get an instance of the Monolith service and initialise it
-oMonolith = monolith.Monolith()
-oMonolith.initialise()
+	# Register all services
+	Services.register({}, oRestConf, Conf.get(('services', 'salt')))
 
-print(sys.argv[1])
+	# Get an instance of the Monolith service and initialise it
+	oMonolith = monolith.Monolith()
+	oMonolith.initialise()
 
-# Get the patient ID from the customer ID
-oEff = oMonolith.customerDsid_read({"customerId": sys.argv[1]}, {})
-if oEff.errorExists():
-	print(oEff.error)
-	sys.exit(1);
+	print(sys.argv[1])
 
-# If we don't have the patient ID
-if not oEff.data:
-	print('No patient ID found');
-	sys.exit(0);
+	# Get the patient ID from the customer ID
+	oEff = oMonolith.customerDsid_read({"customerId": sys.argv[1]}, {})
+	if oEff.errorExists():
+		print(oEff.error)
+		sys.exit(1);
 
-# Get an instance of the Dosespot service and initialise it
-oDosespot = dosespot.Dosespot()
-oDosespot.initialise()
+	# If we don't have the patient ID
+	if not oEff.data:
+		print('No patient ID found');
+		sys.exit(0);
 
-# Get the prescriptions using the patient ID
-oEff = oDosespot.patientPrescriptions_read({"patient_id": int(oEff.data)})
-if oEff.errorExists():
-	print(oEff.error)
-	sys.exit(1);
+	# Get an instance of the Dosespot service and initialise it
+	oDosespot = dosespot.Dosespot()
+	oDosespot.initialise()
 
-# Print the prescriptions
-print(oEff.data);
+	# Get the prescriptions using the patient ID
+	oEff = oDosespot.patientPrescriptions_read({"patient_id": int(oEff.data)})
+	if oEff.errorExists():
+		print(oEff.error)
+		sys.exit(1);
+
+	# Print the prescriptions
+	print(oEff.data);

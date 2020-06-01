@@ -21,9 +21,6 @@ class UpgradeLog(object):
 	"""Upgrade Log
 
 	Class to manage an upgrade log file
-
-	Extends:
-		object
 	"""
 
 	def __init__(self, _file):

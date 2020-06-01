@@ -20,6 +20,31 @@ python -m tools.fake_msg 5148026900 2564884325 "Fetch me a whiskey" support
 
 
 
+
+- Search
+	- Add search of summary
+	- Show whether claimed or not
+
+- Customer
+
+	- SMS
+		- DOB in header
+
+	- KNK
+		! - Transactions
+
+	- MIP
+		- Show all MIPS (accordian)
+			- Added completed status
+		- Create new
+
+	- DoseSpot
+		- SSO
+
+
+
+
+
 - Done
 	- Fix name in summary
 	- Filter
@@ -32,3 +57,6 @@ python -m tools.fake_msg 5148026900 2564884325 "Fetch me a whiskey" support
 	- Prepopulate SMS templates
 	- Make MIP edittable
 	- Add tracking codes
+	- # messages of unclaimed in header
+	- Reload unclaimed on customer remove
+	- Soap/Doctor Notes

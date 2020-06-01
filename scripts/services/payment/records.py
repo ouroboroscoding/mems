@@ -15,20 +15,15 @@ __created__		= "2020-04-08"
 from FormatOC import Tree
 from RestOC import Conf, Record_MySQL
 
-# Customer structure and config
-_mdCustomerConf = Record_MySQL.Record.generateConfig(
-	Tree.fromFile('../definitions/payment/customer.json'),
-	'mysql'
-)
-
 # Customer class
 class Customer(Record_MySQL.Record):
 	"""Customer
 
 	Represents a customer for the sake of rebilling/upselling
-
-	Extends: RestOC.Record_MySQL.Record
 	"""
+
+	_conf = None
+	"""Configuration"""
 
 	@classmethod
 	def config(cls):
@@ -39,4 +34,13 @@ class Customer(Record_MySQL.Record):
 		Returns:
 			dict
 		"""
-		return _mdCustomerConf
+
+		# If we haven loaded the config yet
+		if not cls._conf:
+			cls._conf = Record_MySQL.Record.generateConfig(
+				Tree.fromFile('../definitions/payment/customer.json'),
+				'mysql'
+			)
+
+		# Return the config
+		return cls._conf

@@ -23,9 +23,6 @@ class Service(Services.Service):
 	"""Service
 
 	The Communications class that extends the base Service class
-
-	Extends:
-		Services.Service
 	"""
 
 	def __init__(self):
@@ -51,8 +48,8 @@ class Service(Services.Service):
 		it
 
 		Arguments:
-			data {dict} -- The data that was passed or retrieved
-			key {str} -- The key to validate if passed
+			data (dict): The data that was passed or retrieved
+			key (str): The key to validate if passed
 
 		Returns:
 			str|bool
@@ -79,9 +76,9 @@ class Service(Services.Service):
 		Overrides base create so we can manage direct requests vs queued
 
 		Arguments:
-			path {str} -- The path/noun of the request
-			data {mixed} -- The data passed with the request
-			sesh {Sesh._Session} -- Not used
+			path (str): The path/noun of the request
+			data (mixed): The data passed with the request
+			sesh (Sesh._Session): Not used
 
 		Returns:
 			Effect
@@ -105,7 +102,7 @@ class Service(Services.Service):
 		directly
 
 		Arguments:
-			data {dict} -- The data sent with the request
+			data (dict): The data sent with the request
 
 		Returns:
 			Services.Effect
@@ -260,7 +257,7 @@ class Service(Services.Service):
 		directly
 
 		Arguments:
-			data {dict} -- The data sent with the request
+			data (dict): The data sent with the request
 
 		Returns:
 			Services.Effect

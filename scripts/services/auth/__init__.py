@@ -33,8 +33,6 @@ class Auth(Services.Service):
 	"""Auth Service class
 
 	Service for Authorization, sign in, sign up, etc.
-
-	Extends: shared.Services.Service
 	"""
 
 	_install = [Forgot, User, Permission]
@@ -87,7 +85,7 @@ class Auth(Services.Service):
 		password if they forgot it
 
 		Arguments:
-			data {dict} -- Data sent with the request
+			data (dict): Data sent with the request
 
 		Returns:
 			Services.Effect
@@ -150,7 +148,7 @@ class Auth(Services.Service):
 		Validates the key and changes the password to the given value
 
 		Arguments:
-			data {dict} -- Data sent with the request
+			data (dict): Data sent with the request
 
 		Returns:
 			Services.Effect
@@ -194,8 +192,8 @@ class Auth(Services.Service):
 		Returns all permissions associated with a user
 
 		Arguments:
-			data {dict} -- Data sent with the request
-			sesh {Sesh._Session} -- The session associated with the request
+			data (dict): Data sent with the request
+			sesh (Sesh._Session): The session associated with the request
 
 		Returns:
 			Services.Effect
@@ -229,8 +227,8 @@ class Auth(Services.Service):
 		Updates all permissions associated with a specific user
 
 		Arguments:
-			data {dict} -- Data sent with the request
-			sesh {Sesh._Session} -- The session associated with the request
+			data (dict): Data sent with the request
+			sesh (Sesh._Session): The session associated with the request
 
 		Returns:
 			Services.Effect
@@ -299,8 +297,8 @@ class Auth(Services.Service):
 		Looks up users by alias
 
 		Arguments:
-			data {dict} -- Data sent with the request
-			sesh {Sesh._Session} -- The session associated with the request
+			data (dict): Data sent with the request
+			sesh (Sesh._Session): The session associated with the request
 
 		Returns:
 			Services.Effect
@@ -338,8 +336,8 @@ class Auth(Services.Service):
 		Returns the ID of the user logged into the current session
 
 		Arguments:
-			data {dict} -- Data sent with the request
-			sesh {Sesh._Session} -- The session associated with the request
+			data (dict): Data sent with the request
+			sesh (Sesh._Session): The session associated with the request
 
 		Returns:
 			Services.Effect
@@ -356,7 +354,7 @@ class Auth(Services.Service):
 		Signs a user into the system
 
 		Arguments:
-			data {dict} -- The data passed to the request
+			data (dict): The data passed to the request
 
 		Returns:
 			Result
@@ -398,8 +396,8 @@ class Auth(Services.Service):
 		Called to sign out a user and destroy their session
 
 		Arguments:
-			data {dict} -- Data sent with the request
-			sesh {Sesh._Session} -- The session associated with the user
+			data (dict): Data sent with the request
+			sesh (Sesh._Session): The session associated with the user
 
 		Returns:
 			Services.Effect
@@ -417,8 +415,8 @@ class Auth(Services.Service):
 		Creates a new user
 
 		Arguments:
-			data {dict} -- Data sent with the request
-			sesh {Sesh._Session} -- The session associated with the user
+			data (dict): Data sent with the request
+			sesh (Sesh._Session): The session associated with the user
 
 		Returns:
 			Effect
@@ -468,8 +466,8 @@ class Auth(Services.Service):
 		Fetches an existing user and returns their data
 
 		Arguments:
-			data {dict} -- Data sent with the request
-			sesh {Sesh._Session} -- The session associated with the user
+			data (dict): Data sent with the request
+			sesh (Sesh._Session): The session associated with the user
 
 		Returns:
 			Effect
@@ -509,8 +507,8 @@ class Auth(Services.Service):
 		Updates an existing user
 
 		Arguments:
-			data {dict} -- Data sent with the request
-			sesh {Sesh._Session} -- The session associated with the user
+			data (dict): Data sent with the request
+			sesh (Sesh._Session): The session associated with the user
 
 		Returns:
 			Effect
@@ -573,8 +571,8 @@ class Auth(Services.Service):
 		Changes the email for the current signed in user
 
 		Arguments:
-			data {dict} -- Data sent with the request
-			sesh {Sesh._Session} -- The session associated with the user
+			data (dict): Data sent with the request
+			sesh (Sesh._Session): The session associated with the user
 
 		Returns:
 			Effect
@@ -621,8 +619,8 @@ class Auth(Services.Service):
 		Changes the password for the current signed in user
 
 		Arguments:
-			data {dict} -- Data sent with the request
-			sesh {Sesh._Session} -- The session associated with the user
+			data (dict): Data sent with the request
+			sesh (Sesh._Session): The session associated with the user
 
 		Returns:
 			Effect
@@ -659,8 +657,8 @@ class Auth(Services.Service):
 		permission
 
 		Arguments:
-			data {dict} -- Data sent with the request
-			sesh {Sesh._Session} -- The session associated with the user
+			data (dict): Data sent with the request
+			sesh (Sesh._Session): The session associated with the user
 
 		Returns:
 			Effect

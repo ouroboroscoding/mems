@@ -15,26 +15,15 @@ __created__		= "2020-05-17"
 from FormatOC import Tree
 from RestOC import Conf, Record_MySQL
 
-# TemplateEmail structure and config
-_mdTemplateEmailConf = Record_MySQL.Record.generateConfig(
-	Tree.fromFile('../definitions/csr/tpl_email.json'),
-	'mysql'
-)
-
-# TemplateSMS structure and config
-_mdTemplateSMSConf = Record_MySQL.Record.generateConfig(
-	Tree.fromFile('../definitions/csr/tpl_sms.json'),
-	'mysql'
-)
-
 # TemplateEmail class
 class TemplateEmail(Record_MySQL.Record):
 	"""TemplateEmail
 
 	Represents an email template
-
-	Extends: RestOC.Record_MySQL.Record
 	"""
+
+	_conf = None
+	"""Configuration"""
 
 	@classmethod
 	def config(cls):
@@ -45,16 +34,26 @@ class TemplateEmail(Record_MySQL.Record):
 		Returns:
 			dict
 		"""
-		return _mdTemplateEmailConf
+
+		# If we haven loaded the config yet
+		if not cls._conf:
+			cls._conf = Record_MySQL.Record.generateConfig(
+				Tree.fromFile('../definitions/csr/tpl_email.json'),
+				'mysql'
+			)
+
+		# Return the config
+		return cls._conf
 
 # TemplateSMS class
 class TemplateSMS(Record_MySQL.Record):
 	"""TemplateSMS
 
 	Represents an SMS template
-
-	Extends: RestOC.Record_MySQL.Record
 	"""
+
+	_conf = None
+	"""Configuration"""
 
 	@classmethod
 	def config(cls):
@@ -65,4 +64,13 @@ class TemplateSMS(Record_MySQL.Record):
 		Returns:
 			dict
 		"""
-		return _mdTemplateSMSConf
+
+		# If we haven loaded the config yet
+		if not cls._conf:
+			cls._conf = Record_MySQL.Record.generateConfig(
+				Tree.fromFile('../definitions/csr/tpl_sms.json'),
+				'mysql'
+			)
+
+		# Return the config
+		return cls._conf

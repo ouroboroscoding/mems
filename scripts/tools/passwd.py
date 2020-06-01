@@ -2,25 +2,28 @@
 import sys
 
 # Import the Auth service records
-from services.auth.records import Login
+from services.auth.records import User
 
-# Get the length of arguments
-iArgLen	= len(sys.argv)
+# Only run if called directly
+if __name__ == "__main__":
 
-# Check we got a valid argument
-if iArgLen < 2:
-	print('Must pass a list of passwords in order to have them hashed')
-	exit(-1)
+	# Get the length of arguments
+	iArgLen	= len(sys.argv)
 
-# Go through each argument and hash it appropriately
-for i in range(1,iArgLen):
+	# Check we got a valid argument
+	if iArgLen < 2:
+		print('Must pass a list of passwords in order to have them hashed')
+		exit(-1)
 
-	print('%s: ' % sys.argv[i], end='')
+	# Go through each argument and hash it appropriately
+	for i in range(1,iArgLen):
 
-	# Check it's valid
-	if not Login.passwordStrength(sys.argv[i]):
-		print('invalid')
-	else:
-		print('%s' % Login.passwordHash(sys.argv[i]))
+		print('%s: ' % sys.argv[i], end='')
 
-print('Done')
+		# Check it's valid
+		if not User.passwordStrength(sys.argv[i]):
+			print('invalid')
+		else:
+			print('%s' % User.passwordHash(sys.argv[i]))
+
+	print('Done')

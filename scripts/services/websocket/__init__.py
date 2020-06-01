@@ -37,7 +37,7 @@ def init(verbose=False):
 	Called to initialize the service
 
 	Arguments:
-		verbose {bool} -- Optional verbose argument
+		verbose (bool): Optional verbose argument
 			if set to True, the service will print out what's going on
 
 	Returns:
@@ -146,8 +146,8 @@ class SyncApplication(WebSocketApplication):
 		Called to close the current connection with the default error message
 
 		Arguments:
-			code {uint} -- The error code
-			msg {str} -- The error msg
+			code (uint): The error code
+			msg (str): The error msg
 
 		Returns:
 			None
@@ -163,7 +163,7 @@ class SyncApplication(WebSocketApplication):
 		Called when an existing client websocket is closed
 
 		Arguments:
-			reason {str?} -- The reason the connection closed?
+			reason (str?): The reason the connection closed?
 		"""
 		if _verbose: print('Connection closed: %s' % reason)
 
@@ -389,7 +389,7 @@ class SyncApplication(WebSocketApplication):
 		is subscribed to
 
 		Arguments:
-			message {str} -- A published message
+			message (str): A published message
 
 		Returns:
 			None
