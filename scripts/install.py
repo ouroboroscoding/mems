@@ -24,11 +24,9 @@ if __name__ == "__main__":
 
 	# Add hosts
 	Record_MySQL.addHost('primary', Conf.get(("mysql", "hosts", "primary")))
-	Record_MySQL.addHost('payment', Conf.get(("mysql", "hosts", "payment")))
 
 	# Add the DBs
 	Record_MySQL.dbCreate(Conf.get(("mysql", "primary", "db"), "mems"), 'primary', 'utf8mb4', 'utf8mb4_bin')
-	Record_MySQL.dbCreate(Conf.get(("mysql", "payment", "db"), "payment"), 'payment', 'utf8mb4', 'utf8mb4_bin')
 
 	# Install
 	auth.Auth.install()

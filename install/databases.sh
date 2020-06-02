@@ -39,5 +39,5 @@ rm -f /etc/init.d/redis-server &>> $LOGFILE
 # Install the primary redis server
 update-rc.d redis-primary defaults &>> $LOGFILE
 service redis-primary start &>> $LOGFILE
-# Restart mariadb
+# Restart mysql
 service mysql restart &>> $LOGFILE

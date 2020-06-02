@@ -29,7 +29,7 @@ if os.path.isfile(sConfOverride):
 
 # Add the global prepend and primary host to mysql
 Record_Base.dbPrepend(Conf.get(("mysql", "prepend"), ''))
-Record_MySQL.addHost('payment', Conf.get(("mysql", "hosts", "payment")))
+Record_MySQL.addHost('primary', Conf.get(("mysql", "hosts", "primary")))
 
 # Create the REST config instance
 oRestConf = REST.Config(Conf.get("rest"))
