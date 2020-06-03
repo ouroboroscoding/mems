@@ -241,6 +241,9 @@ class Service(Services.Service):
 		if self.smsMethod not in ['direct']:
 			raise ValueError('Communications.smsMethod', self.smsMethod)
 
+		# Get allowed numbers
+		self.smsAllowed = Conf.get(('sms', 'allowed'), [])
+
 		# Create client
 		self._twilio = Client(
 			Conf.get(('twilio', 'account_sid')),
@@ -293,11 +296,13 @@ class Service(Services.Service):
 		if self.smsMethod == 'direct' or '_queue_' in data:
 
 			try:
-				self._twilio.messages.create(
-					to=data['to'],
-					body=data['content'],
-					messaging_service_sid=self._smsServices[data['service']]
-				)
+				# Only send if anyone is allowed, or the to is in the allowed
+				if not self.smsAllowed or data['to'] in self.smsAllowed:
+					self._twilio.messages.create(
+						to=data['to'],
+						body=data['content'],
+						messaging_service_sid=self._smsServices[data['service']]
+					)
 			except TwilioRestException as e:
 				return Services.Effect(error=(1304, str(e)))
 
