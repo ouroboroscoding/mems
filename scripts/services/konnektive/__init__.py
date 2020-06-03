@@ -233,6 +233,7 @@ class Konnektive(Services.Service):
 		});
 
 		# If we also want the associated transactions
+		"""
 		if data['transactions']:
 
 			# Get them from this service
@@ -262,7 +263,7 @@ class Konnektive(Services.Service):
 					"response": d['responseText'],
 					"id": d['transactionId']
 				})
-
+		"""
 		# Return what ever's found after removing unnecessary data
 		return Services.Effect([{
 			"billing": {
@@ -303,10 +304,7 @@ class Konnektive(Services.Service):
 			},
 			"status": dO['orderStatus'],
 			"type": dO['orderType'],
-			"totalAmount": dO['totalAmount'],
-			"transactions": (
-				d['orderId'] in dTransactions and dTransactions[d['orderId']] or []
-			)
+			"totalAmount": dO['totalAmount']
 		} for dO in lOrders])
 
 	def customerTransactions_read(self, data, sesh):
