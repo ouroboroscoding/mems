@@ -1,7 +1,7 @@
 # coding=utf8
-""" Dosespot Service
+""" Prescriptions Service
 
-Handles all Dosespot requests
+Handles all Prescriptions requests
 """
 
 __author__		= "Chris Nasr"
@@ -71,10 +71,10 @@ _dProviders = {
 	66591: 'Dr. Marc Calabrese'
 }
 
-class Dosespot(Services.Service):
-	"""Dosespot Service class
+class Prescriptions(Services.Service):
+	"""Prescriptions Service class
 
-	Service for Dosespot access
+	Service for Prescriptions access
 	"""
 
 	def __generateToken(self, clinician_id):

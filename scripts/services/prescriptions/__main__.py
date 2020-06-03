@@ -1,7 +1,7 @@
 # coding=utf8
-""" Dosespot Service
+""" Prescriptions Service
 
-Handles interactions with Dosespot
+Handles interactions with Prescriptions
 """
 
 __author__		= "Chris Nasr"
@@ -18,7 +18,7 @@ import os, platform
 from RestOC import Conf, REST, Services, Sesh, Templates
 
 # App imports
-from services.dosespot import Dosespot
+from services.prescriptions import Prescriptions
 
 # Load the config
 Conf.load('../config.json')
@@ -37,7 +37,7 @@ if 'VERBOSE' in os.environ and os.environ['VERBOSE'] == '1':
 	Services.verbose()
 
 # Get all the services
-dServices = {"dosespot": Dosespot()}
+dServices = {"prescriptions": Prescriptions()}
 
 # Register all services
 Services.register(dServices, oRestConf, Conf.get(('services', 'salt')))
@@ -49,8 +49,8 @@ Templates.init('../templates')
 REST.Server({
 	"/patient/prescriptions": {"methods": REST.READ}
 
-}, 'dosespot', "https?://(.*\\.)?%s" % Conf.get(("rest","allowed")).replace('.', '\\.')).run(
-	host=oRestConf['dosespot']['host'],
-	port=oRestConf['dosespot']['port'],
-	workers=oRestConf['dosespot']['workers']
+}, 'prescriptions', "https?://(.*\\.)?%s" % Conf.get(("rest","allowed")).replace('.', '\\.')).run(
+	host=oRestConf['prescriptions']['host'],
+	port=oRestConf['prescriptions']['port'],
+	workers=oRestConf['prescriptions']['workers']
 )
