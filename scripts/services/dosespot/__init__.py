@@ -199,7 +199,7 @@ class Dosespot(Services.Service):
 		except ValueError as e: return Services.Effect(error=(1001, [(f, "missing") for f in e.args]))
 
 		# If the clinician ID isn't passed
-		if 'clinician_id' not in data:
+		if 'clinician_id' not in data or not data['clinician_id']:
 			data['clinician_id'] = Conf.get(('dosespot', 'clinician_id'))
 
 		# Make sure we got ints
