@@ -155,7 +155,7 @@ class Konnektive(Services.Service):
 
 		# Make the request to Konnektive
 		lCustomers = self.__request('customer/query', {
-			"dateRangeType": "dateUpdated",
+			"dateRangeType": "dateCreated",
 			"customerId": data['id'],
 			"startDate": "01/01/2019",
 			"endDate": "01/01/3000"
@@ -224,7 +224,7 @@ class Konnektive(Services.Service):
 
 		# Make the request to Konnektive
 		lOrders = self.__request('order/query', {
-			"dateRangeType": "dateUpdated",
+			"dateRangeType": "dateCreated",
 			"customerId": data['id'],
 			"sortDir": 0
 		});
@@ -320,7 +320,7 @@ class Konnektive(Services.Service):
 
 		# Make the request to Konnektive
 		lTransactions = self.__request('transactions/query', {
-			"dateRangeType": "dateUpdated",
+			"dateRangeType": "dateCreated",
 			"customerId": data['id'],
 			"sortDir": 0
 		});
