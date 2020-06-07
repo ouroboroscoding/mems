@@ -60,15 +60,6 @@
 		}
 	},
 
-	"payments": {
-		"nmi": {
-			"domain": "https://secure.networkmerchants.com/api/"
-		},
-		"spreedly": {
-			"key": null
-		}
-	},
-
 	"rocketgate": {
 		"merchant_id": null,
 		"merchant_pass": null,

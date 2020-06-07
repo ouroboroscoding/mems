@@ -49,7 +49,8 @@ Templates.init('../templates')
 REST.Server({
 	"/customer": {"methods": REST.READ, "session": True},
 	"/customer/orders": {"methods": REST.READ, "session": True},
-	"/customer/transactions": {"methods": REST.READ, "session": True}
+	"/customer/transactions": {"methods": REST.READ, "session": True},
+	"/order/transactions": {"methods": REST.READ, "session": True}
 
 }, 'konnektive', "https?://(.*\\.)?%s" % Conf.get(("rest","allowed")).replace('.', '\\.')).run(
 	host=oRestConf['konnektive']['host'],

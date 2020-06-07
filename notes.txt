@@ -6,6 +6,8 @@ python -m tools.fake_msg 5148026900 2564884325 "Fetch me a whiskey" support
 
 
 
+- Add Account details / change password
+
 - JustCall
 	- Add a way to call out
 
@@ -15,34 +17,21 @@ python -m tools.fake_msg 5148026900 2564884325 "Fetch me a whiskey" support
 
 - Take over stop/start system from twilio
 
-- Add generalized notes
-	- save by agent/time
-
-
-
-
-- Search
-	- Add search of summary
-	- Show whether claimed or not
-
 - Customer
 
 	- SMS
 		- DOB in header
-
-	- KNK
-		! - Transactions
 
 	- MIP
 		- Show all MIPS (accordian)
 			- Added completed status
 		- Create new
 
+	- Notes
+		- Ability to write new
+
 	- DoseSpot
 		- SSO
-
-
-
 
 
 - Done
@@ -60,3 +49,6 @@ python -m tools.fake_msg 5148026900 2564884325 "Fetch me a whiskey" support
 	- # messages of unclaimed in header
 	- Reload unclaimed on customer remove
 	- Soap/Doctor Notes
+	- Add search of summary
+	- Show whether claimed or not in search
+	- Added transactions to KNK orders

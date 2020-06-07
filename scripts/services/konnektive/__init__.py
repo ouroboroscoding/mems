@@ -89,16 +89,13 @@ class Konnektive(Services.Service):
 
 			# If we don't get success
 			if dData['result'] != 'SUCCESS':
-				print(dData)
 				break
-
-			print(dData['message']['data'])
 
 			# Add the data to the result
 			lRet.extend(dData['message']['data'])
 
 			# If we got the last page
-			if math.ceil(dData['message']['totalResults'] / 200) == dData['message']['page']:
+			if math.ceil(dData['message']['totalResults'] / 200) == int(dData['message']['page']):
 				break
 
 			# Increment the page
@@ -233,7 +230,6 @@ class Konnektive(Services.Service):
 		});
 
 		# If we also want the associated transactions
-		"""
 		if data['transactions']:
 
 			# Get them from this service
@@ -245,25 +241,21 @@ class Konnektive(Services.Service):
 			if oEff.errorExists():
 				return oEff
 
-			# Store them by order
+			# Store them by order ID
 			dTransactions = {}
-			for d in oEff.data:
+			for d in oEff.data[::-1]:
 
-				# If we don't have the order
-				if d['orderId'] not in dTransactions:
-					dTransactions[d['orderId']] = []
+				# If it's an authorize, capture, or sale, store as is
+				if d['type'] in ['AUTHORIZE', 'CAPTURE', 'SALE']:
+					dTransactions[d['orderId']] = d
 
-				# Append the transaction
-				dTransactions[d['orderId']].append({
-					"cycle": d['billingCycleNumber'],
-					"recycle": d['recycleNumber'],
-					"mid": d['merchant'],
-					"type": d['txnType'].capitalize(),
-					"result": d['responseType'].replace('_', ' ').capitlize(),
-					"response": d['responseText'],
-					"id": d['transactionId']
-				})
-		"""
+				# Else if it's a refund
+				elif d['type'] == 'REFUND':
+					dTransactions[d['orderId']]['refund'] = '-%s' % d['total']
+
+				elif d['type'] == 'VOID':
+					dTransactions[d['orderId']]['voided'] = True
+
 		# Return what ever's found after removing unnecessary data
 		return Services.Effect([{
 			"billing": {
@@ -304,13 +296,15 @@ class Konnektive(Services.Service):
 			},
 			"status": dO['orderStatus'],
 			"type": dO['orderType'],
-			"totalAmount": dO['totalAmount']
+			"totalAmount": dO['totalAmount'],
+			"transactions": (data['transactions'] and dO['orderId'] in dTransactions) and dTransactions[dO['orderId']] or None,
+			"currency": dO['currencySymbol']
 		} for dO in lOrders])
 
 	def customerTransactions_read(self, data, sesh):
 		"""Customer Transactions
 
-		Fetches the orders for a customer
+		Fetches the transactions associated with a specific customer
 
 		Arguments:
 			data (dict): Data sent with the request
@@ -331,9 +325,69 @@ class Konnektive(Services.Service):
 			"sortDir": 0
 		});
 
-		print(lTransactions)
-
 		# Return what ever's found after removing unnecessary data
 		return Services.Effect([{
 			"orderId": d['orderId'],
+			"date": d['dateUpdated'],
+			"mid": d['merchant'],
+			"cycle": d['billingCycleNumber'],
+			"recycle": d['recycleNumber'],
+			"type": d['txnType'],
+			"total": d['totalAmount'],
+			"payment": '%s %s' % (d['cardType'], d['cardLast4']),
+			"result": d['responseType'],
+			"response": d['responseText'],
+			"id": d['merchantTxnId'],
+			"chargeback": d['isChargedback'] and {
+				"amount": d['chargebackAmount'],
+				"date": d['chargebackDate'],
+				"code": d['chargebackReasonCode'],
+				"note": d['chargebackNote']
+			} or None,
+			"currency": d['currencySymbol']
+		} for d in lTransactions])
+
+	def orderTransactions_read(self, data, sesh):
+		"""Order Transactions
+
+		Fetches the transactions associated with a specific order
+
+		Arguments:
+			data (dict): Data sent with the request
+			sesh (Sesh._Session): The session associated with the request
+
+		Returns:
+			Services.Effect
+		"""
+
+		# Verify fields
+		try: DictHelper.eval(data, ['id'])
+		except ValueError as e: return Services.Effect(error=(1001, [(f, "missing") for f in e.args]))
+
+		# Make the request to Konnektive
+		lTransactions = self.__request('transactions/query', {
+			"dateRangeType": "dateUpdated",
+			"orderId": data['id'],
+			"sortDir": 0
+		});
+
+		# Return what ever's found after removing unnecessary data
+		return Services.Effect([{
+			"date": d['dateUpdated'],
+			"mid": d['merchant'],
+			"cycle": d['billingCycleNumber'],
+			"recycle": d['recycleNumber'],
+			"type": d['txnType'],
+			"total": d['totalAmount'],
+			"payment": '%s %s' % (d['cardType'], d['cardLast4']),
+			"result": d['responseType'],
+			"response": d['responseText'],
+			"id": d['merchantTxnId'],
+			"chargeback": d['isChargedback'] and {
+				"amount": d['chargebackAmount'],
+				"date": d['chargebackDate'],
+				"code": d['chargebackReasonCode'],
+				"note": d['chargebackNote']
+			} or None,
+			"currency": d['currencySymbol']
 		} for d in lTransactions])
