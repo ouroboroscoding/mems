@@ -607,8 +607,6 @@ class SmpNote(Record_MySQL.Record):
 			"id": customer_id
 		}
 
-		print(sSQL)
-
 		# Execute and return the select
 		return Record_MySQL.Commands.select(
 			dStruct['host'],
@@ -760,7 +758,7 @@ class TfLanding(Record_MySQL.Record):
 		return Record_MySQL.Commands.select(
 			dStruct['host'],
 			sSQL,
-			Record_MySQL.ESelect.ROW
+			Record_MySQL.ESelect.ALL
 		)
 
 # TfQuestion class

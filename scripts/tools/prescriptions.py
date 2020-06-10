@@ -11,7 +11,7 @@ import os, platform, sys
 from RestOC import Conf, Record_MySQL, REST, Services
 
 # Services
-from services import monolith, dosespot
+from services import monolith, prescriptions
 
 # Only run if called directly
 if __name__ == "__main__":
@@ -36,7 +36,7 @@ if __name__ == "__main__":
 	oMonolith = monolith.Monolith()
 	oMonolith.initialise()
 
-	print(sys.argv[1])
+	print('Customer ID: %s' % sys.argv[1])
 
 	# Get the patient ID from the customer ID
 	oEff = oMonolith.customerDsid_read({"customerId": sys.argv[1]}, {})
@@ -49,15 +49,16 @@ if __name__ == "__main__":
 		print('No patient ID found');
 		sys.exit(0);
 
-	# Get an instance of the Dosespot service and initialise it
-	oDosespot = dosespot.Dosespot()
-	oDosespot.initialise()
+	# Get an instance of the Prescriptions service and initialise it
+	oPrescriptions = prescriptions.Prescriptions()
+	oPrescriptions.initialise()
 
 	# Get the prescriptions using the patient ID
-	oEff = oDosespot.patientPrescriptions_read({"patient_id": int(oEff.data)})
+	oEff = oPrescriptions.patientPrescriptions_read({"patient_id": int(oEff.data)})
 	if oEff.errorExists():
 		print(oEff.error)
 		sys.exit(1);
 
 	# Print the prescriptions
+	print('Prescriptions: ')
 	print(oEff.data);

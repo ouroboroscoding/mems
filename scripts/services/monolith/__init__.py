@@ -263,8 +263,8 @@ class Monolith(Services.Service):
 			"type": sType
 		})
 
-	def customerMip_read(self, data, sesh):
-		"""Customer MIP
+	def customerMips_read(self, data, sesh):
+		"""Customer MIPs
 
 		Fetches the medical intake path questions/answers associated with a
 		customer
@@ -290,63 +290,75 @@ class Monolith(Services.Service):
 		)
 
 		# Try to find the landing
-		dLanding = TfLanding.find(
+		lLandings = TfLanding.find(
 			dCustomer['lastName'],
 			dCustomer['emailAddress'],
 			dCustomer['phoneNumber']
 		)
 
 		# If there's no mip
-		if not dLanding:
+		if not lLandings:
 			return Services.Effect(0)
 
-		# Init return
-		dRet = {
-			"landing_id": dLanding['landing_id'],
-		}
+		# Init the return
+		lRet = []
 
-		# Get the questions associated with the landing form
-		dRet['questions'] = TfQuestion.filter(
-			{"formId": dLanding['formId'], "activeFlag": 'Y'},
-			raw=['ref', 'title', 'type'],
-			orderby='questionNumber'
-		)
+		# Go through each landing found
+		for dLanding in lLandings:
 
-		# Get the options for the questions
-		lOptions = TfQuestionOption.filter(
-			{"questionRef": [d['ref'] for d in dRet['questions']], "activeFlag": 'Y'},
-			raw=['questionRef', 'displayOrder', 'option'],
-			orderby=['questionRef', 'displayOrder']
-		)
+			# Init the data
+			dData = {
+				"id": dLanding['landing_id'],
+				"form": dLanding['formId'],
+				"date": dLanding['submitted_at'],
+				"completed": dLanding['complete'] == 'Y'
+			}
 
-		# Create lists of options by question
-		dRet['options'] = {}
-		for d in lOptions:
-			try: dRet['options'][d['questionRef']].append(d['option'])
-			except KeyError: dRet['options'][d['questionRef']] = [d['option']]
-
-		# Fetch the answers
-		dAnswers = {
-			d['ref']: d['value']
-			for d in TfAnswer.filter(
-				{"landing_id": dLanding['landing_id']},
-				raw=['ref', 'value']
+			# Get the questions associated with the landing form
+			dData['questions'] = TfQuestion.filter(
+				{"formId": dLanding['formId'], "activeFlag": 'Y'},
+				raw=['ref', 'title', 'type'],
+				orderby='questionNumber'
 			)
-		}
 
-		# Match the answer to the questions
-		for d in dRet['questions']:
-			d['answer'] = d['ref'] in dAnswers and \
-							dAnswers[d['ref']] or \
-							''
-			if d['type'] == 'yes_no' and d['answer'] in ['0', '1']:
-				d['answer'] = d['answer'] == '1' and 'Yes' or 'No'
+			# Get the options for the questions
+			lOptions = TfQuestionOption.filter(
+				{"questionRef": [d['ref'] for d in dData['questions']], "activeFlag": 'Y'},
+				raw=['questionRef', 'displayOrder', 'option'],
+				orderby=['questionRef', 'displayOrder']
+			)
 
-		# Return what we found
-		return Services.Effect(dRet)
+			# Create lists of options by question
+			dData['options'] = {}
+			for d in lOptions:
+				try: dData['options'][d['questionRef']].append(d['option'])
+				except KeyError: dData['options'][d['questionRef']] = [d['option']]
 
-	def customerMip_update(self, data, sesh):
-		"""Customer MIP Update
+			# Fetch the answers
+			dAnswers = {
+				d['ref']: d['value']
+				for d in TfAnswer.filter(
+					{"landing_id": dLanding['landing_id']},
+					raw=['ref', 'value']
+				)
+			}
+
+			# Match the answer to the questions
+			for d in dData['questions']:
+				d['answer'] = d['ref'] in dAnswers and \
+								dAnswers[d['ref']] or \
+								''
+				if d['type'] == 'yes_no' and d['answer'] in ['0', '1']:
+					d['answer'] = d['answer'] == '1' and 'Yes' or 'No'
+
+			# Add the data to the return list
+			lRet.append(dData)
+
+		# Return the landings
+		return Services.Effect(lRet)
+
+	def customerMipAnswer_update(self, data, sesh):
+		"""Customer MIP Answer Update
 
 		Updates the answer to a single MIP question
 

@@ -22,17 +22,11 @@ python -m tools.fake_msg 5148026900 2564884325 "Fetch me a whiskey" support
 	- SMS
 		- DOB in header
 
-	- MIP
-		- Show all MIPS (accordian)
-			- Added completed status
-		- Create new
-
 	- Notes
 		- Ability to write new
 
 	- DoseSpot
 		- SSO
-
 
 - Done
 	- Fix name in summary
@@ -52,3 +46,5 @@ python -m tools.fake_msg 5148026900 2564884325 "Fetch me a whiskey" support
 	- Add search of summary
 	- Show whether claimed or not in search
 	- Added transactions to KNK orders
+	- Show all mips (w/ completed status)
+	- Links to create new mips

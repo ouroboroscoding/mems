@@ -69,7 +69,8 @@ REST.Server({
 	"/customer/hide": {"methods": REST.UPDATE, "session": True},
 	"/customer/id/byPhone": {"methods": REST.READ, "session": True},
 	"/customer/messages": {"methods": REST.READ, "session": True},
-	"/customer/mip": {"methods": REST.READ | REST.UPDATE, "session": True},
+	"/customer/mips": {"methods": REST.READ, "session": True},
+	"/customer/mip/answer": {"methods": REST.UPDATE, "session": True},
 	"/customer/notes": {"methods": REST.READ, "session": True},
 	"/customer/shipping": {"methods": REST.READ, "session": True},
 

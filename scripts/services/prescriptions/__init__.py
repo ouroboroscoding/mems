@@ -118,7 +118,6 @@ class Prescriptions(Services.Service):
 		# Cut off trailing equal signs
 		if sUserId[-2:] == '==':
 			sUserId = sUserId[0:-2]
-			print('User ID: %s' % sUserId)
 
 		# Generate the request headers
 		sAuth = '%d:%s' % (self._clinic_id, sClinicId)
