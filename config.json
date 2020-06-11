@@ -35,9 +35,9 @@
 	},
 
 	"memo": {
-		"host": "https://35.168.130.38/rest/",
-		"user": "memsAPI",
-		"pass": "m3ms4P1_"
+		"domain": "memologin.com",
+		"user": "User",
+		"pass": "Pass"
 	},
 
 	"mysql": {

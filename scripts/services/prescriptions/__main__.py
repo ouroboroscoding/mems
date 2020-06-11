@@ -47,7 +47,9 @@ Templates.init('../templates')
 
 # Create the HTTP server and map requests to service
 REST.Server({
-	"/patient/prescriptions": {"methods": REST.READ}
+	"/patient/pharmacies": {"methods": REST.READ, "session": True},
+	"/patient/pharmacy": {"methods": REST.CREATE | REST.DELETE, "session": True},
+	"/patient/prescriptions": {"methods": REST.READ, "session": True}
 
 }, 'prescriptions', "https?://(.*\\.)?%s" % Conf.get(("rest","allowed")).replace('.', '\\.')).run(
 	host=oRestConf['prescriptions']['host'],

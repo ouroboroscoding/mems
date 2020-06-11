@@ -180,7 +180,210 @@ class Prescriptions(Services.Service):
 		"""
 		return True
 
-	def patientPrescriptions_read(self, data):
+	def patientPharmacies_read(self, data, sesh):
+		"""Patient Pharmacies
+
+		Returns the pharmacies set for the patient
+
+		Arguments:
+			data (dict): Data sent with the request
+			sesh (Sesh._Session): The session associated with the request
+
+		Returns:
+			Services.Effect
+		"""
+
+		# Make sure the user has the proper rights
+		#oEff = self.verify_read({
+		#	"name": "prescriptions",
+		#	"right": Rights.READ
+		#}, sesh)
+		#if not oEff.data:
+		#	return Services.Effect(error=Rights.INVALID)
+
+		# Verify fields
+		try: DictHelper.eval(data, ['patient_id'])
+		except ValueError as e: return Services.Effect(error=(1001, [(f, "missing") for f in e.args]))
+
+		# If the clinician ID isn't passed
+		if 'clinician_id' not in data or not data['clinician_id']:
+			data['clinician_id'] = Conf.get(('dosespot', 'clinician_id'))
+
+		# Make sure we got ints
+		for s in ['clinician_id', 'patient_id']:
+			lErrors = []
+			if not isinstance(data[s], int): lErrors.append((s, 'must be integer'))
+			if lErrors: return Services.Effect(error=(1001, lErrors))
+
+		# Generate the token
+		sToken = self.__generateToken(data['clinician_id'])
+
+		# Generate the URL
+		sURL = 'https://%s/api/patients/%d/pharmacies' % (
+			self._host,
+			data['patient_id']
+		)
+
+		# Generate the headers
+		dHeaders = {
+			"Accept": "application/json",
+			"Authorization": "Bearer %s" % sToken
+		}
+
+		# Make the request
+		oRes = requests.get(sURL, headers=dHeaders)
+
+		# If we didn't get a 200
+		if oRes.status_code != 200:
+			return Services.Effect(error=(1601, oRes.text))
+
+		# Get the data
+		dData = oRes.json()
+
+		# If we got an error
+		if dData['Result']['ResultCode'] == 'ERROR':
+			return Services.Effect(error=(1602, dData['Result']['ResultDescription']))
+
+		# Return the pharmacies
+		return Services.Effect(dData['Items'])
+
+	def patientPharmacy_create(self, data, sesh):
+		"""Patient Pharmacy Create
+
+		Adds a pharmacy to the patient's favourites
+
+		Arguments:
+			data (dict): Data sent with the request
+			sesh (Sesh._Session): The session associated with the request
+
+		Returns:
+			Services.Effect
+		"""
+
+		# Make sure the user has the proper rights
+		#oEff = self.verify_read({
+		#	"name": "prescriptions",
+		#	"right": Rights.UPDATE
+		#}, sesh)
+		#if not oEff.data:
+		#	return Services.Effect(error=Rights.INVALID)
+
+		# Verify fields
+		try: DictHelper.eval(data, ['patient_id', 'pharmacy_id'])
+		except ValueError as e: return Services.Effect(error=(1001, [(f, "missing") for f in e.args]))
+
+		# If the clinician ID isn't passed
+		if 'clinician_id' not in data or not data['clinician_id']:
+			data['clinician_id'] = Conf.get(('dosespot', 'clinician_id'))
+
+		# Make sure we got ints
+		for s in ['clinician_id', 'patient_id', 'pharmacy_id']:
+			lErrors = []
+			if not isinstance(data[s], int): lErrors.append((s, 'must be integer'))
+			if lErrors: return Services.Effect(error=(1001, lErrors))
+
+		# Generate the token
+		sToken = self.__generateToken(data['clinician_id'])
+
+		# Generate the URL
+		sURL = 'https://%s/api/patients/%d/pharmacies/%s' % (
+			self._host,
+			data['patient_id'],
+			data['pharmacy_id']
+		)
+
+		# Generate the headers
+		dHeaders = {
+			"Accept": "application/json",
+			"Authorization": "Bearer %s" % sToken
+		}
+
+		# Make the request
+		oRes = requests.post(sURL, headers=dHeaders)
+
+		# If we didn't get a 200
+		if oRes.status_code != 200:
+			return Services.Effect(error=(1601, oRes.text))
+
+		# Get the data
+		dData = oRes.json()
+
+		# If we got an error
+		if dData['Result']['ResultCode'] == 'ERROR':
+			return Services.Effect(error=(1602, dData['Result']['ResultDescription']))
+
+		# Return the pharmacies
+		return Services.Effect(True)
+
+	def patientPharmacy_delete(self, data, sesh):
+		"""Patient Pharmacy Delete
+
+		Deletes a pharmacy from the patient's favourites
+
+		Arguments:
+			data (dict): Data sent with the request
+			sesh (Sesh._Session): The session associated with the request
+
+		Returns:
+			Services.Effect
+		"""
+
+		# Make sure the user has the proper rights
+		#oEff = self.verify_read({
+		#	"name": "prescriptions",
+		#	"right": Rights.UPDATE
+		#}, sesh)
+		#if not oEff.data:
+		#	return Services.Effect(error=Rights.INVALID)
+
+		# Verify fields
+		try: DictHelper.eval(data, ['patient_id', 'pharmacy_id'])
+		except ValueError as e: return Services.Effect(error=(1001, [(f, "missing") for f in e.args]))
+
+		# If the clinician ID isn't passed
+		if 'clinician_id' not in data or not data['clinician_id']:
+			data['clinician_id'] = Conf.get(('dosespot', 'clinician_id'))
+
+		# Make sure we got ints
+		for s in ['clinician_id', 'patient_id', 'pharmacy_id']:
+			lErrors = []
+			if not isinstance(data[s], int): lErrors.append((s, 'must be integer'))
+			if lErrors: return Services.Effect(error=(1001, lErrors))
+
+		# Generate the token
+		sToken = self.__generateToken(data['clinician_id'])
+
+		# Generate the URL
+		sURL = 'https://%s/api/patients/%d/pharmacies/%s' % (
+			self._host,
+			data['patient_id'],
+			data['pharmacy_id']
+		)
+
+		# Generate the headers
+		dHeaders = {
+			"Accept": "application/json",
+			"Authorization": "Bearer %s" % sToken
+		}
+
+		# Make the request
+		oRes = requests.delete(sURL, headers=dHeaders)
+
+		# If we didn't get a 200
+		if oRes.status_code != 200:
+			return Services.Effect(error=(1601, oRes.text))
+
+		# Get the data
+		dData = oRes.json()
+
+		# If we got an error
+		if dData['Result']['ResultCode'] == 'ERROR':
+			return Services.Effect(error=(1602, dData['Result']['ResultDescription']))
+
+		# Return the pharmacies
+		return Services.Effect(True)
+
+	def patientPrescriptions_read(self, data, sesh):
 		"""Patient Prescriptions
 
 		Fetches all prescriptions associated with a patient. Requires internal
@@ -188,10 +391,19 @@ class Prescriptions(Services.Service):
 
 		Arguments:
 			data (dict): Data sent with the request
+			sesh (Sesh._Session): The session associated with the request
 
 		Returns:
 			Services.Effect
 		"""
+
+		# Make sure the user has the proper rights
+		#oEff = self.verify_read({
+		#	"name": "prescriptions",
+		#	"right": Rights.READ
+		#}, sesh)
+		#if not oEff.data:
+		#	return Services.Effect(error=Rights.INVALID)
 
 		# Verify fields
 		try: DictHelper.eval(data, ['patient_id'])

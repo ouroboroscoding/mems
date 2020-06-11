@@ -1,7 +1,7 @@
 # coding=utf8
-""" Fake Message
+""" Prescriptions
 
-Simulates a message coming in from Twilio
+Fetches the prescriptions associated with a specific customer
 """
 
 # Python imports
