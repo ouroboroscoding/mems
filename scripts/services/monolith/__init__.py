@@ -409,9 +409,31 @@ class Monolith(Services.Service):
 		"""
 
 		# Verify fields
-		try: DictHelper.eval(data, ['customerId'])
+		try: DictHelper.eval(data, ['customer_id', 'content', 'action'])
 		except ValueError as e: return Services.Effect(error=(1001, [(f, "missing") for f in e.args]))
 
+		# Get current date/time
+		sDT = arrow.get().format('YYYY-MM-DD HH:mm:ss')
+
+		# Attempt to create the record
+		try:
+			oSmpNote = SmpNote({
+				"parentTable": 'kt_customer',
+				"parentColumn": 'customerId',
+				"columnValue": data['customer_id'],
+				"action": data['action'],
+				"createdBy": sesh['user_id'],
+				"note": data['content'],
+				"createdAt": sDT,
+				"updatedAt": sDT
+			})
+		except ValueError as e:
+			return Services.Effect(error=(1001, e.args[0]))
+
+		# Create the record and return the result
+		return Services.Effect(
+			oSmpNote.create()
+		)
 
 	def customerNotes_read(self, data, sesh):
 		"""Customer Notes

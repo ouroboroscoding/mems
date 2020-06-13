@@ -27,8 +27,8 @@ FROM
 	`%(db)s`.`%(table)s` as `smp`,
 	`%(db)s`.`user` as `user`
 WHERE
-	`smp`.`parentTable` = 'kt_order' AND
-	`smp`.`parentColumn` = 'orderId' AND
+	`smp`.`parentTable` = 'kt_customer' AND
+	`smp`.`parentColumn` = 'customerId' AND
 	`smp`.`columnValue` = %(id)d AND
 	`smp`.`createdBy` = `user`.`id`
 
