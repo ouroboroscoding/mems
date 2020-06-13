@@ -395,6 +395,24 @@ class Monolith(Services.Service):
 			oTfAnswer.save()
 		)
 
+	def customerNote_create(self, data, sesh):
+		"""Customer Note Create
+
+		Creates a new note associated with the customer
+
+		Arguments:
+			data (dict): Data sent with the request
+			sesh (Sesh._Session): The session associated with the request
+
+		Returns:
+			Services.Effect
+		"""
+
+		# Verify fields
+		try: DictHelper.eval(data, ['customerId'])
+		except ValueError as e: return Services.Effect(error=(1001, [(f, "missing") for f in e.args]))
+
+
 	def customerNotes_read(self, data, sesh):
 		"""Customer Notes
 

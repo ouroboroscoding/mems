@@ -8,7 +8,7 @@ Fetches the prescriptions associated with a specific customer
 import os, platform, sys
 
 # Framework imports
-from RestOC import Conf, Record_MySQL, REST, Services
+from RestOC import Conf, Record_MySQL, REST, Services, Sesh
 
 # Services
 from services import monolith, prescriptions
@@ -32,6 +32,10 @@ if __name__ == "__main__":
 	# Register all services
 	Services.register({}, oRestConf, Conf.get(('services', 'salt')))
 
+	# Init sessions and create one
+	Sesh.init(Conf.get(("redis", "primary")))
+	oSesh = Sesh.create()
+
 	# Get an instance of the Monolith service and initialise it
 	oMonolith = monolith.Monolith()
 	oMonolith.initialise()
@@ -54,7 +58,7 @@ if __name__ == "__main__":
 	oPrescriptions.initialise()
 
 	# Get the prescriptions using the patient ID
-	oEff = oPrescriptions.patientPrescriptions_read({"patient_id": int(oEff.data)})
+	oEff = oPrescriptions.patientPrescriptions_read({"patient_id": int(oEff.data)}, oSesh)
 	if oEff.errorExists():
 		print(oEff.error)
 		sys.exit(1);

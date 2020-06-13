@@ -36,6 +36,14 @@ if __name__ == "__main__":
 	if os.path.isfile(sConfOverride):
 		Conf.load_merge(sConfOverride)
 
+	# Check if we have a file with the last ID processed
+	sIDFile = '%s/pharmacy_switch.dat' % Conf.get('temp_folder', '/tmp')
+	if os.path.exists(sIDFile):
+		with open(sIDFile) as oF:
+			iLastID = int(oF.read())
+	else:
+		iLastID = 0
+
 	# Add hosts
 	Record_MySQL.addHost('monolith_prod', Conf.get(("mysql", "hosts", "monolith_prod")))
 
@@ -55,8 +63,9 @@ if __name__ == "__main__":
 
 	# Fetch all Patient IDs
 	lPatients = DsPatient.filter(
-		{"patientId": {"neq": None}},
-		raw=['patientId']
+		{"patientId": {"neq": None}, "id": {"gt": iLastID}},
+		raw=['id', 'patientId'],
+		orderby=['id']
 	)
 
 	# Go through each one
@@ -87,12 +96,19 @@ if __name__ == "__main__":
 				if oEff.errorExists():
 					print(oEff.error)
 					sys.exit(1);
+				print(oEff.data)
 
 				# Delete the old pharmacy
 				oEff = oPrescriptions.patientPharmacy_delete({"patient_id": iID, "pharmacy_id": iFrom}, oSesh)
 				if oEff.errorExists():
 					print(oEff.error)
 					sys.exit(1);
+				print(oEff.data)
 
 				# Stop the loop
 				break
+
+		# Set the last ID
+		iLastID = dP['id']
+		with open(sIDFile, 'w') as oF:
+			oF.write('%d' % iLastID)

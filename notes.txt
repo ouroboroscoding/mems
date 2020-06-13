@@ -22,9 +22,6 @@ python -m tools.fake_msg 5148026900 2564884325 "Fetch me a whiskey" support
 	- SMS
 		- DOB in header
 
-	- KNK
-		- Remove created/updated dates
-
 	- Notes
 		- Ability to write new
 

@@ -110,6 +110,8 @@
 		"method": "direct"
 	},
 
+	"temp_folder": "/tmp",
+
 	"twilio": {
 		"account_sid": null,
 		"auth_token": null,

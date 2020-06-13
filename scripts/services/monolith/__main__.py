@@ -71,6 +71,7 @@ REST.Server({
 	"/customer/messages": {"methods": REST.READ, "session": True},
 	"/customer/mips": {"methods": REST.READ, "session": True},
 	"/customer/mip/answer": {"methods": REST.UPDATE, "session": True},
+	"/customer/note": {"methods": REST.CREATE, "session": True},
 	"/customer/notes": {"methods": REST.READ, "session": True},
 	"/customer/shipping": {"methods": REST.READ, "session": True},
 
