@@ -1,12 +1,9 @@
 python -m tools.fake_msg 5148026900 2564884325 "Hello ME" support
-
 python -m tools.fake_msg 5148026900 2564884325 "My name is Arthur Morgan" support
-
 python -m tools.fake_msg 5148026900 2564884325 "Fetch me a whiskey" support
 
 
 
-- Add Account details / change password
 
 - JustCall
 	- Add a way to call out
@@ -22,11 +19,10 @@ python -m tools.fake_msg 5148026900 2564884325 "Fetch me a whiskey" support
 	- SMS
 		- DOB in header
 
-	- Notes
-		- Ability to write new
-
 	- DoseSpot
 		- SSO
+
+
 
 - Done
 	- Fix name in summary
@@ -48,3 +44,5 @@ python -m tools.fake_msg 5148026900 2564884325 "Fetch me a whiskey" support
 	- Added transactions to KNK orders
 	- Show all mips (w/ completed status)
 	- Links to create new mips
+	- Ability to write new CSR notes
+	- Add Account details / change password

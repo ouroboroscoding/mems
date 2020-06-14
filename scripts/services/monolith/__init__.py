@@ -959,7 +959,7 @@ class Monolith(Services.Service):
 		oUser = User.get(sesh['user_id'])
 
 		# Remove fields that can't be changed
-		del data['id']
+		del data['_id']
 		if 'password' in data: del data['passwd']
 
 		# Step through each field passed and update/validate it
@@ -995,7 +995,7 @@ class Monolith(Services.Service):
 		except ValueError as e: return Services.Effect(error=(1001, [(f, "missing") for f in e.args]))
 
 		# Find the user
-		oUser = User.get(sesh['user']['id'])
+		oUser = User.get(sesh['user_id'])
 		if not oUser:
 			return Services.Effect(error=1104)
 
@@ -1008,8 +1008,9 @@ class Monolith(Services.Service):
 			return Services.Effect(error=1204)
 
 		# Set the new password and save
-		oUser['passwd'] = bcrypt.hashpw(data['new_passwd'], bcrypt.gensalt())
-		oUser.save(changes={"user":sesh['user']['id']})
+		oUser['password'] = bcrypt.hashpw(data['new_passwd'].encode('utf8'), bcrypt.gensalt()).decode('utf8')
+		print(oUser['password'])
+		oUser.save()
 
 		# Return OK
 		return Services.Effect(True)
