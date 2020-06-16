@@ -908,3 +908,33 @@ class WdEligibility(Record_MySQL.Record):
 
 		# Return the config
 		return cls._conf
+
+# WdTrigger class
+class WdTrigger(Record_MySQL.Record):
+	"""WdTrigger
+
+	Represents a customer's last welldyne trigger
+	"""
+
+	_conf = None
+	"""Configuration"""
+
+	@classmethod
+	def config(cls):
+		"""Config
+
+		Returns the configuration data associated with the record type
+
+		Returns:
+			dict
+		"""
+
+		# If we haven loaded the config yet
+		if not cls._conf:
+			cls._conf = Record_MySQL.Record.generateConfig(
+				Tree.fromFile('../definitions/monolith/wd_trigger.json'),
+				'mysql'
+			)
+
+		# Return the config
+		return cls._conf
