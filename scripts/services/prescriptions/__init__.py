@@ -180,6 +180,74 @@ class Prescriptions(Services.Service):
 		"""
 		return True
 
+	def patient_read(self, data, sesh):
+		"""Patient
+
+		Fetches patient info
+
+		Arguments:
+			data (dict): Data sent with the request
+			sesh (Sesh._Session): The session associated with the request
+
+		Returns:
+			Services.Effect
+		"""
+
+		# Make sure the user has the proper rights
+		#oEff = self.verify_read({
+		#	"name": "prescriptions",
+		#	"right": Rights.READ
+		#}, sesh)
+		#if not oEff.data:
+		#	return Services.Effect(error=Rights.INVALID)
+
+		# Verify fields
+		try: DictHelper.eval(data, ['patient_id'])
+		except ValueError as e: return Services.Effect(error=(1001, [(f, "missing") for f in e.args]))
+
+		# If the clinician ID isn't passed
+		if 'clinician_id' not in data or not data['clinician_id']:
+			data['clinician_id'] = Conf.get(('dosespot', 'clinician_id'))
+
+		# Make sure we got ints
+		for s in ['clinician_id', 'patient_id']:
+			lErrors = []
+			if not isinstance(data[s], int): lErrors.append((s, 'must be integer'))
+			if lErrors: return Services.Effect(error=(1001, lErrors))
+
+		# Generate the token
+		sToken = self.__generateToken(data['clinician_id'])
+
+		# Generate the URL
+		sURL = 'https://%s/api/patients/%d' % (
+			self._host,
+			data['patient_id']
+		)
+
+		# Generate the headers
+		dHeaders = {
+			"Accept": "application/json",
+			"Authorization": "Bearer %s" % sToken
+		}
+
+		# Make the request
+		oRes = requests.get(sURL, headers=dHeaders)
+
+		# If we didn't get a 200
+		if oRes.status_code != 200:
+			return Services.Effect(error=(1601, oRes.text))
+
+		# Get the data
+		dData = oRes.json()
+
+		# If we got an error
+		if dData['Result']['ResultCode'] == 'ERROR':
+			return Services.Effect(error=(1602, dData['Result']['ResultDescription']))
+
+		# Return the pharmacies
+		return Services.Effect(dData['Item'])
+
+
 	def patientPharmacies_read(self, data, sesh):
 		"""Patient Pharmacies
 
@@ -428,6 +496,8 @@ class Prescriptions(Services.Service):
 			data['patient_id']
 		)
 
+		print(sURL)
+
 		# Generate the headers
 		dHeaders = {
 			"Accept": "application/json",
@@ -447,6 +517,8 @@ class Prescriptions(Services.Service):
 		# If we got an error
 		if dData['Result']['ResultCode'] == 'ERROR':
 			return Services.Effect(error=(1602, dData['Result']['ResultDescription']))
+
+		print(dData)
 
 		# If there's no items
 		if not dData['Items']:

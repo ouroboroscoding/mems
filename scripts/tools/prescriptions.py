@@ -53,6 +53,8 @@ if __name__ == "__main__":
 		print('No patient ID found');
 		sys.exit(0);
 
+	print('Patient ID: %s' % oEff.data)
+
 	# Get an instance of the Prescriptions service and initialise it
 	oPrescriptions = prescriptions.Prescriptions()
 	oPrescriptions.initialise()
