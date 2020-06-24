@@ -50,6 +50,7 @@ Services.register(dServices, oRestConf, Conf.get(('services', 'salt')))
 
 # Create the HTTP server and map requests to service
 REST.Server({
+	"/escalate_agents": {"methods": REST.READ, "session": True},
 	"/template/email": {"methods": REST.ALL, "session": True},
 	"/template/emails": {"methods": REST.READ, "session": True},
 	"/template/sms": {"methods": REST.ALL, "session": True},

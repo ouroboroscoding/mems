@@ -62,9 +62,10 @@ REST.Server({
 	"/signout": {"methods": REST.POST, "session": True},
 
 	"/user": {"methods": REST.READ | REST.UPDATE, "session": True},
+	"/user/name": {"methods": REST.READ, "session": True},
 	"/user/passwd": {"methods": REST.UPDATE, "session": True},
 
-	"/customer/claim": {"methods": REST.CREATE | REST.DELETE, "session": True},
+	"/customer/claim": {"methods": REST.CREATE | REST.DELETE | REST.UPDATE, "session": True},
 	"/customer/dsid": {"methods": REST.READ, "session": True},
 	"/customer/hide": {"methods": REST.UPDATE, "session": True},
 	"/customer/id/byPhone": {"methods": REST.READ, "session": True},

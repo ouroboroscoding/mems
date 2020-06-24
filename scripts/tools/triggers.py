@@ -27,7 +27,7 @@ if __name__ == "__main__":
 
 	# Create an object to go through every existing trigger file
 	dTriggers = {
-		"TRIGGER20200617130000.TXT": {"type": None, "date": '2020-06-16 13:00:00'}
+		"TRIGGER20200619130000.TXT": {"type": None, "date": '2020-06-19 13:00:00'}
 	}
 
 	# Go through each file

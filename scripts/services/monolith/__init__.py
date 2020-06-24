@@ -116,10 +116,25 @@ class Monolith(Services.Service):
 		except ValueError as e:
 			return Services.Effect(error=(1001, e.args[0]))
 
-		# Create the record and return the result
-		return Services.Effect(
-			oCustomerClaimed.create(conflict='replace')
-		)
+		# Create the record
+		if oCustomerClaimed.create(conflict='replace'):
+
+			# Find the customer associated
+			dCustomer = KtCustomer.filter(
+				{"phoneNumber": [data['phoneNumber'], '1%s' % data['phoneNumber']]},
+				raw=['customerId'],
+				orderby=[('updatedAt', 'DESC')],
+				limit=1
+			)
+
+			# Return the ID and phone
+			return Services.Effect({
+				"customerId": dCustomer['customerId'],
+				"customerPhone": data['phoneNumber']
+			})
+
+		# Else, we failed to create the record
+		return Services.Effect(False)
 
 	def customerClaim_delete(self, data, sesh):
 		"""Customer Claim Delete
@@ -140,6 +155,39 @@ class Monolith(Services.Service):
 
 		# Attempt to delete the record
 		CustomerClaimed.deleteGet(data['phoneNumber'])
+
+		# Return OK
+		return Services.Effect(True)
+
+	def customerClaim_update(self, data, sesh):
+		"""Customer Claim Update
+
+		Switches a claim to another agent
+
+		Arguments:
+			data (dict): Data sent with the request
+			sesh (Sesh._Session): The session associated with the request
+
+		Returns:
+			Services.Effect
+		"""
+
+		# Verify fields
+		try: DictHelper.eval(data, ['phoneNumber', 'user_id'])
+		except ValueError as e: return Services.Effect(error=(1001, [(f, "missing") for f in e.args]))
+
+		# Find the claim
+		oClaim = CustomerClaimed.get(data['phoneNumber'])
+		if not oClaim:
+			return Services.Effect(error=(1104, data['phoneNumber']))
+
+		# Find the user
+		if not User.exists(data['user_id']):
+			return Services.Effect(error=(1104, data['user_id']))
+
+		# Switch the user associated with the claim
+		oClaim['user'] = data['user_id']
+		oClaim.save()
 
 		# Return OK
 		return Services.Effect(True)
@@ -648,10 +696,37 @@ class Monolith(Services.Service):
 		sesh['claimed_last'] = time();
 		sesh.save()
 
-		# Fetch and return the data
-		return Services.Effect(
-			CustomerMsgPhone.claimed(sesh['user_id'])
+		# Get the claimed records
+		lClaimed = CustomerMsgPhone.claimed(sesh['user_id'])
+
+		# Get the phone numbers out of them
+		lNumbers = []
+		for d in lClaimed:
+			lNumbers.append(d['customerPhone'])
+			lNumbers.append('1%s' % d['customerPhone'])
+
+		# Look up the customer IDs by phone number
+		lCustomers = KtCustomer.filter(
+			{"phoneNumber": lNumbers},
+			raw=['customerId', 'phoneNumber'],
+			orderby=[('updatedAt', 'ASC')],
 		)
+
+		# Create a map of customers by phone number
+		dCustomers = {}
+		for d in lCustomers:
+			dCustomers[d['phoneNumber'][-10:]] = d['customerId']
+
+		print(dCustomers)
+
+		# Go through each claimed and associate the correct customer ID
+		for d in lClaimed:
+			d['customerId'] = d['customerPhone'] in dCustomers and \
+								dCustomers[d['customerPhone']] or \
+								0
+
+		# Return the data
+		return Services.Effect(lClaimed)
 
 	def msgsClaimedNew_read(self, data, sesh):
 		"""Messages Claimed New
@@ -976,6 +1051,30 @@ class Monolith(Services.Service):
 		return Services.Effect(
 			oUser.save(changes={"user": sesh['user_id']})
 		)
+
+	def userName_read(self, data, sesh):
+		"""User Name
+
+		Fetchs one or more names based on IDs, returns as a dictionary of ID to
+		name
+
+		Arguments:
+			data (dict): Data sent with the request
+			sesh (Sesh._Session): The session associated with the user
+
+		Returns:
+			Effect
+		"""
+
+		# Verify fields
+		try: DictHelper.eval(data, ['id'])
+		except ValueError as e: return Services.Effect(error=(1001, [(f, "missing") for f in e.args]))
+
+		# Return the dictionary of IDs to names
+		return Services.Effect({
+			d['id']: {"firstName": d['firstName'], "lastName": d['lastName']}
+			for d in User.get(data['id'], raw=['id', 'firstName', 'lastName'])
+		})
 
 	def userPasswd_update(self, data, sesh):
 		"""User Password

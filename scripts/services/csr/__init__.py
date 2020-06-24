@@ -15,7 +15,7 @@ __created__		= "2020-05-17"
 from RestOC import Conf, DictHelper, Errors, Services
 
 # Service imports
-from .records import TemplateEmail, TemplateSMS
+from .records import EscalateAgent, TemplateEmail, TemplateSMS
 
 class CSR(Services.Service):
 	"""CSR Service class
@@ -23,7 +23,7 @@ class CSR(Services.Service):
 	Service for CSR access
 	"""
 
-	_install = [TemplateEmail, TemplateSMS]
+	_install = [EscalateAgent, TemplateEmail, TemplateSMS]
 	"""Record types called in install"""
 
 	def initialise(self):
@@ -247,6 +247,30 @@ class CSR(Services.Service):
 		return Services.Effect(
 			_class.get(raw=True, orderby=['title'])
 		)
+
+	def escalateAgents_read(self, data, sesh):
+		"""Escalate Agents
+
+		Returns the list of agents who can have issues escalated to them
+
+		Arguments:
+			data (mixed): Data sent with the request
+			sesh (Sesh._Session): The session associated with the request
+
+		Returns:
+			Services.Effect
+		"""
+
+		# Fetch all the agents
+		lAgents = EscalateAgent.get(raw=['_id'])
+
+		# Fetch their names
+		oEff = Services.read('monolith', 'user/name', {
+			"id": [d['_id'] for d in lAgents]
+		}, sesh)
+
+		# Regardless of what we got, retun the effect
+		return oEff
 
 	def templateEmail_create(self, data, sesh):
 		"""Template Email Create

@@ -74,16 +74,11 @@ if __name__ == "__main__":
 		# Convert the ID
 		iID = int(dP['patientId'])
 
-		print('--------------------------------------')
-		print(iID)
-
 		# Get the pharmacies using the patient ID
 		oEff = oPrescriptions.patientPharmacies_read({"patient_id": iID}, oSesh)
 		if oEff.errorExists():
 			print(oEff.error)
 			sys.exit(1);
-
-		print(oEff.data)
 
 		# Go through each pharmacy
 		for dPharmacy in oEff.data:
@@ -91,19 +86,20 @@ if __name__ == "__main__":
 			# If we find one with the ID to switch out
 			if dPharmacy['PharmacyId'] == iFrom:
 
+				print('--------------------------------------')
+				print('%d had %d' % (iID, iFrom))
+
 				# Add the new pharmacy
 				oEff = oPrescriptions.patientPharmacy_create({"patient_id": iID, "pharmacy_id": iTo}, oSesh)
 				if oEff.errorExists():
 					print(oEff.error)
 					sys.exit(1);
-				print(oEff.data)
 
 				# Delete the old pharmacy
 				oEff = oPrescriptions.patientPharmacy_delete({"patient_id": iID, "pharmacy_id": iFrom}, oSesh)
 				if oEff.errorExists():
 					print(oEff.error)
 					sys.exit(1);
-				print(oEff.data)
 
 				# Stop the loop
 				break
