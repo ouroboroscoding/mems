@@ -20,6 +20,7 @@ import re
 from FormatOC import Tree
 from RestOC import Conf, Record_MySQL
 
+# Custome SQL
 sClaimedSQL = ''
 sClaimedNewSQL = ''
 sConversationSQL = ''
@@ -28,6 +29,7 @@ sMsgPhoneUpdateSQL = ''
 sSmpNotes = ''
 sNumOfOrdersSQL = ''
 sSearchSQL = ''
+sTriggerSQL = ''
 sUnclaimedSQL = ''
 
 def init():
@@ -38,7 +40,7 @@ def init():
 
 	global sClaimedSQL, sClaimedNewSQL, sConversationSQL, sLandingSQL, \
 			sMsgPhoneUpdateSQL, sSmpNotes, sNumOfOrdersSQL, sSearchSQL, \
-			sUnclaimedSQL
+			sTriggerSQL, sUnclaimedSQL
 
 	# SQL files
 	with open('./services/monolith/sql/claimed.sql') as oF:
@@ -57,6 +59,8 @@ def init():
 		sNumOfOrdersSQL = oF.read()
 	with open('./services/monolith/sql/search.sql') as oF:
 		sSearchSQL = oF.read()
+	with open('./services/monolith/sql/trigger.sql') as oF:
+		sTriggerSQL = oF.read()
 	with open('./services/monolith/sql/unclaimed.sql') as oF:
 		sUnclaimedSQL = oF.read()
 
@@ -883,7 +887,7 @@ class User(Record_MySQL.Record):
 class WdEligibility(Record_MySQL.Record):
 	"""WdEligibility
 
-	Represents a customers welldyne eligibility
+	Represents a customer's WellDyneRx eligibility
 	"""
 
 	_conf = None
@@ -909,11 +913,41 @@ class WdEligibility(Record_MySQL.Record):
 		# Return the config
 		return cls._conf
 
+# WdOutreach class
+class WdOutreach(Record_MySQL.Record):
+	"""WdOutreach
+
+	Represents a customer's last outreach issue with WellDyneRx
+	"""
+
+	_conf = None
+	"""Configuration"""
+
+	@classmethod
+	def config(cls):
+		"""Config
+
+		Returns the configuration data associated with the record type
+
+		Returns:
+			dict
+		"""
+
+		# If we haven loaded the config yet
+		if not cls._conf:
+			cls._conf = Record_MySQL.Record.generateConfig(
+				Tree.fromFile('../definitions/monolith/wd_outreach.json'),
+				'mysql'
+			)
+
+		# Return the config
+		return cls._conf
+
 # WdTrigger class
 class WdTrigger(Record_MySQL.Record):
 	"""WdTrigger
 
-	Represents a customer's last welldyne trigger
+	Represents a customer's last WellDyneRx trigger
 	"""
 
 	_conf = None
@@ -938,3 +972,37 @@ class WdTrigger(Record_MySQL.Record):
 
 		# Return the config
 		return cls._conf
+
+	@classmethod
+	def withOutreachEligibility(cls, customer_id, custom={}):
+		"""With Outreach & Eligibility
+
+		Fetches the latest trigger associated with the customer, including any
+		possible outreach and eligibility data
+
+		Arguments:
+			customer_id (int): The ID of the customer to look up
+			custom (dict): Custom Host and DB info
+				'host' the name of the host to get/set data on
+				'append' optional postfix for dynamic DBs
+
+		Returns:
+			dict
+		"""
+
+		# Fetch the record structure
+		dStruct = cls.struct(custom)
+
+		# Generate SQL
+		sSQL = sTriggerSQL % {
+			"db": dStruct['db'],
+			"table": dStruct['table'],
+			"customerId": customer_id
+		}
+
+		# Execute and return the select
+		return Record_MySQL.Commands.select(
+			dStruct['host'],
+			sSQL,
+			Record_MySQL.ESelect.ROW
+		)

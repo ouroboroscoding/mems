@@ -27,7 +27,8 @@ from RestOC import Conf, DictHelper, Errors, Services, \
 from .records import CustomerClaimed, CustomerCommunication, CustomerMsgPhone, \
 						DsPatient, Forgot, KtCustomer, KtOrder, ShippingInfo, \
 						SmpNote, SMSStop, TfAnswer, TfLanding, TfQuestion, \
-						TfQuestionOption, User, init as recInit
+						TfQuestionOption, User, WdOutreach, WdTrigger, \
+						init as recInit
 
 # Regex for validating email
 _emailRegex = re.compile(r"[^@\s]+@[^@\s]+\.[a-zA-Z0-9]{2,}$")
@@ -540,6 +541,38 @@ class Monolith(Services.Service):
 
 		# Return the records
 		return Services.Effect(lCodes)
+
+	def customerTriggerInfo_read(self, data, sesh):
+		"""Customer Trigger Info
+
+		Returns the last trigger associated with the customer, including any
+		possible outreach and eligibility
+
+		Arguments:
+			data (dict): Data sent with the request
+			sesh (Sesh._Session): The session associated with the request
+
+		Returns:
+			Services.Effect
+		"""
+
+		# Make sure the user has the proper rights
+		#oEff = self.verify_read({
+		#	"name": "prescriptions",
+		#	"right": Rights.READ
+		#}, sesh)
+		#if not oEff.data:
+		#	return Services.Effect(error=Rights.INVALID)
+
+		# Verify fields
+		try: DictHelper.eval(data, ['customerId'])
+		except ValueError as e: return Services.Effect(error=(1001, [(f, "missing") for f in e.args]))
+
+		# Look for a trigger with any possible outreach and eligibility, then
+		#	return it
+		return Services.Effect(
+			WdTrigger.withOutreachEligibility(data['customerId'])
+		)
 
 	def messageIncoming_create(self, data):
 		"""Message Incoming

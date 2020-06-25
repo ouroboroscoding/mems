@@ -247,7 +247,6 @@ class Prescriptions(Services.Service):
 		# Return the pharmacies
 		return Services.Effect(dData['Item'])
 
-
 	def patientPharmacies_read(self, data, sesh):
 		"""Patient Pharmacies
 
@@ -496,8 +495,6 @@ class Prescriptions(Services.Service):
 			data['patient_id']
 		)
 
-		print(sURL)
-
 		# Generate the headers
 		dHeaders = {
 			"Accept": "application/json",
@@ -517,8 +514,6 @@ class Prescriptions(Services.Service):
 		# If we got an error
 		if dData['Result']['ResultCode'] == 'ERROR':
 			return Services.Effect(error=(1602, dData['Result']['ResultDescription']))
-
-		print(dData)
 
 		# If there's no items
 		if not dData['Items']:

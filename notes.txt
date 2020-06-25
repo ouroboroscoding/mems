@@ -3,13 +3,6 @@ python -m tools.fake_msg 5148026900 2564884325 "My name is Arthur Morgan" suppor
 python -m tools.fake_msg 5148026900 2564884325 "Fetch me a whiskey" support
 
 
-- Set close (x) to /unassigned
-
-- Add resolve step to removing from claims
-
-- Allow enter to signin
-
-
 
 - JustCall
 	- Add a way to call out
@@ -52,3 +45,7 @@ python -m tools.fake_msg 5148026900 2564884325 "Fetch me a whiskey" support
 	- Links to create new mips
 	- Ability to write new CSR notes
 	- Add Account details / change password
+	- Set close (x) to /unclaimed
+	- Add resolve/escalate step to removing from claims
+	- Allow enter to signin
+	- Add WD triggers to RX page
