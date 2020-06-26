@@ -568,11 +568,15 @@ class Monolith(Services.Service):
 		try: DictHelper.eval(data, ['customerId'])
 		except ValueError as e: return Services.Effect(error=(1001, [(f, "missing") for f in e.args]))
 
-		# Look for a trigger with any possible outreach and eligibility, then
-		#	return it
-		return Services.Effect(
-			WdTrigger.withOutreachEligibility(data['customerId'])
-		)
+		# Look for a trigger with any possible outreach and eligibility
+		dTrigger = WdTrigger.withOutreachEligibility(data['customerId'])
+
+		# If there's nothing
+		if not dTrigger:
+			dTrigger = 0
+
+		# Return
+		return Services.Effect(dTrigger)
 
 	def messageIncoming_create(self, data):
 		"""Message Incoming

@@ -1,8 +1,5 @@
 # coding=utf8
-""" Install Services
-
-Adds global tables
-"""
+""" Create the Escalate Agent table """
 
 # Services
 from services.csr.records import EscalateAgent
