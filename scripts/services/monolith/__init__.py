@@ -732,6 +732,10 @@ class Monolith(Services.Service):
 		# Get the claimed records
 		lClaimed = CustomerMsgPhone.claimed(sesh['user_id'])
 
+		# If there's no claimed, return
+		if not lClaimed:
+			return Services.Effect([])
+
 		# Get the phone numbers out of them
 		lNumbers = []
 		for d in lClaimed:
@@ -749,8 +753,6 @@ class Monolith(Services.Service):
 		dCustomers = {}
 		for d in lCustomers:
 			dCustomers[d['phoneNumber'][-10:]] = d['customerId']
-
-		print(dCustomers)
 
 		# Go through each claimed and associate the correct customer ID
 		for d in lClaimed:
