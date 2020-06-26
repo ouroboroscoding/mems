@@ -68,7 +68,8 @@ _dProviders = {
 	58275: 'Stacy Comeau Nurse Practitioner',
 	59335: 'Jessica Toath Nurse Practitioner',
 	65753: 'Neifa Nayor APRN',
-	66591: 'Dr. Marc Calabrese'
+	66591: 'Dr. Marc Calabrese',
+	76563: 'Andrew Abraham M.D.'
 }
 
 class Prescriptions(Services.Service):
