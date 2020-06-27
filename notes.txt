@@ -3,10 +3,6 @@ python -m tools.fake_msg 5148026900 2564884325 "My name is Arthur Morgan" suppor
 python -m tools.fake_msg 5148026900 2564884325 "Fetch me a whiskey" support
 
 
-
-- JustCall
-	- Add a way to call out
-
 - Add email functionality
 	- Dropdown - company
 		- Dropdown - templates
@@ -49,3 +45,4 @@ python -m tools.fake_msg 5148026900 2564884325 "Fetch me a whiskey" support
 	- Add resolve/escalate step to removing from claims
 	- Allow enter to signin
 	- Add WD triggers to RX page
+	- Order labels in notes

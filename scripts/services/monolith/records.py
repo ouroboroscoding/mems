@@ -25,6 +25,7 @@ sClaimedSQL = ''
 sClaimedNewSQL = ''
 sConversationSQL = ''
 sLandingSQL = ''
+sLatestStatusSQL = ''
 sMsgPhoneUpdateSQL = ''
 sSmpNotes = ''
 sNumOfOrdersSQL = ''
@@ -39,8 +40,8 @@ def init():
 	"""
 
 	global sClaimedSQL, sClaimedNewSQL, sConversationSQL, sLandingSQL, \
-			sMsgPhoneUpdateSQL, sSmpNotes, sNumOfOrdersSQL, sSearchSQL, \
-			sTriggerSQL, sUnclaimedSQL
+			sLatestStatusSQL, sMsgPhoneUpdateSQL, sSmpNotes, sNumOfOrdersSQL, \
+			sSearchSQL, sTriggerSQL, sUnclaimedSQL
 
 	# SQL files
 	with open('./services/monolith/sql/claimed.sql') as oF:
@@ -51,6 +52,8 @@ def init():
 		sConversationSQL = oF.read()
 	with open('./services/monolith/sql/landing.sql') as oF:
 		sLandingSQL = oF.read()
+	with open('./services/monolith/sql/latest_status.sql') as oF:
+		sLatestStatusSQL = oF.read()
 	with open('./services/monolith/sql/msg_phone_update.sql') as oF:
 		sMsgPhoneUpdateSQL = oF.read()
 	with open('./services/monolith/sql/smp_notes.sql') as oF:
@@ -637,6 +640,69 @@ class SmpNote(Record_MySQL.Record):
 
 		# Return the config
 		return cls._conf
+
+# SmpOrderStatus class
+class SmpOrderStatus(Record_MySQL.Record):
+	"""SmpOrderStatus
+
+	Represents status info on a specific order
+	"""
+
+	_conf = None
+	"""Configuration"""
+
+	@classmethod
+	def config(cls):
+		"""Config
+
+		Returns the configuration data associated with the record type
+
+		Returns:
+			dict
+		"""
+
+		# If we haven loaded the config yet
+		if not cls._conf:
+			cls._conf = Record_MySQL.Record.generateConfig(
+				Tree.fromFile('../definitions/monolith/smp_order_status.json'),
+				'mysql'
+			)
+
+		# Return the config
+		return cls._conf
+
+	@classmethod
+	def latest(cls, customer_id, custom={}):
+		"""Latest
+
+		Fetches the order status for the most recent order by customer
+
+		Arguments:
+			customer_id (int): The ID of the customer
+			custom (dict): Custom Host and DB info
+				'host' the name of the host to get/set data on
+				'append' optional postfix for dynamic DBs
+
+		Returns:
+			dict
+		"""
+
+		# Fetch the record structure
+		dStruct = cls.struct(custom)
+
+		# Generate SQL
+		sSQL = sLatestStatusSQL % {
+			"db": dStruct['db'],
+			"table": dStruct['table'],
+			"customerId": customer_id
+		}
+
+		# Execute and return the select
+		return Record_MySQL.Commands.select(
+			dStruct['host'],
+			sSQL,
+			Record_MySQL.ESelect.ROW
+		)
 
 # SMSStop class
 class SMSStop(Record_MySQL.Record):

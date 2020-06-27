@@ -26,8 +26,9 @@ from RestOC import Conf, DictHelper, Errors, Services, \
 # Service imports
 from .records import CustomerClaimed, CustomerCommunication, CustomerMsgPhone, \
 						DsPatient, Forgot, KtCustomer, KtOrder, ShippingInfo, \
-						SmpNote, SMSStop, TfAnswer, TfLanding, TfQuestion, \
-						TfQuestionOption, User, WdOutreach, WdTrigger, \
+						SmpNote, SmpOrderStatus, SMSStop, TfAnswer, TfLanding, \
+						TfQuestion, TfQuestionOption, User, WdOutreach, \
+						WdTrigger, \
 						init as recInit
 
 # Regex for validating email
@@ -458,26 +459,111 @@ class Monolith(Services.Service):
 		"""
 
 		# Verify fields
-		try: DictHelper.eval(data, ['customer_id', 'content', 'action'])
+		try: DictHelper.eval(data, ['content', 'action'])
 		except ValueError as e: return Services.Effect(error=(1001, [(f, "missing") for f in e.args]))
+
+		# We must have either a customer ID or order ID
+		if 'customer_id' not in data and 'order_id' not in data:
+			return Services.Effect(error=(1001, [('customer_id', 'missing'), ('order_id', 'missing')]))
 
 		# Get current date/time
 		sDT = arrow.get().format('YYYY-MM-DD HH:mm:ss')
 
-		# Attempt to create the record
-		try:
-			oSmpNote = SmpNote({
-				"parentTable": 'kt_customer',
-				"parentColumn": 'customerId',
-				"columnValue": data['customer_id'],
-				"action": data['action'],
-				"createdBy": sesh['user_id'],
-				"note": data['content'],
-				"createdAt": sDT,
-				"updatedAt": sDT
-			})
-		except ValueError as e:
-			return Services.Effect(error=(1001, e.args[0]))
+		# If we got a customer ID
+		if 'customer_id' in data:
+
+			# Attempt to create the record
+			try:
+				oSmpNote = SmpNote({
+					"parentTable": 'kt_customer',
+					"parentColumn": 'customerId',
+					"columnValue": data['customer_id'],
+					"action": data['action'],
+					"createdBy": sesh['user_id'],
+					"note": data['content'],
+					"createdAt": sDT,
+					"updatedAt": sDT
+				})
+			except ValueError as e:
+				return Services.Effect(error=(1001, e.args[0]))
+
+		# Else we got an order ID
+		else:
+
+			# If we have no label
+			if 'label' not in data:
+				return Services.Effect(error=(1001, [('label', 'missing')]))
+
+			# Figure out the role based on the label
+			lLabel = data['label'].split(' - ')
+			if lLabel[0] == 'Provider':
+				lLabel[0] = 'Doctor'
+
+			# Find the latest status for this order
+			oStatus = SmpOrderStatus.filter(
+				{"orderId": data['order_id']},
+				limit=1
+			)
+
+			# If there's none
+			if not oStatus:
+
+				# Figure out the action
+				if lLabel[0] == 'CSR':
+					sAction = 'Send to CSR'
+				elif lLabel[0] == 'Doctor':
+					sAction = 'Send to Provider'
+				else:
+					sAction = 'Set Label'
+
+				# Create a new status
+				oStatus = SmpOrderStatus({
+					"orderId": data['order_id'],
+					"orderStatus": '',
+					"reviewStatus": '',
+					"attentionRole": lLabel[0] != '' and lLabel[0] or None,
+					"orderLabel": data['label'],
+					"declineReason": None,
+					"smpNoteId": None,
+					"currentFlag": 'Y',
+					"createdBy": 11,
+					"modifiedBy": 11,
+					"createdAt": sDT,
+					"updatedAt": sDT
+				});
+				oStatus.create()
+
+			# Else
+			else:
+
+				# Figure out the action
+				if lLabel[0] == 'CSR' and oStatus['attentionRole'] != 'CSR':
+					sAction = 'Send to CSR'
+				elif lLabel[0] == 'Doctor' and oStatus['attentionRole'] != 'Doctor':
+					sAction = 'Send to Provider'
+				else:
+					sAction = 'Set Label'
+
+				# Update the existing status
+				oStatus['attentionRole'] = lLabel[0] != '' and lLabel[0] or None
+				oStatus['orderLabel'] = data['label']
+				oStatus['updatedAt']: sDT
+				oStatus.save()
+
+			# Attempt to create the record
+			try:
+				oSmpNote = SmpNote({
+					"parentTable": 'kt_order',
+					"parentColumn": 'orderId',
+					"columnValue": data['order_id'],
+					"action": sAction,
+					"createdBy": sesh['user_id'],
+					"note": data['content'],
+					"createdAt": sDT,
+					"updatedAt": sDT
+				})
+			except ValueError as e:
+				return Services.Effect(error=(1001, e.args[0]))
 
 		# Create the record and return the result
 		return Services.Effect(
@@ -505,10 +591,34 @@ class Monolith(Services.Service):
 		try: data['customerId'] = int(data['customerId'])
 		except ValueError: return Services.Effect(error=(1001, [('customerId', "invalid")]))
 
+		# Fetch all notes
+		lNotes = SmpNote.byCustomer(data['customerId'])
+
+		# Fetch the latest order status
+		dStatus = SmpOrderStatus.latest(data['customerId'])
+
+		# If we got a status
+		if dStatus:
+
+			# If the label is blank
+			if dStatus['orderLabel'] in [None, '']:
+
+				# If we have an attention role
+				if dStatus['attentionRole']:
+					dStatus['orderLabel'] = dStatus['attentionRole'] == 'Doctor' and 'Provider' or dStatus['attentionRole']
+
+				# Else, make sure it's an empty string
+				else:
+					dStatus['orderLabel'] = ''
+
 		# Fetch and return all notes
-		return Services.Effect(
-			SmpNote.byCustomer(data['customerId'])
-		)
+		return Services.Effect({
+			"notes": lNotes,
+			"status": {
+				"orderId": dStatus['orderId'],
+				"label": dStatus['orderLabel']
+			}
+		})
 
 	def customerShipping_read(self, data, sesh):
 		"""Customer Shipping
