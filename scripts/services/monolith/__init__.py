@@ -611,13 +611,16 @@ class Monolith(Services.Service):
 				else:
 					dStatus['orderLabel'] = ''
 
-		# Fetch and return all notes
-		return Services.Effect({
-			"notes": lNotes,
-			"status": {
+			# Set just the useful info
+			dStatus = {
 				"orderId": dStatus['orderId'],
 				"label": dStatus['orderLabel']
 			}
+
+		# Fetch and return all notes
+		return Services.Effect({
+			"notes": lNotes,
+			"status": dStatus
 		})
 
 	def customerShipping_read(self, data, sesh):
