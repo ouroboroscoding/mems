@@ -3,12 +3,13 @@
 This file will describe how to go about installing and using a virtual machine running Ubuntu 18.04 in order to run MeMS in the same environment as production and guarantee code will work as expected.
 
 ## Clone this repository
+Make sure to create a new entry in your hosts file for github-me to github.com
+
 If you have not already, clone this repository to your computer. The --recursive param is necessary in order to have git fetch the submodules the project needs alongside the primary code.
-> git clone --recursive git@github.com:bastmaleexcel/mems.git
+> git clone --recursive git@github-me:bastmaleexcel/mems.git
 
 If you already cloned the repo and didn't add the --recursive command, you can run the following to get the submodules.
 > git submodule update --init --recursive
-
 
 ## Download Ubuntu
 You will need a copy of the Ubuntu Server ISO to setup your virtual machine, you can download it directly from [Ubuntu](https://releases.ubuntu.com/18.04/ubuntu-18.04.4-live-server-amd64.iso). Store it somewhere you can find it later.

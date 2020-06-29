@@ -14,7 +14,7 @@ __created__		= "2020-05-10"
 # Python imports
 from base64 import b64encode
 from hashlib import sha512
-import urllib.parse
+from urllib.parse import urlencode
 
 # Pip imports
 import requests
@@ -78,19 +78,16 @@ class Prescriptions(Services.Service):
 	Service for Prescriptions access
 	"""
 
-	def __generateToken(self, clinician_id):
-		"""Generate Token
+	def __generateIds(self, clinician_id):
+		"""Generate IDs
 
-		Generates the Auth token needed for all HTTP requests
+		Generates the encrypted clinic and clinician IDs
 
 		Arguments:
 			clinician_id (uint): ID of the clinician making the request
 
-		Raises:
-			EffectException
-
 		Returns:
-			str
+			tuple
 		"""
 
 		# Get a random key phrase
@@ -114,14 +111,35 @@ class Prescriptions(Services.Service):
 		sKey = '%d%s%s' % (clinician_id, sRand[0:22], self._clinic_key)
 
 		# Encrypt it
-		sUserId = b64encode(sha512(sKey.encode('utf-8')).digest()).decode('utf-8')
+		sClinicianId = b64encode(sha512(sKey.encode('utf-8')).digest()).decode('utf-8')
 
 		# Cut off trailing equal signs
-		if sUserId[-2:] == '==':
-			sUserId = sUserId[0:-2]
+		if sClinicianId[-2:] == '==':
+			sClinicianId = sClinicianId[0:-2]
+
+		# Return the IDs
+		return (sClinicId, sClinicianId)
+
+	def __generateToken(self, clinician_id):
+		"""Generate Token
+
+		Generates the Auth token needed for all HTTP requests
+
+		Arguments:
+			clinician_id (uint): ID of the clinician making the request
+
+		Raises:
+			EffectException
+
+		Returns:
+			str
+		"""
+
+		# Generate the encrypted IDs
+		lIDs = self.__generateIds(clinician_id)
 
 		# Generate the request headers
-		sAuth = '%d:%s' % (self._clinic_id, sClinicId)
+		sAuth = '%d:%s' % (self._clinic_id, lIDs[0])
 		dHeaders = {
 			"Authorization": 'Basic %s' % b64encode(sAuth.encode("utf-8")).decode('utf-8'),
 			"Content-Type": 'application/x-www-form-urlencoded'
@@ -131,12 +149,12 @@ class Prescriptions(Services.Service):
 		dData = {
 			"grant_type": 'password',
 			"Username": '%d' % clinician_id,
-			"Password": sUserId
+			"Password": lIDs[1]
 		}
 
 		# Make the request for the token
 		oRes = requests.post(
-			'https://%s/token' % self._host,
+			'https://%s/webapi/token' % self._host,
 			data=dData,
 			headers=dHeaders
 		)
@@ -220,7 +238,7 @@ class Prescriptions(Services.Service):
 		sToken = self.__generateToken(data['clinician_id'])
 
 		# Generate the URL
-		sURL = 'https://%s/api/patients/%d' % (
+		sURL = 'https://%s/webapi/api/patients/%d' % (
 			self._host,
 			data['patient_id']
 		)
@@ -287,7 +305,7 @@ class Prescriptions(Services.Service):
 		sToken = self.__generateToken(data['clinician_id'])
 
 		# Generate the URL
-		sURL = 'https://%s/api/patients/%d/pharmacies' % (
+		sURL = 'https://%s/webapi/api/patients/%d/pharmacies' % (
 			self._host,
 			data['patient_id']
 		)
@@ -354,7 +372,7 @@ class Prescriptions(Services.Service):
 		sToken = self.__generateToken(data['clinician_id'])
 
 		# Generate the URL
-		sURL = 'https://%s/api/patients/%d/pharmacies/%s' % (
+		sURL = 'https://%s/webapi/api/patients/%d/pharmacies/%s' % (
 			self._host,
 			data['patient_id'],
 			data['pharmacy_id']
@@ -422,7 +440,7 @@ class Prescriptions(Services.Service):
 		sToken = self.__generateToken(data['clinician_id'])
 
 		# Generate the URL
-		sURL = 'https://%s/api/patients/%d/pharmacies/%s' % (
+		sURL = 'https://%s/webapi/api/patients/%d/pharmacies/%s' % (
 			self._host,
 			data['patient_id'],
 			data['pharmacy_id']
@@ -491,7 +509,7 @@ class Prescriptions(Services.Service):
 		sToken = self.__generateToken(data['clinician_id'])
 
 		# Generate the URL
-		sURL = 'https://%s/api/patients/%d/prescriptions' % (
+		sURL = 'https://%s/webapi/api/patients/%d/prescriptions' % (
 			self._host,
 			data['patient_id']
 		)
@@ -527,3 +545,53 @@ class Prescriptions(Services.Service):
 
 		# Generate and return the result
 		return Services.Effect(dData['Items'])
+
+	def patientSso_read(self, data, sesh):
+		"""Patient SSO
+
+		Fetches all a single sign on URL to DoseSpots system
+
+		Arguments:
+			data (dict): Data sent with the request
+			sesh (Sesh._Session): The session associated with the request
+
+		Returns:
+			Services.Effect
+		"""
+
+		# Make sure the user has the proper rights
+		#oEff = self.verify_read({
+		#	"name": "prescriptions",
+		#	"right": Rights.UPDATE
+		#}, sesh)
+		#if not oEff.data:
+		#	return Services.Effect(error=Rights.INVALID)
+
+		# Verify fields
+		try: DictHelper.eval(data, ['clinician_id', 'patient_id'])
+		except ValueError as e: return Services.Effect(error=(1001, [(f, "missing") for f in e.args]))
+
+		# Make sure we got ints
+		for s in ['clinician_id', 'patient_id']:
+			lErrors = []
+			if not isinstance(data[s], int): lErrors.append((s, 'must be integer'))
+			if lErrors: return Services.Effect(error=(1001, lErrors))
+
+		# Generate the IDs
+		lIDs = self.__generateIds(data['clinician_id'])
+
+		# Generate the URL
+		sURL = 'https://%s/LoginSingleSignOn.aspx?%s' % (
+			self._host,
+			urlencode({
+				"SingleSignOnClinicId": self._clinic_id,
+				"SingleSignOnUserId": '%d' % data['clinician_id'],
+				"SingleSignOnPhraseLength": '32',
+				"SingleSignOnCode": lIDs[0],
+				"SingleSignOnUserIdVerify": lIDs[1],
+				"PatientId": '%d' % data['patient_id']
+			})
+		)
+
+		# Return the URL
+		return Services.Effect(sURL)

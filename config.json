@@ -9,7 +9,7 @@
 	},
 
 	"dosespot": {
-		"host": "my.dosespot.com/webapi",
+		"host": "my.dosespot.com",
 		"clinic_id": null,
 		"clinic_key": null,
 		"clinician_id": null
