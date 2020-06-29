@@ -82,7 +82,8 @@ REST.Server({
 	"/msgs/claimed": {"methods": REST.READ, "session": True},
 	"/msgs/claimed/new": {"methods": REST.READ, "session": True},
 	"/msgs/search": {"methods": REST.READ, "session": True},
-	"/msgs/unclaimed": {"methods": REST.READ, "session": True}
+	"/msgs/unclaimed": {"methods": REST.READ, "session": True},
+	"/msgs/unclaimed/count": {"methods": REST.READ, "session": True}
 
 }, 'monolith', "https?://(.*\\.)?%s" % Conf.get(("rest","allowed")).replace('.', '\\.')).run(
 	host=oRestConf['monolith']['host'],

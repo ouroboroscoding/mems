@@ -32,6 +32,7 @@ sNumOfOrdersSQL = ''
 sSearchSQL = ''
 sTriggerSQL = ''
 sUnclaimedSQL = ''
+sUnclaimedCountSQL = ''
 
 def init():
 	"""Ugly Hack
@@ -41,7 +42,7 @@ def init():
 
 	global sClaimedSQL, sClaimedNewSQL, sConversationSQL, sLandingSQL, \
 			sLatestStatusSQL, sMsgPhoneUpdateSQL, sSmpNotes, sNumOfOrdersSQL, \
-			sSearchSQL, sTriggerSQL, sUnclaimedSQL
+			sSearchSQL, sTriggerSQL, sUnclaimedSQL, sUnclaimedCountSQL
 
 	# SQL files
 	with open('./services/monolith/sql/claimed.sql') as oF:
@@ -66,6 +67,8 @@ def init():
 		sTriggerSQL = oF.read()
 	with open('./services/monolith/sql/unclaimed.sql') as oF:
 		sUnclaimedSQL = oF.read()
+	with open('./services/monolith/sql/unclaimed_count.sql') as oF:
+		sUnclaimedCountSQL = oF.read()
 
 # CustomerClaimed class
 class CustomerClaimed(Record_MySQL.Record):
@@ -395,6 +398,34 @@ class CustomerMsgPhone(Record_MySQL.Record):
 				"db": dStruct['db']
 			},
 			Record_MySQL.ESelect.ALL
+		)
+
+	@classmethod
+	def unclaimedCount(cls, custom={}):
+		"""Unclaimed Count
+
+		Fetches the count of open conversations that have not been claimed by
+		any agent
+
+		Arguments:
+			custom (dict): Custom Host and DB info
+				'host' the name of the host to get/set data on
+				'append' optional postfix for dynamic DBs
+
+		Returns:
+			list
+		"""
+
+		# Fetch the record structure
+		dStruct = cls.struct(custom)
+
+		# Fetch and return the data
+		return Record_MySQL.Commands.select(
+			dStruct['host'],
+			sUnclaimedCountSQL % {
+				"db": dStruct['db']
+			},
+			Record_MySQL.ESelect.CELL
 		)
 
 # DsPatient class

@@ -956,6 +956,25 @@ class Monolith(Services.Service):
 			CustomerMsgPhone.unclaimed()
 		)
 
+	def msgsUnclaimedCount_read(self, data, sesh):
+		"""Messages: Unclaimed Count
+
+		Fetches the count of all summaries with incoming messages that have not
+		been hidden or already claimed by a rep
+
+		Arguments:
+			data (dict): Data sent with the request
+			sesh (Sesh._Session): The session associated with the request
+
+		Returns:
+			Services.Effect
+		"""
+
+		# Fetch and return the data
+		return Services.Effect(
+			CustomerMsgPhone.unclaimedCount()
+		)
+
 	def passwdForgot_create(self, data):
 		"""Password Forgot (Generate)
 
