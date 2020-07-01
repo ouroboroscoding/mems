@@ -570,7 +570,7 @@ class UserPatient(Record_MySQL.Record):
 		# If we haven loaded the config yet
 		if not cls._conf:
 			cls._conf = Record_MySQL.Record.generateConfig(
-				Tree.fromFile('../definitions/auth/user_crm.json'),
+				Tree.fromFile('../definitions/auth/user_patient.json'),
 				'mysql'
 			)
 
