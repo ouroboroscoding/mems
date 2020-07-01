@@ -1,6 +1,12 @@
-python -m tools.fake_msg 5148026900 2564884325 "Hello ME" support
-python -m tools.fake_msg 5148026900 2564884325 "My name is Arthur Morgan" support
-python -m tools.fake_msg 5148026900 2564884325 "Fetch me a whiskey" support
+DEV:
+	python -m tools.fake_msg 5148026900 2564884325 "Hello ME" support
+	python -m tools.fake_msg 5148026900 2564884325 "My name is Arthur Morgan" support
+	python -m tools.fake_msg 5148026900 2564884325 "Fetch me a whiskey" support
+
+UAT:
+	python -m tools.fake_msg 2017881801 9198000609 "Hello ME" support
+	python -m tools.fake_msg 4232410925 9198000609 "Hello ME" support
+	python -m tools.fake_msg 6062547285 9198000609 "Hello ME" support
 
 
 - Add email functionality
@@ -13,10 +19,6 @@ python -m tools.fake_msg 5148026900 2564884325 "Fetch me a whiskey" support
 
 	- SMS
 		- DOB in header
-
-	- DoseSpot
-		- SSO
-
 
 
 - Done
@@ -46,3 +48,4 @@ python -m tools.fake_msg 5148026900 2564884325 "Fetch me a whiskey" support
 	- Allow enter to signin
 	- Add WD triggers to RX page
 	- Order labels in notes
+	- DoseSpot SSO
