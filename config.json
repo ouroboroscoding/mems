@@ -1,0 +1,130 @@
+{
+	"developer": {
+		"emails": ["bast@maleexcel.com"]
+	},
+
+	"domain": {
+		"primary": "mems.local",
+		"protocol": "https"
+	},
+
+	"dosespot": {
+		"host": "my.dosespot.com",
+		"clinic_id": null,
+		"clinic_key": null,
+		"clinician_id": null
+	},
+
+	"email": {
+		"errors": "webmaster@localhost",
+		"from": "noreply@localhost",
+		"method": "direct",
+		"smtp": {
+			"host": "localhost",
+			"port": 587,
+			"tls": true,
+			"user": "postmaster@localhost",
+			"passwd": "password"
+		}
+	},
+
+	"konnektive": {
+		"host": "api.konnektive.com",
+		"user": "",
+		"pass": ""
+	},
+
+	"memo": {
+		"domain": "memologin.com",
+		"user": "User",
+		"pass": "Pass"
+	},
+
+	"mysql": {
+		"hosts": {
+			"monolith": {
+				"host": "localhost",
+				"port": 3306,
+				"charset": "utf8mb4"
+			},
+			"monolith_prod": {
+				"host": "localhost",
+				"port": 3306,
+				"charset": "utf8mb4"
+			},
+			"primary": {
+				"host": "localhost",
+				"port": 3306,
+				"charset": "utf8mb4"
+			}
+		}
+	},
+
+	"rocketgate": {
+		"merchant_id": null,
+		"merchant_pass": null,
+		"test_mode": true
+	},
+
+	"redis": {
+		"primary": {
+			"host": "localhost",
+			"port": 6379,
+			"db": 0,
+			"charset": "utf8"
+		}
+	},
+
+	"rest": {
+		"allowed": "(?:mecrm.local|mecsr.local)",
+		"default": {
+			"domain": "localhost",
+			"host": "0.0.0.0",
+			"port": 8000,
+			"protocol": "http",
+			"workers": 2
+		},
+		"services": {
+			"auth": {"port": 3},
+			"communications": {"port": 4},
+			"csr": {"port": 9},
+			"konnektive": {"port": 7},
+			"monolith": {"port": 6},
+			"payment": {"port": 5},
+			"prescriptions": {"port": 8},
+			"webpoll": {"port": 2}
+		}
+	},
+
+	"services": {
+		"salt": null,
+		"auth": {
+			"forgot_expire": 600,
+			"pp_verify_link": "https://mepp.local/verify/%s"
+		},
+		"queue": {
+			"key": null
+		}
+	},
+
+	"sms": {
+		"method": "direct"
+	},
+
+	"temp_folder": "/tmp",
+
+	"twilio": {
+		"account_sid": null,
+		"auth_token": null,
+		"services": {
+			"doctor": null,
+			"sales": null,
+			"support": null
+		}
+	},
+
+	"websocket": {
+		"host": "0.0.0.0",
+		"port": 8001
+	}
+}

@@ -1,3 +1,11 @@
+# Files
+config.*.json
+install.log
+_upgrade.log
+
+# Folders
+temp
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
