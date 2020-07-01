@@ -1,6 +1,6 @@
 arrow==0.15.6
 bcrypt==3.1.7
-rest-oc==0.4.1
+rest-oc==0.4.2
 gevent==1.4.0
 gevent-websocket==0.10.1
 twilio==6.39.0

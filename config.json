@@ -5,7 +5,7 @@
 
 	"domain": {
 		"primary": "mems.local",
-		"protocol": "http"
+		"protocol": "https"
 	},
 
 	"dosespot": {
@@ -99,7 +99,8 @@
 	"services": {
 		"salt": null,
 		"auth": {
-			"forgot_expire": 600
+			"forgot_expire": 600,
+			"pp_verify_link": "https://mepp.local/verify/%s"
 		},
 		"queue": {
 			"key": null

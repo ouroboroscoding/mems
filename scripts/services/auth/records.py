@@ -100,11 +100,11 @@ class Permission(Record_MySQL.Record):
 		# Return the config
 		return cls._conf
 
-# UserCRM class
-class UserCRM(Record_MySQL.Record):
-	"""UserCRM
+# User class
+class User(Record_MySQL.Record):
+	"""User
 
-	Represents a single user in the CRM system
+	Represents a single user in the micro services system
 	"""
 
 	_conf = None
@@ -125,7 +125,7 @@ class UserCRM(Record_MySQL.Record):
 			record (dict): The data associated with the user
 
 		Returns:
-			UserCRM
+			User
 		"""
 
 		# Store the permissions if they were passed
@@ -147,42 +147,42 @@ class UserCRM(Record_MySQL.Record):
 			raw (bool): Return raw records or Users
 
 		Returns:
-			UserCRM|UserCRM[]|dict|dict[]
+			User|User[]|dict|dict[]
 		"""
 
 		# If we got a single ID
 		if isinstance(_id, str):
 
 			# Fetch a single key
-			sUserCRM = cls._redis.get('user:%s' % _id)
+			sUser = cls._redis.get('user:%s' % _id)
 
 			# If we have a record
-			if sUserCRM:
+			if sUser:
 
 				# Decode it
-				dUserCRM = JSON.decode(sUserCRM);
+				dUser = JSON.decode(sUser);
 
 			else:
 
 				# Fetch the record from the DB
-				dUserCRM = cls.get(_id, raw=True)
+				dUser = cls.get(_id, raw=True)
 
 				# Fetch and store the permissions
-				dUserCRM['permissions'] = Permission.byUserCRM(_id)
+				dUser['permissions'] = Permission.byUser(_id)
 
 				# Store it in the cache
-				cls._redis.set('user:%s' % _id, JSON.encode(dUserCRM))
+				cls._redis.set('user:%s' % _id, JSON.encode(dUser))
 
 			# If we don't have a record
-			if not dUserCRM:
+			if not dUser:
 				return None
 
 			# If we want raw
 			if raw:
-				return dUserCRM
+				return dUser
 
 			# Return an instance
-			return cls(dUserCRM)
+			return cls(dUser)
 
 		# Else, fetch multiple
 		else:
@@ -191,34 +191,34 @@ class UserCRM(Record_MySQL.Record):
 			lRet = []
 
 			# Fetch multiple keys
-			lUserCRMs = cls._redis.mget(["user:%s" % k for k in _id])
+			lUsers = cls._redis.mget(["user:%s" % k for k in _id])
 
 			# Go through each one
 			for i in range(len(_id)):
 
 				# If we have a record
-				if lUserCRMs[i]:
+				if lUsers[i]:
 
 					# Decode it
-					lUserCRMs[i] = JSON.decode(lUserCRMs[i])
+					lUsers[i] = JSON.decode(lUsers[i])
 
 				else:
 
 					# Fetch the record from the DB
-					lUserCRMs[i] = cls.get(_id[i], raw=True)
+					lUsers[i] = cls.get(_id[i], raw=True)
 
 					# Fetch and store the permissions
-					lUserCRMs[i]['permissions'] = Permission.byUser(_id[i])
+					lUsers[i]['permissions'] = Permission.byUser(_id[i])
 
 					# Store it in the cache
-					cls._redis.set('user:%s' % _id[i], JSON.encode(lUserCRMs[i]))
+					cls._redis.set('user:%s' % _id[i], JSON.encode(lUsers[i]))
 
 			# If we want raw
 			if raw:
-				return lUserCRMs
+				return lUsers
 
 			# Return instances
-			return [d and cls(d) or None for d in lUserCRMs]
+			return [d and cls(d) or None for d in lUsers]
 
 	@classmethod
 	def cacheClear(cls, _id):
@@ -347,11 +347,11 @@ class UserCRM(Record_MySQL.Record):
 			if '_id' in self._dRecord:
 
 				# Update the cache
-				dUserCRM = copy.deepcopy(self._dRecord)
-				dUserCRM['permissions'] = self.__permissions
+				dUser = copy.deepcopy(self._dRecord)
+				dUser['permissions'] = self.__permissions
 				self._redis.set(
-					'user:%s' % dUserCRM['_id'],
-					JSON.encode(dUserCRM)
+					'user:%s' % dUser['_id'],
+					JSON.encode(dUser)
 				)
 
 		# Else, fetch the permissions associated
@@ -711,3 +711,33 @@ class UserPatient(Record_MySQL.Record):
 			None
 		"""
 		cls._redis = redis
+
+# UserPatientSetup class
+class UserPatientSetup(Record_MySQL.Record):
+	"""UserPatientSetup
+
+	Represents the initial starting of a patient user record
+	"""
+
+	_conf = None
+	"""Configuration"""
+
+	@classmethod
+	def config(cls):
+		"""Config
+
+		Returns the configuration data associated with the record type
+
+		Returns:
+			dict
+		"""
+
+		# If we haven loaded the config yet
+		if not cls._conf:
+			cls._conf = Record_MySQL.Record.generateConfig(
+				Tree.fromFile('../definitions/auth/user_patient_setup.json'),
+				'mysql'
+			)
+
+		# Return the config
+		return cls._conf

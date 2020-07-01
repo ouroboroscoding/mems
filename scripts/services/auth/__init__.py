@@ -24,7 +24,7 @@ from RestOC import Conf, DictHelper, Errors, Services, \
 from shared import Rights
 
 # Service imports
-from .records import Forgot, Permission, User
+from .records import Forgot, Permission, User, UserPatient, UserPatientSetup
 
 # Regex for validating email
 _emailRegex = re.compile(r"[^@\s]+@[^@\s]+\.[a-zA-Z0-9]{2,}$")
@@ -35,7 +35,7 @@ class Auth(Services.Service):
 	Service for Authorization, sign in, sign up, etc.
 	"""
 
-	_install = [Forgot, User, Permission]
+	_install = [Forgot, Permission, User, UserPatient, UserPatientSetup]
 	"""Record types called in install"""
 
 	def initialise(self):
@@ -78,110 +78,75 @@ class Auth(Services.Service):
 		# Return OK
 		return True
 
-	def passwdForgot_create(self, data):
-		"""Password Forgot (Generate)
+	def patientVerify_create(self, data, sesh):
+		"""Patient Verify Create
 
-		Creates the key that will be used to allow a user to change their
-		password if they forgot it
+		Creates a record used in starting the process to create a customer
+		patient login account, then sends out an email to the customer to
+		start the process of verifying themselves
 
 		Arguments:
 			data (dict): Data sent with the request
+			sesh (Sesh._Session): The session associated with the request
 
 		Returns:
 			Services.Effect
 		"""
 
+		# Make sure the user has the proper rights
+		oEff = self.verify_read({
+			"name": "patient_user",
+			"right": Rights.CREATE
+		}, sesh)
+		if not oEff.data:
+			return Services.Effect(error=Rights.INVALID)
+
 		# Verify fields
-		try: DictHelper.eval(data, ['email', 'url'])
+		try: DictHelper.eval(data, ['type', "crm_id"])
 		except ValueError as e: return Services.Effect(error=(1001, [(f, "missing") for f in e.args]))
 
-		# Look for the user by email
-		dUser = User.filter({"email": data['email']}, raw=['_id', 'locale'], limit=1)
-		if not dUser:
-			return Services.Effect(False)
+		# Which CRM is this customer from?
+		if data['type'] == 'knk':
 
-		# Look for a forgot record by user id
-		oForgot = Forgot.get(dUser['_id'])
+			# Fetch the customer's details from Konnektive
+			oEff = Services.read('konnektive', 'customer', {
+				"id": data['crm_id']
+			})
+			if oEff.errorExists():
+				return oEff
 
-		# Is there already a key in the user?
-		if oForgot and 'regenerate' not in data:
+			# Store the email address
+			sEmail = oEff.data['email']
 
-			# Is it not expired?
-			if oForgot['expires'] > int(time()):
-				return Services.Effect(True)
+		# Create an instance of the setup record
+		try:
+			oSetup = UserPatientSetup({
+				"_id": StrHelper.random(32, ['aZ', '10', '!*']),
+				"type": data['type'],
+				"crm_id": data['crm_id']
+			})
+		except ValueError as e:
+			return Services.Effect(error=(1001, e.args[0]))
 
-		# Upsert the forgot record with a timestamp (for expiry) and the key
-		sKey = StrHelper.random(32, '_0x')
-		oForgot = Forgot({
-			"_user": dUser['_id'],
-			"expires": int(time()) + Conf.get(("services", "auth", "forgot_expire"), 600),
-			"key": sKey
-		})
-		if not oForgot.create(conflict="replace"):
+		# Create the record
+		if not oSetup.create():
 			return Services.Effect(error=1100)
 
-		# Forgot email template variables
+		# Patient setup email template variables
 		dTpl = {
-			"key": sKey,
-			"url": "%s%s" % (
-				data['url'],
-				sKey
-			)
+			"key": oSetup['_id'],
+			"url": Conf.get(('services', 'auth', 'pp_verify_link')) % oSetup['_id']
 		}
 
 		# Email the user the key
 		oEffect = Services.create('communications', 'email', {
 			"_internal_": Services.internalKey(),
-			"html_body": Templates.generate('email/forgot.html', dTpl, dUser['locale']),
-			"subject": Templates.generate('email/forgot_subject.txt', {}, dUser['locale']),
-			"to": data['email'],
+			"html_body": Templates.generate('email/patient_setup.html', dTpl, dUser['locale']),
+			"subject": Templates.generate('email/patient_setup_subject.txt', {}, dUser['locale']),
+			"to": sEmail,
 		})
 		if oEffect.errorExists():
 			return oEffect
-
-		# Return OK
-		return Services.Effect(True)
-
-	def passwdForgot_update(self, data):
-		"""Password Forgot (Change Password)
-
-		Validates the key and changes the password to the given value
-
-		Arguments:
-			data (dict): Data sent with the request
-
-		Returns:
-			Services.Effect
-		"""
-
-		# Verify fields
-		try: DictHelper.eval(data, ['passwd', 'key'])
-		except ValueError as e: return Services.Effect(error=(1001, [(f, "missing") for f in e.args]))
-
-		# Look for the forgot by the key
-		oForgot = Forgot.filter({"key": data['key']}, limit=1)
-		if not oForgot:
-			return Services.Effect(error=1203) # Don't let people know if the key exists or not
-
-		# Check if the key has expired
-		if oForgot['expires'] <= int(time()):
-			return Services.Effect(error=1203)
-
-		# Make sure the new password is strong enough
-		if not User.passwordStrength(data['passwd']):
-			return Services.Effect(error=1204)
-
-		# Find the User
-		oUser = User.get(oForgot['_user'])
-		if not oUser:
-			return Services.Effect(error=1203)
-
-		# Store the new password and update
-		oUser['passwd'] = User.passwordHash(data['passwd'])
-		oUser.save(changes=False)
-
-		# Delete the forgot record
-		oForgot.delete()
 
 		# Return OK
 		return Services.Effect(True)
@@ -649,6 +614,115 @@ class Auth(Services.Service):
 
 		# Return OK
 		return Services.Effect(True)
+
+	def userPasswdForgot_create(self, data):
+		"""User Password Forgot (Generate)
+
+		Creates the key that will be used to allow a user to change their
+		password if they forgot it
+
+		Arguments:
+			data (dict): Data sent with the request
+
+		Returns:
+			Services.Effect
+		"""
+
+		# Verify fields
+		try: DictHelper.eval(data, ['email', 'url'])
+		except ValueError as e: return Services.Effect(error=(1001, [(f, "missing") for f in e.args]))
+
+		# Look for the user by email
+		dUser = User.filter({"email": data['email']}, raw=['_id', 'locale'], limit=1)
+		if not dUser:
+			return Services.Effect(False)
+
+		# Look for a forgot record by user id
+		oForgot = Forgot.get(dUser['_id'])
+
+		# Is there already a key in the user?
+		if oForgot and 'regenerate' not in data:
+
+			# Is it not expired?
+			if oForgot['expires'] > int(time()):
+				return Services.Effect(True)
+
+		# Upsert the forgot record with a timestamp (for expiry) and the key
+		sKey = StrHelper.random(32, '_0x')
+		oForgot = Forgot({
+			"_user": dUser['_id'],
+			"expires": int(time()) + Conf.get(("services", "auth", "forgot_expire"), 600),
+			"key": sKey
+		})
+		if not oForgot.create(conflict="replace"):
+			return Services.Effect(error=1100)
+
+		# Forgot email template variables
+		dTpl = {
+			"key": sKey,
+			"url": "%s%s" % (
+				data['url'],
+				sKey
+			)
+		}
+
+		# Email the user the key
+		oEffect = Services.create('communications', 'email', {
+			"_internal_": Services.internalKey(),
+			"html_body": Templates.generate('email/forgot.html', dTpl, dUser['locale']),
+			"subject": Templates.generate('email/forgot_subject.txt', {}, dUser['locale']),
+			"to": data['email'],
+		})
+		if oEffect.errorExists():
+			return oEffect
+
+		# Return OK
+		return Services.Effect(True)
+
+	def userPasswdForgot_update(self, data):
+		"""User Password Forgot (Change Password)
+
+		Validates the key and changes the password to the given value
+
+		Arguments:
+			data (dict): Data sent with the request
+
+		Returns:
+			Services.Effect
+		"""
+
+		# Verify fields
+		try: DictHelper.eval(data, ['passwd', 'key'])
+		except ValueError as e: return Services.Effect(error=(1001, [(f, "missing") for f in e.args]))
+
+		# Look for the forgot by the key
+		oForgot = Forgot.filter({"key": data['key']}, limit=1)
+		if not oForgot:
+			return Services.Effect(error=1203) # Don't let people know if the key exists or not
+
+		# Check if the key has expired
+		if oForgot['expires'] <= int(time()):
+			return Services.Effect(error=1203)
+
+		# Make sure the new password is strong enough
+		if not User.passwordStrength(data['passwd']):
+			return Services.Effect(error=1204)
+
+		# Find the User
+		oUser = User.get(oForgot['_user'])
+		if not oUser:
+			return Services.Effect(error=1203)
+
+		# Store the new password and update
+		oUser['passwd'] = User.passwordHash(data['passwd'])
+		oUser.save(changes=False)
+
+		# Delete the forgot record
+		oForgot.delete()
+
+		# Return OK
+		return Services.Effect(True)
+
 
 	def verify_read(self, data, sesh):
 		"""Verify
