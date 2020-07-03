@@ -20,7 +20,7 @@ import uuid
 import arrow
 import bcrypt
 from redis import StrictRedis
-from RestOC import Conf, DictHelper, Errors, Services, \
+from RestOC import Conf, DictHelper, Errors, Record_MySQL, Services, \
 					Sesh, StrHelper, Templates
 
 # Service imports
@@ -118,22 +118,29 @@ class Monolith(Services.Service):
 		except ValueError as e:
 			return Services.Effect(error=(1001, e.args[0]))
 
-		# Create the record
-		if oCustomerClaimed.create(conflict='replace'):
+		# Try to create the record
+		try:
 
-			# Find the customer associated
-			dCustomer = KtCustomer.filter(
-				{"phoneNumber": [data['phoneNumber'], '1%s' % data['phoneNumber']]},
-				raw=['customerId'],
-				orderby=[('updatedAt', 'DESC')],
-				limit=1
-			)
+			# Create the record
+			if oCustomerClaimed.create():
 
-			# Return the ID and phone
-			return Services.Effect({
-				"customerId": dCustomer['customerId'],
-				"customerPhone": data['phoneNumber']
-			})
+				# Find the customer associated
+				dCustomer = KtCustomer.filter(
+					{"phoneNumber": [data['phoneNumber'], '1%s' % data['phoneNumber']]},
+					raw=['customerId'],
+					orderby=[('updatedAt', 'DESC')],
+					limit=1
+				)
+
+				# Return the ID and phone
+				return Services.Effect({
+					"customerId": dCustomer['customerId'],
+					"customerPhone": data['phoneNumber']
+				})
+
+		# If we got a duplicate exception
+		except Record_MySQL.DuplicateException:
+			return Services.Effect(error=1101)
 
 		# Else, we failed to create the record
 		return Services.Effect(False)
