@@ -259,7 +259,7 @@ class CustomerMsgPhone(Record_MySQL.Record):
 			"table": dStruct['table'],
 			"date": date,
 			"direction": 'Incoming',
-			"message": message,
+			"message": Record_MySQL.Commands.escape(dStruct['host'], message),
 			"customerPhone": customerPhone,
 			"hidden": 'N',
 			"increment": 'totalIncoming'
