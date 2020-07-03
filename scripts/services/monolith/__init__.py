@@ -821,16 +821,39 @@ class Monolith(Services.Service):
 		# Store the message record
 		oCustomerCommunication.create()
 
-		# Update the conversations
-		CustomerMsgPhone.addOutgoing(
-			data['customerPhone'],
-			sDT,
-			'\n--------\nSent by %s at %s\n%s\n' % (
-				sName,
+		# Catch issues with summary
+		try:
+
+			# Update the conversations
+			CustomerMsgPhone.addOutgoing(
+				data['customerPhone'],
 				sDT,
-				data['content']
+				'\n--------\nSent by %s at %s\n%s\n' % (
+					sName,
+					sDT,
+					data['content']
+				)
 			)
-		)
+
+		# Catch any exceptions with summaries
+		except Exception as e:
+			try:
+				# Email the error
+				oEffect = Services.create('communications', 'email', {
+					"_internal_": Services.internalKey(),
+					"html_body": "Phone: %s\nContent: %s\nErrors: %s" % (
+						data['customerPhone'],
+						data['content'],
+						', '.join([str(s) for s in e.args])
+					),
+					"subject": "MeMS: Summary Update Failed",
+					"to": Conf.get(("developer", "emails")),
+				})
+			except:
+				pass
+
+			# Return OK but with a warning
+			return Services.Effect(True, warning="Message sent to customer, but Memo summary failed to update")
 
 		# Return OK
 		return Services.Effect(True)
