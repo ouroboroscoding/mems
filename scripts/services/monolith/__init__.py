@@ -967,6 +967,47 @@ class Monolith(Services.Service):
 			CustomerMsgPhone.search(data)
 		)
 
+	def msgsSearchCustomer_read(self, data, sesh):
+		"""Messages: Search Customer
+
+		Searchs for a customer matching the values, then finds the associated
+		conversation
+
+		Arguments:
+			data (dict): Data sent with the request
+			sesh (Sesh._Session): The session associated with the request
+
+		Returns:
+			Services.Effect
+		"""
+
+		# Must search at least one
+		if 'id' not in data and \
+			'email' not in data:
+			return Services.Effect(error=(1001, [('id', 'missing')]))
+
+		# Figure out what to filter by
+		dFilter = {}
+		if 'id' in data: dFilter['customerId'] = data['id']
+		if 'email' in data: dFilter['emailAddress'] = data['email']
+
+		# Try to find the customer
+		dCustomer = KtCustomer.filter(
+			dFilter,
+			raw=['phoneNumber'],
+			orderby=[['updatedAt', 'DESC']],
+			limit=1
+		)
+
+		# If there's no customer
+		if not dCustomer:
+			return Services.Effect([])
+
+		# Fetch and return the data based on the phone number
+		return Services.Effect(
+			CustomerMsgPhone.search({"phone": dCustomer['phoneNumber']})
+		)
+
 	def msgsUnclaimed_read(self, data, sesh):
 		"""Messages: Unclaimed
 
