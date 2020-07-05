@@ -45,7 +45,7 @@ if __name__ == "__main__":
 		iLastID = 0
 
 	# Add hosts
-	Record_MySQL.addHost('monolith_prod', Conf.get(("mysql", "hosts", "monolith_prod")))
+	Record_MySQL.addHost('monolith', Conf.get(("mysql", "hosts", "monolith")))
 
 	# Create the REST config instance
 	oRestConf = REST.Config(Conf.get("rest"))

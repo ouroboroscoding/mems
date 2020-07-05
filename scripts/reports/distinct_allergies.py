@@ -47,7 +47,7 @@ def run():
 
 	# Fetch all completed landings
 	lCompleted = Record_MySQL.Commands.select(
-		"monolith_prod",
+		"monolith",
 		LANDING_SQL,
 		Record_MySQL.ESelect.COLUMN
 	)
@@ -69,7 +69,7 @@ def run():
 		dValues = {
 			d['landing_id']:d['value']
 			for d in Record_MySQL.Commands.select(
-				"monolith_prod",
+				"monolith",
 				VALUE_SQL % '","'.join(lIDs),
 				Record_MySQL.ESelect.ALL
 			)

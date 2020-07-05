@@ -28,7 +28,7 @@ if __name__ == "__main__":
 		Conf.load_merge(sConfOverride)
 
 	# Add hosts
-	Record_MySQL.addHost('monolith_prod', Conf.get(("mysql", "hosts", "monolith_prod")))
+	Record_MySQL.addHost('monolith', Conf.get(("mysql", "hosts", "monolith")))
 
 	# Get Memo config
 	dMemo = Conf.get('memo')
@@ -46,7 +46,7 @@ if __name__ == "__main__":
 
 	# Fetch all Eligibilities in the past
 	lElig = Record_MySQL.Commands.select(
-		'monolith_prod',
+		'monolith',
 		'SELECT `id`, `memberSince`, `memberThru` ' \
 		'FROM `monolith`.`wd_eligibility` ' \
 		'WHERE `memberThru` != \'0000-00-00 00:00:00\' ' \
