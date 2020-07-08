@@ -1,6 +1,6 @@
 # Import version files
-from . import create_escalate_agents
+from . import create_csr_agent
 
 modules = [
-	create_escalate_agents
+	create_csr_agent
 ]

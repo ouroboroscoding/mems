@@ -9,6 +9,11 @@ UAT:
 	python -m tools.fake_msg 6062547285 9198000609 "Hello ME" support
 
 
+- Switch date/times to EST
+
+- Add permissions uinique to CSR Tool / Users
+	- Overwrite claim
+
 - Add email functionality
 	- Dropdown - company
 		- Dropdown - templates
@@ -16,10 +21,8 @@ UAT:
 - Take over stop/start system from twilio
 
 - Customer
-
 	- SMS
 		- DOB in header
-
 
 - Done
 	- Fix name in summary
@@ -49,3 +52,4 @@ UAT:
 	- Add WD triggers to RX page
 	- Order labels in notes
 	- DoseSpot SSO
+

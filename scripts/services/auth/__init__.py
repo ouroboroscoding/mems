@@ -54,8 +54,10 @@ class Auth(Services.Service):
 			"db": 0
 		}))
 
-		# Pass the Redis connection to User
+		# Pass the Redis connection to records that need it
+		Permission.redis(self._redis)
 		User.redis(self._redis)
+		UserPatient.redis(self._redis)
 
 	@classmethod
 	def install(cls):
@@ -78,7 +80,7 @@ class Auth(Services.Service):
 		# Return OK
 		return True
 
-	def patientVerify_create(self, data, sesh):
+	def patientVerifyEmail_create(self, data, sesh):
 		"""Patient Verify Create
 
 		Creates a record used in starting the process to create a customer
@@ -94,7 +96,7 @@ class Auth(Services.Service):
 		"""
 
 		# Make sure the user has the proper rights
-		oEff = self.verify_read({
+		oEff = self.rightsVerify_read({
 			"name": "patient_user",
 			"right": Rights.CREATE
 		}, sesh)
@@ -151,6 +153,28 @@ class Auth(Services.Service):
 		# Return OK
 		return Services.Effect(True)
 
+	def patientVerifyEmail_update(self, data):
+		"""Patient Verify Update
+
+		Checks the passed key against the setup table to make sure the user
+		is who they say they are,
+
+		Arguments:
+			data (dict): Data sent with the request
+			sesh (Sesh._Session): The session associated with the request
+
+		Returns:
+			Services.Effect
+		"""
+
+		# Make sure the user has the proper rights
+		oEff = self.rightsVerify_read({
+			"name": "patient_user",
+			"right": Rights.CREATE
+		}, sesh)
+		if not oEff.data:
+			return Services.Effect(error=Rights.INVALID)
+
 	def permissions_read(self, data, sesh):
 		"""Permissions
 
@@ -164,27 +188,52 @@ class Auth(Services.Service):
 			Services.Effect
 		"""
 
-		# Make sure the user has the proper rights
-		oEff = self.verify_read({
-			"name": "permissions",
-			"right": Rights.READ
-		}, sesh)
-		if not oEff.data:
-			return Services.Effect(error=Rights.INVALID)
+		# If we have an internal key
+		if '_internal_' in data:
+
+			# Verify the key, remove it if it's ok
+			if not Services.internalKey(data['_internal_']):
+				return Services.Effect(error=Errors.SERVICE_INTERNAL_KEY)
+			del data['_internal_']
+
+		# Else, check permissions
+		else:
+
+			# Make sure the user has the proper rights
+			oEff = self.rightsVerify_read({
+				"name": "permissions",
+				"right": Rights.READ
+			}, sesh)
+			if not oEff.data:
+				return Services.Effect(error=Rights.INVALID)
 
 		# Verify fields
 		try: DictHelper.eval(data, ['user_id'])
 		except ValueError as e: return Services.Effect(error=(1001, [(f, "missing") for f in e.args]))
 
-		# Fetch the User
-		dUser = User.cache(data['user_id'])
-
-		# If there's no such user
-		if not dUser:
-			return Services.Effect(error=(1104, 'User not found'))
+		# Fetch the Permissions
+		dPermissions = Permission.cache(data['user_id'])
 
 		# Return all permissions
-		return Services.Effect(dUser['permissions'])
+		return Services.Effect(dPermissions)
+
+	def permissionsSelf_read(self, data, sesh):
+		"""Permissions Self
+
+		Returns the permissions for the signed in user only
+
+		Arguments:
+			data (dict): Data sent with the request
+			sesh (Sesh._Session): The session associated with the request
+
+		Returns:
+			Services.Effect
+		"""
+
+		# Fetch and return the permissions for the signed in user
+		return Services.Effect(
+			Permission.cache(sesh['user_id'])
+		)
 
 	def permissions_update(self, data, sesh):
 		"""Permissions Update
@@ -199,31 +248,51 @@ class Auth(Services.Service):
 			Services.Effect
 		"""
 
-		# Make sure the user has the proper rights
-		oEff = self.verify_read({
-			"name": "permission",
-			"right": Rights.UPDATE
-		}, sesh)
-		if not oEff.data:
-			return Services.Effect(error=Rights.INVALID)
+		# If we have an internal key
+		if '_internal_' in data:
+
+			# Verify the key, remove it if it's ok
+			if not Services.internalKey(data['_internal_']):
+				return Services.Effect(error=Errors.SERVICE_INTERNAL_KEY)
+			del data['_internal_']
+
+		# Else, check permissions
+		else:
+
+			# Make sure the user has the proper rights
+			oEff = self.rightsVerify_read({
+				"name": "permission",
+				"right": Rights.UPDATE
+			}, sesh)
+			if not oEff.data:
+				return Services.Effect(error=Rights.INVALID)
 
 		# Verify fields
 		try: DictHelper.eval(data, ['user', 'permissions'])
 		except ValueError as e: return Services.Effect(error=(1001, [(f, "missing") for f in e.args]))
 
 		# Get the user's current permissions
-		oUser = User.get(data['user'])
-		dOldPermissions = oUser.permissions()
+		dOldPermissions = Permission.cache(data['user'])
 
 		# Validate and store the new permissions
 		lRecords = []
-		for sName,iRights in data['permissions'].items():
-			lErrors = []
+		lErrors = []
+		for sName,mData in data['permissions'].items():
+
+			# If data is an int, no ident was sent
+			if isinstance(mData, int):
+				mData = {
+					"rights": mData,
+					"idents": None
+				}
+
+			# Create an instance of the permissions
 			try:
 				lRecords.append(Permission({
 					"user": data['user'],
 					"name": sName,
-					"rights": iRights
+					"rights": mData['rights'],
+					"idents": mData['idents']
 				}))
 			except ValueError as e:
 				lErrors.append(e.args[0])
@@ -240,20 +309,66 @@ class Auth(Services.Service):
 		if lRecords:
 			Permission.createMany(lRecords)
 
-		# Get and store the changes
-		dChanges = {"user": sesh['user_id']}
-		if dOldPermissions and data['permissions']:
-			dChanges['permissions'] = User.generateChanges(dOldPermissions, data['permissions'])
-		elif data['permissions']:
-			dChanges['permissions'] = {"old": None, "new": "inserted"}
-		else:
-			dChanges['permissions'] = {"old": dOldPermissions, "new": None}
-		User.addChanges(data['user'], dChanges)
+		# If this is a standard user
+		if User.exists(data['user']):
 
-		# Clear the user from the cache
-		User.cacheClear(data['user'])
+			# Get and store the changes
+			dChanges = {"user": sesh['user_id']}
+			if dOldPermissions and data['permissions']:
+				dChanges['permissions'] = User.generateChanges(dOldPermissions, data['permissions'])
+			elif data['permissions']:
+				dChanges['permissions'] = {"old": None, "new": "inserted"}
+			else:
+				dChanges['permissions'] = {"old": dOldPermissions, "new": None}
+			User.addChanges(data['user'], dChanges)
+
+		# Clear the permissions from the cache
+		Permission.cacheClear(data['user'])
 
 		# Return OK
+		return Services.Effect(True)
+
+	def rightsVerify_read(self, data, sesh):
+		"""Rights Verify
+
+		Checks the user currently in the session has access to the requested
+		permission
+
+		Arguments:
+			data (dict): Data sent with the request
+			sesh (Sesh._Session): The session associated with the user
+
+		Returns:
+			Effect
+		"""
+
+		# Verify fields
+		try: DictHelper.eval(data, ['name', 'right'])
+		except ValueError as e: return Services.Effect(error=(1001, [(f, "missing") for f in e.args]))
+
+		# Find the permissions
+		dPermissions = Permission.cache(sesh['user_id'])
+
+		# If the permission doesn't exist at all
+		if not dPermissions or data['name'] not in dPermissions:
+			return Services.Effect(False)
+
+		# If the permission exists but doesn't contain the proper right
+		if not dPermissions[data['name']]['rights'] & data['right']:
+			return Services.Effect(False)
+
+		# If the permission has idents
+		if dPermissions[data['name']]['idents'] is not None:
+
+			# If no ident was passed
+			if 'ident' not in data:
+				return Services.Effect(False)
+
+			# If the ident isn't in the list
+			if str(data['ident']) not in dPermissions[data['name']]['idents']:
+				return Services.Effect(False)
+
+		# Seems ok
 		return Services.Effect(True)
 
 	def search_read(self, data, sesh):
@@ -388,7 +503,7 @@ class Auth(Services.Service):
 		"""
 
 		# Make sure the user has the proper permission to do this
-		oEff = self.verify_read({
+		oEff = self.rightsVerify_read({
 			"name": "user",
 			"right": Rights.CREATE
 		}, sesh)
@@ -442,7 +557,7 @@ class Auth(Services.Service):
 		if '_id' in data:
 
 			# Make sure the user has the proper permission to do this
-			oEff = self.verify_read({
+			oEff = self.rightsVerify_read({
 				"name": "user",
 				"right": Rights.READ
 			}, sesh)
@@ -487,7 +602,7 @@ class Auth(Services.Service):
 				return Services.Effect(error=(1001, [('_id', 'missing')]))
 
 			# Make sure the user has the proper permission to do this
-			oEff = self.verify_read({
+			oEff = self.rightsVerify_read({
 				"name": "user",
 				"right": Rights.UPDATE
 			}, sesh)
@@ -721,40 +836,4 @@ class Auth(Services.Service):
 		oForgot.delete()
 
 		# Return OK
-		return Services.Effect(True)
-
-
-	def verify_read(self, data, sesh):
-		"""Verify
-
-		Checks the user currently in the session has access to the requested
-		permission
-
-		Arguments:
-			data (dict): Data sent with the request
-			sesh (Sesh._Session): The session associated with the user
-
-		Returns:
-			Effect
-		"""
-
-		# Verify fields
-		try: DictHelper.eval(data, ['name', 'right'])
-		except ValueError as e: return Services.Effect(error=(1001, [(f, "missing") for f in e.args]))
-
-		# Find the user
-		oUser = User.cache(sesh['user_id'])
-
-		# Fetch the permissions from the user instance
-		dPermissions = oUser.permissions()
-
-		# If the permission doesn't exist at all
-		if not dPermissions or data['name'] not in dPermissions:
-			return Services.Effect(False)
-
-		# If the permission exists but doesn't contain the proper right
-		if not dPermissions[data['name']] & data['right']:
-			return Services.Effect(False)
-
-		# Seems ok
 		return Services.Effect(True)

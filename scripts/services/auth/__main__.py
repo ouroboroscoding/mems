@@ -54,9 +54,12 @@ Templates.init('../templates')
 # Create the HTTP server and map requests to service
 REST.Server({
 
-	"/patient/verify": { "methods": REST.CREATE, "session": False},
+	"/patient/verify/email": { "methods": REST.CREATE, "session": False},
 
 	"/permissions": {"methods": REST.READ | REST.UPDATE, "session": True},
+	"/permissions/self": {"methods": REST.READ, "session": True},
+
+	"/rights/verify": {"methods": REST.READ, "session": True},
 
 	"/search": {"methods": REST.READ, "session": True},
 
@@ -68,9 +71,7 @@ REST.Server({
 	"/user": {"methods": REST.CREATE | REST.READ | REST.UPDATE, "session": True},
 	"/user/email": {"methods": REST.UPDATE, "session": True},
 	"/user/passwd": {"methods": REST.UPDATE, "session": True},
-	"/user/passwd/forgot": {"methods": REST.CREATE | REST.UPDATE},
-
-	"/verify": {"methods": REST.READ, "session": True}
+	"/user/passwd/forgot": {"methods": REST.CREATE | REST.UPDATE}
 
 }, 'auth', "https?://(.*\\.)?%s" % Conf.get(("rest","allowed")).replace('.', '\\.')).run(
 	host=oRestConf['auth']['host'],

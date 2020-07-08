@@ -23,6 +23,9 @@ from redis import StrictRedis
 from RestOC import Conf, DictHelper, Errors, Record_MySQL, Services, \
 					Sesh, StrHelper, Templates
 
+# Shared imports
+from shared import Rights
+
 # Service imports
 from .records import CustomerClaimed, CustomerCommunication, CustomerMsgPhone, \
 						DsPatient, Forgot, KtCustomer, KtOrder, ShippingInfo, \
@@ -112,7 +115,7 @@ class Monolith(Services.Service):
 		try:
 			oCustomerClaimed = CustomerClaimed({
 				"phoneNumber": data['phoneNumber'],
-				"user": sesh['user_id']
+				"user": sesh['memo_id']
 			})
 		except ValueError as e:
 			return Services.Effect(error=(1001, e.args[0]))
@@ -485,7 +488,7 @@ class Monolith(Services.Service):
 					"parentColumn": 'customerId',
 					"columnValue": data['customer_id'],
 					"action": data['action'],
-					"createdBy": sesh['user_id'],
+					"createdBy": sesh['memo_id'],
 					"note": data['content'],
 					"createdAt": sDT,
 					"updatedAt": sDT
@@ -563,7 +566,7 @@ class Monolith(Services.Service):
 					"parentColumn": 'orderId',
 					"columnValue": data['order_id'],
 					"action": sAction,
-					"createdBy": sesh['user_id'],
+					"createdBy": sesh['memo_id'],
 					"note": data['content'],
 					"createdAt": sDT,
 					"updatedAt": sDT
@@ -750,7 +753,7 @@ class Monolith(Services.Service):
 			return Services.Effect(error=1500)
 
 		# Get the user's name
-		dUser = User.get(sesh['user_id'], raw=['firstName', 'lastName'])
+		dUser = User.get(sesh['memo_id'], raw=['firstName', 'lastName'])
 		sName = '%s %s' % (dUser['firstName'], dUser['lastName'])
 
 		# Get current date/time
@@ -840,7 +843,7 @@ class Monolith(Services.Service):
 		sesh.save()
 
 		# Get the claimed records
-		lClaimed = CustomerMsgPhone.claimed(sesh['user_id'])
+		lClaimed = CustomerMsgPhone.claimed(sesh['memo_id'])
 
 		# If there's no claimed, return
 		if not lClaimed:
@@ -1130,9 +1133,8 @@ class Monolith(Services.Service):
 			Services.Effect
 		"""
 		return Services.Effect({
-			"user" : {
-				"id": sesh['user_id']
-			}
+			"memo": {"id": sesh['memo_id']},
+			"user" : {"id": sesh['user_id']}
 		})
 
 	def signin_create(self, data):
@@ -1156,6 +1158,10 @@ class Monolith(Services.Service):
 		if not oUser:
 			return Services.Effect(error=1201)
 
+		# If the user is not active
+		if oUser['activeFlag'] == 'N':
+			return Services.Effect(error=1503)
+
 		# Validate the password
 		if not bcrypt.checkpw(data['passwd'].encode('utf8'), oUser['password'].encode('utf8')):
 			return Services.Effect(error=1201)
@@ -1164,17 +1170,30 @@ class Monolith(Services.Service):
 		oSesh = Sesh.create("mono:" + uuid.uuid4().hex)
 
 		# Store the user ID and information in it
-		oSesh['user_id'] = oUser['id']
+		oSesh['memo_id'] = oUser['id']
 
 		# Save the session
 		oSesh.save()
 
+		# Check the CSR tool for the memo user / agent
+		oEff = Services.read('csr', 'agent/internal', {
+			"_internal_": Services.internalKey(),
+			"id": oUser['id']
+		}, oSesh)
+		if oEff.errorExists():
+			if oEff.error['code'] == 1104:
+				return Services.Effect(error=Rights.INVALID)
+			return oEff
+
+		# Store the user ID in the session
+		oSesh['user_id'] = oEff.data['_id']
+		oSesh.save()
+
 		# Return the session ID and primary user data
 		return Services.Effect({
+			"memo": {"id": oSesh['memo_id']},
 			"session": oSesh.id(),
-			"user": {
-				"id": oSesh['user_id']
-			}
+			"user": {"id": oEff.data['_id']}
 		})
 
 	def signout_create(self, data, sesh):
@@ -1196,6 +1215,58 @@ class Monolith(Services.Service):
 		# Return OK
 		return Services.Effect(True)
 
+	def user_create(self, data, sesh):
+		"""User Create
+
+		Creates a new user
+
+		Arguments:
+			data (dict): Data sent with the request
+			sesh (Sesh._Session): The session associated with the user
+
+		Returns:
+			Effect
+		"""
+
+		# Verify fields
+		try: DictHelper.eval(data, ['_internal_', 'userName', 'firstName', 'lastName', 'password'])
+		except ValueError as e: return Services.Effect(error=(1001, [(f, "missing") for f in e.args]))
+
+		# Verify the key, remove it if it's ok
+		if not Services.internalKey(data['_internal_']):
+			return Services.Effect(error=Errors.SERVICE_INTERNAL_KEY)
+		del data['_internal_']
+
+		# Check if a user with that user name already exists
+		if User.exists(data['userName'], 'userName'):
+			return Services.Effect(error=1501)
+
+		# Check the password strength
+		if not User.passwordStrength(data['password']):
+			return Services.Effect(error=1502)
+
+		# Hash the password
+		data['password'] = bcrypt.hashpw(data['password'].encode('utf8'), bcrypt.gensalt()).decode('utf8')
+
+		# Get current date/time
+		sDT = arrow.get().format('YYYY-MM-DD HH:mm:ss')
+
+		# Add defaults
+		if 'userRole' not in data: data['userRole'] = 'CSR'
+		data['createdAt'] = sDT
+		data['updatedAt'] = sDT
+
+		# Validate by creating a Record instance
+		try:
+			oUser = User(data)
+		except ValueError as e:
+			return Services.Effect(error=(1001, e.args[0]))
+
+		# Create the row and return the result
+		return Services.Effect(
+			oUser.create()
+		)
+
 	def user_read(self, data, sesh):
 		"""User Read
 
@@ -1210,7 +1281,7 @@ class Monolith(Services.Service):
 		"""
 
 		# Fetch it from the DB
-		dUser = User.get(sesh['user_id'], raw=True)
+		dUser = User.get(sesh['memo_id'], raw=True)
 
 		# If it doesn't exist
 		if not dUser:
@@ -1218,6 +1289,13 @@ class Monolith(Services.Service):
 
 		# Remove the passwd
 		del dUser['password']
+
+		# Fetch the permissions
+		oEff = Services.read('auth', 'permissions/self', {}, sesh)
+		if oEff.errorExists(): return oEff
+
+		# Add the permissions to the dict
+		dUser['permissions'] = oEff.dataExists() and oEff.data or {}
 
 		# Return the user data
 		return Services.Effect(dUser)
@@ -1235,12 +1313,41 @@ class Monolith(Services.Service):
 			Effect
 		"""
 
-		# Fetch it from the cache
-		oUser = User.get(sesh['user_id'])
+		# If the user is not the one logged in
+		if 'id' in data and data['id'] != sesh['memo_id']:
+
+			# If there's no internal
+			if '_internal_' not in data:
+				return Services.Effect(error=(1001, [('_internal_', 'missing')]))
+
+			# Verify the key, remove it if it's ok
+			if not Services.internalKey(data['_internal_']):
+				return Services.Effect(error=Errors.SERVICE_INTERNAL_KEY)
+			del data['_internal_']
+
+			# Find the User
+			oUser = User.get(data['id'])
+			if not oUser:
+				return Services.Effect(error=1104)
+
+			# Remove the ID from the data
+			del data['id']
+
+		# Else get the logged in user
+		else:
+
+			# Fetch it from the cache
+			oUser = User.get(sesh['memo_id'])
 
 		# Remove fields that can't be changed
-		del data['_id']
 		if 'password' in data: del data['passwd']
+
+		# If the username was changed
+		if 'userName' in data:
+
+			# Check if a user with that user name already exists
+			if User.exists(data['userName'], 'userName'):
+				return Services.Effect(error=1501)
 
 		# Step through each field passed and update/validate it
 		lErrors = []
@@ -1248,13 +1355,54 @@ class Monolith(Services.Service):
 			try: oUser[f] = data[f]
 			except ValueError as e: lErrors.append(e.args[0])
 
+		# Update the updatedAt
+		oUser['updatedAt'] = arrow.get().format('YYYY-MM-DD HH:mm:ss')
+
 		# If there was any errors
 		if lErrors:
 			return Services.Effect(error=(1001, lErrors))
 
 		# Update the record and return the result
 		return Services.Effect(
-			oUser.save(changes={"user": sesh['user_id']})
+			oUser.save()
+		)
+
+	def userActive_update(self, data, sesh):
+		"""User Active
+
+		Updates the active flag on a user to true (Y) or false (N)
+
+		Arguments:
+			data (dict): Data sent with the request
+			sesh (Sesh._Session): The session associated with the user
+
+		Returns:
+			Effect
+		"""
+
+		# Verify fields
+		try: DictHelper.eval(data, ['_internal_', 'id', 'active'])
+		except ValueError as e: return Services.Effect(error=(1001, [(f, "missing") for f in e.args]))
+
+		# Verify the key, remove it if it's ok
+		if not Services.internalKey(data['_internal_']):
+			return Services.Effect(error=Errors.SERVICE_INTERNAL_KEY)
+		del data['_internal_']
+
+		# Find the User
+		oUser = User.get(data['id'])
+		if not oUser:
+			return Services.Effect(error=1104)
+
+		# Set the new state of the active flag
+		oUser['activeFlag'] = data['active'] and 'Y' or 'N'
+
+		# Update the updatedAt time to now
+		oUser['updatedAt'] = arrow.get().format('YYYY-MM-DD HH:mm:ss')
+
+		# Save and return the result
+		return Services.Effect(
+			oUser.save()
 		)
 
 	def userName_read(self, data, sesh):
@@ -1299,7 +1447,7 @@ class Monolith(Services.Service):
 		except ValueError as e: return Services.Effect(error=(1001, [(f, "missing") for f in e.args]))
 
 		# Find the user
-		oUser = User.get(sesh['user_id'])
+		oUser = User.get(sesh['memo_id'])
 		if not oUser:
 			return Services.Effect(error=1104)
 
@@ -1313,8 +1461,34 @@ class Monolith(Services.Service):
 
 		# Set the new password and save
 		oUser['password'] = bcrypt.hashpw(data['new_passwd'].encode('utf8'), bcrypt.gensalt()).decode('utf8')
-		print(oUser['password'])
+		oUser['updatedAt'] = arrow.get().format('YYYY-MM-DD HH:mm:ss')
 		oUser.save()
 
 		# Return OK
 		return Services.Effect(True)
+
+	def users_read(self, data, sesh):
+		"""Users
+
+		Returns users by ID
+
+		Arguments:
+			data (dict): Data sent with the request
+			sesh (Sesh._Session): The session associated with the user
+
+		Returns:
+			Effect
+		"""
+
+		# Verify fields
+		try: DictHelper.eval(data, ['id'])
+		except ValueError as e: return Services.Effect(error=(1001, [(f, "missing") for f in e.args]))
+
+		# If the fields aren't passed
+		if 'fields' not in data:
+			data['fields'] = True
+
+		# Fetch and return the users
+		return Services.Effect(
+			User.get(data['id'], raw=data['fields'])
+		)

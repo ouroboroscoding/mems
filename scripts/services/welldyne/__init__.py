@@ -76,7 +76,7 @@ class WellDyne(Services.Service):
 		"""
 
 		# Make sure the user has the proper rights
-		#oEff = Services.read('auth', 'verify', {
+		#oEff = Services.read('auth', 'rights/verify', {
 		#	"name": "welldyne",
 		#	"right": Rights.READ
 		#}, sesh)
