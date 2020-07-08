@@ -523,8 +523,8 @@ class CSR(Services.Service):
 				d['dsClinicId'] = None
 				d['dsClinicianId'] = None
 
-		# Return the agents
-		return Services.Effect(lAgents)
+		# Return the agents in order of userName
+		return Services.Effect(sorted(lAgents, key=lambda o: o['userName']))
 
 	def agentInternal_read(self, data, sesh):
 		"""Agent Internal
