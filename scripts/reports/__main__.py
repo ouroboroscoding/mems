@@ -30,7 +30,6 @@ if os.path.isfile(sConfOverride):
 Record_Base.dbPrepend(Conf.get(("mysql", "prepend"), ''))
 Record_MySQL.addHost('primary', Conf.get(("mysql", "hosts", "primary")))
 Record_MySQL.addHost('monolith', Conf.get(("mysql", "hosts", "monolith")))
-Record_MySQL.addHost('monolith_prod', Conf.get(("mysql", "hosts", "monolith_prod")))
 
 # Register all services
 Services.register(

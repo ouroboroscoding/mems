@@ -47,11 +47,6 @@
 				"port": 3306,
 				"charset": "utf8mb4"
 			},
-			"monolith_prod": {
-				"host": "localhost",
-				"port": 3306,
-				"charset": "utf8mb4"
-			},
 			"primary": {
 				"host": "localhost",
 				"port": 3306,
@@ -92,7 +87,8 @@
 			"monolith": {"port": 6},
 			"payment": {"port": 5},
 			"prescriptions": {"port": 8},
-			"webpoll": {"port": 2}
+			"webpoll": {"port": 2},
+			"welldyne": {"port": 10}
 		}
 	},
 

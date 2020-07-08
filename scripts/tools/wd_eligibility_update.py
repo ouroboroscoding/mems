@@ -28,7 +28,7 @@ if __name__ == "__main__":
 		Conf.load_merge(sConfOverride)
 
 	# Add hosts
-	Record_MySQL.addHost('monolith_prod', Conf.get(("mysql", "hosts", "monolith_prod")))
+	Record_MySQL.addHost('monolith', Conf.get(("mysql", "hosts", "monolith")))
 
 	# Get Memo config
 	dMemo = Conf.get('memo')
@@ -40,13 +40,13 @@ if __name__ == "__main__":
 	oRes = oHttp.post('https://%s/users/login' % dMemo['domain'], data={
 		"username": dMemo['user'],
 		"password": dMemo['pass']
-	}, verify=False, allow_redirects=False)
+	}, allow_redirects=False)
 
 	print(oRes)
 
 	# Fetch all Eligibilities in the past
 	lElig = Record_MySQL.Commands.select(
-		'monolith_prod',
+		'monolith',
 		'SELECT `id`, `memberSince`, `memberThru` ' \
 		'FROM `monolith`.`wd_eligibility` ' \
 		'WHERE `memberThru` != \'0000-00-00 00:00:00\' ' \
@@ -70,7 +70,7 @@ if __name__ == "__main__":
 		oRes = oHttp.post('https://%s/welldyne/eligibility/%d' % (Conf.get(('memo', 'domain')), d['id']), data={
 			"memberSince": "%sT%s.000Z" % (lDT[0], lDT[1]),
 			"memberThru": "%sT00:00:00.000Z" % sys.argv[1]
-		}, verify=False)
+		})
 
 		print(oRes.status_code)
 		print(oRes.content)

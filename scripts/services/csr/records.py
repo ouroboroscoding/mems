@@ -15,6 +15,36 @@ __created__		= "2020-05-17"
 from FormatOC import Tree
 from RestOC import Conf, Record_MySQL
 
+# Agent class
+class Agent(Record_MySQL.Record):
+	"""Agent
+
+	Represents a memo user in mems
+	"""
+
+	_conf = None
+	"""Configuration"""
+
+	@classmethod
+	def config(cls):
+		"""Config
+
+		Returns the configuration data associated with the record type
+
+		Returns:
+			dict
+		"""
+
+		# If we haven loaded the config yet
+		if not cls._conf:
+			cls._conf = Record_MySQL.Record.generateConfig(
+				Tree.fromFile('../definitions/csr/agent.json'),
+				'mysql'
+			)
+
+		# Return the config
+		return cls._conf
+
 # EscalateAgent class
 class EscalateAgent(Record_MySQL.Record):
 	"""EscalateAgent

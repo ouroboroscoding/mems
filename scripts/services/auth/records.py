@@ -61,11 +61,17 @@ class Permission(Record_MySQL.Record):
 	_conf = None
 	"""Configuration"""
 
+	_redis = None
+	"""Redis
+
+	Holds a connection to the Redis db
+	"""
+
 	@classmethod
 	def byUser(cls, _id):
 		"""By User
 
-		Fetches the permissions as a name => rights dict by user._id
+		Fetches the permissions as a name => rights/idents dict by user._id
 
 		Arguments:
 			_id (str): The ID of the User
@@ -76,9 +82,65 @@ class Permission(Record_MySQL.Record):
 
 		# Generate a dict from the name and rights
 		return {
-			d['name']:d['rights']
-			for d in cls.filter({"user": _id}, raw=['name', 'rights'])
+			d['name']: {
+				"rights": d['rights'],
+				"idents": d['idents'] is not None and d['idents'].split(',') or None
+			}
+			for d in cls.filter({"user": _id}, raw=['name', 'rights', 'idents'])
 		}
+
+	@classmethod
+	def cache(cls, _id):
+		"""Cache
+
+		Fetches the Permissions for one user from the cache and returns them
+
+		Arguments:
+			_id (str): The User ID(s) to fetch by
+
+		Returns:
+			dict
+		"""
+
+		# Fetch a single key
+		sPermission = cls._redis.get('perms:%s' % _id)
+
+		# If we have a record
+		if sPermission:
+
+			# Decode it
+			dPermission = JSON.decode(sPermission);
+
+		else:
+
+			# Fetch the records from the DB
+			dPermission = Permission.byUser(_id)
+
+			# Store it in the cache
+			cls._redis.set('perms:%s' % _id, JSON.encode(dPermission))
+
+		# If we don't have a record
+		if not dPermission:
+			return None
+
+		# Return the permissions
+		return dPermission
+
+	@classmethod
+	def cacheClear(cls, _id):
+		"""Cache Clear
+
+		Removes permissions for a user from the cache
+
+		Arguments:
+			_id (str): The ID of the user whose permissions we want to clear
+
+		Returns:
+			None
+		"""
+
+		# Delete the key in Redis
+		cls._redis.delete('perms:%s' % _id)
 
 	@classmethod
 	def config(cls):
@@ -100,6 +162,20 @@ class Permission(Record_MySQL.Record):
 		# Return the config
 		return cls._conf
 
+	@classmethod
+	def redis(cls, redis):
+		"""Redis
+
+		Stores the Redis connection to be used to fetch and store Users
+
+		Arguments:
+			redis (StrictRedis): A Redis instance
+
+		Returns:
+			None
+		"""
+		cls._redis = redis
+
 # User class
 class User(Record_MySQL.Record):
 	"""User
@@ -115,26 +191,6 @@ class User(Record_MySQL.Record):
 
 	Holds a connection to the Redis db
 	"""
-
-	def __init__(self, record, custom={}):
-		"""Constructor
-
-		Overwrites Record_Base constructor to add permissions records
-
-		Arguments:
-			record (dict): The data associated with the user
-
-		Returns:
-			User
-		"""
-
-		# Store the permissions if they were passed
-		self.__permissions = 'permissions' in record and \
-								record.pop('permissions') or \
-								None
-
-		# Call the parent constructor
-		super().__init__(record, custom)
 
 	@classmethod
 	def cache(cls, _id, raw=False):
@@ -166,9 +222,6 @@ class User(Record_MySQL.Record):
 
 				# Fetch the record from the DB
 				dUser = cls.get(_id, raw=True)
-
-				# Fetch and store the permissions
-				dUser['permissions'] = Permission.byUser(_id)
 
 				# Store it in the cache
 				cls._redis.set('user:%s' % _id, JSON.encode(dUser))
@@ -206,9 +259,6 @@ class User(Record_MySQL.Record):
 
 					# Fetch the record from the DB
 					lUsers[i] = cls.get(_id[i], raw=True)
-
-					# Fetch and store the permissions
-					lUsers[i]['permissions'] = Permission.byUser(_id[i])
 
 					# Store it in the cache
 					cls._redis.set('user:%s' % _id[i], JSON.encode(lUsers[i]))
@@ -325,58 +375,6 @@ class User(Record_MySQL.Record):
 		# Return OK if the rehashed password matches
 		return sHash == sha1(sSalt.encode('utf-8') + passwd.encode('utf-8')).hexdigest()
 
-	def permissions(self, new = None):
-		"""Permissions
-
-		Get or set the permissions associated with the user
-
-		Arguments:
-			new (dict): If passed, this is a setter
-
-		Returns:
-			None|dict
-		"""
-
-		# If new permissions passed, store them
-		if new:
-
-			# Store the permissions
-			self.__permissions = new.copy()
-
-			# If we have an ID
-			if '_id' in self._dRecord:
-
-				# Update the cache
-				dUser = copy.deepcopy(self._dRecord)
-				dUser['permissions'] = self.__permissions
-				self._redis.set(
-					'user:%s' % dUser['_id'],
-					JSON.encode(dUser)
-				)
-
-		# Else, fetch the permissions associated
-		else:
-
-			# If we don't have the permissions
-			if self.__permissions is None:
-
-				# If we have an ID
-				if '_id' in self._dRecord:
-
-					# Fetch them and store them in the cache
-					self.__permissions = Permission.byUser(self._dRecord['_id'])
-
-					# Update the cache
-					dUser = copy.deepcopy(self._dRecord)
-					dUser['permissions'] = self.__permissions
-					self._redis.set(
-						'user:%s' % dUser['_id'],
-						JSON.encode(dUser)
-					)
-
-			# Return the permissions
-			return self.__permissions
-
 	@classmethod
 	def redis(cls, redis):
 		"""Redis
@@ -437,26 +435,6 @@ class UserPatient(Record_MySQL.Record):
 	Holds a connection to the Redis db
 	"""
 
-	def __init__(self, record, custom={}):
-		"""Constructor
-
-		Overwrites Record_Base constructor to add permissions records
-
-		Arguments:
-			record (dict): The data associated with the user
-
-		Returns:
-			UserPatient
-		"""
-
-		# Store the permissions if they were passed
-		self.__permissions = 'permissions' in record and \
-								record.pop('permissions') or \
-								None
-
-		# Call the parent constructor
-		super().__init__(record, custom)
-
 	@classmethod
 	def cache(cls, _id, raw=False):
 		"""Cache
@@ -487,9 +465,6 @@ class UserPatient(Record_MySQL.Record):
 
 				# Fetch the record from the DB
 				dUserPatient = cls.get(_id, raw=True)
-
-				# Fetch and store the permissions
-				dUserPatient['permissions'] = Permission.byUserPatient(_id)
 
 				# Store it in the cache
 				cls._redis.set('user:%s' % _id, JSON.encode(dUserPatient))
@@ -527,9 +502,6 @@ class UserPatient(Record_MySQL.Record):
 
 					# Fetch the record from the DB
 					lUserPatients[i] = cls.get(_id[i], raw=True)
-
-					# Fetch and store the permissions
-					lUserPatients[i]['permissions'] = Permission.byUserPatient(_id[i])
 
 					# Store it in the cache
 					cls._redis.set('user:%s' % _id[i], JSON.encode(lUserPatients[i]))
@@ -645,58 +617,6 @@ class UserPatient(Record_MySQL.Record):
 
 		# Return OK if the rehashed password matches
 		return sHash == sha1(sSalt.encode('utf-8') + passwd.encode('utf-8')).hexdigest()
-
-	def permissions(self, new = None):
-		"""Permissions
-
-		Get or set the permissions associated with the user
-
-		Arguments:
-			new (dict): If passed, this is a setter
-
-		Returns:
-			None|dict
-		"""
-
-		# If new permissions passed, store them
-		if new:
-
-			# Store the permissions
-			self.__permissions = new.copy()
-
-			# If we have an ID
-			if '_id' in self._dRecord:
-
-				# Update the cache
-				dUser = copy.deepcopy(self._dRecord)
-				dUser['permissions'] = self.__permissions
-				self._redis.set(
-					'user:%s' % dUser['_id'],
-					JSON.encode(dUser)
-				)
-
-		# Else, fetch the permissions associated
-		else:
-
-			# If we don't have the permissions
-			if self.__permissions is None:
-
-				# If we have an ID
-				if '_id' in self._dRecord:
-
-					# Fetch them and store them in the cache
-					self.__permissions = Permission.byUser(self._dRecord['_id'])
-
-					# Update the cache
-					dUser = copy.deepcopy(self._dRecord)
-					dUser['permissions'] = self.__permissions
-					self._redis.set(
-						'user:%s' % dUser['_id'],
-						JSON.encode(dUser)
-					)
-
-			# Return the permissions
-			return self.__permissions
 
 	@classmethod
 	def redis(cls, redis):
