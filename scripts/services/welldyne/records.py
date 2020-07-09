@@ -20,6 +20,36 @@ import re
 from FormatOC import Tree
 from RestOC import Conf, Record_MySQL
 
+# AdHoc class
+class AdHoc(Record_MySQL.Record):
+	"""AdHoc
+
+	Represents a customer being sent by AdHoc
+	"""
+
+	_conf = None
+	"""Configuration"""
+
+	@classmethod
+	def config(cls):
+		"""Config
+
+		Returns the configuration data associated with the record type
+
+		Returns:
+			dict
+		"""
+
+		# If we haven loaded the config yet
+		if not cls._conf:
+			cls._conf = Record_MySQL.Record.generateConfig(
+				Tree.fromFile('../definitions/welldyne/adhoc.json'),
+				'mysql'
+			)
+
+		# Return the config
+		return cls._conf
+
 # Eligibility class
 class Eligibility(Record_MySQL.Record):
 	"""Eligibility
@@ -139,10 +169,12 @@ class Trigger(Record_MySQL.Record):
 				'	`wdo`.`queue` as `outreachQueue`,\n' \
 				'	`wdo`.`reason` as `outreachReason`,\n' \
 				'	`wde`.`memberSince` as `eligSince`,\n' \
-				'	`wde`.`memberThru` as `eligThru`\n' \
+				'	`wde`.`memberThru` as `eligThru`,\n' \
+				'	`wda`.`type` as `adhocType`\n' \
 				'FROM `%(db)s`.`%(table)s` as `wdt`\n' \
 				'LEFT JOIN `%(db)s`.`wd_outreach` as `wdo` ON `wdt`.`customerId` = `wdo`.`customerId`\n' \
 				'LEFT JOIN `%(db)s`.`wd_eligibility` as `wde` on `wdt`.`customerId` = `wde`.`customerId`\n' \
+				'LEFT JOIN `%(db)s`.`wd_adhoc` as `wda` on `wdt`.`customerId` = `wda`.`customerId`\n' \
 				'WHERE `wdt`.`customerId` = \'%(customerId)s\'' % {
 			"db": dStruct['db'],
 			"table": dStruct['table'],

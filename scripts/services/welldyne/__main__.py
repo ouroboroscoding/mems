@@ -43,8 +43,11 @@ if 'VERBOSE' in os.environ and os.environ['VERBOSE'] == '1':
 	Services.verbose()
 
 # Get all the services
-dServices = {}
-dServices['welldyne'] = WellDyne()
+dServices = {
+	"auth": None,
+	"monolith": None,
+	"welldyne": WellDyne()
+}
 
 # Register all services
 Services.register(dServices, oRestConf, Conf.get(('services', 'salt')))

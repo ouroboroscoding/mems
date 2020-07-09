@@ -107,7 +107,7 @@ class Monolith(Services.Service):
 			Services.Effect
 		"""
 
-				# Verify fields
+		# Verify fields
 		try: DictHelper.eval(data, ['phoneNumber'])
 		except ValueError as e: return Services.Effect(error=(1001, [(f, "missing") for f in e.args]))
 
@@ -234,6 +234,51 @@ class Monolith(Services.Service):
 		# Return the ID
 		return Services.Effect(dPatient['patientId'])
 
+	def customerExists_read(self, data, sesh):
+		"""Customer Exists
+
+		Returns bool based on existing of customer
+
+		Arguments:
+			data (dict): Data sent with the request
+			sesh (Sesh._Session): The session associated with the request
+
+		Returns:
+			Services.Effect
+		"""
+
+		# Verify fields
+		try: DictHelper.eval(data, ['customerId'])
+		except ValueError as e: return Services.Effect(error=(1001, [(f, "missing") for f in e.args]))
+
+		# Return whether the customer exists or not
+		return Services.Effect(
+			KtCustomer.exists(data['customerId'], 'customerId')
+		)
+
+	def customerHide_update(self, data, sesh):
+		"""Customer Hide
+
+		Marks a customer conversation as hidden
+
+		Arguments:
+			data (dict): Data sent with the request
+			sesh (Sesh._Session): The session associated with the request
+
+		Returns:
+			Services.Effect
+		"""
+
+		# Verify fields
+		try: DictHelper.eval(data, ['customerPhone'])
+		except ValueError as e: return Services.Effect(error=(1001, [(f, "missing") for f in e.args]))
+
+		# Update the records hidden field
+		CustomerMsgPhone.updateField('hiddenFlag', 'Y', filter={"customerPhone": data['customerPhone']})
+
+		# Return OK
+		return Services.Effect(True)
+
 	def customerIdByPhone_read(self, data, sesh):
 		"""Customer Hide
 
@@ -265,29 +310,6 @@ class Monolith(Services.Service):
 
 		# Return the ID
 		return Services.Effect(dCustomer['customerId'])
-
-	def customerHide_update(self, data, sesh):
-		"""Customer Hide
-
-		Marks a customer conversation as hidden
-
-		Arguments:
-			data (dict): Data sent with the request
-			sesh (Sesh._Session): The session associated with the request
-
-		Returns:
-			Services.Effect
-		"""
-
-		# Verify fields
-		try: DictHelper.eval(data, ['customerPhone'])
-		except ValueError as e: return Services.Effect(error=(1001, [(f, "missing") for f in e.args]))
-
-		# Update the records hidden field
-		CustomerMsgPhone.updateField('hiddenFlag', 'Y', filter={"customerPhone": data['customerPhone']})
-
-		# Return OK
-		return Services.Effect(True)
 
 	def customerMessages_read(self, data, sesh):
 		"""Customer Messages
