@@ -344,6 +344,14 @@ class CSR(Services.Service):
 		}, sesh)
 		if oEff.errorExists(): return oEff
 
+		# Delete all permissions
+		oEff = Services.update('auth', 'permissions', {
+			"_internal_": Services.internalKey(),
+			"user": data['_id'],
+			"permissions": {}
+		}, sesh);
+		if oEff.errorExists(): return oEff
+
 		# Delete the record and return the result
 		return Services.Effect(
 			oAgent.delete()

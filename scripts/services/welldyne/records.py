@@ -169,10 +169,12 @@ class Trigger(Record_MySQL.Record):
 				'	`wdo`.`queue` as `outreachQueue`,\n' \
 				'	`wdo`.`reason` as `outreachReason`,\n' \
 				'	`wde`.`memberSince` as `eligSince`,\n' \
-				'	`wde`.`memberThru` as `eligThru`\n' \
+				'	`wde`.`memberThru` as `eligThru`,\n' \
+				'	`wda`.`type` as `adhocType`\n' \
 				'FROM `%(db)s`.`%(table)s` as `wdt`\n' \
 				'LEFT JOIN `%(db)s`.`wd_outreach` as `wdo` ON `wdt`.`customerId` = `wdo`.`customerId`\n' \
 				'LEFT JOIN `%(db)s`.`wd_eligibility` as `wde` on `wdt`.`customerId` = `wde`.`customerId`\n' \
+				'LEFT JOIN `%(db)s`.`wd_adhoc` as `wda` on `wdt`.`customerId` = `wda`.`customerId`\n' \
 				'WHERE `wdt`.`customerId` = \'%(customerId)s\'' % {
 			"db": dStruct['db'],
 			"table": dStruct['table'],

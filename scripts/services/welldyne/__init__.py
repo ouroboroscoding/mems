@@ -17,6 +17,7 @@ from time import time
 import uuid
 
 # Pip imports
+import arrow
 from RestOC import Conf, DictHelper, Errors, Services, Sesh
 
 # Shared imports
@@ -113,6 +114,53 @@ class WellDyne(Services.Service):
 
 		# Return all records
 		return Services.Effect(lRecords)
+
+	def adhoc_create(self, data, sesh):
+		"""AdHoc Create
+
+		Adds a new record to the AdHoc report
+
+		Arguments:
+			data (dict): Data sent with the request
+			sesh (Sesh._Session): The session associated with the request
+
+		Returns:
+			Services.Effect
+		"""
+
+		# Make sure the user has the proper rights
+		oEff = Services.read('auth', 'rights/verify', {
+			"name": "welldyne_adhoc",
+			"right": Rights.CREATE
+		}, sesh)
+		if not oEff.data:
+			return Services.Effect(error=Rights.INVALID)
+
+		# Check the customer exists
+		oEff = Services.read('monolith', 'customer/exists', {
+			"customerId": str(data['customerId'])
+		}, sesh)
+		if oEff.errorExists(): return oEff
+
+		# Get current date/time
+		sDT = arrow.get().format('YYYY-MM-DD HH:mm:ss')
+
+		# Try to create a new instance of the adhoc
+		try:
+			oAdHoc = AdHoc({
+				"customerId": data['customerId'],
+				"type": data['type'],
+				"user": sesh['memo_id'],
+				"createdAt": sDT,
+				"updatedAt": sDT
+			})
+		except ValueError as e:
+			return Services.Effect(error=(1001, e.args[0]))
+
+		# Create the record and return the result
+		return Services.Effect(
+			oAdHoc.create()
+		)
 
 	def outreachs_read(self, data, sesh):
 		"""Outreachs
