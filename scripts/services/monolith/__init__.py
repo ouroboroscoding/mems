@@ -454,6 +454,38 @@ class Monolith(Services.Service):
 			oTfAnswer.save()
 		)
 
+	def customerName_read(self, data, sesh):
+		"""Customer Name
+
+		Fetchs one or more names based on IDs, returns as a dictionary (one ID)
+		or of ID to name (multiple IDs)
+
+		Arguments:
+			data (dict): Data sent with the request
+			sesh (Sesh._Session): The session associated with the user
+
+		Returns:
+			Effect
+		"""
+
+		# Verify fields
+		try: DictHelper.eval(data, ['id'])
+		except ValueError as e: return Services.Effect(error=(1001, [(f, "missing") for f in e.args]))
+
+		# If there's only one
+		if isinstance(data['id'], str):
+			mRet = KtCustomer.filter({"customerId": data['id']}, raw=['firstName', 'lastName'], limit=1)
+		elif isinstance(data['id'], list):
+			mRet = {
+				d['customerId']: {"firstName": d['firstName'], "lastName": d['lastName']}
+				for d in KtCustomer.filter({"customerId": data['id']}, raw=['customerId', 'firstName', 'lastName'])
+			}
+		else:
+			return Services.Effect(error=(1104, [('id', 'invalid')]))
+
+		# Return the result
+		return Services.Effect(mRet)
+
 	def customerNote_create(self, data, sesh):
 		"""Customer Note Create
 
@@ -1408,8 +1440,8 @@ class Monolith(Services.Service):
 	def userName_read(self, data, sesh):
 		"""User Name
 
-		Fetchs one or more names based on IDs, returns as a dictionary of ID to
-		name
+		Fetchs one or more names based on IDs, returns as a dictionary (one ID)
+		or of ID to name (multiple IDs)
 
 		Arguments:
 			data (dict): Data sent with the request
@@ -1423,11 +1455,19 @@ class Monolith(Services.Service):
 		try: DictHelper.eval(data, ['id'])
 		except ValueError as e: return Services.Effect(error=(1001, [(f, "missing") for f in e.args]))
 
-		# Return the dictionary of IDs to names
-		return Services.Effect({
-			d['id']: {"firstName": d['firstName'], "lastName": d['lastName']}
-			for d in User.get(data['id'], raw=['id', 'firstName', 'lastName'])
-		})
+		# If there's only one
+		if isinstance(data['id'], int):
+			mRet = User.get(data['id'], raw=['firstName', 'lastName'])
+		elif isinstance(data['id'], list):
+			mRet = {
+				d['id']: {"firstName": d['firstName'], "lastName": d['lastName']}
+				for d in User.get(data['id'], raw=['firstName', 'lastName'])
+			}
+		else:
+			return Services.Effect(error=(1104, [('id', 'invalid')]))
+
+		# Return the result
+		return Services.Effect(mRet)
 
 	def userPasswd_update(self, data, sesh):
 		"""User Password

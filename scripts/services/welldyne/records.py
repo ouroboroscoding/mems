@@ -20,6 +20,36 @@ import re
 from FormatOC import Tree
 from RestOC import Conf, Record_MySQL
 
+# AdHoc class
+class AdHoc(Record_MySQL.Record):
+	"""AdHoc
+
+	Represents a customer in the adhoc table
+	"""
+
+	_conf = None
+	"""Configuration"""
+
+	@classmethod
+	def config(cls):
+		"""Config
+
+		Returns the configuration data associated with the record type
+
+		Returns:
+			dict
+		"""
+
+		# If we haven loaded the config yet
+		if not cls._conf:
+			cls._conf = Record_MySQL.Record.generateConfig(
+				Tree.fromFile('../definitions/welldyne/adhoc.json'),
+				'mysql'
+			)
+
+		# Return the config
+		return cls._conf
+
 # Eligibility class
 class Eligibility(Record_MySQL.Record):
 	"""Eligibility
