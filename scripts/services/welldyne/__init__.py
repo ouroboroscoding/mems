@@ -255,6 +255,7 @@ class WellDyne(Services.Service):
 		try:
 			if 'queue' not in data: data['queue'] = ''
 			if 'reason' not in data: data['reason'] = ''
+			if 'rx' not in data: data['rx'] = 0
 			data['user'] = sesh['memo_id']
 			data['createdAt'] = sDT
 			data['updatedAt'] = sDT
@@ -303,6 +304,90 @@ class WellDyne(Services.Service):
 		return Services.Effect(
 			oOutreach.delete()
 		)
+
+	def outreachAdhoc_update(self, data, sesh):
+		"""Outreach AdHoc
+
+		Removes a customer from the outreach and puts them as an adhoc / remove
+		error record
+
+		Arguments:
+			data (dict): Data sent with the request
+			sesh (Sesh._Session): The session associated with the request
+
+		Returns:
+			Services.Effect
+		"""
+
+		# Make sure the user has the proper outreach rights
+		oEff = Services.read('auth', 'rights/verify', {
+			"name": "welldyne_outreach",
+			"right": Rights.DELETE
+		}, sesh)
+		if not oEff.data:
+			return Services.Effect(error=Rights.INVALID)
+
+		# Make sure the user has the proper adhoc rights
+		oEff = Services.read('auth', 'rights/verify', {
+			"name": "welldyne_adhoc",
+			"right": Rights.CREATE
+		}, sesh)
+		if not oEff.data:
+			return Services.Effect(error=Rights.INVALID)
+
+		# Verify minimum fields
+		try: DictHelper.eval(data, ['id'])
+		except ValueError as e: return Services.Effect(error=(1001, [(f, 'missing') for f in e.args]))
+
+		# Find the record
+		oOutreach = Outreach.get(data['id'])
+		if not oOutreach:
+			return Services.Effect(error=1104)
+
+		# Check the customer exists
+		oEff = Services.read('monolith', 'customer/name', {
+			"customerId": str(oOutreach['customerId'])
+		}, sesh)
+		if oEff.errorExists(): return oEff
+		dCustomer = oEff.data
+
+		# Get the user name
+		oEff = Services.read('monolith', 'user/name', {
+			"id": sesh['memo_id']
+		}, sesh)
+		if oEff.errorExists(): return oEff
+		dUser = oEff.data
+
+		# Get current date/time
+		sDT = arrow.get().format('YYYY-MM-DD HH:mm:ss')
+
+		# Try to create a new adhoc instance
+		try:
+			oAdHoc = AdHoc({
+				"customerId": oOutreach['customerId'],
+				"type": "Remove Error",
+				"user": sesh['memo_id'],
+				"createdAt": sDT,
+				"updatedAt": sDT
+			})
+		except ValueError as e:
+			return Services.Effect(error=(1001, e.args[0]))
+
+		# Create the adhoc record
+		iID = oAdHoc.create();
+
+		# Delete the outreach record
+		oOutreach.delete()
+
+		# Turn the adhoc instance into a dict
+		dAdHoc = oAdHoc.record()
+
+		# Add the names
+		dAdHoc['customerName'] = "%s %s" % (dCustomer['firstName'], dCustomer['lastName'])
+		dAdHoc['userName'] = "%s %s" % (dUser['firstName'], dUser['lastName'])
+
+		# Return the new adhoc data
+		return Services.Effect(dAdHoc)
 
 	def outreachReady_update(self, data, sesh):
 		"""Outreach Ready

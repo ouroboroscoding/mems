@@ -62,6 +62,7 @@ REST.Server({
 	"/adhocs": {"methods": REST.READ, "session": True},
 
 	"/outreach": {"methods": REST.CREATE | REST.DELETE, "session": True},
+	"/outreach/adhoc": {"methods": REST.UPDATE, "session": True},
 	"/outreach/ready": {"methods": REST.UPDATE, "session": True},
 	"/outreachs": {"methods": REST.READ, "session": True},
 
