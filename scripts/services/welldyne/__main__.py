@@ -58,7 +58,12 @@ Templates.init('../templates')
 # Create the HTTP server and map requests to service
 REST.Server({
 
-	"/adhoc": {"methods": REST.CREATE, "session": True},
+	"/adhoc": {"methods": REST.CREATE | REST.DELETE, "session": True},
+	"/adhocs": {"methods": REST.READ, "session": True},
+
+	"/outreach": {"methods": REST.CREATE | REST.DELETE, "session": True},
+	"/outreach/ready": {"methods": REST.UPDATE, "session": True},
+	"/outreachs": {"methods": REST.READ, "session": True},
 
 	"/trigger/info": {"methods": REST.READ, "session": True}
 

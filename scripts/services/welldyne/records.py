@@ -24,7 +24,7 @@ from RestOC import Conf, Record_MySQL
 class AdHoc(Record_MySQL.Record):
 	"""AdHoc
 
-	Represents a customer being sent by AdHoc
+	Represents a customer in the adhoc table
 	"""
 
 	_conf = None
