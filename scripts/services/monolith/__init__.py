@@ -491,19 +491,19 @@ class Monolith(Services.Service):
 		"""
 
 		# Verify fields
-		try: DictHelper.eval(data, ['id'])
+		try: DictHelper.eval(data, ['customerId'])
 		except ValueError as e: return Services.Effect(error=(1001, [(f, "missing") for f in e.args]))
 
 		# If there's only one
-		if isinstance(data['id'], str):
-			mRet = KtCustomer.filter({"customerId": data['id']}, raw=['firstName', 'lastName'], limit=1)
-		elif isinstance(data['id'], list):
+		if isinstance(data['customerId'], str):
+			mRet = KtCustomer.filter({"customerId": data['customerId']}, raw=['firstName', 'lastName'], limit=1)
+		elif isinstance(data['customerId'], list):
 			mRet = {
 				d['customerId']: {"firstName": d['firstName'], "lastName": d['lastName']}
-				for d in KtCustomer.filter({"customerId": data['id']}, raw=['customerId', 'firstName', 'lastName'])
+				for d in KtCustomer.filter({"customerId": data['customerId']}, raw=['customerId', 'firstName', 'lastName'])
 			}
 		else:
-			return Services.Effect(error=(1104, [('id', 'invalid')]))
+			return Services.Effect(error=(1001, [('customerId', 'invalid')]))
 
 		# Return the result
 		return Services.Effect(mRet)
@@ -1483,7 +1483,7 @@ class Monolith(Services.Service):
 		elif isinstance(data['id'], list):
 			mRet = {
 				d['id']: {"firstName": d['firstName'], "lastName": d['lastName']}
-				for d in User.get(data['id'], raw=['firstName', 'lastName'])
+				for d in User.get(data['id'], raw=['id', 'firstName', 'lastName'])
 			}
 		else:
 			return Services.Effect(error=(1104, [('id', 'invalid')]))
