@@ -150,13 +150,13 @@ class Konnektive(Services.Service):
 		"""
 
 		# Verify fields
-		try: DictHelper.eval(data, ['id'])
+		try: DictHelper.eval(data, ['customerId'])
 		except ValueError as e: return Services.Effect(error=(1001, [(f, "missing") for f in e.args]))
 
 		# Make the request to Konnektive
 		lCustomers = self.__request('customer/query', {
 			"dateRangeType": "dateCreated",
-			"customerId": data['id'],
+			"customerId": data['customerId'],
 			"startDate": "01/01/2019",
 			"endDate": "01/01/3000"
 		});
@@ -167,7 +167,7 @@ class Konnektive(Services.Service):
 
 		# Return the customer
 		return Services.Effect({
-			"id": lCustomers[0]['customerId'],
+			"customerId": lCustomers[0]['customerId'],
 			"billing": {
 				"address1": lCustomers[0]['address1'],
 				"address2": lCustomers[0]['address2'],
@@ -215,7 +215,7 @@ class Konnektive(Services.Service):
 		"""
 
 		# Verify fields
-		try: DictHelper.eval(data, ['id'])
+		try: DictHelper.eval(data, ['customerId'])
 		except ValueError as e: return Services.Effect(error=(1001, [(f, "missing") for f in e.args]))
 
 		# If transactions flag not passed, assume false
@@ -225,7 +225,7 @@ class Konnektive(Services.Service):
 		# Make the request to Konnektive
 		lOrders = self.__request('order/query', {
 			"dateRangeType": "dateCreated",
-			"customerId": data['id'],
+			"customerId": data['customerId'],
 			"sortDir": 0
 		});
 
@@ -234,7 +234,7 @@ class Konnektive(Services.Service):
 
 			# Get them from this service
 			oEff = self.customerTransactions_read({
-				"id": data['id']
+				"customerId": data['customerId']
 			}, sesh)
 
 			# If there's an error
@@ -274,13 +274,13 @@ class Konnektive(Services.Service):
 			"date": dO['dateUpdated'],
 			"email": dO['emailAddress'],
 			"encounter": self._encounters[dO['state']],
-			"id": dO['orderId'],
 			"items": 'items' in dO and [{
 				"campaign": dI['name'],
 				"description": dI['productDescription'],
 				"price": dI['price'],
 				"shipping": dI['shipping']
 			} for dI in dO['items'].values()] or [],
+			"orderId": dO['orderId'],
 			"phone": dO['phoneNumber'],
 			"price": dO['price'],
 			"shipping": {
@@ -315,13 +315,13 @@ class Konnektive(Services.Service):
 		"""
 
 		# Verify fields
-		try: DictHelper.eval(data, ['id'])
+		try: DictHelper.eval(data, ['customerId'])
 		except ValueError as e: return Services.Effect(error=(1001, [(f, "missing") for f in e.args]))
 
 		# Make the request to Konnektive
 		lTransactions = self.__request('transactions/query', {
 			"dateRangeType": "dateCreated",
-			"customerId": data['id'],
+			"customerId": data['customerId'],
 			"sortDir": 0
 		});
 
@@ -350,7 +350,7 @@ class Konnektive(Services.Service):
 	def orderTransactions_read(self, data, sesh):
 		"""Order Transactions
 
-		Fetches the transactions associated with a specific order
+		Fetches the transactions associated with a specific customer
 
 		Arguments:
 			data (dict): Data sent with the request
@@ -361,13 +361,13 @@ class Konnektive(Services.Service):
 		"""
 
 		# Verify fields
-		try: DictHelper.eval(data, ['id'])
+		try: DictHelper.eval(data, ['customerId'])
 		except ValueError as e: return Services.Effect(error=(1001, [(f, "missing") for f in e.args]))
 
 		# Make the request to Konnektive
 		lTransactions = self.__request('transactions/query', {
 			"dateRangeType": "dateUpdated",
-			"orderId": data['id'],
+			"customerId": data['customerId'],
 			"sortDir": 0
 		});
 

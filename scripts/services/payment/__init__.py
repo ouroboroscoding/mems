@@ -111,7 +111,7 @@ class Payment(Services.Service):
 
 		# Make sure the customer ID is valid before doing anything
 		if not self._customer_regex.match(data['customer_id']):
-			return Services.Effect(error=1700)
+			return Services.Effect(error=1403)
 
 		# Make sure the amount is valid
 		if not self._price.valid(data['amount']):
@@ -182,7 +182,7 @@ class Payment(Services.Service):
 		if not bSuccess:
 
 			# Return an error
-			return Services.Effect(error=(1701, {
+			return Services.Effect(error=(1404, {
 				"transaction_id": oResponse.Get(GatewayResponse.TRANSACT_ID),
 				"response_code": oResponse.Get(GatewayResponse.RESPONSE_CODE),
 				"responde_msg": oResponse.Get(GatewayResponse.RESPONSE_CODE) in self._error_codes and \
@@ -288,7 +288,7 @@ class Payment(Services.Service):
 		if not bSuccess:
 
 			# Return an error
-			return Services.Effect(error=(1701, {
+			return Services.Effect(error=(1404, {
 				"transaction_id": oResponse.Get(GatewayResponse.TRANSACT_ID),
 				"response_code": oResponse.Get(GatewayResponse.RESPONSE_CODE),
 				"responde_msg": oResponse.Get(GatewayResponse.RESPONSE_CODE) in self._error_codes and \
@@ -353,7 +353,7 @@ class Payment(Services.Service):
 		if not bSuccess:
 
 			# Return an error
-			return Services.Effect(error=(1701, {
+			return Services.Effect(error=(1404, {
 				"transaction_id": oResponse.Get(GatewayResponse.TRANSACT_ID),
 				"response_code": oResponse.Get(GatewayResponse.RESPONSE_CODE),
 				"responde_msg": oResponse.Get(GatewayResponse.RESPONSE_CODE) in self._error_codes and \
@@ -397,7 +397,7 @@ class Payment(Services.Service):
 
 		# Make sure the customer ID is valid before doing anything
 		if not self._customer_regex.match(data['customer_id']):
-			return Services.Effect(error=1700)
+			return Services.Effect(error=1403)
 
 		# Make sure the amount is valid
 		if not self._price.valid(data['amount']):
@@ -468,7 +468,7 @@ class Payment(Services.Service):
 		if not bSuccess:
 
 			# Return an error
-			return Services.Effect(error=(1701, {
+			return Services.Effect(error=(1404, {
 				"transaction_id": oResponse.Get(GatewayResponse.TRANSACT_ID),
 				"response_code": oResponse.Get(GatewayResponse.RESPONSE_CODE),
 				"responde_msg": oResponse.Get(GatewayResponse.RESPONSE_CODE) in self._error_codes and \
@@ -557,7 +557,7 @@ class Payment(Services.Service):
 		if not bSuccess:
 
 			# Return an error
-			return Services.Effect(error=(1701, {
+			return Services.Effect(error=(1404, {
 				"transaction_id": oResponse.Get(GatewayResponse.TRANSACT_ID),
 				"response_code": oResponse.Get(GatewayResponse.RESPONSE_CODE),
 				"responde_msg": oResponse.Get(GatewayResponse.RESPONSE_CODE) in self._error_codes and \

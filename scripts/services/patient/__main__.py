@@ -1,7 +1,7 @@
 # coding=utf8
-""" Auth Service
+""" Patient Service
 
-Handles logins and letting them sign in/out
+Handles patient access
 """
 
 __author__		= "Chris Nasr"
@@ -9,7 +9,7 @@ __copyright__	= "MaleExcelMedical"
 __version__		= "1.0.0"
 __maintainer__	= "Chris Nasr"
 __email__		= "bast@maleexcel.com"
-__created__		= "2020-03-29"
+__created__		= "2020-06-26"
 
 # Python imports
 import os, platform
@@ -19,7 +19,7 @@ from RestOC import Conf, Record_Base, Record_MySQL, REST, \
 					Services, Sesh, Templates
 
 # App imports
-from services.auth import Auth
+from services.patient import Patient
 
 # Load the config
 Conf.load('../config.json')
@@ -43,7 +43,7 @@ if 'VERBOSE' in os.environ and os.environ['VERBOSE'] == '1':
 
 # Get all the services
 dServices = {k:None for k in Conf.get(('rest', 'services'))}
-dServices['auth'] = Auth()
+dServices['patient'] = Patient()
 
 # Register all services
 Services.register(dServices, oRestConf, Conf.get(('services', 'salt')))
@@ -54,25 +54,21 @@ Templates.init('../templates')
 # Create the HTTP server and map requests to service
 REST.Server({
 
-	"/permissions": {"methods": REST.READ | REST.UPDATE, "session": True},
-	"/permissions/self": {"methods": REST.READ, "session": True},
-
-	"/rights/verify": {"methods": REST.READ, "session": True},
-
-	"/search": {"methods": REST.READ, "session": True},
+	"/account": {"methods": REST.CREATE | REST.READ | REST.UPDATE, "session": True},
+	"/account/email": {"methods": REST.UPDATE, "session": True},
+	"/account/passwd": {"methods": REST.UPDATE, "session": True},
+	"/account/passwd/forgot": {"methods": REST.CREATE | REST.UPDATE},
 
 	"/session": {"methods": REST.READ, "session": True},
 
+	"/setup/start": { "methods": REST.CREATE, "session": True},
+	"/setup/validate": { "methods": REST.CREATE, "session": False},
+
 	"/signin": {"methods": REST.POST},
-	"/signout": {"methods": REST.POST, "session": True},
+	"/signout": {"methods": REST.POST, "session": True}
 
-	"/user": {"methods": REST.CREATE | REST.READ | REST.UPDATE, "session": True},
-	"/user/email": {"methods": REST.UPDATE, "session": True},
-	"/user/passwd": {"methods": REST.UPDATE, "session": True},
-	"/user/passwd/forgot": {"methods": REST.CREATE | REST.UPDATE}
-
-}, 'auth', "https?://(.*\\.)?%s" % Conf.get(("rest","allowed")).replace('.', '\\.')).run(
-	host=oRestConf['auth']['host'],
-	port=oRestConf['auth']['port'],
-	workers=oRestConf['auth']['workers']
+}, 'patient', "https?://(.*\\.)?%s" % Conf.get(("rest","allowed")).replace('.', '\\.')).run(
+	host=oRestConf['patient']['host'],
+	port=oRestConf['patient']['port'],
+	workers=oRestConf['patient']['workers']
 )

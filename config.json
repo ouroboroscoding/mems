@@ -85,6 +85,7 @@
 			"csr": {"port": 9},
 			"konnektive": {"port": 7},
 			"monolith": {"port": 6},
+			"patient": {"port": 11},
 			"payment": {"port": 5},
 			"prescriptions": {"port": 8},
 			"webpoll": {"port": 2},
