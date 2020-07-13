@@ -121,7 +121,7 @@ class Permission(Record_MySQL.Record):
 
 		# If we don't have a record
 		if not dPermission:
-			return []
+			return {}
 
 		# Return the permissions
 		return dPermission
