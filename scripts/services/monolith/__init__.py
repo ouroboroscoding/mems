@@ -1269,6 +1269,32 @@ class Monolith(Services.Service):
 		# Return OK
 		return Services.Effect(True)
 
+	def statsClaimed_read(self, data, sesh):
+		"""Stats: Claimed
+
+		Fetchs the number of claims made by users
+
+		Arguments:
+			data (dict): Data sent with the request
+			sesh (Sesh._Session): The session associated with the user
+
+		Returns:
+			Effect
+		"""
+
+		# Make sure the user has the proper permission to do this
+		oEff = Services.read('auth', 'rights/verify', {
+			"name": "csr_stats",
+			"right": Rights.READ
+		}, sesh)
+		if not oEff.data:
+			return Services.Effect(error=Rights.INVALID)
+
+		# Fetch and return claim stats
+		return Services.Effect(
+			CustomerClaimed.stats()
+		)
+
 	def user_create(self, data, sesh):
 		"""User Create
 
