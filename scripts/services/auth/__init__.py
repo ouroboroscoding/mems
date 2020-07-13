@@ -289,6 +289,7 @@ class Auth(Services.Service):
 			# Create an instance of the permissions
 			try:
 				lRecords.append(Permission({
+					"_created": int(time()),
 					"user": data['user'],
 					"name": sName,
 					"rights": mData['rights'],
