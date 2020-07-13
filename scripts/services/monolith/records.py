@@ -97,6 +97,37 @@ class CustomerClaimed(Record_MySQL.Record):
 		# Return the config
 		return cls._conf
 
+	@classmethod
+	def stats(cls, custom={}):
+		"""Stats
+
+		Returns stats of claims by user
+
+		Arguments:
+			custom (dict): Custom Host and DB info
+				'host' the name of the host to get/set data on
+				'append' optional postfix for dynamic DBs
+
+		Returns:
+			dict
+		"""
+
+		# Fetch the record structure
+		dStruct = cls.struct(custom)
+
+		# Generate SQL
+		sSQL = "SELECT CONCAT(`u`.`lastName`, ', ', `u`.`firstName`) as `name`, COUNT(*) as `count`\n" \
+				"FROM `%(db)s`.`%(table)s` as `cc`, `%(db)s`.`user` as `u`\n" \
+				"WHERE `cc`.`user` = `u`.`id`\n" \
+				"GROUP BY `u`.`id`\n" \
+				"ORDER BY `name`" % {
+					"db": dStruct['db'],
+					"table": dStruct['table']
+				}
+
+		# Fetch the data and return the records
+		return Record_MySQL.Commands.select(dStruct['host'], sSQL)
+
 # CustomerCommunication class
 class CustomerCommunication(Record_MySQL.Record):
 	"""CustomerCommunication
