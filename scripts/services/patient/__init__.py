@@ -181,33 +181,18 @@ class Patient(Services.Service):
 			return Services.Effect(error=Rights.INVALID)
 
 		# Verify fields
-		try: DictHelper.eval(data, ['type', 'id', 'url'])
+		try: DictHelper.eval(data, ['email'])
 		except ValueError as e: return Services.Effect(error=(1001, [(f, "missing") for f in e.args]))
 
-		# Which CRM is this customer from?
-		if data['type'] == 'knk':
+		# Store the email and remove it from the data
+		sEmail = data.pop('email')
 
-			# Fetch the customer's details from Konnektive
-			oEff = Services.read('konnektive', 'customer', {
-				"customerId": data['id']
-			}, sesh)
-			if oEff.errorExists(): return oEff
-
-			# Store the email address
-			sEmail = oEff.data['email']
-			sEmail = 'bast@maleexcel.com'
-
-		# Invalid type
-		else:
-			return Services.Effect(error=(1900, data['type']))
+		# Add the ID to the data
+		data['_id'] = StrHelper.random(32, ['aZ', '10', '!*'])
 
 		# Create an instance of the setup record
 		try:
-			oSetup = AccountSetup({
-				"_id": StrHelper.random(32, ['aZ', '10', '!*']),
-				"crm_id_type": data['type'],
-				"crm_id": data['id']
-			})
+			oSetup = AccountSetup(data)
 		except ValueError as e:
 			return Services.Effect(error=(1001, e.args[0]))
 

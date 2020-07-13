@@ -20,7 +20,7 @@ import requests
 from RestOC import Conf, DictHelper, Errors, Services
 
 # Shared imports
-from shared import JSON
+from shared import JSON, Rights
 
 class Konnektive(Services.Service):
 	"""Konnektive Service class
@@ -153,6 +153,15 @@ class Konnektive(Services.Service):
 		try: DictHelper.eval(data, ['customerId'])
 		except ValueError as e: return Services.Effect(error=(1001, [(f, "missing") for f in e.args]))
 
+		# Make sure the user has the proper permission to do this
+		oEff = Services.read('auth', 'rights/verify', {
+			"name": "crm_customers",
+			"right": Rights.READ,
+			"ident": data['customerId']
+		}, sesh)
+		if not oEff.data:
+			return Services.Effect(error=Rights.INVALID)
+
 		# Make the request to Konnektive
 		lCustomers = self.__request('customer/query', {
 			"dateRangeType": "dateCreated",
@@ -218,6 +227,15 @@ class Konnektive(Services.Service):
 		try: DictHelper.eval(data, ['customerId'])
 		except ValueError as e: return Services.Effect(error=(1001, [(f, "missing") for f in e.args]))
 
+		# Make sure the user has the proper permission to do this
+		oEff = Services.read('auth', 'rights/verify', {
+			"name": "crm_customers",
+			"right": Rights.READ,
+			"ident": data['customerId']
+		}, sesh)
+		if not oEff.data:
+			return Services.Effect(error=Rights.INVALID)
+
 		# If transactions flag not passed, assume false
 		if 'transactions' not in data:
 			data['transactions'] = False
@@ -235,7 +253,7 @@ class Konnektive(Services.Service):
 			# Get them from this service
 			oEff = self.customerTransactions_read({
 				"customerId": data['customerId']
-			}, sesh)
+			}, sesh, False)
 
 			# If there's an error
 			if oEff.errorExists():
@@ -301,7 +319,7 @@ class Konnektive(Services.Service):
 			"currency": dO['currencySymbol']
 		} for dO in lOrders])
 
-	def customerTransactions_read(self, data, sesh):
+	def customerTransactions_read(self, data, sesh, verify=True):
 		"""Customer Transactions
 
 		Fetches the transactions associated with a specific customer
@@ -309,6 +327,7 @@ class Konnektive(Services.Service):
 		Arguments:
 			data (dict): Data sent with the request
 			sesh (Sesh._Session): The session associated with the request
+			verify (bool): Allow bypassing verification for internal calls
 
 		Returns:
 			Services.Effect
@@ -317,6 +336,16 @@ class Konnektive(Services.Service):
 		# Verify fields
 		try: DictHelper.eval(data, ['customerId'])
 		except ValueError as e: return Services.Effect(error=(1001, [(f, "missing") for f in e.args]))
+
+		# Make sure the user has the proper permission to do this
+		if verify:
+			oEff = Services.read('auth', 'rights/verify', {
+				"name": "crm_customers",
+				"right": Rights.READ,
+				"ident": data['customerId']
+			}, sesh)
+			if not oEff.data:
+				return Services.Effect(error=Rights.INVALID)
 
 		# Make the request to Konnektive
 		lTransactions = self.__request('transactions/query', {
@@ -363,6 +392,15 @@ class Konnektive(Services.Service):
 		# Verify fields
 		try: DictHelper.eval(data, ['customerId'])
 		except ValueError as e: return Services.Effect(error=(1001, [(f, "missing") for f in e.args]))
+
+		# Make sure the user has the proper permission to do this
+		oEff = Services.read('auth', 'rights/verify', {
+			"name": "crm_customers",
+			"right": Rights.READ,
+			"ident": data['customerId']
+		}, sesh)
+		if not oEff.data:
+			return Services.Effect(error=Rights.INVALID)
 
 		# Make the request to Konnektive
 		lTransactions = self.__request('transactions/query', {

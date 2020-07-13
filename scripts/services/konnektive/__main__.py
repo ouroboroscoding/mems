@@ -37,7 +37,10 @@ if 'VERBOSE' in os.environ and os.environ['VERBOSE'] == '1':
 	Services.verbose()
 
 # Get all the services
-dServices = {"konnektive": Konnektive()}
+dServices = {
+	"auth": None,
+	"konnektive": Konnektive()
+}
 
 # Register all services
 Services.register(dServices, oRestConf, Conf.get(('services', 'salt')))

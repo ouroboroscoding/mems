@@ -24,7 +24,7 @@ from RestOC import Conf, DictHelper, Errors, Services, \
 from shared import Rights
 
 # Service imports
-from .records import Forgot, Permission, User, UserPatient, UserPatientSetup
+from .records import Forgot, Permission, User
 
 # Regex for validating email
 _emailRegex = re.compile(r"[^@\s]+@[^@\s]+\.[a-zA-Z0-9]{2,}$")
@@ -35,7 +35,7 @@ class Auth(Services.Service):
 	Service for Authorization, sign in, sign up, etc.
 	"""
 
-	_install = [Forgot, Permission, User, UserPatient, UserPatientSetup]
+	_install = [Forgot, Permission, User]
 	"""Record types called in install"""
 
 	def initialise(self):
@@ -57,7 +57,6 @@ class Auth(Services.Service):
 		# Pass the Redis connection to records that need it
 		Permission.redis(self._redis)
 		User.redis(self._redis)
-		UserPatient.redis(self._redis)
 
 	@classmethod
 	def install(cls):
@@ -177,7 +176,7 @@ class Auth(Services.Service):
 		except ValueError as e: return Services.Effect(error=(1001, [(f, "missing") for f in e.args]))
 
 		# Get the user's current permissions
-		dOldPermissions = Permission.cache(data['user'])
+		dOldPermissions = Permission.cache(data['user_id'])
 
 		# Validate and store the new permissions
 		lRecords = []
@@ -194,7 +193,7 @@ class Auth(Services.Service):
 			# Create an instance of the permissions
 			try:
 				lRecords.append(Permission({
-					"user": data['user'],
+					"user": data['user_id'],
 					"name": sName,
 					"rights": mData['rights'],
 					"idents": mData['idents']
@@ -208,14 +207,14 @@ class Auth(Services.Service):
 
 		# Delete all the existing permissions if there are any
 		if dOldPermissions:
-			Permission.deleteGet(data['user'], 'user')
+			Permission.deleteGet(data['user_id'], 'user')
 
 		# Create the new permissions if there are any
 		if lRecords:
 			Permission.createMany(lRecords)
 
 		# If this is a standard user
-		if User.exists(data['user']):
+		if User.exists(data['user_id']):
 
 			# Get and store the changes
 			dChanges = {"user": sesh['user_id']}
@@ -225,10 +224,10 @@ class Auth(Services.Service):
 				dChanges['permissions'] = {"old": None, "new": "inserted"}
 			else:
 				dChanges['permissions'] = {"old": dOldPermissions, "new": None}
-			User.addChanges(data['user'], dChanges)
+			User.addChanges(data['user_id'], dChanges)
 
 		# Clear the permissions from the cache
-		Permission.cacheClear(data['user'])
+		Permission.cacheClear(data['user_id'])
 
 		# Return OK
 		return Services.Effect(True)

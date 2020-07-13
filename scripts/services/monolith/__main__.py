@@ -53,20 +53,10 @@ Templates.init('../templates')
 
 # Create the HTTP server and map requests to service
 REST.Server({
-	"/passwd/forgot": {"methods": REST.CREATE | REST.UPDATE},
 
-	"/session": {"methods": REST.READ, "session": True},
-
-	"/signin": {"methods": REST.POST},
-	"/signout": {"methods": REST.POST, "session": True},
-
-	"/user": {"methods": REST.CREATE | REST.READ | REST.UPDATE, "session": True},
-	"/user/active": {"methods": REST.UPDATE, "session": True},
-	"/user/name": {"methods": REST.READ, "session": True},
-	"/user/passwd": {"methods": REST.UPDATE, "session": True},
-	"/users": {"methods": REST.READ, "session": True},
-
-	"/customer/claim": {"methods": REST.CREATE | REST.DELETE | REST.UPDATE, "session": True},
+	"/customer/claim": {"methods": REST.CREATE | REST.UPDATE | REST.DELETE, "session": True},
+	"/customer/claim/escalate": {"methods": REST.UPDATE, "session": True},
+	"/customer/dob": {"methods": REST.READ, "session": True},
 	"/customer/dsid": {"methods": REST.READ, "session": True},
 	"/customer/exists": {"methods": REST.READ, "session": True},
 	"/customer/hide": {"methods": REST.UPDATE, "session": True},
@@ -86,7 +76,21 @@ REST.Server({
 	"/msgs/search": {"methods": REST.READ, "session": True},
 	"/msgs/search/customer": {"methods": REST.READ, "session": True},
 	"/msgs/unclaimed": {"methods": REST.READ, "session": True},
-	"/msgs/unclaimed/count": {"methods": REST.READ, "session": True}
+	"/msgs/unclaimed/count": {"methods": REST.READ, "session": True},
+
+	"/passwd/forgot": {"methods": REST.CREATE | REST.UPDATE},
+
+	"/session": {"methods": REST.READ, "session": True},
+
+	"/signin": {"methods": REST.POST},
+	"/signout": {"methods": REST.POST, "session": True},
+
+	"/stats/claimed": {"methods": REST.READ, "session": True},
+
+	"/user": {"methods": REST.CREATE | REST.READ | REST.UPDATE, "session": True},
+	"/user/active": {"methods": REST.UPDATE, "session": True},
+	"/user/name": {"methods": REST.READ, "session": True},
+	"/user/passwd": {"methods": REST.UPDATE, "session": True},
 
 }, 'monolith', "https?://(.*\\.)?%s" % Conf.get(("rest","allowed")).replace('.', '\\.')).run(
 	host=oRestConf['monolith']['host'],
