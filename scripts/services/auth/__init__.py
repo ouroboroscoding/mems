@@ -659,7 +659,7 @@ class Auth(Services.Service):
 		# Look for a forgot record by user id
 		oForgot = Forgot.get(dUser['_id'])
 
-		# Is there already a key in the user?
+		# Is there already a key for the user?
 		if oForgot and 'regenerate' not in data:
 
 			# Is it not expired?

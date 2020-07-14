@@ -57,12 +57,12 @@ REST.Server({
 	"/account": {"methods": REST.CREATE | REST.READ | REST.UPDATE, "session": True},
 	"/account/email": {"methods": REST.UPDATE, "session": True},
 	"/account/passwd": {"methods": REST.UPDATE, "session": True},
-	"/account/passwd/forgot": {"methods": REST.CREATE | REST.UPDATE},
+	"/account/forgot": {"methods": REST.CREATE | REST.UPDATE},
 
 	"/session": {"methods": REST.READ, "session": True},
 
 	"/setup/start": { "methods": REST.CREATE, "session": True},
-	"/setup/validate": { "methods": REST.CREATE, "session": False},
+	"/setup/validate": { "methods": REST.CREATE},
 
 	"/signin": {"methods": REST.POST},
 	"/signout": {"methods": REST.POST, "session": True}

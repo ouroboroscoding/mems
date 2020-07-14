@@ -36,8 +36,8 @@
 
 	"memo": {
 		"domain": "memologin.com",
-		"user": "User",
-		"pass": "Pass"
+		"user": "",
+		"pass": ""
 	},
 
 	"mysql": {
@@ -96,8 +96,11 @@
 	"services": {
 		"salt": null,
 		"auth": {
+			"forgot_expire": 600
+		},
+		"patient": {
 			"forgot_expire": 600,
-			"pp_verify_link": "https://mepp.local/verify/%s"
+			"max_attempts": 3
 		},
 		"queue": {
 			"key": null
