@@ -448,11 +448,13 @@ class WellDyne(Services.Service):
 		if not oEff.data:
 			return Services.Effect(error=Rights.INVALID)
 
-		# Fetch all the records
-		lRecords = Outreach.get(raw=['id', 'customerId', 'queue', 'reason', 'user', 'ready'])
+		# Fetch all the records joined with the trigger table
+		lRecords = Outreach.withTrigger()
 
 		# If we have records
 		if lRecords:
+
+			print(lRecords)
 
 			# Find all the customer names
 			oEff = Services.read('monolith', 'customer/name', {
@@ -476,8 +478,12 @@ class WellDyne(Services.Service):
 				d['customerName'] = sCustId in dCustomers and dCustomers[sCustId] or 'Unknown'
 				d['userName'] = sUserId in dUsers and dUsers[sUserId] or 'Unknown'
 
-		# Return all records
-		return Services.Effect(lRecords)
+			# Return all records
+			return Services.Effect(lRecords)
+
+		# Else return an empty array
+		else:
+			return Services.Effect([])
 
 	def triggerInfo_read(self, data, sesh):
 		"""Trigger Info
