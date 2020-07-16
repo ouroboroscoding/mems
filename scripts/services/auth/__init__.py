@@ -176,7 +176,7 @@ class Auth(Services.Service):
 		except ValueError as e: return Services.Effect(error=(1001, [(f, "missing") for f in e.args]))
 
 		# Get the user's current permissions
-		dOldPermissions = Permission.cache(data['user_id'])
+		dOldPermissions = Permission.cache(data['user'])
 
 		# Validate and store the new permissions
 		lRecords = []
@@ -193,7 +193,8 @@ class Auth(Services.Service):
 			# Create an instance of the permissions
 			try:
 				lRecords.append(Permission({
-					"user": data['user_id'],
+					"_created": int(time()),
+					"user": data['user'],
 					"name": sName,
 					"rights": mData['rights'],
 					"idents": mData['idents']
@@ -207,14 +208,14 @@ class Auth(Services.Service):
 
 		# Delete all the existing permissions if there are any
 		if dOldPermissions:
-			Permission.deleteGet(data['user_id'], 'user')
+			Permission.deleteGet(data['user'], 'user')
 
 		# Create the new permissions if there are any
 		if lRecords:
 			Permission.createMany(lRecords)
 
 		# If this is a standard user
-		if User.exists(data['user_id']):
+		if User.exists(data['user']):
 
 			# Get and store the changes
 			dChanges = {"user": sesh['user_id']}
@@ -224,10 +225,10 @@ class Auth(Services.Service):
 				dChanges['permissions'] = {"old": None, "new": "inserted"}
 			else:
 				dChanges['permissions'] = {"old": dOldPermissions, "new": None}
-			User.addChanges(data['user_id'], dChanges)
+			User.addChanges(data['user'], dChanges)
 
 		# Clear the permissions from the cache
-		Permission.cacheClear(data['user_id'])
+		Permission.cacheClear(data['user'])
 
 		# Return OK
 		return Services.Effect(True)

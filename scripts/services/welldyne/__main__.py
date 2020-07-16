@@ -66,6 +66,8 @@ REST.Server({
 	"/outreach/ready": {"methods": REST.UPDATE, "session": True},
 	"/outreachs": {"methods": REST.READ, "session": True},
 
+	"/stats": {"methods": REST.READ, "session": True},
+
 	"/trigger/info": {"methods": REST.READ, "session": True}
 
 }, 'welldyne', "https?://(.*\\.)?%s" % Conf.get(("rest","allowed")).replace('.', '\\.')).run(

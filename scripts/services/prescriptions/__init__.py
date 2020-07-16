@@ -75,6 +75,35 @@ _dProviders = {
 	76563: 'Andrew Abraham M.D.'
 }
 
+_dStatus = {
+	1: 'Entered',
+	2: 'Printed',
+	3: 'Sending',
+	4: 'eRxSent',
+	5: 'FaxSent',
+	6: 'Error',
+	7: 'Deleted',
+	8: 'Requested',
+	9: 'Edited',
+	10: 'EpcsError',
+	11: 'EpcsSigned',
+	12: 'ReadyToSign'
+}
+
+_dMedicationStatus = {
+	0: 'Unknown',
+	1: 'Active',
+	2: 'Inactive',
+	3: 'Discontinued',
+	4: 'Deleted',
+	5: 'Completed',
+	6: 'CancelRequested',
+	7: 'CancelPending',
+	8: 'Cancelled',
+	9: 'CancelDenied',
+	10: 'Changed'
+}
+
 class Prescriptions(Services.Service):
 	"""Prescriptions Service class
 
@@ -552,10 +581,12 @@ class Prescriptions(Services.Service):
 		if not dData['Items']:
 			return Services.Effect(0)
 
-		# Go through each item and update the pharmacy and provider
+		# Go through each item and add the text versions of integer values
 		for d in dData['Items']:
+			d['MedicationStatusText'] = d['MedicationStatus'] in _dMedicationStatus and _dMedicationStatus[d['MedicationStatus']] or 'Unknown MedicationStatus'
 			d['PharmacyName'] = d['PharmacyId'] in _dPharmacies and _dPharmacies[d['PharmacyId']] or 'Unknown Pharmacy'
 			d['PrescriberName'] = d['PrescriberId'] in _dProviders and _dProviders[d['PrescriberId']] or 'Unknown Provider'
+			d['StatusText'] = d['Status'] in _dStatus and _dStatus[d['Status']] or 'Unknown Status'
 
 		# Generate and return the result
 		return Services.Effect(dData['Items'])

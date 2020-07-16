@@ -90,7 +90,7 @@ REST.Server({
 	"/user": {"methods": REST.CREATE | REST.READ | REST.UPDATE, "session": True},
 	"/user/active": {"methods": REST.UPDATE, "session": True},
 	"/user/name": {"methods": REST.READ, "session": True},
-	"/user/passwd": {"methods": REST.UPDATE, "session": True},
+	"/user/passwd": {"methods": REST.UPDATE, "session": True}
 
 }, 'monolith', "https?://(.*\\.)?%s" % Conf.get(("rest","allowed")).replace('.', '\\.')).run(
 	host=oRestConf['monolith']['host'],

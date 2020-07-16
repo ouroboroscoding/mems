@@ -110,6 +110,47 @@ class Outreach(Record_MySQL.Record):
 		# Return the config
 		return cls._conf
 
+	@classmethod
+	def withTrigger(cls, custom={}):
+		"""With Trigger
+
+		Fetches outreach joined with trigger so it can be sorted by date
+
+		Arguments:
+			custom (dict): Custom Host and DB info
+				'host' the name of the host to get/set data on
+				'append' optional postfix for dynamic DBs
+
+		Returns:
+			dict
+		"""
+
+		# Fetch the record structure
+		dStruct = cls.struct(custom)
+
+		# Generate SQL
+		sSQL = 'SELECT\n' \
+				'	`wdo`.`id`,\n' \
+				'	`wdo`.`customerId`,\n' \
+				'	`wdo`.`queue`,\n' \
+				'	`wdo`.`reason`,\n' \
+				'	`wdo`.`user`,\n' \
+				'	`wdo`.`ready`,\n' \
+				'	CAST(`wdt`.`triggered` as date) as `triggered`\n' \
+				'FROM `%(db)s`.`%(table)s` as `wdo`\n' \
+				'LEFT JOIN `%(db)s`.`wd_trigger` as `wdt` ON `wdo`.`customerId` = `wdt`.`customerId`\n' \
+				'ORDER BY `triggered` ASC' % {
+			"db": dStruct['db'],
+			"table": dStruct['table']
+		}
+
+		# Execute and return the select
+		return Record_MySQL.Commands.select(
+			dStruct['host'],
+			sSQL,
+			Record_MySQL.ESelect.ALL
+		)
+
 # Trigger class
 class Trigger(Record_MySQL.Record):
 	"""Trigger
@@ -139,6 +180,43 @@ class Trigger(Record_MySQL.Record):
 
 		# Return the config
 		return cls._conf
+
+	@classmethod
+	def vsShipped(cls, custom={}):
+		"""Vs Shipped
+
+		Fetches the latest triggers and gives the count vs how many have been
+		shipped
+
+		Arguments:
+			custom (dict): Custom Host and DB info
+				'host' the name of the host to get/set data on
+				'append' optional postfix for dynamic DBs
+
+		Returns:
+			dict
+		"""
+
+		# Fetch the record structure
+		dStruct = cls.struct(custom)
+
+		# Generate SQL
+		sSQL = 'SELECT COUNT(*) as `count`\n' \
+				'FROM `%(db)s`.`%(table)s`\n' \
+				'UNION\n' \
+				'SELECT COUNT(*) as `count`\n' \
+				'FROM `%(db)s`.`%(table)s`\n' \
+				'WHERE `shipped` IS NOT NULL' % {
+			"db": dStruct['db'],
+			"table": dStruct['table']
+		}
+
+		# Execute and return the select
+		return Record_MySQL.Commands.select(
+			dStruct['host'],
+			sSQL,
+			Record_MySQL.ESelect.COLUMN
+		)
 
 	@classmethod
 	def withOutreachEligibility(cls, customer_id, custom={}):

@@ -483,7 +483,7 @@ class CSR(Services.Service):
 		# Fetch the permissions from the auth service
 		oEff = Services.update('auth', 'permissions', {
 			"_internal_": Services.internalKey(),
-			"user_id": data['agent_id'],
+			"user": data['agent_id'],
 			"permissions": data['permissions']
 		}, sesh)
 
