@@ -485,6 +485,23 @@ class WellDyne(Services.Service):
 		else:
 			return Services.Effect([])
 
+	def stats_read(self, data, sesh):
+		"""Stats
+
+		Returns stats about WellDyne
+
+		Arguments:
+			data (dict): Data sent with the request
+			sesh (Sesh._Session): The session associated with the request
+
+		Returns:
+			Services.Effect
+		"""
+
+		return Services.Effect({
+			"vs": Trigger.vsShipped()
+		})
+
 	def triggerInfo_read(self, data, sesh):
 		"""Trigger Info
 

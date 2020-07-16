@@ -182,6 +182,43 @@ class Trigger(Record_MySQL.Record):
 		return cls._conf
 
 	@classmethod
+	def vsShipped(cls, custom={}):
+		"""Vs Shipped
+
+		Fetches the latest triggers and gives the count vs how many have been
+		shipped
+
+		Arguments:
+			custom (dict): Custom Host and DB info
+				'host' the name of the host to get/set data on
+				'append' optional postfix for dynamic DBs
+
+		Returns:
+			dict
+		"""
+
+		# Fetch the record structure
+		dStruct = cls.struct(custom)
+
+		# Generate SQL
+		sSQL = 'SELECT COUNT(*) as `count`\n' \
+				'FROM `%(db)s`.`%(table)s`\n' \
+				'UNION\n' \
+				'SELECT COUNT(*) as `count`\n' \
+				'FROM `%(db)s`.`%(table)s`\n' \
+				'WHERE `shipped` IS NOT NULL' % {
+			"db": dStruct['db'],
+			"table": dStruct['table']
+		}
+
+		# Execute and return the select
+		return Record_MySQL.Commands.select(
+			dStruct['host'],
+			sSQL,
+			Record_MySQL.ESelect.COLUMN
+		)
+
+	@classmethod
 	def withOutreachEligibility(cls, customer_id, custom={}):
 		"""With Outreach & Eligibility
 
