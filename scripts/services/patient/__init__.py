@@ -78,6 +78,47 @@ class Patient(Services.Service):
 		# Return OK
 		return True
 
+	def account_read(self, data, sesh):
+		"""Account
+
+		Returns the account data associated with the signed in user
+
+		Arguments:
+			data (dict): Data sent with the request
+			sesh (Sesh._Session): The session associated with the request
+
+		Returns:
+			Services.Effect
+		"""
+
+		# If there's an ID, check permissions
+		if '_id' in data:
+
+			# Make sure the user has the proper permission to do this
+			oEff = self.rightsVerify_read({
+				"name": "patient",
+				"right": Rights.READ
+			}, sesh)
+			if not oEff.data:
+				return Services.Effect(error=Rights.INVALID)
+
+		# Else, assume the signed in user's Record
+		else:
+			data['_id'] = sesh['user_id']
+
+		# Fetch it from the cache
+		dAccount = Account.get(data['_id'], raw=True)
+
+		# If it doesn't exist
+		if not dAccount:
+			return Services.Effect(error=1104)
+
+		# Remove the passwd
+		del dAccount['passwd']
+
+		# Return the user data
+		return Services.Effect(dAccount)
+
 	def accountForgot_create(self, data):
 		"""Account Password Forgot (Generate)
 
@@ -161,20 +202,20 @@ class Patient(Services.Service):
 		# Look for the forgot by the key
 		oForgot = Forgot.filter({"key": data['key']}, limit=1)
 		if not oForgot:
-			return Services.Effect(error=1203) # Don't let people know if the key exists or not
+			return Services.Effect(error=1903) # Don't let people know if the key exists or not
 
 		# Check if the key has expired
 		if oForgot['expires'] <= int(time()):
-			return Services.Effect(error=1203)
+			return Services.Effect(error=1903)
 
 		# Make sure the new password is strong enough
 		if not Account.passwordStrength(data['passwd']):
-			return Services.Effect(error=1204)
+			return Services.Effect(error=1904)
 
 		# Find the Account
 		oAccount = Account.get(oForgot['_account'])
 		if not oAccount:
-			return Services.Effect(error=1203)
+			return Services.Effect(error=1903)
 
 		# Store the new password and update
 		oAccount['passwd'] = Account.passwordHash(data['passwd'])
@@ -289,7 +330,7 @@ class Patient(Services.Service):
 			return Services.Effect(error=Rights.INVALID)
 
 		# Verify fields
-		try: DictHelper.eval(data, ['email'])
+		try: DictHelper.eval(data, ['email', 'url'])
 		except ValueError as e: return Services.Effect(error=(1001, [(f, "missing") for f in e.args]))
 
 		# Check if we already have an account with that email
@@ -300,6 +341,10 @@ class Patient(Services.Service):
 		# Add the ID and attempts to the data
 		data['_id'] = StrHelper.random(32, ['aZ', '10', '!*'])
 		data['attempts'] = 0
+		data['user'] = sesh['user_id']
+
+		# Store the URL
+		sURL = data.pop('url');
 
 		# Create an instance of the setup record
 		try:
@@ -314,7 +359,7 @@ class Patient(Services.Service):
 		# Patient setup email template variables
 		dTpl = {
 			"key": oSetup['_id'],
-			"url": data['url'] + oSetup['_id']
+			"url": sURL + oSetup['_id']
 		}
 
 		# Email the patient the key
@@ -322,7 +367,7 @@ class Patient(Services.Service):
 			"_internal_": Services.internalKey(),
 			"html_body": Templates.generate('email/patient/setup.html', dTpl, 'en-US'),
 			"subject": Templates.generate('email/patient/setup_subject.txt', {}, 'en-US'),
-			"to": data['email'],
+			"to": data['email']
 		})
 		if oEffect.errorExists():
 			return oEffect
@@ -354,7 +399,7 @@ class Patient(Services.Service):
 			return Services.Effect(error=1905)
 
 		# Check if we already have an account with that email
-		if Account.exists(data['email'], 'email'):
+		if Account.exists(oSetup['email'], 'email'):
 			return Services.Effect(error=1900)
 
 		# Check the dob and last name matches
@@ -365,18 +410,21 @@ class Patient(Services.Service):
 			oSetup['attempts'] += 1
 
 			# If we've hit the limit, delete the record and return
-			if oSetup['attempts'] == Conf.get(('services', 'patient', 'attempts')):
+			if oSetup['attempts'] == Conf.get(('services', 'patient', 'max_attempts')):
 				oSetup.delete()
 				return Services.Effect(error=1906)
 
 			# Else, save and return
 			else:
 				oSetup.save()
-				return Services.Effect(error=1001)
+				return Services.Effect(error=1907)
 
 		# Validate the password strength
 		if not Account.passwordStrength(data['passwd']):
 			return Services.Effect(error=1904)
+
+		# Hash the password
+		data['passwd'] = Account.passwordHash(data['passwd'])
 
 		# Create an instance of the account
 		try:
@@ -393,8 +441,21 @@ class Patient(Services.Service):
 			return Services.Effect(error=(1001, e.args[0]))
 
 		# Create the record
-		if not oAccount.create():
+		if not oAccount.create(changes={"user": oSetup['user']}):
 			return Services.Effect(error=1100)
+
+		# Create the permissions
+		oEff = Services.update('auth', 'permissions', {
+			"_internal_": Services.internalKey(),
+			"user": oAccount['_id'],
+			"permissions": {
+				"crm_customers": {"rights": 3, "idents": oAccount['crm_id']},
+				"prescriptions": {"rights": 1, "idents": oAccount['rx_id']}
+			}
+		}, sesh)
+		if oEff.errorExists():
+			print(oEff)
+			return Services.Effect(sID, warning='Failed to creater permissions for agent')
 
 		# Delete the setup
 		oSetup.delete()
