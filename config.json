@@ -1,4 +1,10 @@
 {
+	"crons": {
+		"welldyne": {
+			"reports": ["bast@maleexcel.com"]
+		}
+	},
+
 	"developer": {
 		"emails": ["bast@maleexcel.com"]
 	},

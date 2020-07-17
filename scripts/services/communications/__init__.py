@@ -12,6 +12,7 @@ __email__		= "bast@maleexcel.com"
 __created__		= "2020-03-30"
 
 # Python imports
+from base64 import b64decode
 from hashlib import md5
 
 # Pip imports
