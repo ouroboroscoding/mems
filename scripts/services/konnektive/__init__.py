@@ -13,11 +13,13 @@ __created__		= "2020-05-09"
 
 # Python imports
 import math
+import sys
 import urllib.parse
 
 # Pip imports
 import requests
 from RestOC import Conf, DictHelper, Errors, Services
+import xmltodict
 
 # Shared imports
 from shared import JSON, Rights
@@ -104,6 +106,51 @@ class Konnektive(Services.Service):
 		# Return the found transactions
 		return lRet
 
+	def __usps_verify(data):
+		"""USPS Verify
+
+		Sends address info to USPS in order to verify it's correct. Returns
+		a string describing any errors, else the properly formatted address
+		based on what was provided
+
+		Arguments:
+			data (dict): Address info
+
+		Returns:
+			str|dict
+		"""
+
+		# Generate the query data
+		dQuery = {
+			"API": "Verify",
+			"XML": '<AddressValidateRequest USERID="665MALEE6869">' \
+						'<Address ID="0">' \
+							'<Address1>%s</Address1><Address2>%s</Address2>' \
+							'<City>%s</City><State>%s</State>' \
+							'<Zip5>%s</Zip5><Zip4></Zip4>' \
+						'</Address>' \
+					'</AddressValidateRequest>' % (
+				data['address1'], data['address2'],
+				data['city'], data['state'],
+				data['zip']
+			)
+		}
+
+		# Send to USPS
+		try:
+			oRes = requests.get('https://secure.shippingapis.com/ShippingAPI.dll', data=dQuery)
+		except ConnectionError as e:
+			print(', '.join([str(s) for s in e.args[0]]), file=sys.stderr)
+			return 'Failed to connect to USPS'
+
+		# If the request failed
+		if oRes.status_code != 200:
+			print(str(oRes.text))
+			return oRes.text
+
+		# Convert the response to a dict and return it
+		return xmltodict.parse(oRes.text)
+
 	def initialise(self):
 		"""Initialise
 
@@ -137,7 +184,7 @@ class Konnektive(Services.Service):
 		return True
 
 	def customer_read(self, data, sesh):
-		"""Customer
+		"""Customer Read
 
 		Fetches a customer's info by ID
 
@@ -152,6 +199,10 @@ class Konnektive(Services.Service):
 		# Verify fields
 		try: DictHelper.eval(data, ['customerId'])
 		except ValueError as e: return Services.Effect(error=(1001, [(f, "missing") for f in e.args]))
+
+		# If detailed flag not passed, don't include
+		if 'detailed' not in data:
+			data['detailed'] = False
 
 		# Make sure the user has the proper permission to do this
 		oEff = Services.read('auth', 'rights/verify', {
@@ -174,9 +225,15 @@ class Konnektive(Services.Service):
 		if not lCustomers:
 			return Services.Effect(0)
 
-		# Return the customer
-		return Services.Effect({
+		# Generate the base data
+		dData = {
 			"customerId": lCustomers[0]['customerId'],
+			"pay": {
+				"source": lCustomers[0]['paySource'],
+				"type": lCustomers[0]['cardType'],
+				"last4": lCustomers[0]['cardLast4'],
+				"expires": lCustomers[0]['cardExpiryDate']
+			},
 			"billing": {
 				"address1": lCustomers[0]['address1'],
 				"address2": lCustomers[0]['address2'],
@@ -188,13 +245,8 @@ class Konnektive(Services.Service):
 				"postalCode": lCustomers[0]['postalCode'],
 				"state": lCustomers[0]['state']
 			},
-			"campaign": {
-				"name": lCustomers[0]['campaignName'],
-				"type": lCustomers[0]['campaignType']
-			},
 			"created": lCustomers[0]['dateCreated'],
 			"email": lCustomers[0]['emailAddress'],
-			"notes": lCustomers[0]['notes'],
 			"phone": lCustomers[0]['phoneNumber'],
 			"shipping": {
 				"address1": lCustomers[0]['shipAddress1'],
@@ -208,7 +260,47 @@ class Konnektive(Services.Service):
 				"state": lCustomers[0]['shipState']
 			},
 			"updated": lCustomers[0]['dateUpdated']
-		})
+		}
+
+		# If we include extra details
+		if data['detailed']:
+			dData['notes'] = lCustomers[0]['notes']
+			dData['campaign'] = {
+				"name": lCustomers[0]['campaignName'],
+				"type": lCustomers[0]['campaignType']
+			}
+
+		# Return the customer data
+		return Services.Effect(dData)
+
+	def customer_update(self, data, sesh):
+		"""Customer Update
+
+		Updates a customer's demographic data, email, phone, and addresses
+
+		Arguments:
+			data (dict): Data sent with the request
+			sesh (Sesh._Session): The session associated with the request
+
+		Returns:
+			Services.Effect
+		"""
+
+		# Verify fields
+		try: DictHelper.eval(data, ['customerId'])
+		except ValueError as e: return Services.Effect(error=(1001, [(f, "missing") for f in e.args]))
+
+		# Make sure the user has the proper permission to do this
+		oEff = Services.read('auth', 'rights/verify', {
+			"name": "crm_customers",
+			"right": Rights.UPDATE,
+			"ident": data['customerId']
+		}, sesh)
+		if not oEff.data:
+			return Services.Effect(error=Rights.INVALID)
+
+		# If we got billing info
+
 
 	def customerOrders_read(self, data, sesh):
 		"""Customer Orders

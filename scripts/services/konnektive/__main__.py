@@ -50,7 +50,7 @@ Templates.init('../templates')
 
 # Create the HTTP server and map requests to service
 REST.Server({
-	"/customer": {"methods": REST.READ, "session": True},
+	"/customer": {"methods": REST.READ | REST.UPDATE, "session": True},
 	"/customer/orders": {"methods": REST.READ, "session": True},
 	"/customer/transactions": {"methods": REST.READ, "session": True},
 	"/order/transactions": {"methods": REST.READ, "session": True}

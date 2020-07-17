@@ -264,11 +264,15 @@ class Patient(Services.Service):
 		# Look for the patient by email address
 		oAccount = Account.filter({"email": data['email']}, limit=1)
 		if not oAccount:
-			return Services.Effect(error=1201)
+			return Services.Effect(error=1901)
 
 		# Validate the password
 		if not oAccount.passwordValidate(data['passwd']):
-			return Services.Effect(error=1201)
+			return Services.Effect(error=1901)
+
+		# If the email hasn't been verified
+		if not oAccount['verified']:
+			return Services.Effect(error=)
 
 		# Create a new session
 		oSesh = Sesh.create()
@@ -431,6 +435,7 @@ class Patient(Services.Service):
 			oAccount = Account({
 				"email": oSetup['email'],
 				"passwd": data['passwd'],
+				"verified": True,
 				"locale": 'locale' in data and data['locale'] or 'en-US',
 				"crm_type": oSetup['crm_type'],
 				"crm_id": oSetup['crm_id'],
