@@ -117,7 +117,7 @@ class Monolith(Services.Service):
 
 		# Verify fields
 		try: DictHelper.eval(data, ['phoneNumber'])
-		except ValueError as e: return Services.Effect(error=(1001, [(f, "missing") for f in e.args]))
+		except ValueError as e: return Services.Effect(error=(1001, [(f, 'missing') for f in e.args]))
 
 		# Attempt to create the record
 		try:
@@ -178,7 +178,7 @@ class Monolith(Services.Service):
 
 		# Verify fields
 		try: DictHelper.eval(data, ['phoneNumber'])
-		except ValueError as e: return Services.Effect(error=(1001, [(f, "missing") for f in e.args]))
+		except ValueError as e: return Services.Effect(error=(1001, [(f, 'missing') for f in e.args]))
 
 		# Attempt to delete the record
 		CustomerClaimed.deleteGet(data['phoneNumber'])
@@ -209,7 +209,7 @@ class Monolith(Services.Service):
 
 		# Verify fields
 		try: DictHelper.eval(data, ['phoneNumber'])
-		except ValueError as e: return Services.Effect(error=(1001, [(f, "missing") for f in e.args]))
+		except ValueError as e: return Services.Effect(error=(1001, [(f, 'missing') for f in e.args]))
 
 		# Find the claim
 		oClaim = CustomerClaimed.get(data['phoneNumber'])
@@ -246,7 +246,7 @@ class Monolith(Services.Service):
 
 		# Verify fields
 		try: DictHelper.eval(data, ['phoneNumber', 'user_id'])
-		except ValueError as e: return Services.Effect(error=(1001, [(f, "missing") for f in e.args]))
+		except ValueError as e: return Services.Effect(error=(1001, [(f, 'missing') for f in e.args]))
 
 		# Make sure the user is in the escalate table
 		oEff = Services.read('csr', 'escalate_agent', {
@@ -289,7 +289,7 @@ class Monolith(Services.Service):
 
 		# Verify fields
 		try: DictHelper.eval(data, ['customerId'])
-		except ValueError as e: return Services.Effect(error=(1001, [(f, "missing") for f in e.args]))
+		except ValueError as e: return Services.Effect(error=(1001, [(f, 'missing') for f in e.args]))
 
 		# Find the patient ID
 		dPatient = DsPatient.filter(
@@ -320,7 +320,7 @@ class Monolith(Services.Service):
 
 		# Verify fields
 		try: DictHelper.eval(data, ['customerId'])
-		except ValueError as e: return Services.Effect(error=(1001, [(f, "missing") for f in e.args]))
+		except ValueError as e: return Services.Effect(error=(1001, [(f, 'missing') for f in e.args]))
 
 		# Return whether the customer exists or not
 		return Services.Effect(
@@ -350,7 +350,7 @@ class Monolith(Services.Service):
 
 		# Verify fields
 		try: DictHelper.eval(data, ['customerPhone'])
-		except ValueError as e: return Services.Effect(error=(1001, [(f, "missing") for f in e.args]))
+		except ValueError as e: return Services.Effect(error=(1001, [(f, 'missing') for f in e.args]))
 
 		# Update the records hidden field
 		CustomerMsgPhone.updateField('hiddenFlag', 'Y', filter={"customerPhone": data['customerPhone']})
@@ -373,7 +373,7 @@ class Monolith(Services.Service):
 
 		# Verify fields
 		try: DictHelper.eval(data, ['phoneNumber'])
-		except ValueError as e: return Services.Effect(error=(1001, [(f, "missing") for f in e.args]))
+		except ValueError as e: return Services.Effect(error=(1001, [(f, 'missing') for f in e.args]))
 
 		# Look for the latest customer with the given number
 		dCustomer = KtCustomer.filter(
@@ -413,7 +413,7 @@ class Monolith(Services.Service):
 
 		# Verify fields
 		try: DictHelper.eval(data, ['customerPhone'])
-		except ValueError as e: return Services.Effect(error=(1001, [(f, "missing") for f in e.args]))
+		except ValueError as e: return Services.Effect(error=(1001, [(f, 'missing') for f in e.args]))
 
 		# Get the messages
 		lMsgs = CustomerCommunication.thread(data['customerPhone'])
@@ -447,7 +447,7 @@ class Monolith(Services.Service):
 
 		# Verify fields
 		try: DictHelper.eval(data, ['customerId'])
-		except ValueError as e: return Services.Effect(error=(1001, [(f, "missing") for f in e.args]))
+		except ValueError as e: return Services.Effect(error=(1001, [(f, 'missing') for f in e.args]))
 
 		# Make sure the user has the proper permission to do this
 		oEff = Services.read('auth', 'rights/verify', {
@@ -556,7 +556,7 @@ class Monolith(Services.Service):
 
 		# Verify fields
 		try: DictHelper.eval(data, ['landing_id', 'ref', 'value'])
-		except ValueError as e: return Services.Effect(error=(1001, [(f, "missing") for f in e.args]))
+		except ValueError as e: return Services.Effect(error=(1001, [(f, 'missing') for f in e.args]))
 
 		# Find the answer
 		oTfAnswer = TfAnswer.filter({
@@ -595,7 +595,7 @@ class Monolith(Services.Service):
 
 		# Verify fields
 		try: DictHelper.eval(data, ['_internal_', 'customerId'])
-		except ValueError as e: return Services.Effect(error=(1001, [(f, "missing") for f in e.args]))
+		except ValueError as e: return Services.Effect(error=(1001, [(f, 'missing') for f in e.args]))
 
 		# Verify the key, remove it if it's ok
 		if not Services.internalKey(data['_internal_']):
@@ -631,7 +631,7 @@ class Monolith(Services.Service):
 
 		# Verify fields
 		try: DictHelper.eval(data, ['content', 'action'])
-		except ValueError as e: return Services.Effect(error=(1001, [(f, "missing") for f in e.args]))
+		except ValueError as e: return Services.Effect(error=(1001, [(f, 'missing') for f in e.args]))
 
 		# We must have either a customer ID or order ID
 		if 'customer_id' not in data and 'order_id' not in data:
@@ -772,7 +772,7 @@ class Monolith(Services.Service):
 
 		# Verify fields
 		try: DictHelper.eval(data, ['customerId'])
-		except ValueError as e: return Services.Effect(error=(1001, [(f, "missing") for f in e.args]))
+		except ValueError as e: return Services.Effect(error=(1001, [(f, 'missing') for f in e.args]))
 
 		# Convert ID to int
 		try: data['customerId'] = int(data['customerId'])
@@ -825,7 +825,7 @@ class Monolith(Services.Service):
 
 		# Verify fields
 		try: DictHelper.eval(data, ['customerId'])
-		except ValueError as e: return Services.Effect(error=(1001, [(f, "missing") for f in e.args]))
+		except ValueError as e: return Services.Effect(error=(1001, [(f, 'missing') for f in e.args]))
 
 		# Get all the records for the customer
 		lCodes = ShippingInfo.filter(
@@ -856,7 +856,7 @@ class Monolith(Services.Service):
 
 		# Verify fields
 		try: DictHelper.eval(data, ['_internal_', 'customerPhone', 'recvPhone', 'content', 'type'])
-		except ValueError as e: return Services.Effect(error=(1001, [(f, "missing") for f in e.args]))
+		except ValueError as e: return Services.Effect(error=(1001, [(f, 'missing') for f in e.args]))
 
 		# Verify the key, remove it if it's ok
 		if not Services.internalKey(data['_internal_']):
@@ -932,7 +932,7 @@ class Monolith(Services.Service):
 
 		# Verify fields
 		try: DictHelper.eval(data, ['customerPhone', 'content', 'type'])
-		except ValueError as e: return Services.Effect(error=(1001, [(f, "missing") for f in e.args]))
+		except ValueError as e: return Services.Effect(error=(1001, [(f, 'missing') for f in e.args]))
 
 		# Check the number isn't blocked
 		if SMSStop.filter({"phoneNumber": data['customerPhone'], "service": data['type']}):
@@ -1085,7 +1085,7 @@ class Monolith(Services.Service):
 
 		# Verify fields
 		try: DictHelper.eval(data, ['numbers'])
-		except ValueError as e: return Services.Effect(error=(1001, [(f, "missing") for f in e.args]))
+		except ValueError as e: return Services.Effect(error=(1001, [(f, 'missing') for f in e.args]))
 
 		# If it's not a list
 		if not isinstance(data['numbers'], (list,tuple)):
@@ -1245,7 +1245,7 @@ class Monolith(Services.Service):
 
 		# Verify fields
 		try: DictHelper.eval(data, ['email', 'url'])
-		except ValueError as e: return Services.Effect(error=(1001, [(f, "missing") for f in e.args]))
+		except ValueError as e: return Services.Effect(error=(1001, [(f, 'missing') for f in e.args]))
 
 		# Look for the user by email
 		dUser = User.filter({"email": data['email']}, raw=['id'], limit=1)
@@ -1308,7 +1308,7 @@ class Monolith(Services.Service):
 
 		# Verify fields
 		try: DictHelper.eval(data, ['passwd', 'key'])
-		except ValueError as e: return Services.Effect(error=(1001, [(f, "missing") for f in e.args]))
+		except ValueError as e: return Services.Effect(error=(1001, [(f, 'missing') for f in e.args]))
 
 		# Look for the forgot by the key
 		oForgot = Forgot.filter({"key": data['key']}, limit=1)
@@ -1369,7 +1369,7 @@ class Monolith(Services.Service):
 
 		# Verify fields
 		try: DictHelper.eval(data, ['userName', 'passwd'])
-		except ValueError as e: return Services.Effect(error=(1001, [(f, "missing") for f in e.args]))
+		except ValueError as e: return Services.Effect(error=(1001, [(f, 'missing') for f in e.args]))
 
 		# Look for the user by alias
 		oUser = User.filter({"userName": data['userName']}, limit=1)
@@ -1474,7 +1474,7 @@ class Monolith(Services.Service):
 
 		# Verify fields
 		try: DictHelper.eval(data, ['_internal_', 'userName', 'firstName', 'lastName', 'password'])
-		except ValueError as e: return Services.Effect(error=(1001, [(f, "missing") for f in e.args]))
+		except ValueError as e: return Services.Effect(error=(1001, [(f, 'missing') for f in e.args]))
 
 		# Verify the key, remove it if it's ok
 		if not Services.internalKey(data['_internal_']):
@@ -1626,7 +1626,7 @@ class Monolith(Services.Service):
 
 		# Verify fields
 		try: DictHelper.eval(data, ['_internal_', 'id', 'active'])
-		except ValueError as e: return Services.Effect(error=(1001, [(f, "missing") for f in e.args]))
+		except ValueError as e: return Services.Effect(error=(1001, [(f, 'missing') for f in e.args]))
 
 		# Verify the key, remove it if it's ok
 		if not Services.internalKey(data['_internal_']):
@@ -1665,7 +1665,7 @@ class Monolith(Services.Service):
 
 		# Verify fields
 		try: DictHelper.eval(data, ['_internal_', 'id'])
-		except ValueError as e: return Services.Effect(error=(1001, [(f, "missing") for f in e.args]))
+		except ValueError as e: return Services.Effect(error=(1001, [(f, 'missing') for f in e.args]))
 
 		# Verify the key, remove it if it's ok
 		if not Services.internalKey(data['_internal_']):
@@ -1701,7 +1701,7 @@ class Monolith(Services.Service):
 
 		# Verify fields
 		try: DictHelper.eval(data, ['passwd', 'new_passwd'])
-		except ValueError as e: return Services.Effect(error=(1001, [(f, "missing") for f in e.args]))
+		except ValueError as e: return Services.Effect(error=(1001, [(f, 'missing') for f in e.args]))
 
 		# Find the user
 		oUser = User.get(sesh['memo_id'])

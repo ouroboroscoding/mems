@@ -246,7 +246,7 @@ class Prescriptions(Services.Service):
 
 		# Verify fields
 		try: DictHelper.eval(data, ['patient_id'])
-		except ValueError as e: return Services.Effect(error=(1001, [(f, "missing") for f in e.args]))
+		except ValueError as e: return Services.Effect(error=(1001, [(f, 'missing') for f in e.args]))
 
 		# Make sure the user has the proper permission to do this
 		oEff = Services.read('auth', 'rights/verify', {
@@ -316,7 +316,7 @@ class Prescriptions(Services.Service):
 
 		# Verify fields
 		try: DictHelper.eval(data, ['patient_id'])
-		except ValueError as e: return Services.Effect(error=(1001, [(f, "missing") for f in e.args]))
+		except ValueError as e: return Services.Effect(error=(1001, [(f, 'missing') for f in e.args]))
 
 		# Make sure the user has the proper permission to do this
 		oEff = Services.read('auth', 'rights/verify', {
@@ -386,7 +386,7 @@ class Prescriptions(Services.Service):
 
 		# Verify fields
 		try: DictHelper.eval(data, ['patient_id', 'pharmacy_id'])
-		except ValueError as e: return Services.Effect(error=(1001, [(f, "missing") for f in e.args]))
+		except ValueError as e: return Services.Effect(error=(1001, [(f, 'missing') for f in e.args]))
 
 		# Make sure the user has the proper permission to do this
 		oEff = Services.read('auth', 'rights/verify', {
@@ -457,7 +457,7 @@ class Prescriptions(Services.Service):
 
 		# Verify fields
 		try: DictHelper.eval(data, ['patient_id', 'pharmacy_id'])
-		except ValueError as e: return Services.Effect(error=(1001, [(f, "missing") for f in e.args]))
+		except ValueError as e: return Services.Effect(error=(1001, [(f, 'missing') for f in e.args]))
 
 		# Make sure the user has the proper permission to do this
 		oEff = Services.read('auth', 'rights/verify', {
@@ -527,7 +527,7 @@ class Prescriptions(Services.Service):
 
 		# Verify fields
 		try: DictHelper.eval(data, ['patient_id'])
-		except ValueError as e: return Services.Effect(error=(1001, [(f, "missing") for f in e.args]))
+		except ValueError as e: return Services.Effect(error=(1001, [(f, 'missing') for f in e.args]))
 
 		# Make sure the user has the proper permission to do this
 		oEff = Services.read('auth', 'rights/verify', {
@@ -606,7 +606,7 @@ class Prescriptions(Services.Service):
 
 		# Verify fields
 		try: DictHelper.eval(data, ['clinician_id', 'patient_id'])
-		except ValueError as e: return Services.Effect(error=(1001, [(f, "missing") for f in e.args]))
+		except ValueError as e: return Services.Effect(error=(1001, [(f, 'missing') for f in e.args]))
 
 		# Make sure the user has the proper permission to do this
 		oEff = Services.read('auth', 'rights/verify', {

@@ -526,7 +526,7 @@ class WellDyne(Services.Service):
 
 		# Verify fields
 		try: DictHelper.eval(data, ['customerId'])
-		except ValueError as e: return Services.Effect(error=(1001, [(f, "missing") for f in e.args]))
+		except ValueError as e: return Services.Effect(error=(1001, [(f, 'missing') for f in e.args]))
 
 		# Look for a trigger with any possible outreach and eligibility
 		dTrigger = Trigger.withOutreachEligibility(data['customerId'])

@@ -22,7 +22,7 @@ from RestOC import Conf, DictHelper, Errors, Services
 import xmltodict
 
 # Shared imports
-from shared import JSON, Rights
+from shared import JSON, Rights, USPS
 
 class Konnektive(Services.Service):
 	"""Konnektive Service class
@@ -106,50 +106,30 @@ class Konnektive(Services.Service):
 		# Return the found transactions
 		return lRet
 
-	def __usps_verify(data):
-		"""USPS Verify
+	def __post(self, path, params):
+		"""Post
 
-		Sends address info to USPS in order to verify it's correct. Returns
-		a string describing any errors, else the properly formatted address
-		based on what was provided
+		Posts updates that have no return
 
 		Arguments:
-			data (dict): Address info
+			path (str): The path of the http request
+			params (dict): The query params for the request
 
 		Returns:
-			str|dict
+			bool
 		"""
 
-		# Generate the query data
-		dQuery = {
-			"API": "Verify",
-			"XML": '<AddressValidateRequest USERID="665MALEE6869">' \
-						'<Address ID="0">' \
-							'<Address1>%s</Address1><Address2>%s</Address2>' \
-							'<City>%s</City><State>%s</State>' \
-							'<Zip5>%s</Zip5><Zip4></Zip4>' \
-						'</Address>' \
-					'</AddressValidateRequest>' % (
-				data['address1'], data['address2'],
-				data['city'], data['state'],
-				data['zip']
-			)
-		}
+		# Generate the URL
+		sURL = self.__generateURL(path, params)
 
-		# Send to USPS
-		try:
-			oRes = requests.get('https://secure.shippingapis.com/ShippingAPI.dll', data=dQuery)
-		except ConnectionError as e:
-			print(', '.join([str(s) for s in e.args[0]]), file=sys.stderr)
-			return 'Failed to connect to USPS'
+		# Fetch the data
+		oRes = requests.post(sURL, headers={"Content-Type": 'application/json; charset=utf-8'})
 
-		# If the request failed
-		if oRes.status_code != 200:
-			print(str(oRes.text))
-			return oRes.text
+		# Pull out the reponse
+		dData = oRes.json()
 
-		# Convert the response to a dict and return it
-		return xmltodict.parse(oRes.text)
+		# Return based on result
+		return dData['result'] == 'SUCCESS'
 
 	def initialise(self):
 		"""Initialise
@@ -198,7 +178,7 @@ class Konnektive(Services.Service):
 
 		# Verify fields
 		try: DictHelper.eval(data, ['customerId'])
-		except ValueError as e: return Services.Effect(error=(1001, [(f, "missing") for f in e.args]))
+		except ValueError as e: return Services.Effect(error=(1001, [(f, 'missing') for f in e.args]))
 
 		# If detailed flag not passed, don't include
 		if 'detailed' not in data:
@@ -288,7 +268,7 @@ class Konnektive(Services.Service):
 
 		# Verify fields
 		try: DictHelper.eval(data, ['customerId'])
-		except ValueError as e: return Services.Effect(error=(1001, [(f, "missing") for f in e.args]))
+		except ValueError as e: return Services.Effect(error=(1001, [(f, 'missing') for f in e.args]))
 
 		# Make sure the user has the proper permission to do this
 		oEff = Services.read('auth', 'rights/verify', {
@@ -299,8 +279,69 @@ class Konnektive(Services.Service):
 		if not oEff.data:
 			return Services.Effect(error=Rights.INVALID)
 
-		# If we got billing info
+		# Init the params to KNK
+		dQuery = {}
 
+		# If the email was passed
+		if 'email' in data:
+			dQuery['emailAddress'] = data['email']
+
+		# If the phone was passed
+		if 'phone' in data:
+			dQuery['phoneNumber'] = data['phone']
+
+		# If we got billing info
+		if 'billing' in data:
+
+			# Verify it with USPS
+			mRes = USPS.address_verify(data['billing'])
+
+			# If we got a string back, it's an error
+			if isinstance(mRes, str):
+				return Services.Effect(error=(1700, mRes))
+
+			# Set the values based on the return
+			dQuery['firstName'] = data['billing']['firstName']
+			dQuery['lastName'] = data['billing']['lastName']
+			dQuery['address1'] = mRes.Address1
+			dQuery['address1'] = mRes.Address1
+			dQuery['city'] = mRes.Address1
+			dQuery['state'] = mRes.Address1
+			dQuery['country'] = 'US'
+			dQuery['postalCode'] = mRes.Zip5
+
+		# If we got shipping info
+		if 'shipping' in data:
+
+			# Verify it with USPS
+			mRes = USPS.address_verify(data['shipping'])
+
+			# If we got a string back, it's an error
+			if isinstance(mRes, str):
+				return Services.Effect(error=(1700, mRes))
+
+			# Set the values based on the return
+			dQuery['shipFirstName'] = data['shipping']['firstName']
+			dQuery['shipLastName'] = data['shipping']['lastName']
+			dQuery['shipAddress1'] = mRes.Address1
+			dQuery['shipAddress1'] = mRes.Address1
+			dQuery['shipCity'] = mRes.Address1
+			dQuery['shipState'] = mRes.Address1
+			dQuery['shipCountry'] = 'US'
+			dQuery['shipPostalCode'] = mRes.Zip5
+
+		# If we have something to update
+		if dQuery:
+
+			# Add the ID
+			dQuery['customerId'] = data['customerId']
+
+			# Send the update to Konnektive
+			if not self.__post('customer/update', dQuery):
+				return Services.Effect(error=1103)
+
+		# Return OK
+		return Services.Effect(True)
 
 	def customerOrders_read(self, data, sesh):
 		"""Customer Orders
@@ -317,7 +358,7 @@ class Konnektive(Services.Service):
 
 		# Verify fields
 		try: DictHelper.eval(data, ['customerId'])
-		except ValueError as e: return Services.Effect(error=(1001, [(f, "missing") for f in e.args]))
+		except ValueError as e: return Services.Effect(error=(1001, [(f, 'missing') for f in e.args]))
 
 		# Make sure the user has the proper permission to do this
 		oEff = Services.read('auth', 'rights/verify', {
@@ -427,7 +468,7 @@ class Konnektive(Services.Service):
 
 		# Verify fields
 		try: DictHelper.eval(data, ['customerId'])
-		except ValueError as e: return Services.Effect(error=(1001, [(f, "missing") for f in e.args]))
+		except ValueError as e: return Services.Effect(error=(1001, [(f, 'missing') for f in e.args]))
 
 		# Make sure the user has the proper permission to do this
 		if verify:
@@ -483,7 +524,7 @@ class Konnektive(Services.Service):
 
 		# Verify fields
 		try: DictHelper.eval(data, ['customerId'])
-		except ValueError as e: return Services.Effect(error=(1001, [(f, "missing") for f in e.args]))
+		except ValueError as e: return Services.Effect(error=(1001, [(f, 'missing') for f in e.args]))
 
 		# Make sure the user has the proper permission to do this
 		oEff = Services.read('auth', 'rights/verify', {

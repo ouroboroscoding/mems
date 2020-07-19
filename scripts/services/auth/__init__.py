@@ -113,7 +113,7 @@ class Auth(Services.Service):
 
 		# Verify fields
 		try: DictHelper.eval(data, ['user_id'])
-		except ValueError as e: return Services.Effect(error=(1001, [(f, "missing") for f in e.args]))
+		except ValueError as e: return Services.Effect(error=(1001, [(f, 'missing') for f in e.args]))
 
 		# Fetch the Permissions
 		dPermissions = Permission.cache(data['user_id'])
@@ -173,7 +173,7 @@ class Auth(Services.Service):
 
 		# Verify fields
 		try: DictHelper.eval(data, ['user', 'permissions'])
-		except ValueError as e: return Services.Effect(error=(1001, [(f, "missing") for f in e.args]))
+		except ValueError as e: return Services.Effect(error=(1001, [(f, 'missing') for f in e.args]))
 
 		# Get the user's current permissions
 		dOldPermissions = Permission.cache(data['user'])
@@ -249,7 +249,7 @@ class Auth(Services.Service):
 
 		# Verify fields
 		try: DictHelper.eval(data, ['name', 'right'])
-		except ValueError as e: return Services.Effect(error=(1001, [(f, "missing") for f in e.args]))
+		except ValueError as e: return Services.Effect(error=(1001, [(f, 'missing') for f in e.args]))
 
 		# Find the permissions
 		dPermissions = Permission.cache(sesh['user_id'])
@@ -291,7 +291,7 @@ class Auth(Services.Service):
 
 		# Verify fields
 		try: DictHelper.eval(data, ['filter'])
-		except ValueError as e: return Services.Effect(error=(1001, [(f, "missing") for f in e.args]))
+		except ValueError as e: return Services.Effect(error=(1001, [(f, 'missing') for f in e.args]))
 
 		# If the filter isn't a dict
 		if not isinstance(data['filter'], dict):
@@ -347,7 +347,7 @@ class Auth(Services.Service):
 
 		# Verify fields
 		try: DictHelper.eval(data, ['email', 'passwd'])
-		except ValueError as e: return Services.Effect(error=(1001, [(f, "missing") for f in e.args]))
+		except ValueError as e: return Services.Effect(error=(1001, [(f, 'missing') for f in e.args]))
 
 		# Look for the user by alias
 		oUser = User.filter({"email": data['email']}, limit=1)
@@ -417,7 +417,7 @@ class Auth(Services.Service):
 
 		# Verify fields
 		try: DictHelper.eval(data, ['email', 'passwd'])
-		except ValueError as e: return Services.Effect(error=(1001, [(f, "missing") for f in e.args]))
+		except ValueError as e: return Services.Effect(error=(1001, [(f, 'missing') for f in e.args]))
 
 		# Check if a user with that email already exists
 		if User.exists(data['email'], 'email'):
@@ -565,7 +565,7 @@ class Auth(Services.Service):
 
 		# Verify fields
 		try: DictHelper.eval(data, ['email', 'email_passwd'])
-		except ValueError as e: return Services.Effect(error=(1001, [(f, "missing") for f in e.args]))
+		except ValueError as e: return Services.Effect(error=(1001, [(f, 'missing') for f in e.args]))
 
 		# Find the user
 		oUser = User.get(sesh['user_id'])
@@ -613,7 +613,7 @@ class Auth(Services.Service):
 
 		# Verify fields
 		try: DictHelper.eval(data, ['passwd', 'new_passwd'])
-		except ValueError as e: return Services.Effect(error=(1001, [(f, "missing") for f in e.args]))
+		except ValueError as e: return Services.Effect(error=(1001, [(f, 'missing') for f in e.args]))
 
 		# Find the user
 		oUser = User.get(sesh['user']['_id'])
@@ -650,7 +650,7 @@ class Auth(Services.Service):
 
 		# Verify fields
 		try: DictHelper.eval(data, ['email', 'url'])
-		except ValueError as e: return Services.Effect(error=(1001, [(f, "missing") for f in e.args]))
+		except ValueError as e: return Services.Effect(error=(1001, [(f, 'missing') for f in e.args]))
 
 		# Look for the user by email
 		dUser = User.filter({"email": data['email']}, raw=['_id', 'locale'], limit=1)
@@ -713,7 +713,7 @@ class Auth(Services.Service):
 
 		# Verify fields
 		try: DictHelper.eval(data, ['passwd', 'key'])
-		except ValueError as e: return Services.Effect(error=(1001, [(f, "missing") for f in e.args]))
+		except ValueError as e: return Services.Effect(error=(1001, [(f, 'missing') for f in e.args]))
 
 		# Look for the forgot by the key
 		oForgot = Forgot.filter({"key": data['key']}, limit=1)

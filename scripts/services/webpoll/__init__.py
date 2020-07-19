@@ -44,7 +44,7 @@ class WebPoll(Services.Service):
 
 		# Verify fields
 		try: DictHelper.eval(data, ['service', 'key', 'count'])
-		except ValueError as e: return Services.Effect(error=(1001, [(f, "missing") for f in e.args]))
+		except ValueError as e: return Services.Effect(error=(1001, [(f, 'missing') for f in e.args]))
 
 		# Clear the messages from the sync cache
 		Sync.clear(
@@ -73,7 +73,7 @@ class WebPoll(Services.Service):
 
 		# Verify fields
 		try: DictHelper.eval(data, ['service', 'key'])
-		except ValueError as e: return Services.Effect(error=(1001, [(f, "missing") for f in e.args]))
+		except ValueError as e: return Services.Effect(error=(1001, [(f, 'missing') for f in e.args]))
 
 		# Update the sync cache
 		Sync.join(
@@ -101,7 +101,7 @@ class WebPoll(Services.Service):
 
 		# Verify fields
 		try: DictHelper.eval(data, ['service', 'key'])
-		except ValueError as e: return Services.Effect(error=(1001, [(f, "missing") for f in e.args]))
+		except ValueError as e: return Services.Effect(error=(1001, [(f, 'missing') for f in e.args]))
 
 		# Update the sync cache
 		Sync.leave(
@@ -128,7 +128,7 @@ class WebPoll(Services.Service):
 
 		# Verify fields
 		try: DictHelper.eval(data, ['service', 'key'])
-		except ValueError as e: return Services.Effect(error=(1001, [(f, "missing") for f in e.args]))
+		except ValueError as e: return Services.Effect(error=(1001, [(f, 'missing') for f in e.args]))
 
 		# If we have messages to delete
 		if 'messages' in data and data['messages']:
