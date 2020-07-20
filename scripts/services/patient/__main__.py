@@ -65,7 +65,9 @@ REST.Server({
 	"/setup/validate": { "methods": REST.CREATE},
 
 	"/signin": {"methods": REST.POST},
-	"/signout": {"methods": REST.POST, "session": True}
+	"/signout": {"methods": REST.POST, "session": True},
+
+	"/support_request": {"methods": REST.CREATE, "session": True}
 
 }, 'patient', "https?://(.*\\.)?%s" % Conf.get(("rest","allowed")).replace('.', '\\.')).run(
 	host=oRestConf['patient']['host'],

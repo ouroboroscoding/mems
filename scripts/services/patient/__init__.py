@@ -26,6 +26,12 @@ from shared import Rights
 # Service imports
 from .records import Account, AccountSetup, Forgot
 
+# Support request types
+_dSupportRequest = {
+	"payment": "%(crm_type)s Patient %(crm_id)s would like to change their payment information.",
+	"urgent_address": "%(crm_type)s Patient %(crm_id)s changed shipping address and needs an urgent update to the pharmacy"
+}
+
 # Regex for validating email
 _emailRegex = re.compile(r"[^@\s]+@[^@\s]+\.[a-zA-Z0-9]{2,}$")
 
@@ -119,6 +125,51 @@ class Patient(Services.Service):
 		# Return the user data
 		return Services.Effect(dAccount)
 
+	def accountEmail_update(self, data, sesh):
+		"""Account Email Update
+
+		Changes the accounts email address
+
+		Arguments:
+			data (dict): Data sent with the request
+			sesh (Sesh._Session): The session associated with the request
+
+		Returns:
+			Services.Effect
+		"""
+
+		# Verify fields
+		try: DictHelper.eval(data, ['email'])
+		except ValueError as e: return Services.Effect(error=(1001, [(f, 'missing') for f in e.args]))
+
+		# If there's an ID, check permissions
+		if '_id' in data:
+
+			# Make sure the user has the proper permission to do this
+			oEff = self.rightsVerify_read({
+				"name": "patient",
+				"right": Rights.UPDATE
+			}, sesh)
+			if not oEff.data:
+				return Services.Effect(error=Rights.INVALID)
+
+		# Else, assume the signed in user's Record
+		else:
+			data['_id'] = sesh['user_id']
+
+		# Find the account
+		oAccount = Account.get(data['_id'])
+		if not oAccount:
+			return Services.Effect(error=1104)
+
+		# Update the email
+		oAccount['email'] = data['email']
+
+		# Save and return the result
+		return Services.Effect(
+			oAccount.save(changes={"user": sesh['user_id']})
+		)
+
 	def accountForgot_create(self, data):
 		"""Account Password Forgot (Generate)
 
@@ -134,7 +185,7 @@ class Patient(Services.Service):
 
 		# Verify fields
 		try: DictHelper.eval(data, ['email', 'url'])
-		except ValueError as e: return Services.Effect(error=(1001, [(f, "missing") for f in e.args]))
+		except ValueError as e: return Services.Effect(error=(1001, [(f, 'missing') for f in e.args]))
 
 		# Look for the account by email
 		dAccount = Account.filter({"email": data['email']}, raw=['_id', 'locale'], limit=1)
@@ -197,7 +248,7 @@ class Patient(Services.Service):
 
 		# Verify fields
 		try: DictHelper.eval(data, ['passwd', 'key'])
-		except ValueError as e: return Services.Effect(error=(1001, [(f, "missing") for f in e.args]))
+		except ValueError as e: return Services.Effect(error=(1001, [(f, 'missing') for f in e.args]))
 
 		# Look for the forgot by the key
 		oForgot = Forgot.filter({"key": data['key']}, limit=1)
@@ -245,71 +296,6 @@ class Patient(Services.Service):
 			}
 		})
 
-	def signin_create(self, data):
-		"""Signin
-
-		Signs a patient into the system
-
-		Arguments:
-			data (dict): The data passed to the request
-
-		Returns:
-			Result
-		"""
-
-		# Verify fields
-		try: DictHelper.eval(data, ['email', 'passwd'])
-		except ValueError as e: return Services.Effect(error=(1001, [(f, "missing") for f in e.args]))
-
-		# Look for the patient by email address
-		oAccount = Account.filter({"email": data['email']}, limit=1)
-		if not oAccount:
-			return Services.Effect(error=1901)
-
-		# Validate the password
-		if not oAccount.passwordValidate(data['passwd']):
-			return Services.Effect(error=1901)
-
-		# If the email hasn't been verified
-		if not oAccount['verified']:
-			return Services.Effect(error=)
-
-		# Create a new session
-		oSesh = Sesh.create()
-
-		# Store the account ID and information in it
-		oSesh['user_id'] = oAccount['_id']
-
-		# Save the session
-		oSesh.save()
-
-		# Return the session ID and primary account data
-		return Services.Effect({
-			"session": oSesh.id(),
-			"account": {
-				"_id": oSesh['user_id']
-			}
-		})
-
-	def signout_create(self, data, sesh):
-		"""Signout
-
-		Called to sign out a patient and destroy their session
-
-		Arguments:
-			data (dict): Data sent with the request
-			sesh (Sesh._Session): The session associated with the account
-
-		Returns:
-			Services.Effect
-		"""
-
-		# Close the session so it can no longer be found/used
-		sesh.close()
-
-		# Return OK
-		return Services.Effect(True)
-
 	def setupStart_create(self, data, sesh):
 		"""Setup Start
 
@@ -335,7 +321,7 @@ class Patient(Services.Service):
 
 		# Verify fields
 		try: DictHelper.eval(data, ['email', 'url'])
-		except ValueError as e: return Services.Effect(error=(1001, [(f, "missing") for f in e.args]))
+		except ValueError as e: return Services.Effect(error=(1001, [(f, 'missing') for f in e.args]))
 
 		# Check if we already have an account with that email
 		if Account.exists(data['email'], 'email') or \
@@ -395,7 +381,7 @@ class Patient(Services.Service):
 
 		# Verify fields
 		try: DictHelper.eval(data, ['key', 'dob', 'lname', 'passwd'])
-		except ValueError as e: return Services.Effect(error=(1001, [(f, "missing") for f in e.args]))
+		except ValueError as e: return Services.Effect(error=(1001, [(f, 'missing') for f in e.args]))
 
 		# Look for the record
 		oSetup = AccountSetup.get(data['key'])
@@ -464,6 +450,116 @@ class Patient(Services.Service):
 
 		# Delete the setup
 		oSetup.delete()
+
+		# Return OK
+		return Services.Effect(True)
+
+	def signin_create(self, data):
+		"""Signin
+
+		Signs a patient into the system
+
+		Arguments:
+			data (dict): The data passed to the request
+
+		Returns:
+			Result
+		"""
+
+		# Verify fields
+		try: DictHelper.eval(data, ['email', 'passwd'])
+		except ValueError as e: return Services.Effect(error=(1001, [(f, 'missing') for f in e.args]))
+
+		# Look for the patient by email address
+		oAccount = Account.filter({"email": data['email']}, limit=1)
+		if not oAccount:
+			return Services.Effect(error=1901)
+
+		# Validate the password
+		if not oAccount.passwordValidate(data['passwd']):
+			return Services.Effect(error=1901)
+
+		# If the email hasn't been verified
+		if not oAccount['verified']:
+			return Services.Effect(error=1908)
+
+		# Create a new session
+		oSesh = Sesh.create()
+
+		# Store the account ID and information in it
+		oSesh['user_id'] = oAccount['_id']
+
+		# Save the session
+		oSesh.save()
+
+		# Return the session ID and primary account data
+		return Services.Effect({
+			"session": oSesh.id(),
+			"account": {
+				"_id": oSesh['user_id']
+			}
+		})
+
+	def signout_create(self, data, sesh):
+		"""Signout
+
+		Called to sign out a patient and destroy their session
+
+		Arguments:
+			data (dict): Data sent with the request
+			sesh (Sesh._Session): The session associated with the account
+
+		Returns:
+			Services.Effect
+		"""
+
+		# Close the session so it can no longer be found/used
+		sesh.close()
+
+		# Return OK
+		return Services.Effect(True)
+
+	def supportRequest_create(self, data, sesh):
+		"""Support Request
+
+		A patient is requesting support contact them
+
+		Arguments:
+			data (dict): Data sent with the request
+			sesh (Sesh._Session): The session associated with the account
+
+		Returns:
+			Services.Effect
+		"""
+
+		# Verify fields
+		try: DictHelper.eval(data, ['type'])
+		except ValueError as e: return Services.Effect(error=(1001, [(f, 'missing') for f in e.args]))
+
+		# If the type is invalid
+		if data['type'] not in _dSupportRequest:
+			return Services.Effect(error=(1001, [('type', 'invalid') for f in e.args]))
+
+		# Find the signed in user
+		oAccount = Account.get(sesh['user_id'], raw=['crm_type', 'crm_id'])
+		if not oAccount:
+			return Services.Effect(error=1104)
+
+		# Email content
+		sBody = _dSupportRequest[data['type']] % {
+			"crm_type": "Konnektive",
+			"crm_id": oAccount['crm_id']
+		}
+
+		# Email the patient the key
+		oEffect = Services.create('communications', 'email', {
+			"_internal_": Services.internalKey(),
+			"text_body": sBody,
+			"subject": 'Patient Portal Support Request',
+			"to": Conf.get(('services', 'patient', 'support_email'))
+		})
+		if oEffect.errorExists():
+			return oEffect
 
 		# Return OK
 		return Services.Effect(True)

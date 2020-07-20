@@ -216,9 +216,9 @@ class Konnektive(Services.Service):
 			},
 			"billing": {
 				"address1": lCustomers[0]['address1'],
-				"address2": lCustomers[0]['address2'],
+				"address2": lCustomers[0]['address2'] and lCustomers[0]['address2'].strip() or None,
 				"city": lCustomers[0]['city'],
-				"company": lCustomers[0]['companyName'],
+				"company": lCustomers[0]['companyName'] and lCustomers[0]['companyName'].strip() or None,
 				"country": lCustomers[0]['country'],
 				"firstName": lCustomers[0]['firstName'],
 				"lastName": lCustomers[0]['lastName'],
@@ -230,9 +230,9 @@ class Konnektive(Services.Service):
 			"phone": lCustomers[0]['phoneNumber'],
 			"shipping": {
 				"address1": lCustomers[0]['shipAddress1'],
-				"address2": lCustomers[0]['shipAddress2'],
+				"address2": lCustomers[0]['shipAddress2'] and lCustomers[0]['shipAddress2'].strip() or None,
 				"city": lCustomers[0]['shipCity'],
-				"company": lCustomers[0]['shipCompanyName'],
+				"company": lCustomers[0]['shipCompanyName'] and lCustomers[0]['shipCompanyName'].strip() or None,
 				"country": lCustomers[0]['shipCountry'],
 				"firstName": lCustomers[0]['shipFirstName'],
 				"lastName": lCustomers[0]['shipLastName'],
@@ -294,41 +294,69 @@ class Konnektive(Services.Service):
 		if 'billing' in data:
 
 			# Verify it with USPS
-			mRes = USPS.address_verify(data['billing'])
+			mRes = USPS.address_verify({
+				"Address1": data['billing']['address2'],
+				"Address2": data['billing']['address1'],
+				"City": data['billing']['city'],
+				"State": data['billing']['state'],
+				"Zip5": data['billing']['postalCode'],
+			})
 
 			# If we got a string back, it's an error
 			if isinstance(mRes, str):
 				return Services.Effect(error=(1700, mRes))
 
+			# If we got an error
+			if 'Error' in mRes:
+				if mRes['Error']['Description'] == 'Address Not Found.':
+					return Services.Effect(error=1701)
+				else:
+					return Services.Effect(error=(1700, mRes['Error']))
+
 			# Set the values based on the return
-			dQuery['firstName'] = data['billing']['firstName']
-			dQuery['lastName'] = data['billing']['lastName']
-			dQuery['address1'] = mRes.Address1
-			dQuery['address1'] = mRes.Address1
-			dQuery['city'] = mRes.Address1
-			dQuery['state'] = mRes.Address1
+			dQuery['firstName'] = data['billing']['firstName'] == '' and ' ' or data['billing']['firstName']
+			dQuery['lastName'] = data['billing']['lastName'] == '' and ' ' or data['billing']['lastName']
+			dQuery['companyName'] = data['billing']['company'] == '' and ' ' or data['billing']['company']
+			dQuery['address1'] = mRes['Address2']
+			dQuery['address2'] = 'Address1' in mRes and mRes['Address1'] or '0'
+			dQuery['city'] = mRes['City']
+			dQuery['state'] = mRes['State']
 			dQuery['country'] = 'US'
-			dQuery['postalCode'] = mRes.Zip5
+			dQuery['postalCode'] = mRes['Zip5']
 
 		# If we got shipping info
 		if 'shipping' in data:
 
 			# Verify it with USPS
-			mRes = USPS.address_verify(data['shipping'])
+			mRes = USPS.address_verify({
+				"Address1": data['shipping']['address2'],
+				"Address2": data['shipping']['address1'],
+				"City": data['shipping']['city'],
+				"State": data['shipping']['state'],
+				"Zip5": data['shipping']['postalCode'],
+			})
 
 			# If we got a string back, it's an error
 			if isinstance(mRes, str):
 				return Services.Effect(error=(1700, mRes))
 
+			# If we got an error
+			if 'Error' in mRes:
+				if mRes['Error']['Description'] == 'Address Not Found.':
+					return Services.Effect(error=1701)
+				else:
+					return Services.Effect(error=(1700, mRes['Error']))
+
 			# Set the values based on the return
-			dQuery['shipFirstName'] = data['shipping']['firstName']
-			dQuery['shipLastName'] = data['shipping']['lastName']
-			dQuery['shipAddress1'] = mRes.Address1
-			dQuery['shipAddress1'] = mRes.Address1
-			dQuery['shipCity'] = mRes.Address1
-			dQuery['shipState'] = mRes.Address1
+			dQuery['shipFirstName'] = data['shipping']['firstName'] == '' and ' ' or data['shipping']['firstName']
+			dQuery['shipLastName'] = data['shipping']['lastName'] == '' and ' ' or data['shipping']['lastName']
+			dQuery['shipCompanyName'] = data['shipping']['company'] == '' and ' ' or data['shipping']['company']
+			dQuery['shipAddress1'] = mRes['Address2']
+			dQuery['shipAddress2'] = 'Address1' in mRes and mRes['Address1'] or ' '
+			dQuery['shipCity'] = mRes['City']
+			dQuery['shipState'] = mRes['State']
 			dQuery['shipCountry'] = 'US'
-			dQuery['shipPostalCode'] = mRes.Zip5
+			dQuery['shipPostalCode'] = mRes['Zip5']
 
 		# If we have something to update
 		if dQuery:
@@ -342,6 +370,63 @@ class Konnektive(Services.Service):
 
 		# Return OK
 		return Services.Effect(True)
+
+	def customerPurchases_read(self, data, sesh):
+		"""Customer Purchases
+
+		Fetches purchases for a customer
+
+		Arguments:
+			data (dict): Data sent with the request
+			sesh (Sesh._Session): The session associated with the request
+
+		Returns:
+			Services.Effect
+		"""
+
+		# Verify fields
+		try: DictHelper.eval(data, ['customerId'])
+		except ValueError as e: return Services.Effect(error=(1001, [(f, 'missing') for f in e.args]))
+
+		# Make sure the user has the proper permission to do this
+		oEff = Services.read('auth', 'rights/verify', {
+			"name": "crm_customers",
+			"right": Rights.READ,
+			"ident": data['customerId']
+		}, sesh)
+		if not oEff.data:
+			return Services.Effect(error=Rights.INVALID)
+
+		# Make the request to Konnektive
+		lPurchases = self.__request('purchase/query', {
+			"dateRangeType": "dateCreated",
+			"customerId": data['customerId'],
+			"sortDir": 0
+		});
+
+		# Return what ever's found after removing unnecessary data
+		return Services.Effect([{
+			"cycleType": dP['billingCycleType'],
+			"cycleNumber": dP['billingCycleNumber'],
+			"interval": dP['billingIntervalDays'],
+			"nextBillDate": dP['nextBillDate'],
+			"price": dP['price'],
+			"product": dP['productName'],
+			"totalBilled": dP['totalBilled'],
+			"transactions": [{
+				"chargeback": dT['isChargedback'] != '0' and {
+					"amount": dT['chargebackAmount'],
+					"date": dT['chargebackDate'],
+					"code": dT['chargebackReasonCode'],
+					"note": dT['chargebackNote']
+				} or None,
+				"date": dT['txnDate'],
+				"price": dT['totalAmount'],
+				"refunded": dT['amountRefunded'],
+				"result": dT['responseType'],
+				"response": dT['responseText']
+			} for dT in dP['transactions']]
+		} for dP in lPurchases])
 
 	def customerOrders_read(self, data, sesh):
 		"""Customer Orders
