@@ -436,6 +436,10 @@ class Patient(Services.Service):
 			return Services.Effect(error=1100)
 
 		# Create the permissions
+		sWarning = None
+		oSesh = Sesh.create()
+		oSesh['user_id'] = 0
+		oSesh.save()
 		oEff = Services.update('auth', 'permissions', {
 			"_internal_": Services.internalKey(),
 			"user": oAccount['_id'],
@@ -443,16 +447,17 @@ class Patient(Services.Service):
 				"crm_customers": {"rights": 3, "idents": oAccount['crm_id']},
 				"prescriptions": {"rights": 1, "idents": oAccount['rx_id']}
 			}
-		}, sesh)
+		}, oSesh)
+		oSesh.close()
 		if oEff.errorExists():
 			print(oEff)
-			return Services.Effect(sID, warning='Failed to creater permissions for agent')
+			sWarning = 'Failed to create permissions for agent'
 
 		# Delete the setup
 		oSetup.delete()
 
 		# Return OK
-		return Services.Effect(True)
+		return Services.Effect(True, warning=sWarning)
 
 	def signin_create(self, data):
 		"""Signin

@@ -314,11 +314,11 @@ class Konnektive(Services.Service):
 					return Services.Effect(error=(1700, mRes['Error']))
 
 			# Set the values based on the return
-			dQuery['firstName'] = data['billing']['firstName'] == '' and ' ' or data['billing']['firstName']
-			dQuery['lastName'] = data['billing']['lastName'] == '' and ' ' or data['billing']['lastName']
-			dQuery['companyName'] = data['billing']['company'] == '' and ' ' or data['billing']['company']
+			dQuery['firstName'] = data['billing']['firstName'] == '' and 'NULL' or data['billing']['firstName']
+			dQuery['lastName'] = data['billing']['lastName'] == '' and 'NULL' or data['billing']['lastName']
+			dQuery['companyName'] = data['billing']['company'] == '' and 'NULL' or data['billing']['company']
 			dQuery['address1'] = mRes['Address2']
-			dQuery['address2'] = 'Address1' in mRes and mRes['Address1'] or '0'
+			dQuery['address2'] = 'Address1' in mRes and mRes['Address1'] or 'NULL'
 			dQuery['city'] = mRes['City']
 			dQuery['state'] = mRes['State']
 			dQuery['country'] = 'US'
@@ -348,11 +348,11 @@ class Konnektive(Services.Service):
 					return Services.Effect(error=(1700, mRes['Error']))
 
 			# Set the values based on the return
-			dQuery['shipFirstName'] = data['shipping']['firstName'] == '' and ' ' or data['shipping']['firstName']
-			dQuery['shipLastName'] = data['shipping']['lastName'] == '' and ' ' or data['shipping']['lastName']
-			dQuery['shipCompanyName'] = data['shipping']['company'] == '' and ' ' or data['shipping']['company']
+			dQuery['shipFirstName'] = data['shipping']['firstName'] == '' and 'NULL' or data['shipping']['firstName']
+			dQuery['shipLastName'] = data['shipping']['lastName'] == '' and 'NULL' or data['shipping']['lastName']
+			dQuery['shipCompanyName'] = data['shipping']['company'] == '' and 'NULL' or data['shipping']['company']
 			dQuery['shipAddress1'] = mRes['Address2']
-			dQuery['shipAddress2'] = 'Address1' in mRes and mRes['Address1'] or ' '
+			dQuery['shipAddress2'] = 'Address1' in mRes and mRes['Address1'] or 'NULL'
 			dQuery['shipCity'] = mRes['City']
 			dQuery['shipState'] = mRes['State']
 			dQuery['shipCountry'] = 'US'
