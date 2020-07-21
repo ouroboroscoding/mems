@@ -412,6 +412,7 @@ class Konnektive(Services.Service):
 			"nextBillDate": dP['nextBillDate'],
 			"price": dP['price'],
 			"product": dP['productName'],
+			"status": dP['status'],
 			"totalBilled": dP['totalBilled'],
 			"transactions": [{
 				"chargeback": dT['isChargedback'] != '0' and {
