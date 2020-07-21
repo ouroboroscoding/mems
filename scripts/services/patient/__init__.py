@@ -157,6 +157,14 @@ class Patient(Services.Service):
 		else:
 			data['_id'] = sesh['user_id']
 
+		# Convert the email to lowercase
+		data['email'] = data['email'].lower()
+
+		# Check if we already have an account with that email
+		if Account.exists(data['email'], 'email') or \
+			AccountSetup.exists(data['email'], 'email'):
+			return Services.Effect(error=1900)
+
 		# Find the account
 		oAccount = Account.get(data['_id'])
 		if not oAccount:
@@ -323,6 +331,9 @@ class Patient(Services.Service):
 		try: DictHelper.eval(data, ['email', 'url'])
 		except ValueError as e: return Services.Effect(error=(1001, [(f, 'missing') for f in e.args]))
 
+		# Convert the email to lowercase
+		data['email'] = data['email'].lower()
+
 		# Check if we already have an account with that email
 		if Account.exists(data['email'], 'email') or \
 			AccountSetup.exists(data['email'], 'email'):
@@ -474,6 +485,9 @@ class Patient(Services.Service):
 		# Verify fields
 		try: DictHelper.eval(data, ['email', 'passwd'])
 		except ValueError as e: return Services.Effect(error=(1001, [(f, 'missing') for f in e.args]))
+
+		# Convert the email to lowercase
+		data['email'] = data['email'].lower()
 
 		# Look for the patient by email address
 		oAccount = Account.filter({"email": data['email']}, limit=1)
