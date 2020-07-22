@@ -344,6 +344,8 @@ class Konnektive(Services.Service):
 			if 'Error' in mRes:
 				if mRes['Error']['Description'] == 'Address Not Found.':
 					return Services.Effect(error=1701)
+				elif mRes['Error']['Description'] == 'Invalid City.':
+					return Services.Effect(error=1702)
 				else:
 					return Services.Effect(error=(1700, mRes['Error']))
 
@@ -406,12 +408,32 @@ class Konnektive(Services.Service):
 
 		# Return what ever's found after removing unnecessary data
 		return Services.Effect([{
+			"billing": {
+				"address1": dP['address1'],
+				"address2": dP['address2'],
+				"city": dP['city'],
+				"country": dP['country'],
+				"firstName": dP['firstName'],
+				"lastName": dP['lastName'],
+				"postalCode": dP['postalCode'],
+				"state": dP['state']
+			},
 			"cycleType": dP['billingCycleType'],
 			"cycleNumber": dP['billingCycleNumber'],
 			"interval": dP['billingIntervalDays'],
 			"nextBillDate": dP['nextBillDate'],
 			"price": dP['price'],
 			"product": dP['productName'],
+			"shipping": {
+				"address1": dP['shipAddress1'],
+				"address2": dP['shipAddress2'],
+				"city": dP['shipCity'],
+				"country": dP['shipCountry'],
+				"firstName": dP['shipFirstName'],
+				"lastName": dP['shipLastName'],
+				"postalCode": dP['shipPostalCode'],
+				"state": dP['shipState']
+			},
 			"status": dP['status'],
 			"totalBilled": dP['totalBilled'],
 			"transactions": [{
