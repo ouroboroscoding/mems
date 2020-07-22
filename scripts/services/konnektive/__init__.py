@@ -203,7 +203,7 @@ class Konnektive(Services.Service):
 
 		# If there's none
 		if not lCustomers:
-			return Services.Effect(0)
+			return Services.Effect(error=1104)
 
 		# Generate the base data
 		dData = {

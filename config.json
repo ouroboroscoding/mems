@@ -99,7 +99,6 @@
 			"forgot_expire": 600
 		},
 		"patient": {
-			"forgot_expire": 600,
 			"max_attempts": 3,
 			"support_email": "bast@maleexcel.com"
 		},

@@ -56,8 +56,8 @@ REST.Server({
 
 	"/account": {"methods": REST.CREATE | REST.READ | REST.UPDATE, "session": True},
 	"/account/email": {"methods": REST.UPDATE, "session": True},
-	"/account/passwd": {"methods": REST.UPDATE, "session": True},
 	"/account/forgot": {"methods": REST.CREATE | REST.UPDATE},
+	"/account/verify": {"methods": REST.UPDATE},
 
 	"/session": {"methods": REST.READ, "session": True},
 

@@ -263,9 +263,9 @@ class AccountSetup(Record_MySQL.Record):
 		# Return the config
 		return cls._conf
 
-# Forgot class
-class Forgot(Record_MySQL.Record):
-	"""Forgot
+# Verify class
+class Verify(Record_MySQL.Record):
+	"""Verify
 
 	Represents an attempt to reset a forgotten password
 	"""
@@ -286,7 +286,7 @@ class Forgot(Record_MySQL.Record):
 		# If we haven loaded the config yet
 		if not cls._conf:
 			cls._conf = Record_MySQL.Record.generateConfig(
-				Tree.fromFile('../definitions/patient/forgot.json'),
+				Tree.fromFile('../definitions/patient/verify.json'),
 				'mysql'
 			)
 
