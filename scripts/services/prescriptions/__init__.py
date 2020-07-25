@@ -579,7 +579,7 @@ class Prescriptions(Services.Service):
 
 		# If there's no items
 		if not dData['Items']:
-			return Services.Effect(0)
+			return Services.Effect([])
 
 		# Go through each item and add the text versions of integer values
 		for d in dData['Items']:

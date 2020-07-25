@@ -461,7 +461,7 @@ class Patient(Services.Service):
 			oEff = Services.read('prescriptions', 'patient/prescriptions', {
 				"patient_id": int(data['rx_id'])
 			}, sesh)
-			if oEff.errorExists() or not oEff.data:
+			if oEff.errorExists():
 				return Services.Effect(error=(oEff.error['code'], 'rx'))
 
 			dSetup['rx_type'] = 'ds'
