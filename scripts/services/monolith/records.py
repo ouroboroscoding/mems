@@ -24,6 +24,7 @@ from RestOC import Conf, Record_MySQL
 sClaimedSQL = ''
 sClaimedNewSQL = ''
 sConversationSQL = ''
+sCustomerByPhone = ''
 sLandingSQL = ''
 sLatestStatusSQL = ''
 sMsgPhoneUpdateSQL = ''
@@ -39,9 +40,9 @@ def init():
 	Need to find a better way to do this
 	"""
 
-	global sClaimedSQL, sClaimedNewSQL, sConversationSQL, sLandingSQL, \
-			sLatestStatusSQL, sMsgPhoneUpdateSQL, sSmpNotes, sNumOfOrdersSQL, \
-			sSearchSQL, sUnclaimedSQL, sUnclaimedCountSQL
+	global sClaimedSQL, sClaimedNewSQL, sConversationSQL, sCustomerByPhone, \
+			sLandingSQL, sLatestStatusSQL, sMsgPhoneUpdateSQL, sSmpNotes, \
+			sNumOfOrdersSQL, sSearchSQL, sUnclaimedSQL, sUnclaimedCountSQL
 
 	# SQL files
 	with open('./services/monolith/sql/claimed.sql') as oF:
@@ -50,6 +51,8 @@ def init():
 		sClaimedNewSQL = oF.read()
 	with open('./services/monolith/sql/conversation.sql') as oF:
 		sConversationSQL = oF.read()
+	with open('./services/monolith/sql/customer_by_phone.sql') as oF:
+		sCustomerByPhone = oF.read()
 	with open('./services/monolith/sql/landing.sql') as oF:
 		sLandingSQL = oF.read()
 	with open('./services/monolith/sql/latest_status.sql') as oF:
@@ -525,6 +528,39 @@ class KtCustomer(Record_MySQL.Record):
 
 	_conf = None
 	"""Configuration"""
+
+	@classmethod
+	def byPhone(cls, number, custom={}):
+		"""By Phone
+
+		Returns the ID and claimed state of the customer from their phone number
+
+		Arguments:
+			number (str): The phone number of the customer
+			custom (dict): Custom Host and DB info
+				'host' the name of the host to get/set data on
+				'append' optional postfix for dynamic DBs
+
+		Returns:
+			dict
+		"""
+
+		# Fetch the record structure
+		dStruct = cls.struct(custom)
+
+		# Generate SQL
+		sSQL = sCustomerByPhone % {
+			"db": dStruct['db'],
+			"table": dStruct['table'],
+			"number": number
+		}
+
+		# Execute and return the select
+		return Record_MySQL.Commands.select(
+			dStruct['host'],
+			sSQL,
+			Record_MySQL.ESelect.ROW
+		)
 
 	@classmethod
 	def config(cls):

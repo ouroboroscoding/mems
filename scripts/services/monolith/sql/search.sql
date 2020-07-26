@@ -9,6 +9,7 @@ SELECT
 	`cmp`.`hiddenFlag` AS `hiddenFlag`,
 	`cmp`.`totalIncoming` AS `totalIncoming`,
 	`cmp`.`totalOutGoing` AS `totalOutGoing`,
+	`user`.`id` as `userId`,
 	CONCAT_WS(' ', `user`.`firstName`, `user`.`lastName`) AS `claimedBy`,
 	`cc`.`createdAt` AS `claimedAt`
 FROM `%(db)s`.`customer_msg_phone` AS `cmp`
