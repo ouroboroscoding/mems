@@ -72,6 +72,7 @@ REST.Server({
 	"/msgs/claimed/new": {"methods": REST.READ, "session": True},
 	"/msgs/search": {"methods": REST.READ, "session": True},
 	"/msgs/search/customer": {"methods": REST.READ, "session": True},
+	"/msgs/status": {"methods": REST.READ, "session": True},
 	"/msgs/unclaimed": {"methods": REST.READ, "session": True},
 	"/msgs/unclaimed/count": {"methods": REST.READ, "session": True},
 

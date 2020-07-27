@@ -142,7 +142,12 @@ class Monolith(Services.Service):
 
 		# If we got a duplicate exception
 		except Record_MySQL.DuplicateException:
-			return Services.Effect(error=1101)
+
+			# Fine the user who claimed it
+			dClaim = CustomerClaimed.get(data['phoneNumber'], raw=['user']);
+
+			# Return the error with the user ID
+			return Services.Effect(error=(1101, dClaim['user']))
 
 		# Else, we failed to create the record
 		return Services.Effect(False)
@@ -191,6 +196,22 @@ class Monolith(Services.Service):
 		oClaim = CustomerClaimed.get(data['phoneNumber'])
 		if not oClaim:
 			return Services.Effect(error=(1104, data['phoneNumber']))
+
+		# If it doesn't exist
+		if not oClaim:
+			return Services.Effect(error=(1104, data['phoneNumber']))
+
+		# If the current owner of the claim is not the person transfering,
+		#	check permissions
+		if oClaim['user'] != sesh['memo_id']:
+
+			# Make sure the user has the proper rights
+			oEff = Services.read('auth', 'rights/verify', {
+				"name": "csr_overwrite",
+				"right": Rights.CREATE
+			}, sesh)
+			if not oEff.data:
+				return Services.Effect(error=Rights.INVALID)
 
 		# Find the user
 		if not User.exists(data['user_id']):
@@ -297,19 +318,17 @@ class Monolith(Services.Service):
 		except ValueError as e: return Services.Effect(error=(1001, [(f, "missing") for f in e.args]))
 
 		# Look for the latest customer with the given number
-		dCustomer = KtCustomer.filter(
-			{"phoneNumber": [data['phoneNumber'], '1%s' % data['phoneNumber']]},
-			raw=['customerId'],
-			orderby=[('updatedAt', 'DESC')],
-			limit=1
-		)
+		dRes = KtCustomer.byPhone(data['phoneNumber'])
 
 		# If there's no customer
-		if not dCustomer:
+		if not dRes:
 			return Services.Effect(0)
 
 		# Return the ID
-		return Services.Effect(dCustomer['customerId'])
+		return Services.Effect({
+			"customerId": dRes['customerId'],
+			"claimedUser": dRes['claimedUser']
+		})
 
 	def customerMessages_read(self, data, sesh):
 		"""Customer Messages
@@ -875,8 +894,8 @@ class Monolith(Services.Service):
 			# Return OK but with a warning
 			return Services.Effect(True, warning="Message sent to customer, but Memo summary failed to update")
 
-		# Return OK
-		return Services.Effect(True)
+		# Return the ID of the new message
+		return Services.Effect(oCustomerCommunication['id'])
 
 	def msgsClaimed_read(self, data, sesh):
 		"""Messages: Claimed
@@ -1026,6 +1045,28 @@ class Monolith(Services.Service):
 		# Fetch and return the data based on the phone number
 		return Services.Effect(
 			CustomerMsgPhone.search({"phone": dCustomer['phoneNumber']})
+		)
+
+	def msgsStatus_read(self, data, sesh):
+		"""Messages: Status
+
+		Get the status of a sent messages
+
+		Arguments:
+			data (dict): Data sent with the request
+			sesh (Sesh._Session): The session associated with the request
+
+		Returns:
+			Services.Effect
+		"""
+
+		# Verify fields
+		try: DictHelper.eval(data, ['ids'])
+		except ValueError as e: return Services.Effect(error=(1001, [(f, "missing") for f in e.args]))
+
+		# Get the status and error message of a specific message and return it
+		return Services.Effect(
+			CustomerCommunication.get(data['ids'], raw=['id', 'status', 'errorMessage'])
 		)
 
 	def msgsUnclaimed_read(self, data, sesh):

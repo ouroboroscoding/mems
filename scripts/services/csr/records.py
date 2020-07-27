@@ -45,36 +45,6 @@ class Agent(Record_MySQL.Record):
 		# Return the config
 		return cls._conf
 
-# EscalateAgent class
-class EscalateAgent(Record_MySQL.Record):
-	"""EscalateAgent
-
-	Represents an agent that can have issues escalated to them
-	"""
-
-	_conf = None
-	"""Configuration"""
-
-	@classmethod
-	def config(cls):
-		"""Config
-
-		Returns the configuration data associated with the record type
-
-		Returns:
-			dict
-		"""
-
-		# If we haven loaded the config yet
-		if not cls._conf:
-			cls._conf = Record_MySQL.Record.generateConfig(
-				Tree.fromFile('../definitions/csr/escalate_agent.json'),
-				'mysql'
-			)
-
-		# Return the config
-		return cls._conf
-
 # TemplateEmail class
 class TemplateEmail(Record_MySQL.Record):
 	"""TemplateEmail
