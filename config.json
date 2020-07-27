@@ -110,7 +110,7 @@
 	},
 
 	"sms": {
-		"method": "direct"
+		"allowed": []
 	},
 
 	"temp_folder": "/tmp",

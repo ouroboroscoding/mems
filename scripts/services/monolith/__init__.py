@@ -858,6 +858,7 @@ class Monolith(Services.Service):
 			return oEff
 
 		# Store the message record
+		oCustomerCommunication['sid'] = oEff.data
 		oCustomerCommunication.create()
 
 		# Catch issues with summary
