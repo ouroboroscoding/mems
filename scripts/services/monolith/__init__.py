@@ -875,8 +875,8 @@ class Monolith(Services.Service):
 			# Return OK but with a warning
 			return Services.Effect(True, warning="Message sent to customer, but Memo summary failed to update")
 
-		# Return OK
-		return Services.Effect(True)
+		# Return the ID of the new message
+		return Services.Effect(oCustomerCommunication['id'])
 
 	def msgsClaimed_read(self, data, sesh):
 		"""Messages: Claimed
@@ -1026,6 +1026,28 @@ class Monolith(Services.Service):
 		# Fetch and return the data based on the phone number
 		return Services.Effect(
 			CustomerMsgPhone.search({"phone": dCustomer['phoneNumber']})
+		)
+
+	def msgsStatus_read(self, data, sesh):
+		"""Messages: Status
+
+		Get the status of a sent messages
+
+		Arguments:
+			data (dict): Data sent with the request
+			sesh (Sesh._Session): The session associated with the request
+
+		Returns:
+			Services.Effect
+		"""
+
+		# Verify fields
+		try: DictHelper.eval(data, ['ids'])
+		except ValueError as e: return Services.Effect(error=(1001, [(f, "missing") for f in e.args]))
+
+		# Get the status and error message of a specific message and return it
+		return Services.Effect(
+			CustomerCommunication.get(data['ids'], raw=['id', 'status', 'errorMessage'])
 		)
 
 	def msgsUnclaimed_read(self, data, sesh):
