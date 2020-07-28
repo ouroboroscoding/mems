@@ -825,9 +825,22 @@ class Monolith(Services.Service):
 		if SMSStop.filter({"phoneNumber": data['customerPhone'], "service": data['type']}):
 			return Services.Effect(error=1500)
 
-		# Get the user's name
-		dUser = User.get(sesh['memo_id'], raw=['firstName', 'lastName'])
-		sName = '%s %s' % (dUser['firstName'], dUser['lastName'])
+		# If it's internal
+		if '_internal_' in data:
+
+			# Verify the key, remove it if it's ok
+			if not Services.internalKey(data['_internal_']):
+				return Services.Effect(error=Errors.SERVICE_INTERNAL_KEY)
+			del data['_internal_']
+
+			# If we don't have the name
+			if 'name' not in data:
+				return Services.Effect(error=(1001, [('name', 'missing')]))
+
+		# Else, get the signed in user's name
+		else:
+			dUser = User.get(sesh['memo_id'], raw=['firstName', 'lastName'])
+			data['name'] = '%s %s' % (dUser['firstName'], dUser['lastName'])
 
 		# Get current date/time
 		sDT = arrow.get().format('YYYY-MM-DD HH:mm:ss')
@@ -836,7 +849,7 @@ class Monolith(Services.Service):
 		try:
 			oCustomerCommunication = CustomerCommunication({
 				"type": "Outgoing",
-				"fromName": sName,
+				"fromName": data['name'],
 				"toPhone": data['customerPhone'],
 				"notes": data['content'],
 				"createdAt": sDT,
@@ -869,7 +882,7 @@ class Monolith(Services.Service):
 				data['customerPhone'],
 				sDT,
 				'\n--------\nSent by %s at %s\n%s\n' % (
-					sName,
+					data['name'],
 					sDT,
 					data['content']
 				)

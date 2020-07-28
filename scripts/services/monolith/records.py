@@ -530,6 +530,46 @@ class KtCustomer(Record_MySQL.Record):
 	"""Configuration"""
 
 	@classmethod
+	def byNameAndZip(cls, name, zip_, custom={}):
+		"""By Phone
+
+		Returns the ID and claimed state of the customer from their phone number
+
+		Arguments:
+			name (str): The full shipping name of the customer
+			zip (str): The shipping zip code of the customer
+			custom (dict): Custom Host and DB info
+				'host' the name of the host to get/set data on
+				'append' optional postfix for dynamic DBs
+
+		Returns:
+			dict
+		"""
+
+		# Fetch the record structure
+		dStruct = cls.struct(custom)
+
+		# Generate SQL
+		sSQL = "SELECT `customerId`, `phoneNumber` " \
+				"FROM `%(db)s`.`%(table)s` " \
+				"WHERE CONCAT(`shipFirstName`, ' ', `shipLastName`) = '%(name)s' " \
+				"AND `shipPostalCode` = '%(zip)s' " \
+				"ORDER BY `updatedAt` DESC " \
+				"LIMIT 1" % {
+			"db": dStruct['db'],
+			"table": dStruct['table'],
+			"name": name,
+			"zip": zip_
+		}
+
+		# Execute and return the select
+		return Record_MySQL.Commands.select(
+			dStruct['host'],
+			sSQL,
+			Record_MySQL.ESelect.ROW
+		)
+
+	@classmethod
 	def byPhone(cls, number, custom={}):
 		"""By Phone
 
