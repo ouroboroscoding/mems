@@ -562,8 +562,6 @@ class KtCustomer(Record_MySQL.Record):
 			"zip": zip_
 		}
 
-		print(sSQL)
-
 		# Execute and return the select
 		return Record_MySQL.Commands.select(
 			dStruct['host'],
