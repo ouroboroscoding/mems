@@ -804,7 +804,7 @@ class Monolith(Services.Service):
 		# Return OK
 		return Services.Effect(True)
 
-	def messageOutgoing_create(self, data, sesh):
+	def messageOutgoing_create(self, data, sesh=None):
 		"""Message Outgoing
 
 		Sends a message to the customer
@@ -816,6 +816,10 @@ class Monolith(Services.Service):
 		Returns:
 			Services.Effect
 		"""
+
+		# If we have no session and no key
+		if not sesh and '_internal_' not in data:
+			return Services.Effect(error=(1001, [('_internal_', 'missing')]))
 
 		# Verify fields
 		try: DictHelper.eval(data, ['customerPhone', 'content', 'type'])

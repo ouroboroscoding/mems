@@ -550,7 +550,7 @@ class KtCustomer(Record_MySQL.Record):
 		dStruct = cls.struct(custom)
 
 		# Generate SQL
-		sSQL = "SELECT `customerId`, `phoneNumber` " \
+		sSQL = "SELECT `customerId`, `phoneNumber`, `firstName`, `lastName` " \
 				"FROM `%(db)s`.`%(table)s` " \
 				"WHERE CONCAT(`shipFirstName`, ' ', `shipLastName`) = '%(name)s' " \
 				"AND `shipPostalCode` = '%(zip)s' " \
@@ -561,6 +561,8 @@ class KtCustomer(Record_MySQL.Record):
 			"name": name,
 			"zip": zip_
 		}
+
+		print(sSQL)
 
 		# Execute and return the select
 		return Record_MySQL.Commands.select(
@@ -863,6 +865,36 @@ class SMSStop(Record_MySQL.Record):
 		if not cls._conf:
 			cls._conf = Record_MySQL.Record.generateConfig(
 				Tree.fromFile('../definitions/monolith/sms_stop.json'),
+				'mysql'
+			)
+
+		# Return the config
+		return cls._conf
+
+# SMSTemplate class
+class SMSTemplate(Record_MySQL.Record):
+	"""SMSTemplate
+
+	Represents an SMS template for the workflow
+	"""
+
+	_conf = None
+	"""Configuration"""
+
+	@classmethod
+	def config(cls):
+		"""Config
+
+		Returns the configuration data associated with the record type
+
+		Returns:
+			dict
+		"""
+
+		# If we haven loaded the config yet
+		if not cls._conf:
+			cls._conf = Record_MySQL.Record.generateConfig(
+				Tree.fromFile('../definitions/monolith/sms_template.json'),
 				'mysql'
 			)
 

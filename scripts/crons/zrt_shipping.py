@@ -22,15 +22,18 @@ from RestOC import Conf, Record_MySQL, Services, Sesh
 from shared import Email
 
 # Service imports
-from services.monolith.records import KtCustomer, ShippingInfo
+from services.monolith.records import KtCustomer, ShippingInfo, SMSTemplate
 
 # Cron imports
 from . import isRunning
 
 reContent = re.compile(
-	r'Tracking Number:\s+([A-Z0-9]+)\s+http:\/\/.*?datesent=([0-9]{8})\s+Ship To:\s+([^\n]+)\s+([^\n]+)\s+([^,]+),\s+([A-Z]{2})\s+([0-9]{5}(?:-[0-9]{4})?)\s+US',
+	r'Tracking Number:\s+([A-Z0-9]+)\s+(http:\/\/.*?datesent=([0-9]{8}))\s+Ship To:\s+([^\n]+)\s+([^\n]+)\s+([^,]+),\s+([A-Z]{2})\s+([0-9]{5}(?:-[0-9]{4})?)\s+US',
 	re.M | re.U
 )
+
+HRT_GROUP = 4
+ZRT_KIT_SHIPPED = 27
 
 def emailError(error):
 	"""Email Error
@@ -83,7 +86,7 @@ def run():
 		port=993,
 		tls=True,
 		from_='pkginfo@ups.com',
-		markread=False
+		markread=True
 	)
 
 	# If we got no emails
@@ -96,6 +99,10 @@ def run():
 		# Replace \r\n with \n
 		d['text'] = d['text'].decode('utf8').replace('\r\n', '\n')
 
+		# If status has changed
+		if 'The status of your package has changed.' in d['text']:
+			continue
+
 		# Parse the text
 		oMatch = reContent.search(d['text'])
 
@@ -106,12 +113,11 @@ def run():
 
 		# Store the matches
 		lMatches = oMatch.groups();
-		print(str(lMatches));
 
 		# Try to find the customer by Name and Zip
 		dKtCustomer = KtCustomer.byNameAndZip(
-			lMatches[2],
-			lMatches[6]
+			lMatches[3],
+			lMatches[7]
 		)
 
 		# If no customer
@@ -122,26 +128,60 @@ def run():
 		# Get current date/time
 		sDT = arrow.get().format('YYYY-MM-DD HH:mm:ss')
 
+		# Make the date readable
+		sDate = '%s-%s-%s' % (lMatches[2][4:8], lMatches[2][0:2], lMatches[2][2:4])
+
 		# Create an instance of the shipping record
 		try:
 			oShipInfo = ShippingInfo({
 				"customerId": dKtCustomer['customerId'],
 				"code": lMatches[0],
 				"type": 'UPS',
-				"date": '%s-%s-%s' % (lMatches[1][4:8], lMatches[1][0:2], lMatches[1][2:4]),
+				"date": sDate,
 				"createdAt": sDT,
 				"updatedAt": sDT
 			})
 		except ValueError as e:
 			emailError('Couldn\'t create ShippingInfo for :\n\n%s\n\n%s' % (
 				dKtCustomer['customerId'],
-				str(lMatches.groups())
+				str(lMatches)
 			))
 			continue
 
 		# Create the record
 		oShipInfo.create(conflict='replace');
 
+		# Find the template
+		dSmsTpl = SMSTemplate.filter({
+			"groupId": HRT_GROUP,
+			"type": 'sms',
+			"step": ZRT_KIT_SHIPPED
+		}, raw=['content'], limit=1)
+
+		# Convert any arguments
+		sContent = dSmsTpl['content']. \
+				replace('{tracking_code}', lMatches[0]). \
+				replace('{tracking_date}', sDate) . \
+				replace('{tracking_link}', lMatches[1]). \
+				replace('{patient_first}', dKtCustomer['firstName']). \
+				replace('{patient_last}', dKtCustomer['lastName']). \
+				replace('{patient_name}', '%s %s' % (dKtCustomer['firstName'], dKtCustomer['lastName']))
+
+		# Send the SMS to the patient
+		oEff = Services.create('monolith', 'message/outgoing', {
+			"_internal_": Services.internalKey(),
+			"name": "HRT Workflow",
+			"customerPhone": dKtCustomer['phoneNumber'],
+			"content": sContent,
+			"type": 'support'
+		})
+		if oEff.errorExists():
+			emailError('Couldn\'t send sms :\n\n%s\n\n%s\n\n%s' % (
+				dKtCustomer['customerId'],
+				str(lMatches),
+				str(oEff)
+			))
+			continue
 
 	# Return OK
 	return 1
