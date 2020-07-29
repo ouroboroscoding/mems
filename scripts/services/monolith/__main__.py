@@ -67,7 +67,7 @@ REST.Server({
 	"/customer/shipping": {"methods": REST.READ, "session": True},
 
 	"/message/incoming": {"methods": REST.CREATE},
-	"/message/outgoing": {"methods": REST.CREATE, "session": True},
+	"/message/outgoing": {"methods": REST.CREATE},
 	"/msgs/claimed": {"methods": REST.READ, "session": True},
 	"/msgs/claimed/new": {"methods": REST.READ, "session": True},
 	"/msgs/search": {"methods": REST.READ, "session": True},
