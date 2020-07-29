@@ -4,3 +4,4 @@ rest-oc==0.4.3
 gevent==1.4.0
 gevent-websocket==0.10.1
 twilio==6.39.0
+xlrd==1.2.0
