@@ -87,7 +87,7 @@ def parse(filename, conf, sheet=0, start_row=0):
 	lRet = []
 
 	# Load the file
-	oXLS = xlrd.open_workbook(sFilename)
+	oXLS = xlrd.open_workbook(filename)
 
 	# If we have an int
 	if isinstance(sheet, int):
