@@ -28,12 +28,13 @@ from services.monolith.records import KtCustomer, ShippingInfo, SMSTemplate
 from . import isRunning
 
 reContent = re.compile(
-	r'Tracking Number:\s+([A-Z0-9]+)\s+(http:\/\/.*?datesent=([0-9]{8}))\s+Ship To:\s+([^\n]+)\s+([^\n]+)\s+([^,]+),\s+([A-Z]{2})\s+([0-9]{5}(?:-[0-9]{4})?)\s+US',
+	r'Tracking Number:\s+([A-Z0-9]+)\s+(http:\/\/.*?datesent=([0-9]{8}).*)\s+Ship To:\s+([^\n]+)\s+([^\n]+)\s+([^,]+),\s+([A-Z]{2})\s+([0-9]{5}(?:-[0-9]{4})?)\s+US',
 	re.M | re.U
 )
 
 HRT_GROUP = 4
 ZRT_KIT_SHIPPED = 27
+ZRT_KIT_DELIVERED = 28
 
 def emailError(error):
 	"""Email Error
@@ -46,6 +47,8 @@ def emailError(error):
 	Returns:
 		bool
 	"""
+
+	print(error)
 
 	# Send the email
 	oEff = Services.create('communications', 'email', {
@@ -125,37 +128,56 @@ def run():
 			emailError('No customer found for:\n\n%s' % str(lMatches))
 			continue
 
-		# Get current date/time
-		sDT = arrow.get().format('YYYY-MM-DD HH:mm:ss')
-
 		# Make the date readable
 		sDate = '%s-%s-%s' % (lMatches[2][4:8], lMatches[2][0:2], lMatches[2][2:4])
 
-		# Create an instance of the shipping record
-		try:
-			oShipInfo = ShippingInfo({
-				"customerId": dKtCustomer['customerId'],
-				"code": lMatches[0],
-				"type": 'UPS',
-				"date": sDate,
-				"createdAt": sDT,
-				"updatedAt": sDT
-			})
-		except ValueError as e:
-			emailError('Couldn\'t create ShippingInfo for :\n\n%s\n\n%s' % (
+		# Is this a delivery
+		if 'your package has been delivered' in d['text']:
+
+			# Step
+			iStep = ZRT_KIT_DELIVERED
+
+		# Else if the package was shipped
+		elif 'You have a package coming' in d['text']:
+
+			# Get current date/time
+			sDT = arrow.get().format('YYYY-MM-DD HH:mm:ss')
+
+			# Create an instance of the shipping record
+			try:
+				oShipInfo = ShippingInfo({
+					"customerId": dKtCustomer['customerId'],
+					"code": lMatches[0],
+					"type": 'UPS',
+					"date": sDate,
+					"createdAt": sDT,
+					"updatedAt": sDT
+				})
+			except ValueError as e:
+				emailError('Couldn\'t create ShippingInfo for:\n\n%s\n\n%s' % (
+					dKtCustomer['customerId'],
+					str(lMatches)
+				))
+				continue
+
+			# Create the record
+			oShipInfo.create(conflict='replace');
+
+			# Step
+			iStep = ZRT_KIT_SHIPPED
+
+		# Unknown email
+		else:
+			emailError('Unknown email type:\n\n%s\n\n%s' % (
 				dKtCustomer['customerId'],
 				str(lMatches)
 			))
-			continue
-
-		# Create the record
-		oShipInfo.create(conflict='replace');
 
 		# Find the template
 		dSmsTpl = SMSTemplate.filter({
 			"groupId": HRT_GROUP,
 			"type": 'sms',
-			"step": ZRT_KIT_SHIPPED
+			"step": iStep
 		}, raw=['content'], limit=1)
 
 		# Convert any arguments
@@ -176,7 +198,7 @@ def run():
 			"type": 'support'
 		})
 		if oEff.errorExists():
-			emailError('Couldn\'t send sms :\n\n%s\n\n%s\n\n%s' % (
+			emailError('Couldn\'t send sms:\n\n%s\n\n%s\n\n%s' % (
 				dKtCustomer['customerId'],
 				str(lMatches),
 				str(oEff)
