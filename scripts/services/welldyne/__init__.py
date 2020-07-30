@@ -454,8 +454,6 @@ class WellDyne(Services.Service):
 		# If we have records
 		if lRecords:
 
-			print(lRecords)
-
 			# Find all the customer names
 			oEff = Services.read('monolith', 'customer/name', {
 				"customerId": [str(d['customerId']) for d in lRecords]

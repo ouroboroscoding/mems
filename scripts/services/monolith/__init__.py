@@ -28,8 +28,9 @@ from shared import Rights
 
 # Service imports
 from .records import CustomerClaimed, CustomerCommunication, CustomerMsgPhone, \
-						DsPatient, Forgot, KtCustomer, KtOrder, ShippingInfo, \
-						SmpNote, SmpOrderStatus, SMSStop, TfAnswer, TfLanding, \
+						DsPatient, Forgot, KtCustomer, KtOrder, \
+						PharmacyFillError, ShippingInfo, SmpNote, \
+						SmpOrderStatus, SMSStop, TfAnswer, TfLanding, \
 						TfQuestion, TfQuestionOption, User, \
 						init as recInit
 
@@ -325,10 +326,7 @@ class Monolith(Services.Service):
 			return Services.Effect(0)
 
 		# Return the ID
-		return Services.Effect({
-			"customerId": dRes['customerId'],
-			"claimedUser": dRes['claimedUser']
-		})
+		return Services.Effect(dRes)
 
 	def customerMessages_read(self, data, sesh):
 		"""Customer Messages
@@ -1232,6 +1230,136 @@ class Monolith(Services.Service):
 
 		# Return OK
 		return Services.Effect(True)
+
+	def pharmacyFillError_delete(self, data, sesh):
+		"""Pharmacy Fill Error Delete
+
+		Deletes an existing record from the PharmacyFillError report
+
+		Arguments:
+			data (dict): Data sent with the request
+			sesh (Sesh._Session): The session associated with the request
+
+		Returns:
+			Services.Effect
+		"""
+
+		# Make sure the user has the proper rights
+		oEff = Services.read('auth', 'rights/verify', {
+			"name": "pharmacy_fill",
+			"right": Rights.DELETE
+		}, sesh)
+		if not oEff.data:
+			return Services.Effect(error=Rights.INVALID)
+
+		# Verify minimum fields
+		try: DictHelper.eval(data, ['id'])
+		except ValueError as e: return Services.Effect(error=(1001, [(f, 'missing') for f in e.args]))
+
+		# Find the record
+		oPharmacyFillError = PharmacyFillError.get(data['id'])
+		if not oPharmacyFillError:
+			return Services.Effect(error=1104)
+
+		# Delete the record and return the result
+		return Services.Effect(
+			oPharmacyFillError.delete()
+		)
+
+	def pharmacyFillError_update(self, data, sesh):
+		"""Pharmacy Fill Error Update
+
+		Updates the ready or orderId values of an existing pharmacyFillError record
+
+		Arguments:
+			data (dict): Data sent with the request
+			sesh (Sesh._Session): The session associated with the request
+
+		Returns:
+			Services.Effect
+		"""
+
+		# Make sure the user has the proper rights
+		oEff = Services.read('auth', 'rights/verify', {
+			"name": "pharmacy_fill",
+			"right": Rights.UPDATE
+		}, sesh)
+		if not oEff.data:
+			return Services.Effect(error=Rights.INVALID)
+
+		# Verify minimum fields
+		try: DictHelper.eval(data, ['id'])
+		except ValueError as e: return Services.Effect(error=(1001, [(f, 'missing') for f in e.args]))
+
+		# If we have neither the ready or the order ID
+		if 'ready' not in data and 'orderId' not in data:
+			return Services.Effect(error=(1001, [('ready', 'missing'), ('orderId', 'missing')]))
+
+		# Find the record
+		oPharmacyFillError = PharmacyFillError.get(data['id'])
+		if not oPharmacyFillError:
+			return Services.Effect(error=1104)
+
+		# Update the ready state if we got it
+		if 'ready' in data:
+			oPharmacyFillError['ready'] = data['ready'] and True or False
+
+		# Update the order ID if we got it
+		if 'orderId' in data:
+			oPharmacyFillError['orderId'] = data['orderId']
+
+		# Save and return the result
+		return Services.Effect(
+			oPharmacyFillError.save()
+		)
+
+	def pharmacyFillErrors_read(self, data, sesh):
+		"""Pharmacy Fill Errors
+
+		Returns all pharmacy fill error records with a count of at least one
+
+		Arguments:
+			data (dict): Data sent with the request
+			sesh (Sesh._Session): The session associated with the request
+
+		Returns:
+			Services.Effect
+		"""
+
+		# Make sure the user has the proper rights
+		oEff = Services.read('auth', 'rights/verify', {
+			"name": "pharmacy_fill",
+			"right": Rights.READ
+		}, sesh)
+		if not oEff.data:
+			return Services.Effect(error=Rights.INVALID)
+
+		# Fetch all the records joined with the trigger table
+		lRecords = PharmacyFillError.filter({"failCount": {
+			"neq": 0
+		}}, raw=True, orderby=[('failCount', 'DESC')])
+
+		# If we have records
+		if lRecords:
+
+			# Find all the customer names
+			oEff = Services.read('monolith', 'customer/name', {
+				"customerId": [str(d['customerId']) for d in lRecords]
+			}, sesh)
+			if oEff.errorExists(): return oEff
+			dCustomers = {k:'%s %s' % (d['firstName'], d['lastName']) for k,d in oEff.data.items()}
+
+			# Go through each record and add the customer and user names
+			for d in lRecords:
+				sCustId = str(d['customerId'])
+				d['customerName'] = sCustId in dCustomers and dCustomers[sCustId] or 'Unknown'
+
+			# Return all records
+			return Services.Effect(lRecords)
+
+		# Else return an empty array
+		else:
+			return Services.Effect([])
 
 	def session_read(self, data, sesh):
 		"""Session
