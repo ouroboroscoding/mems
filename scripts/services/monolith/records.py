@@ -24,7 +24,6 @@ from RestOC import Conf, Record_MySQL
 sClaimedSQL = ''
 sClaimedNewSQL = ''
 sConversationSQL = ''
-sCustomerByPhone = ''
 sLandingSQL = ''
 sLatestStatusSQL = ''
 sMsgPhoneUpdateSQL = ''
@@ -40,9 +39,10 @@ def init():
 	Need to find a better way to do this
 	"""
 
-	global sClaimedSQL, sClaimedNewSQL, sConversationSQL, sCustomerByPhone, \
-			sLandingSQL, sLatestStatusSQL, sMsgPhoneUpdateSQL, sSmpNotes, \
-			sNumOfOrdersSQL, sSearchSQL, sUnclaimedSQL, sUnclaimedCountSQL
+	global sClaimedSQL, sClaimedNewSQL, sConversationSQL, \
+			sLandingSQL, sLatestStatusSQL, sMsgPhoneUpdateSQL, \
+			sSmpNotes, sNumOfOrdersSQL, sSearchSQL, \
+			sUnclaimedSQL, sUnclaimedCountSQL
 
 	# SQL files
 	with open('./services/monolith/sql/claimed.sql') as oF:
@@ -51,8 +51,6 @@ def init():
 		sClaimedNewSQL = oF.read()
 	with open('./services/monolith/sql/conversation.sql') as oF:
 		sConversationSQL = oF.read()
-	with open('./services/monolith/sql/customer_by_phone.sql') as oF:
-		sCustomerByPhone = oF.read()
 	with open('./services/monolith/sql/landing.sql') as oF:
 		sLandingSQL = oF.read()
 	with open('./services/monolith/sql/latest_status.sql') as oF:
@@ -589,7 +587,15 @@ class KtCustomer(Record_MySQL.Record):
 		dStruct = cls.struct(custom)
 
 		# Generate SQL
-		sSQL = sCustomerByPhone % {
+		sSQL = "SELECT " \
+				"`ktc`.`customerId` as `customerId`, " \
+				"CONCAT(`ktc`.`firstName`, ' ', `ktc`.`lastName`) as `customerName`, " \
+				"`cc`.`user` as `claimedUser` " \
+				"FROM `%(db)s`.`%(table)s` as `ktc` " \
+				"LEFT JOIN `%(db)s`.`customer_claimed` as `cc` ON `ktc`.`phoneNumber` = `cc`.`phoneNumber` " \
+				"WHERE `ktc`.`phoneNumber` IN ('%(number)s', '1%(number)s') " \
+				"ORDER BY `ktc`.`updatedAt` DESC " \
+				"LIMIT 1" % {
 			"db": dStruct['db'],
 			"table": dStruct['table'],
 			"number": number
@@ -682,6 +688,36 @@ class KtOrder(Record_MySQL.Record):
 			},
 			Record_MySQL.ESelect.COLUMN
 		)
+
+# PharmacyFillError class
+class PharmacyFillError(Record_MySQL.Record):
+	"""PharmacyFillError
+
+	Represents an error while attempting to fill an order with a pharmacy
+	"""
+
+	_conf = None
+	"""Configuration"""
+
+	@classmethod
+	def config(cls):
+		"""Config
+
+		Returns the configuration data associated with the record type
+
+		Returns:
+			dict
+		"""
+
+		# If we haven loaded the config yet
+		if not cls._conf:
+			cls._conf = Record_MySQL.Record.generateConfig(
+				Tree.fromFile('../definitions/monolith/pharmacy_fill_error.json'),
+				'mysql'
+			)
+
+		# Return the config
+		return cls._conf
 
 # ShippingInfo class
 class ShippingInfo(Record_MySQL.Record):

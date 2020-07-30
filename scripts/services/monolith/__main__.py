@@ -78,6 +78,9 @@ REST.Server({
 
 	"/passwd/forgot": {"methods": REST.CREATE | REST.UPDATE},
 
+	"/pharmacy/fill/error": {"methods": REST.UPDATE | REST.DELETE, "session": True},
+	"/pharmacy/fill/errors": {"methods": REST.READ, "session": True},
+
 	"/session": {"methods": REST.READ, "session": True},
 
 	"/signin": {"methods": REST.POST},
