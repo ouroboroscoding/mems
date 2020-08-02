@@ -26,6 +26,10 @@ sConfOverride = '../config.%s.json' % platform.node()
 if os.path.isfile(sConfOverride):
 	Conf.load_merge(sConfOverride)
 
+# Add the global prepend and primary host to mysql
+Record_Base.dbPrepend(Conf.get(("mysql", "prepend"), ''))
+Record_MySQL.addHost('primary', Conf.get(("mysql", "hosts", "primary")))
+
 # Init the Sesh module
 Sesh.init(Conf.get(("redis", "primary")))
 
@@ -51,7 +55,10 @@ REST.Server({
 	"/patient/pharmacies": {"methods": REST.READ, "session": True},
 	"/patient/pharmacy": {"methods": REST.CREATE | REST.DELETE, "session": True},
 	"/patient/prescriptions": {"methods": REST.READ, "session": True},
-	"/patient/sso": {"methods": REST.READ, "session": True}
+	"/patient/sso": {"methods": REST.READ, "session": True},
+
+	"/pharmacy/fill/error": {"methods": REST.UPDATE | REST.DELETE, "session": True},
+	"/pharmacy/fill/errors": {"methods": REST.READ, "session": True}
 
 }, 'prescriptions', "https?://(.*\\.)?%s" % Conf.get(("rest","allowed")).replace('.', '\\.')).run(
 	host=oRestConf['prescriptions']['host'],

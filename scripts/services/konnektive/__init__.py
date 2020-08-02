@@ -28,7 +28,7 @@ class Konnektive(Services.Service):
 	Service for Konnektive CRM access
 	"""
 
-	def __generateURL(self, path, params={}):
+	def _generateURL(self, path, params={}):
 		"""Generate URL
 
 		Takes a path and params and generates the full URL with query string
@@ -52,7 +52,7 @@ class Konnektive(Services.Service):
 			urllib.parse.urlencode(params)
 		)
 
-	def __request(self, path, params):
+	def _request(self, path, params):
 		"""Request
 
 		Fetches every page of data for a specific query
@@ -79,7 +79,7 @@ class Konnektive(Services.Service):
 			params['page'] = iPage
 
 			# Generate the URL
-			sURL = self.__generateURL(path, params)
+			sURL = self._generateURL(path, params)
 
 			# Fetch the data
 			oRes = requests.post(sURL, headers={"Content-Type": 'application/json; charset=utf-8'})
@@ -154,7 +154,7 @@ class Konnektive(Services.Service):
 		except ValueError as e: return Services.Effect(error=(1001, [(f, "missing") for f in e.args]))
 
 		# Make the request to Konnektive
-		lCustomers = self.__request('customer/query', {
+		lCustomers = self._request('customer/query', {
 			"dateRangeType": "dateCreated",
 			"customerId": data['id'],
 			"startDate": "01/01/2019",
@@ -223,7 +223,7 @@ class Konnektive(Services.Service):
 			data['transactions'] = False
 
 		# Make the request to Konnektive
-		lOrders = self.__request('order/query', {
+		lOrders = self._request('order/query', {
 			"dateRangeType": "dateCreated",
 			"customerId": data['id'],
 			"sortDir": 0
@@ -319,7 +319,7 @@ class Konnektive(Services.Service):
 		except ValueError as e: return Services.Effect(error=(1001, [(f, "missing") for f in e.args]))
 
 		# Make the request to Konnektive
-		lTransactions = self.__request('transactions/query', {
+		lTransactions = self._request('transactions/query', {
 			"dateRangeType": "dateCreated",
 			"customerId": data['id'],
 			"sortDir": 0
@@ -365,7 +365,7 @@ class Konnektive(Services.Service):
 		except ValueError as e: return Services.Effect(error=(1001, [(f, "missing") for f in e.args]))
 
 		# Make the request to Konnektive
-		lTransactions = self.__request('transactions/query', {
+		lTransactions = self._request('transactions/query', {
 			"dateRangeType": "dateUpdated",
 			"orderId": data['id'],
 			"sortDir": 0

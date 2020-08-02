@@ -13,18 +13,22 @@ __created__		= "2020-07-03"
 
 # Python imports
 import re
+from io import StringIO
 from time import time
 import uuid
 
 # Pip imports
 import arrow
+import pysftp
 from RestOC import Conf, DictHelper, Errors, Services, Sesh
 
 # Shared imports
 from shared import Rights
 
 # Service imports
-from .records import AdHoc, Eligibility, Outreach, Trigger
+from .records import AdHoc, AdHocSent, Eligibility, Outbound, OutboundSent, \
+						Trigger, \
+						OldAdHoc, OldOutreach, OldTrigger
 
 class WellDyne(Services.Service):
 	"""WellDyne Service class
@@ -32,7 +36,7 @@ class WellDyne(Services.Service):
 	Service for WellDyne, sign in, sign up, etc.
 	"""
 
-	_install = []
+	_install = [AdHoc, AdHocSent, Outbound, OutboundSent, Trigger]
 	"""Record types called in install"""
 
 	def initialise(self):
@@ -65,10 +69,114 @@ class WellDyne(Services.Service):
 			if not o.tableCreate():
 				print("Failed to create `%s` table" % o.tableName())
 
-	def adhoc_create(self, data, sesh):
-		"""AdHoc Create
+	@classmethod
+	def __dateDigits(cls, date):
+		"""Date Digits
 
-		Adds a new record to the AdHoc report
+		Returns just the digits of a date
+
+		Arguments:
+			date (str): The date as a string
+
+		Returns:
+			str
+		"""
+		return '%s%s%s' % (date[0:4], date[5:7], date[8:10])
+
+	@classmethod
+	def _eligibilityGenerateAndUpload(cls, time):
+		"""ELigibility Generate And Upload
+
+		Fetches the valid eligibility, generates a report, and uploads it to
+		the sFTP for WellDyne to consume
+
+		Arguments:
+			time (str): The time to append to the name of the uploaded file
+
+		Returns:
+			None
+		"""
+
+		# Find all records that have a member through date
+		lRecords = Eligibility.withCustomerData()
+
+		# Init the list of lines
+		lLines = []
+
+		# Go through each record and generate the line
+		for d in lRecords:
+			lLines.append(''.join([
+				'ED'.ljust(15),										# Group ID
+				str(d['customerId']).zfill(6).ljust(18),			# Member ID
+				'00',												# Person code
+				'1',												# Relationship
+				(d['shipLastName'] or '')[0:25].ljust(25),			# Last Name
+				(d['shipFirstName'] or '')[0:15].ljust(15),			# First Name
+				' ',												# Middle initial
+				'M',												# Sex
+				cls.__dateDigits(d['dob'] or '').ljust(8),			# DOB
+				' ',												# Multiple Birth Code
+				'                  ',								# DurKey
+				'         ',										# Unique ID for Accums
+				(d['shipAddress1'] or '')[0:40].ljust(40),			# Address 1
+				(d['shipAddress2'] or '')[0:40].ljust(40),			# Address 2
+				'                                        ',			# Address 3
+				(d['shipCity'] or '')[0:20].ljust(20),				# City
+				(d['shipState'] or '')[0:2].ljust(2),				# State
+				(d['shipPostalCode'] or '')[0:5].ljust(5),			# Zip 5
+				'    ',												# Zip 5 + 4
+				'  ',												# Zip 5 + 4 + 2
+				(d['phoneNumber'] or '')[-10:].ljust(10),			# Phone
+				' ',												# Family Flag
+				' ',												# Family Type
+				'                  ',								# Family ID
+				'        ',											# Benefit Reset Date
+				cls.__dateDigits(d['memberSince']).ljust(8),		# Member From Date
+				cls.__dateDigits(d['memberThru']).ljust(8),			# Member Thru Date
+				'               ',									# PCP ID
+				'  ',												# PCP ID Qualifier
+				'  ',												# PCP ID State
+				' ',												# Alt Ins Flag
+				'          ',										# Alt Ins Code
+				'        ',											# Alt Ins From Date
+				'        ',											# Alt Ins Thru Date
+				'                  ',								# Unique Patient ID
+				'                    ',								# Diagnosis Code 1
+				'        ',											# Diagnosis Code 1 From Date
+				'        ',											# Diagnosis Code 1 Thru Date
+				'  ',												# Qualifier 1
+				'                    ',								# Diagnosis Code 2
+				'        ',											# Diagnosis Code 2 From Date
+				'        ',											# Diagnosis Code 2 Thru Date
+				'  ',												# Qualifier 2
+				'                    ',								# Diagnosis Code 3
+				'        ',											# Diagnosis Code 3 From Date
+				'        ',											# Diagnosis Code 3 Thru Date
+				'  ',												# Qualifier 3
+				(d['emailAddress'] or '')[0:50].ljust(50),			# E-mail address
+				'           '										# ID Card Template
+		]))
+
+		# Generate the filename with the current date
+		sDate = '%s%s' % (arrow.get().format('YYYYMMDD'), time)
+		sFilename = 'RWTMEXCEL%s.TXT' % sDate;
+
+		# Get the sFTP config
+		dSFTP = Conf.get(('welldyne', 'sftp'))
+
+		# Pull off the subdirectory if there is one
+		sFolder = dSFTP.pop('folder', None)
+		if sFolder:
+			sFilename = '%s/%s' % (sFolder, sFilename)
+
+		# Upload the file to the sFTP
+		with pysftp.Connection(**dSFTP) as oCon:
+			oCon.putfo(StringIO('\n'.join(lLines)), sFilename)
+
+	def oldAdhoc_create(self, data, sesh):
+		"""OldAdHoc Create
+
+		Adds a new record to the OldAdHoc report
 
 		Arguments:
 			data (dict): Data sent with the request
@@ -112,21 +220,21 @@ class WellDyne(Services.Service):
 			data['user'] = sesh['memo_id']
 			data['createdAt'] = sDT
 			data['updatedAt'] = sDT
-			oAdHoc = AdHoc(data)
+			oOldAdHoc = OldAdHoc(data)
 		except ValueError as e:
 			return Services.Effect(error=(1001, e.args[0]))
 
 		# Create the record and return the result
 		return Services.Effect({
-			"id": oAdHoc.create(),
+			"id": oOldAdHoc.create(),
 			"customerName": '%s %s' % (dCustomer['firstName'], dCustomer['lastName']),
 			"userName": '%s %s' % (dUser['firstName'], dUser['lastName'])
 		})
 
-	def adhoc_delete(self, data, sesh):
-		"""AdHoc Delete
+	def oldAdhoc_delete(self, data, sesh):
+		"""OldAdHoc Delete
 
-		Deletes an existing record from the AdHoc report
+		Deletes an existing record from the OldAdHoc report
 
 		Arguments:
 			data (dict): Data sent with the request
@@ -149,16 +257,16 @@ class WellDyne(Services.Service):
 		except ValueError as e: return Services.Effect(error=(1001, [(f, 'missing') for f in e.args]))
 
 		# Find the record
-		oAdHoc = AdHoc.get(data['id'])
-		if not oAdHoc:
+		oOldAdHoc = OldAdHoc.get(data['id'])
+		if not oOldAdHoc:
 			return Services.Effect(error=1104)
 
 		# Delete the record and return the result
 		return Services.Effect(
-			oAdHoc.delete()
+			oOldAdHoc.delete()
 		)
 
-	def adhocs_read(self, data, sesh):
+	def oldAdhocs_read(self, data, sesh):
 		"""Adhocs
 
 		Returns all adhoc records
@@ -180,7 +288,7 @@ class WellDyne(Services.Service):
 			return Services.Effect(error=Rights.INVALID)
 
 		# Fetch all the records
-		lRecords = AdHoc.get(raw=['id', 'customerId', 'type', 'user'])
+		lRecords = OldAdHoc.get(raw=['id', 'customerId', 'type', 'user'])
 
 		# If we have records
 		if lRecords:
@@ -209,10 +317,10 @@ class WellDyne(Services.Service):
 		# Return all records
 		return Services.Effect(lRecords)
 
-	def outreach_delete(self, data, sesh):
-		"""Outreach Delete
+	def oldOutreach_delete(self, data, sesh):
+		"""OldOutreach Delete
 
-		Deletes an existing record from the Outreach report
+		Deletes an existing record from the OldOutreach report
 
 		Arguments:
 			data (dict): Data sent with the request
@@ -235,17 +343,17 @@ class WellDyne(Services.Service):
 		except ValueError as e: return Services.Effect(error=(1001, [(f, 'missing') for f in e.args]))
 
 		# Find the record
-		oOutreach = Outreach.get(data['id'])
-		if not oOutreach:
+		oOldOutreach = OldOutreach.get(data['id'])
+		if not oOldOutreach:
 			return Services.Effect(error=1104)
 
 		# Delete the record and return the result
 		return Services.Effect(
-			oOutreach.delete()
+			oOldOutreach.delete()
 		)
 
-	def outreachAdhoc_update(self, data, sesh):
-		"""Outreach AdHoc
+	def oldOutreachAdhoc_update(self, data, sesh):
+		"""OldOutreach OldAdHoc
 
 		Removes a customer from the outreach and puts them as an adhoc / remove
 		error record
@@ -279,13 +387,13 @@ class WellDyne(Services.Service):
 		except ValueError as e: return Services.Effect(error=(1001, [(f, 'missing') for f in e.args]))
 
 		# Find the record
-		oOutreach = Outreach.get(data['id'])
-		if not oOutreach:
+		oOldOutreach = OldOutreach.get(data['id'])
+		if not oOldOutreach:
 			return Services.Effect(error=1104)
 
 		# Check the customer exists
 		oEff = Services.read('monolith', 'customer/name', {
-			"customerId": str(oOutreach['customerId'])
+			"customerId": str(oOldOutreach['customerId'])
 		}, sesh)
 		if oEff.errorExists(): return oEff
 		dCustomer = oEff.data
@@ -302,8 +410,8 @@ class WellDyne(Services.Service):
 
 		# Try to create a new adhoc instance
 		try:
-			oAdHoc = AdHoc({
-				"customerId": oOutreach['customerId'],
+			oOldAdHoc = OldAdHoc({
+				"customerId": oOldOutreach['customerId'],
 				"type": "Remove Error",
 				"user": sesh['memo_id'],
 				"createdAt": sDT,
@@ -313,23 +421,23 @@ class WellDyne(Services.Service):
 			return Services.Effect(error=(1001, e.args[0]))
 
 		# Create the adhoc record
-		iID = oAdHoc.create();
+		iID = oOldAdHoc.create();
 
 		# Delete the outreach record
-		oOutreach.delete()
+		oOldOutreach.delete()
 
 		# Turn the adhoc instance into a dict
-		dAdHoc = oAdHoc.record()
+		dOldAdHoc = oOldAdHoc.record()
 
 		# Add the names
-		dAdHoc['customerName'] = "%s %s" % (dCustomer['firstName'], dCustomer['lastName'])
-		dAdHoc['userName'] = "%s %s" % (dUser['firstName'], dUser['lastName'])
+		dOldAdHoc['customerName'] = "%s %s" % (dCustomer['firstName'], dCustomer['lastName'])
+		dOldAdHoc['userName'] = "%s %s" % (dUser['firstName'], dUser['lastName'])
 
 		# Return the new adhoc data
-		return Services.Effect(dAdHoc)
+		return Services.Effect(dOldAdHoc)
 
-	def outreachReady_update(self, data, sesh):
-		"""Outreach Ready
+	def oldOutreachReady_update(self, data, sesh):
+		"""OldOutreach Ready
 
 		Updates the ready state of an existing outreach record
 
@@ -354,20 +462,20 @@ class WellDyne(Services.Service):
 		except ValueError as e: return Services.Effect(error=(1001, [(f, 'missing') for f in e.args]))
 
 		# Find the record
-		oOutreach = Outreach.get(data['id'])
-		if not oOutreach:
+		oOldOutreach = OldOutreach.get(data['id'])
+		if not oOldOutreach:
 			return Services.Effect(error=1104)
 
 		# Update the ready state
-		oOutreach['ready'] = data['ready'] and True or False
+		oOldOutreach['ready'] = data['ready'] and True or False
 
 		# Save and return the result
 		return Services.Effect(
-			oOutreach.save()
+			oOldOutreach.save()
 		)
 
-	def outreachs_read(self, data, sesh):
-		"""Outreachs
+	def oldOutreachs_read(self, data, sesh):
+		"""OldOutreachs
 
 		Returns all outreach records
 
@@ -388,7 +496,7 @@ class WellDyne(Services.Service):
 			return Services.Effect(error=Rights.INVALID)
 
 		# Fetch all the records joined with the trigger table
-		lRecords = Outreach.withTrigger()
+		lRecords = OldOutreach.witdhOlTrigger()
 
 		# If we have records
 		if lRecords:
@@ -422,7 +530,7 @@ class WellDyne(Services.Service):
 		else:
 			return Services.Effect([])
 
-	def stats_read(self, data, sesh):
+	def oldStats_read(self, data, sesh):
 		"""Stats
 
 		Returns stats about WellDyne
@@ -436,11 +544,11 @@ class WellDyne(Services.Service):
 		"""
 
 		return Services.Effect({
-			"vs": Trigger.vsShipped()
+			"vs": OldTrigger.vsShipped()
 		})
 
-	def triggerInfo_read(self, data, sesh):
-		"""Trigger Info
+	def oldTriggerInfo_read(self, data, sesh):
+		"""OldTrigger Info
 
 		Returns the last trigger associated with the customer, including any
 		possible outreach and eligibility
@@ -466,11 +574,11 @@ class WellDyne(Services.Service):
 		except ValueError as e: return Services.Effect(error=(1001, [(f, "missing") for f in e.args]))
 
 		# Look for a trigger with any possible outreach and eligibility
-		dTrigger = Trigger.withOutreachEligibility(data['customerId'])
+		dOldTrigger = OldTrigger.withOutreachEligibility(data['customerId'])
 
 		# If there's nothing
-		if not dTrigger:
-			dTrigger = 0
+		if not dOldTrigger:
+			dOldTrigger = 0
 
 		# Return
-		return Services.Effect(dTrigger)
+		return Services.Effect(dOldTrigger)

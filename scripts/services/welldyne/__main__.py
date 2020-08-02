@@ -68,7 +68,24 @@ REST.Server({
 
 	"/stats": {"methods": REST.READ, "session": True},
 
-	"/trigger/info": {"methods": REST.READ, "session": True}
+	"/trigger/info": {"methods": REST.READ, "session": True},
+
+
+
+
+
+	# Keep for now
+	"/old/adhoc": {"methods": REST.CREATE | REST.DELETE, "session": True},
+	"/old/adhocs": {"methods": REST.READ, "session": True},
+
+	"/old/outreach": {"methods": REST.DELETE, "session": True},
+	"/old/outreach/adhoc": {"methods": REST.UPDATE, "session": True},
+	"/old/outreach/ready": {"methods": REST.UPDATE, "session": True},
+	"/old/outreachs": {"methods": REST.READ, "session": True},
+
+	"/old/stats": {"methods": REST.READ, "session": True},
+
+	"/old/trigger/info": {"methods": REST.READ, "session": True}
 
 }, 'welldyne', "https?://(.*\\.)?%s" % Conf.get(("rest","allowed")).replace('.', '\\.')).run(
 	host=oRestConf['welldyne']['host'],
