@@ -15,6 +15,66 @@ __created__		= "2020-08-01"
 from FormatOC import Tree
 from RestOC import Record_MySQL
 
+# Medication class
+class Medication(Record_MySQL.Record):
+	"""Medication
+
+	Represents a valid medication in DoseSpot
+	"""
+
+	_conf = None
+	"""Configuration"""
+
+	@classmethod
+	def config(cls):
+		"""Config
+
+		Returns the configuration data associated with the record type
+
+		Returns:
+			dict
+		"""
+
+		# If we haven loaded the config yet
+		if not cls._conf:
+			cls._conf = Record_MySQL.Record.generateConfig(
+				Tree.fromFile('../definitions/prescriptions/medication.json'),
+				'mysql'
+			)
+
+		# Return the config
+		return cls._conf
+
+# Pharmacy class
+class Pharmacy(Record_MySQL.Record):
+	"""Pharmacy
+
+	Represents a valid pharmacy in DoseSpot
+	"""
+
+	_conf = None
+	"""Configuration"""
+
+	@classmethod
+	def config(cls):
+		"""Config
+
+		Returns the configuration data associated with the record type
+
+		Returns:
+			dict
+		"""
+
+		# If we haven loaded the config yet
+		if not cls._conf:
+			cls._conf = Record_MySQL.Record.generateConfig(
+				Tree.fromFile('../definitions/prescriptions/pharmacy.json'),
+				'mysql'
+			)
+
+		# Return the config
+		return cls._conf
+
 # PharmacyFillError class
 class PharmacyFillError(Record_MySQL.Record):
 	"""PharmacyFillError

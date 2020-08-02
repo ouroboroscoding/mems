@@ -3,7 +3,6 @@
 
 # Pip imports
 import arrow
-from RestOC import Record_MySQL
 
 # Service imports
 from services.welldyne.records import OldAdHoc, AdHoc

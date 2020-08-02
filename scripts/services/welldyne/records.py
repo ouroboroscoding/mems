@@ -310,6 +310,36 @@ class OutboundSent(Record_MySQL.Record):
 		# Return the config
 		return cls._conf
 
+# RxNumber class
+class RxNumber(Record_MySQL.Record):
+	"""RxNumber
+
+	Represents a prescription number on WellDyne's side
+	"""
+
+	_conf = None
+	"""Configuration"""
+
+	@classmethod
+	def config(cls):
+		"""Config
+
+		Returns the configuration data associated with the record type
+
+		Returns:
+			dict
+		"""
+
+		# If we haven loaded the config yet
+		if not cls._conf:
+			cls._conf = Record_MySQL.Record.generateConfig(
+				Tree.fromFile('../definitions/welldyne/rx_number.json'),
+				'mysql'
+			)
+
+		# Return the config
+		return cls._conf
+
 # Trigger class
 class Trigger(Record_MySQL.Record):
 	"""Trigger
@@ -543,6 +573,36 @@ class OldOutreach(Record_MySQL.Record):
 			sSQL,
 			Record_MySQL.ESelect.ALL
 		)
+
+# OldRxNumber class
+class OldRxNumber(Record_MySQL.Record):
+	"""OldRxNumber
+
+	Represents a customer in the rx_number table
+	"""
+
+	_conf = None
+	"""Configuration"""
+
+	@classmethod
+	def config(cls):
+		"""Config
+
+		Returns the configuration data associated with the record type
+
+		Returns:
+			dict
+		"""
+
+		# If we haven loaded the config yet
+		if not cls._conf:
+			cls._conf = Record_MySQL.Record.generateConfig(
+				Tree.fromFile('../definitions/monolith/wd_rx_number.json'),
+				'mysql'
+			)
+
+		# Return the config
+		return cls._conf
 
 # OldTrigger class
 class OldTrigger(Record_MySQL.Record):

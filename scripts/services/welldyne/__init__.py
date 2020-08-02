@@ -27,7 +27,7 @@ from shared import Rights
 
 # Service imports
 from .records import AdHoc, AdHocSent, Eligibility, Outbound, OutboundSent, \
-						Trigger, \
+						RxNumber, Trigger, \
 						OldAdHoc, OldOutreach, OldTrigger
 
 class WellDyne(Services.Service):
@@ -36,7 +36,7 @@ class WellDyne(Services.Service):
 	Service for WellDyne, sign in, sign up, etc.
 	"""
 
-	_install = [AdHoc, AdHocSent, Outbound, OutboundSent, Trigger]
+	_install = [AdHoc, AdHocSent, Outbound, OutboundSent, RxNumber, Trigger]
 	"""Record types called in install"""
 
 	def initialise(self):

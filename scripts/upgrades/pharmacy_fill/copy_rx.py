@@ -1,16 +1,16 @@
 # coding=utf8
-""" Copy the wd outbound"""
+""" Copy the pharmacy fill errors"""
 
 # Pip imports
 import arrow
 
 # Service imports
-from services.welldyne.records import OldOutreach, Outbound
+from services.welldyne.records import OldRxNumber, RxNumber
 
 def run():
 
 	# Fetch all triggers in the old table
-	lOld = OldOutreach.get(raw=True)
+	lOld = OldRxNumber.get(raw=True)
 	iOld = len(lOld)
 	iCount = 1
 
@@ -22,19 +22,16 @@ def run():
 		iCount += 1
 
 		# Create the new instance
-		oOutbound = Outbound({
+		oRxNumber = RxNumber({
 			"_created": arrow.get(d['createdAt']).timestamp,
+			"_updated": arrow.get(d['updatedAt']).timestamp,
 			"crm_type": 'knk',
 			"crm_id": str(d['customerId']),
-			"crm_order": '',
-			"queue": d['queue'],
-			"reason": d['reason'],
-			"wd_rx": d['rx'],
-			"ready": d['ready']
+			"number": d['rx']
 		})
 
 		# Create the record
-		oOutbound.create(conflict='replace')
+		oRxNumber.create(conflict='replace')
 
 	# Clean console
 	print('\nDone')

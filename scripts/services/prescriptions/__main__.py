@@ -15,7 +15,7 @@ __created__		= "2020-05-10"
 import os, platform
 
 # Pip imports
-from RestOC import Conf, REST, Services, Sesh, Templates
+from RestOC import Conf, Record_Base, Record_MySQL, REST, Services, Sesh, Templates
 
 # App imports
 from services.prescriptions import Prescriptions
@@ -54,7 +54,7 @@ REST.Server({
 	"/patient": {"methods": REST.READ, "session": True},
 	"/patient/pharmacies": {"methods": REST.READ, "session": True},
 	"/patient/pharmacy": {"methods": REST.CREATE | REST.DELETE, "session": True},
-	"/patient/prescriptions": {"methods": REST.READ, "session": True},
+	"/patient/prescriptions": {"methods": REST.READ},
 	"/patient/sso": {"methods": REST.READ, "session": True},
 
 	"/pharmacy/fill/error": {"methods": REST.UPDATE | REST.DELETE, "session": True},

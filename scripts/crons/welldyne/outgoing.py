@@ -21,10 +21,23 @@ import arrow
 from RestOC import Conf, Record_MySQL, Services
 
 # Cron imports
-from . import isRunning
+from crons import isRunning
 
-def report_no_feedback(hours):
-	"""Report Trigger No Feedback
+def adhoc(time):
+	"""AdHoc
+
+	Generates the AdHoc report for WellDyneRX
+
+	Arguments:
+		time (str): The time of day to generate the report for
+
+	Returns:
+		bool
+	"""
+	pass
+
+def no_feedback(hours):
+	"""No Feedback
 
 	Checks on triggered orders that have no error or shipping in X number of
 	hours
@@ -104,15 +117,15 @@ def run(type, arg1=None):
 	"""
 
 	# Trigger No Feedback report
-	if type == 'report_no_feedback':
+	if type == 'no_feedback':
 
 		# If no hours sent, assume 72
 		if not arg1:
 			arg1 = 72
 
 		# Call the report
-		return (not report_no_feedback(int(arg1))) and 1 or 0
+		return no_feedback(int(arg1))
 
 	# Got an invalid report
 	print('Invalid report type: %s' % type)
-	return 1
+	return False

@@ -21,7 +21,7 @@ import requests
 from RestOC import Conf, DictHelper, Errors, Services, StrHelper
 
 # Service imports
-from .records import PharmacyFillError
+from .records import Medication, Pharmacy, PharmacyFillError
 
 _dPharmacies = {
 	6141: "Belmar Pharmacy",
@@ -110,10 +110,10 @@ class Prescriptions(Services.Service):
 	Service for Prescriptions access
 	"""
 
-	_install = [PharmacyFillError]
+	_install = [Medication, Pharmacy, PharmacyFillError]
 	"""Record types called in install"""
 
-	def __generateIds(self, clinician_id):
+	def _generateIds(self, clinician_id):
 		"""Generate IDs
 
 		Generates the encrypted clinic and clinician IDs
@@ -155,7 +155,7 @@ class Prescriptions(Services.Service):
 		# Return the IDs
 		return (sClinicId, sClinicianId)
 
-	def __generateToken(self, clinician_id):
+	def _generateToken(self, clinician_id):
 		"""Generate Token
 
 		Generates the Auth token needed for all HTTP requests
@@ -171,7 +171,7 @@ class Prescriptions(Services.Service):
 		"""
 
 		# Generate the encrypted IDs
-		lIDs = self.__generateIds(clinician_id)
+		lIDs = self._generateIds(clinician_id)
 
 		# Generate the request headers
 		sAuth = '%d:%s' % (self._clinic_id, lIDs[0])
@@ -276,7 +276,7 @@ class Prescriptions(Services.Service):
 			if lErrors: return Services.Effect(error=(1001, lErrors))
 
 		# Generate the token
-		sToken = self.__generateToken(data['clinician_id'])
+		sToken = self._generateToken(data['clinician_id'])
 
 		# Generate the URL
 		sURL = 'https://%s/webapi/api/patients/%d' % (
@@ -343,7 +343,7 @@ class Prescriptions(Services.Service):
 			if lErrors: return Services.Effect(error=(1001, lErrors))
 
 		# Generate the token
-		sToken = self.__generateToken(data['clinician_id'])
+		sToken = self._generateToken(data['clinician_id'])
 
 		# Generate the URL
 		sURL = 'https://%s/webapi/api/patients/%d/pharmacies' % (
@@ -410,7 +410,7 @@ class Prescriptions(Services.Service):
 			if lErrors: return Services.Effect(error=(1001, lErrors))
 
 		# Generate the token
-		sToken = self.__generateToken(data['clinician_id'])
+		sToken = self._generateToken(data['clinician_id'])
 
 		# Generate the URL
 		sURL = 'https://%s/webapi/api/patients/%d/pharmacies/%s' % (
@@ -478,7 +478,7 @@ class Prescriptions(Services.Service):
 			if lErrors: return Services.Effect(error=(1001, lErrors))
 
 		# Generate the token
-		sToken = self.__generateToken(data['clinician_id'])
+		sToken = self._generateToken(data['clinician_id'])
 
 		# Generate the URL
 		sURL = 'https://%s/webapi/api/patients/%d/pharmacies/%s' % (
@@ -510,7 +510,7 @@ class Prescriptions(Services.Service):
 		# Return the pharmacies
 		return Services.Effect(True)
 
-	def patientPrescriptions_read(self, data, sesh):
+	def patientPrescriptions_read(self, data, sesh=None):
 		"""Patient Prescriptions
 
 		Fetches all prescriptions associated with a patient. Requires internal
@@ -524,13 +524,30 @@ class Prescriptions(Services.Service):
 			Services.Effect
 		"""
 
-		# Make sure the user has the proper rights
-		#oEff = self.verify_read({
-		#	"name": "prescriptions",
-		#	"right": Rights.READ
-		#}, sesh)
-		#if not oEff.data:
-		#	return Services.Effect(error=Rights.INVALID)
+		# If we have no session and no key
+		if not sesh and '_internal_' not in data:
+			return Services.Effect(error=(1001, [('_internal_', 'missing')]))
+
+		# If it's internal
+		if '_internal_' in data:
+
+			# Verify the key, remove it if it's ok
+			if not Services.internalKey(data['_internal_']):
+				return Services.Effect(error=Errors.SERVICE_INTERNAL_KEY)
+			del data['_internal_']
+
+		# Else
+		"""
+		else:
+
+			# Make sure the user has the proper rights
+			oEff = self.verify_read({
+				"name": "prescriptions",
+				"right": Rights.READ
+			}, sesh)
+			if not oEff.data:
+				return Services.Effect(error=Rights.INVALID)
+		"""
 
 		# Verify fields
 		try: DictHelper.eval(data, ['patient_id'])
@@ -547,7 +564,7 @@ class Prescriptions(Services.Service):
 			if lErrors: return Services.Effect(error=(1001, lErrors))
 
 		# Generate the token
-		sToken = self.__generateToken(data['clinician_id'])
+		sToken = self._generateToken(data['clinician_id'])
 
 		# Generate the URL
 		sURL = 'https://%s/webapi/api/patients/%d/prescriptions' % (
@@ -621,7 +638,7 @@ class Prescriptions(Services.Service):
 			if lErrors: return Services.Effect(error=(1001, lErrors))
 
 		# Generate the IDs
-		lIDs = self.__generateIds(data['clinician_id'])
+		lIDs = self._generateIds(data['clinician_id'])
 
 		# Generate the URL
 		sURL = 'https://%s/LoginSingleSignOn.aspx?%s' % (
