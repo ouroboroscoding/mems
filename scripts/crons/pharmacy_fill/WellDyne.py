@@ -18,7 +18,7 @@ import io
 # Pip imports
 import arrow
 import pysftp
-from RestOC import Conf
+from RestOC import Conf, DictHelper
 
 # Service imports
 from services.welldyne.records import Eligibility, RxNumber, Trigger
@@ -66,17 +66,18 @@ class TriggerFile(object):
 		# Zero fill the member ID
 		sMemberID = data['crm_id'].zfill(6)
 
+		# See if we have a previous trigger for this customer and medication
+		dLastTrigger = Trigger.filter({
+			"crm_type": data['crm_type'],
+			"crm_id": data['crm_id'],
+			"medication": data['medication']
+		}, raw=['rx_id'], orderby=[('_created', 'DESC')], limit=1)
+
 		# If it's an initial
 		if data['type'] == 'initial':
 
-			# Find the last trigger
-			dLastTrigger = Trigger.filter({
-				"crm_type": data['crm_type'],
-				"crm_id": data['crm_id']
-			}, raw=['rx_id'], orderby=[('_created', 'DESC')], limit=1)
-
 			# If we have one, and the rx_id matches the ds_id
-			if dLastTrigger and dLastTrigger['rx_id'] == data['ds_id']:
+			if dLastTrigger and dLastTrigger['rx_id'] == str(data['ds_id']):
 
 				# Overwrite the type
 				data['type'] = 'refill'
@@ -84,14 +85,23 @@ class TriggerFile(object):
 		# If the type is refill
 		if data['type'] == 'refill':
 
-			# Try to find the customer's RX number
-			dRx = RxNumber.filter({
-				"member_id": sMemberID
-			}, raw=['number'], limit=1)
+			# If we have one, and the rx_id does not matches the ds_id
+			if dLastTrigger and dLastTrigger['rx_id'] != str(data['ds_id']):
 
-			# If it exists
-			if dRx:
-				data['rx'] = dRx['number']
+				# Overwrite the type
+				data['type'] = 'initial'
+
+			# Else
+			else:
+
+				# Try to find the customer's RX number
+				dRx = RxNumber.filter({
+					"member_id": sMemberID
+				}, raw=['number'], limit=1)
+
+				# If it exists
+				if dRx:
+					data['rx'] = dRx['number']
 
 		# Generate timestamp
 		sDT = arrow.get().format('YYYY-MM-DD HH:mm:ss')
@@ -180,7 +190,7 @@ class TriggerFile(object):
 		sFilename = 'TRIGGER%s.TXT' % sDate;
 
 		# Get the sFTP config
-		dSFTP = Conf.get(('welldyne', 'sftp'))
+		dSFTP = DictHelper.clone(Conf.get(('welldyne', 'sftp')))
 
 		# Pull off the subdirectory if there is one
 		sFolder = dSFTP.pop('folder', None)
@@ -284,12 +294,15 @@ def eligibilityUpload(file_time):
 	sFilename = 'RWTMEXCEL%s.TXT' % sDate;
 
 	# Get the sFTP config
-	dSFTP = Conf.get(('welldyne', 'sftp'))
+	dSFTP = DictHelper.clone(Conf.get(('welldyne', 'sftp')))
 
 	# Pull off the subdirectory if there is one
 	sFolder = dSFTP.pop('folder', None)
 	if sFolder:
 		sFilename = '%s/%s' % (sFolder, sFilename)
+
+	print(sFilename)
+	return
 
 	# Upload the file to the sFTP
 	print('Connecting to sFTP')

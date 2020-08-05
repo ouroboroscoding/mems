@@ -60,9 +60,6 @@ def run(period=None):
 		sEndTime = '03:59:59'
 		sFileTime = '043000'
 
-		sStartDate = '08/03/2020'
-		sEndDate = '08/04/2020'
-
 	# Else, if we're doing the mid day run
 	elif period == 'noon':
 		sStartDate = arrow.get().format('MM/DD/YYYY')

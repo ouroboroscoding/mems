@@ -390,7 +390,7 @@ class Monolith(Services.Service):
 		# Try to find the landing
 		lLandings = TfLanding.find(
 			dCustomer['lastName'],
-			dCustomer['emailAddress'],
+			dCustomer['emailAddress'] or '',
 			dCustomer['phoneNumber']
 		)
 

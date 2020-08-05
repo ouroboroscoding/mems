@@ -29,15 +29,21 @@ def run(type, report, arg1=None):
 		from . import adhoc
 		return adhoc.run(report)
 
-	# Else, if the type is outgoing
-	elif type == 'outgoing':
-		from . import outgoing
-		return outgoing.run(report, arg1)
+	# Else if the type is eligibility
+	elif type == 'eligibility':
+		from . import eligibility
+		return eligibility.run(report)
 
 	# Else if the type is incoming
 	elif type == 'incoming':
 		from . import incoming
 		return incoming.run(report, arg1)
+
+	# Else, if the type is outgoing
+	elif type == 'outgoing':
+		from . import outgoing
+		return outgoing.run(report, arg1)
+
 
 	# Else, invalid type
 	else:

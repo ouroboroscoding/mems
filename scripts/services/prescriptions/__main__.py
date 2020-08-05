@@ -61,7 +61,7 @@ REST.Server({
 	"/patient/prescriptions": {"methods": REST.READ},
 	"/patient/sso": {"methods": REST.READ, "session": True},
 
-	"/pharmacy/fill/error": {"methods": REST.UPDATE | REST.DELETE, "session": True},
+	"/pharmacy/fill/error": {"methods": REST.CREATE | REST.UPDATE | REST.DELETE, "session": True},
 	"/pharmacy/fill/errors": {"methods": REST.READ, "session": True}
 
 }, 'prescriptions', "https?://(.*\\.)?%s" % Conf.get(("rest","allowed")).replace('.', '\\.')).run(

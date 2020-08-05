@@ -18,7 +18,7 @@ import io
 # Pip imports
 import arrow
 import pysftp
-from RestOC import Conf
+from RestOC import Conf, DictHelper
 
 # Service imports
 from services.prescriptions.records import PharmacyFillError
@@ -136,7 +136,7 @@ class TriggerFile(object):
 		sFilename = 'ADHOC%s.CSV' % sDate;
 
 		# Get the sFTP config
-		dSFTP = Conf.get(('welldyne', 'sftp'))
+		dSFTP = DictHelper.clone(Conf.get(('welldyne', 'sftp')))
 
 		# Pull off the subdirectory if there is one
 		sFolder = dSFTP.pop('folder', None)
@@ -148,7 +148,7 @@ class TriggerFile(object):
 			oCon.putfo(oFile, sFilename, confirm=False)
 
 def run(period=None):
-	"""Transactions
+	"""Run
 
 	Fetches all the adhoc records and generates and uploads the report for
 	WellDyne

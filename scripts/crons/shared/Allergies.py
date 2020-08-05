@@ -136,8 +136,8 @@ def fetch(data):
 	# Try to find a landing for the customer
 	lLanding = TfLanding.find(
 		data['last'],
-		data['email'],
-		data['phone']
+		data['email'] or '',
+		data['phone'] or ''
 	)
 
 	# If we have any

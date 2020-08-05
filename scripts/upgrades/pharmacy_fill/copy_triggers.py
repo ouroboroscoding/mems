@@ -1,27 +1,13 @@
 # coding=utf8
 """ Copy the triggers"""
 
-# Python imports
-import time
-
 # Pip imports
 import arrow
 
 # Service imports
-from services.konnektive import Konnektive
 from services.welldyne.records import OldTrigger, Trigger
 
-def dateToKnk(dt):
-	return (
-		'%s/%s/%s' % (dt[5:7], dt[8:10], dt[0:4]),
-		dt[11:16]
-	)
-
 def run():
-
-	# Create a new Konnektive instance
-	oKNK = Konnektive()
-	oKNK.initialise()
 
 	# Fetch all triggers in the old table
 	lOld = OldTrigger.get(raw=True)
@@ -49,31 +35,6 @@ def run():
 			"shipped": d['shipped'],
 			"raw": ''
 		}
-
-		# Convert data
-		lDT = dateToKnk(d['triggered'])
-
-		while True:
-			try:
-				# Find the latest order before this trigger was created
-				lRes = oKNK._request('order/query', {
-					"customerId": d['customerId'],
-					"sortDir": 0,
-					"startDate": "01/01/2010",
-					"startTime": "00:00:00",
-					"endDate": lDT[0],
-					"endTime": lDT[1]
-				})
-
-				# If we got a value
-				if lRes:
-					dRecord['crm_order'] = lRes[0]['orderId']
-
-				# Break out of the loop
-				break
-
-			except Exception:
-				time.sleep(1)
 
 		# Create the instance
 		oTrigger = Trigger(dRecord)

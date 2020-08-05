@@ -93,7 +93,7 @@ def medication(descr):
 	# We found nothing, return false
 	return 'unknown'
 
-def prescriptions(l):
+def prescriptions(l, max_date=None):
 	"""Prescriptions
 
 	Takes the list of prescriptions and returns a distinct list of the latest RX
@@ -101,6 +101,7 @@ def prescriptions(l):
 
 	Arguments:
 		l (dict[]): A list of prescriptions associated with the customer
+		max_date (arrow): Optional, reject prescriptions newer than this date
 
 	Returns:
 		dict[]
@@ -111,6 +112,11 @@ def prescriptions(l):
 
 	# Go through each prescription found
 	for d in l:
+
+		# If we have a max date
+		if max_date and max_date < arrow.get(d['WrittenDate']):
+			print('SKIPPING PRESCRIPTION')
+			continue
 
 		# If it's an error, requested, or deleted, skip it
 		if d['Status'] in [6,7,8]:
@@ -156,7 +162,7 @@ def prescriptions(l):
 	# Return the data found
 	return dRet
 
-def process(item):
+def process(item, backfill=None):
 	"""Process
 
 	Takes an item and figures out where it goes or returns an error if there
@@ -166,53 +172,77 @@ def process(item):
 
 	Arguments:
 		item (dict): All data necessary to find the medication and rx
+		backfill (dict): A dict of order and max_date, used specifically
+							for transfer from old system to new
 
 	Returns:
 		dict
 	"""
 
+	# Import global vars
+	global _moYearAgo
+
 	# Init the possible return data
-	dRet = {}
+	dRet = {
+		"crm_type": item['crm_type'],
+		"crm_id": item['crm_id']
+	}
 
 	# First, find the order
 	if item['crm_type'] == 'knk':
 
-		# Look it up by crm_order
-		lOrders = _moKonnektive._request('order/query', {
-			"orderId": item['crm_order']
-		})
+		# If we need to backfill an older trigger
+		if backfill:
 
-		# If there's no order
-		if not lOrders:
-			return {"status": False, "data": "ORDER NOT FOUND"}
+			# Store the order ID
+			dRet['crm_order'] = backfill['order']['orderId']
 
-		# Store the order
-		oOrder = lOrders[0];
+			# Store the order
+			dOrder = backfill['order']
+
+			# Turn the date into an object, and overwrite the 1 year date
+			backfill['max_date'] = arrow.get(backfill['max_date'])
+			_moYearAgo = backfill['max_date'].shift(years=-1)
+
+		# Else
+		else:
+
+			# Store the order ID
+			dRet['crm_order'] = item['crm_order']
+
+			# Look it up by crm_order
+			lOrders = _moKonnektive._request('order/query', {
+				"orderId": item['crm_order']
+			})
+
+			# If there's no order
+			if not lOrders:
+				return {"status": False, "data": "ORDER NOT FOUND"}
+
+			# Store the order
+			dOrder = lOrders[0];
 
 		# Turn the order items into a list
 		lItems = [];
-		if lOrders[0]['items']:
+		if dOrder['items']:
 			lItems = [{
 				"name": d['name'],
 				"canceled": d['purchaseStatus'] == 'CANCELLED'
-			} for d in oOrder['items'].values()]
+			} for d in dOrder['items'].values()]
 
 		# Store the relevant data
-		dRet['crm_type'] = item['crm_type']
-		dRet['crm_id'] = item['crm_id']
-		dRet['crm_order'] = item['crm_order']
 		dRet['rx'] = ''
-		dRet['type'] = lOrders[0]['orderType'] == 'NEW_SALE' and 'initial' or 'refill'
-		dRet['email'] = lOrders[0]['emailAddress']
-		dRet['phone'] = lOrders[0]['phoneNumber']
-		dRet['first'] = lOrders[0]['shipFirstName']
-		dRet['last'] = lOrders[0]['shipLastName']
-		dRet['address1'] = lOrders[0]['shipAddress1']
-		dRet['address2'] = lOrders[0]['shipAddress2']
-		dRet['city'] = lOrders[0]['shipCity']
-		dRet['state'] = lOrders[0]['shipState']
-		dRet['country'] = lOrders[0]['shipCountry']
-		dRet['postalCode'] = lOrders[0]['shipPostalCode']
+		dRet['type'] = dOrder['orderType'] == 'NEW_SALE' and 'initial' or 'refill'
+		dRet['email'] = dOrder['emailAddress']
+		dRet['phone'] = dOrder['phoneNumber']
+		dRet['first'] = dOrder['shipFirstName']
+		dRet['last'] = dOrder['shipLastName']
+		dRet['address1'] = dOrder['shipAddress1']
+		dRet['address2'] = dOrder['shipAddress2']
+		dRet['city'] = dOrder['shipCity']
+		dRet['state'] = dOrder['shipState']
+		dRet['country'] = dOrder['shipCountry']
+		dRet['postalCode'] = dOrder['shipPostalCode']
 
 	# Else, invalid CRM type
 	else:
@@ -250,7 +280,7 @@ def process(item):
 	lPrescriptions = oEff.data
 
 	# Filter down the prescriptions by medication
-	dPrescriptions = prescriptions(lPrescriptions)
+	dPrescriptions = prescriptions(lPrescriptions, (backfill and backfill['max_date'] or None))
 
 	# If we have no prescriptions
 	if not dPrescriptions:

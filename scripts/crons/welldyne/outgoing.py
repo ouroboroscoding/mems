@@ -23,19 +23,6 @@ from RestOC import Conf, Record_MySQL, Services
 # Cron imports
 from crons import isRunning
 
-def adhoc(time):
-	"""AdHoc
-
-	Generates the AdHoc report for WellDyneRX
-
-	Arguments:
-		time (str): The time of day to generate the report for
-
-	Returns:
-		bool
-	"""
-	pass
-
 def no_feedback(hours):
 	"""No Feedback
 

@@ -659,6 +659,57 @@ class Prescriptions(Services.Service):
 		# Return the URL
 		return Services.Effect(sURL)
 
+	def pharmacyFillError_create(self, data, sesh):
+		"""Pharmacy Fill Error Create
+
+		Creates a new record in the PharmacyFillError report
+
+		Arguments:
+			data (dict): Data sent with the request
+			sesh (Sesh._Session): The session associated with the request
+
+		Returns:
+			Services.Effect
+		"""
+
+		# Make sure the user has the proper rights
+		oEff = Services.read('auth', 'rights/verify', {
+			"name": "pharmacy_fill",
+			"right": Rights.CREATE
+		}, sesh)
+		if not oEff.data:
+			return Services.Effect(error=Rights.INVALID)
+
+		# Verify minimum fields
+		try: DictHelper.eval(data, ['crm_type', 'crm_id'])
+		except ValueError as e: return Services.Effect(error=(1001, [(f, 'missing') for f in e.args]))
+
+		# If the CRM is Konnektive
+		if data['crm_type'] == 'knk':
+
+			# Check the customer exists
+			oEff = Services.read('monolith', 'customer/name', {
+				"customerId": data['crm_id']
+			}, sesh)
+			if oEff.errorExists(): return oEff
+			dCustomer = oEff.data
+
+		# Else, invalid CRM
+		else:
+			return Services.Effect(error=1003)
+
+		# Try to create a new instance of the adhoc
+		try:
+			oFillError = PharmacyFillError(data)
+		except ValueError as e:
+			return Services.Effect(error=(1001, e.args[0]))
+
+		# Create the record and return the result
+		return Services.Effect({
+			"_id": oFillError.create(),
+			"customer_name": '%s %s' % (dCustomer['firstName'], dCustomer['lastName'])
+		})
+
 	def pharmacyFillError_delete(self, data, sesh):
 		"""Pharmacy Fill Error Delete
 
@@ -681,11 +732,11 @@ class Prescriptions(Services.Service):
 			return Services.Effect(error=Rights.INVALID)
 
 		# Verify minimum fields
-		try: DictHelper.eval(data, ['id'])
+		try: DictHelper.eval(data, ['_id'])
 		except ValueError as e: return Services.Effect(error=(1001, [(f, 'missing') for f in e.args]))
 
 		# Find the record
-		oPharmacyFillError = PharmacyFillError.get(data['id'])
+		oPharmacyFillError = PharmacyFillError.get(data['_id'])
 		if not oPharmacyFillError:
 			return Services.Effect(error=1104)
 
@@ -716,15 +767,15 @@ class Prescriptions(Services.Service):
 			return Services.Effect(error=Rights.INVALID)
 
 		# Verify minimum fields
-		try: DictHelper.eval(data, ['id'])
+		try: DictHelper.eval(data, ['_id'])
 		except ValueError as e: return Services.Effect(error=(1001, [(f, 'missing') for f in e.args]))
 
 		# If we have neither the ready or the order ID
-		if 'ready' not in data and 'orderId' not in data:
-			return Services.Effect(error=(1001, [('ready', 'missing'), ('orderId', 'missing')]))
+		if 'ready' not in data and 'crm_order' not in data:
+			return Services.Effect(error=(1001, [('ready', 'missing'), ('crm_order', 'missing')]))
 
 		# Find the record
-		oPharmacyFillError = PharmacyFillError.get(data['id'])
+		oPharmacyFillError = PharmacyFillError.get(data['_id'])
 		if not oPharmacyFillError:
 			return Services.Effect(error=1104)
 
@@ -733,8 +784,8 @@ class Prescriptions(Services.Service):
 			oPharmacyFillError['ready'] = data['ready'] and True or False
 
 		# Update the order ID if we got it
-		if 'orderId' in data:
-			oPharmacyFillError['orderId'] = data['orderId']
+		if 'crm_order' in data:
+			oPharmacyFillError['crm_order'] = data['crm_order']
 
 		# Save and return the result
 		return Services.Effect(
