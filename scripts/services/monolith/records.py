@@ -24,7 +24,6 @@ from RestOC import Conf, Record_MySQL
 sClaimedSQL = ''
 sClaimedNewSQL = ''
 sConversationSQL = ''
-sLandingSQL = ''
 sLatestStatusSQL = ''
 sMsgPhoneUpdateSQL = ''
 sSmpNotes = ''
@@ -51,8 +50,6 @@ def init():
 		sClaimedNewSQL = oF.read()
 	with open('./services/monolith/sql/conversation.sql') as oF:
 		sConversationSQL = oF.read()
-	with open('./services/monolith/sql/landing.sql') as oF:
-		sLandingSQL = oF.read()
 	with open('./services/monolith/sql/latest_status.sql') as oF:
 		sLatestStatusSQL = oF.read()
 	with open('./services/monolith/sql/msg_phone_update.sql') as oF:
@@ -1017,7 +1014,16 @@ class TfLanding(Record_MySQL.Record):
 		dStruct = cls.struct(custom)
 
 		# Generate SQL
-		sSQL = sLandingSQL % {
+		sSQL = "SELECT `landing_id`, `formId`, `submitted_at`, `complete`\n" \
+				"FROM `%(db)s`.`%(table)s`\n" \
+				"WHERE `lastName` = '%(lastName)s'\n" \
+				"AND `birthDay` IS NOT NULL\n" \
+				"AND `birthDay` != ''\n" \
+				"AND (\n" \
+				"	`email` = '%(email)s' OR\n" \
+				"	`phone` IN ('1%(phone)s', '%(phone)s')\n" \
+				")\n" \
+				"ORDER BY `submitted_at` DESC\n" % {
 			"db": dStruct['db'],
 			"table": dStruct['table'],
 			"lastName": last_name,

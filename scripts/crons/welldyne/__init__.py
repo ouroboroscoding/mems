@@ -11,7 +11,7 @@ __maintainer__	= "Chris Nasr"
 __email__		= "bast@maleexcel.com"
 __created__		= "2020-07-16"
 
-def run(type, report. arg1=None):
+def run(type, report, arg1=None):
 	"""Run
 
 	Entry point into the script
@@ -24,12 +24,17 @@ def run(type, report. arg1=None):
 		int
 	"""
 
-	# If the type is outgoing
-	if type == 'outgoing':
+	# If the type is adhoc
+	if type == 'adhoc':
+		from . import adhoc
+		return adhoc.run(report)
+
+	# Else, if the type is outgoing
+	elif type == 'outgoing':
 		from . import outgoing
 		return outgoing.run(report, arg1)
 
-	# Else if it's incoming
+	# Else if the type is incoming
 	elif type == 'incoming':
 		from . import incoming
 		return incoming.run(report, arg1)

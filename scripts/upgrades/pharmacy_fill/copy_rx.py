@@ -25,8 +25,7 @@ def run():
 		oRxNumber = RxNumber({
 			"_created": arrow.get(d['createdAt']).timestamp,
 			"_updated": arrow.get(d['updatedAt']).timestamp,
-			"crm_type": 'knk',
-			"crm_id": str(d['customerId']),
+			"member_id": str(d['customerId']).zfill(6),
 			"number": d['rx']
 		})
 

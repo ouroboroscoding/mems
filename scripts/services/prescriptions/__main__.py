@@ -41,7 +41,11 @@ if 'VERBOSE' in os.environ and os.environ['VERBOSE'] == '1':
 	Services.verbose()
 
 # Get all the services
-dServices = {"prescriptions": Prescriptions()}
+dServices = {
+	"auth": None,
+	"monolith": None,
+	"prescriptions": Prescriptions()
+}
 
 # Register all services
 Services.register(dServices, oRestConf, Conf.get(('services', 'salt')))

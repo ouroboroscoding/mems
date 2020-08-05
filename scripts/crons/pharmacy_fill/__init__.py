@@ -16,28 +16,21 @@ import arrow
 
 # Service imports
 from services.konnektive import Konnektive
-from services.welldyne import WellDyne
+from services.prescriptions.records import PharmacyFillError
+from services.welldyne.records import Outbound
 
 # Cron imports
 from crons import isRunning
 from crons.shared import PharmacyFill
-from crons.shared.WdTriggerFile import WdTriggerFile
 
-def eligibility_test():
-
-	# If the script already running?
-	if isRunning('eligibility_test'):
-		return True
-
-	WellDyne._eligibilityGenerateAndUpload('043000')
-	return True
-
+# Local imports
+from . import WellDyne, Generic
 
 def run(period=None):
-	"""Transactions
+	"""Run
 
-	Fetches all transactions for the given time period and generates the
-	appropriate pharmacy files for records
+	Fetches all transactions, outbound, and fill errors for the given time
+	period and generates the appropriate pharmacy files for records
 
 	Arguments:
 		period (str): The time period of the day to generate the files for
@@ -49,6 +42,12 @@ def run(period=None):
 	# Init the PharmacyFill module
 	PharmacyFill.initialise()
 
+	# Create a new instance of the WellDyne Trigger File
+	oTrigger = WellDyne.TriggerFile()
+
+	# Create a list of generic pharmacies we email reports to
+	dReports = {}
+
 	# Init the Konnektive service
 	oKnk = Konnektive()
 	oKnk.initialise()
@@ -59,6 +58,10 @@ def run(period=None):
 		sStartTime = '12:30:00'
 		sEndDate = arrow.get().format('MM/DD/YYYY')
 		sEndTime = '03:59:59'
+		sFileTime = '043000'
+
+		sStartDate = '08/03/2020'
+		sEndDate = '08/04/2020'
 
 	# Else, if we're doing the mid day run
 	elif period == 'noon':
@@ -66,6 +69,7 @@ def run(period=None):
 		sStartTime = '04:00:00'
 		sEndDate = sStartDate
 		sEndTime = '12:29:59'
+		sFileTime = '130000'
 
 	# Else, invalid time period
 	else:
@@ -74,6 +78,8 @@ def run(period=None):
 
 	# Go through each type, CAPTURE and SALE
 	for sTxnType in ['CAPTURE','SALE']:
+
+		print('Fetching %s' % sTxnType)
 
 		# Fetch the records from Konnektive
 		lTransactions = oKnk._request('transactions/query', {
@@ -92,22 +98,193 @@ def run(period=None):
 			if 'HRT' in d['campaignName']:
 				continue
 
+			print('\tWorking on %d...' % d['customerId'])
+
 			# Try to process it
 			dRes = PharmacyFill.process({
 				"crm_type": 'knk',
-				"crm_id": d['customerId'],
+				"crm_id": str(d['customerId']),
 				"crm_order": d['orderId']
 			})
 
 			# If we get success
 			if dRes['status']:
 
+				# Go through each medication returned
+				for dData in dRes['data']:
 
+					# If the pharmacy is Castia/WellDyne
+					if dData['pharmacy'] in ['Castia', 'WellDyne']:
 
-				print(dRes['data'])
+						# Add it to the Trigger
+						oTrigger.add(dData)
+
+					# Else, add it to a generic pharmacy file
+					else:
+
+						# If it's a refill
+						if dData['type'] == 'refill':
+
+							# If we don't have the pharmacy
+							if dData['pharmacy'] not in dReports:
+								dReports[dData['pharmacy']] = Generic.EmailFile()
+
+							# Add a line to the report
+							dReports[dData['pharmacy']].add(dData)
+
+			# Else, if the process failed
 			else:
-				print('%d, %s' % (d['customerId'], dRes['data']))
-			print('-----------------------------------------------------')
+
+				# Create a new pharmacy fill error record
+				oFillError = PharmacyFillError({
+					"crm_type": 'knk',
+					"crm_id": str(d['customerId']),
+					"crm_order": d['orderId'],
+					"list": 'fill',
+					"type": '',
+					"reason": dRes['data'],
+					"fail_count": 1
+				})
+				oFillError.create(conflict='replace')
+
+	# Fetch all the outbound failed claims that are ready to be reprocessed
+	lOutbound = Outbound.filter({
+		"ready": True
+	})
+
+	# Go through each record
+	for o in lOutbound:
+
+		# Try to process it
+		dRes = PharmacyFill.process({
+			"crm_type": o['crm_type'],
+			"crm_id": o['crm_id'],
+			"crm_order": d['crm_order']
+		})
+
+		# If we get success
+		if dRes['status']:
+
+			# Go through each medication returned
+			for dData in dRes['data']:
+
+				# Overwrite the type and rx
+				dData['type'] = 'update'
+				dData['rx'] = o['wd_rx']
+
+				# If the pharmacy is Castia/WellDyne
+				if dData['pharmacy'] not in ['Castia', 'WellDyne']:
+					emailError('WELLDYNE PHARMACY SWITCH', str(o.record()))
+					continue
+
+				# Add it to the Trigger
+				oTrigger.add(dData)
+
+			# Move it to the sent table
+			o.sent()
+
+		# Else, if the process failed
+		else:
+
+			# Create a new pharmacy fill error record
+			oFillError = PharmacyFillError({
+				"crm_type": 'knk',
+				"crm_id": str(d['customerId']),
+				"crm_order": d['orderId'],
+				"list": 'outbound',
+				"type": '',
+				"reason": dRes['data'],
+				"fail_count": 1
+			})
+			oFillError.create(conflict='replace')
+
+	# Fetch all previous fill / outbound error records that are ready to be
+	#	re-processed
+	lFillErrors = PharmacyFillError.filter({
+		"list": ['fill', 'outbound'],
+		"ready": True
+	})
+
+	# Go through each record
+	for o in lFillErrors:
+
+		# Try to process it
+		dRes = PharmacyFill.process({
+			"crm_type": o['crm_type'],
+			"crm_id": o['crm_id'],
+			"crm_order": d['crm_order']
+		})
+
+		# If we get success
+		if dRes['status']:
+
+			# Go through each medication returned
+			for dData in dRes['data']:
+
+				# If it's a fill
+				if o['list'] == 'fill':
+
+					# If the pharmacy is Castia/WellDyne
+					if dData['pharmacy'] in ['Castia', 'WellDyne']:
+
+						# Add it to the Trigger
+						oTrigger.add(dData)
+
+					# Else, add it to a generic pharmacy file
+					else:
+
+						# If it's a refill
+						if dData['type'] == 'refill':
+
+							# If we don't have the pharmacy
+							if dData['pharmacy'] not in dReports:
+								dReports[dData['pharmacy']] = Generic.EmailFile(sEndTime)
+
+							# Add a line to the report
+							dReports[dData['pharmacy']].add(dData)
+
+				# Else, if it's an outbound
+				elif o['list'] == 'outbound':
+
+					# Overwrite the type and rx
+					dData['type'] = 'update'
+					dData['rx'] = o['wd_rx']
+
+					# If the pharmacy is Castia/WellDyne
+					if dData['pharmacy'] not in ['Castia', 'WellDyne']:
+						emailError('WELLDYNE PHARMACY SWITCH', str(o.record()))
+						continue
+
+					# Add it to the Trigger
+					oTrigger.add(dData)
+
+					# Add it to the outbound sent
+					OutboundSent.fromFillError(o)
+
+			# Delete it
+			o.delete()
+
+		# Else, if it failed to process again
+		else:
+
+			# Increment the fail count, overwrite the reason, and reset the
+			#	ready flag
+			o['fail_count'] += 1
+			o['reason'] = dRes['data']
+			o['ready'] = False
+			o.save();
+
+	# Upload the WellDyne trigger file
+	oTrigger.upload(sFileTime)
+
+	# Go through each of the generic pharmacy emails
+	for sPharmacy,oEmail in dReports.items():
+
+		# Send the email
+		oEmail.send(sPharmacy, sEndTime)
+
+	# Regenerate the eligibility
+	WellDyne.eligibilityUpload(sFileTime)
 
 	# Return OK
 	return True

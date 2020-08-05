@@ -156,7 +156,7 @@ def outbound_failed_claims(time):
 		dTrigger = Trigger.filter({
 			"crm_type": 'knk',
 			"crm_id": sCrmID,
-		}, raw['crm_order'], orderby=(('_created', 'DESC')), limit=1)
+		}, raw=['crm_order'], orderby=(('_created', 'DESC')), limit=1)
 
 		# Create the instance
 		oOutbound = Outbound({

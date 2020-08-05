@@ -51,47 +51,52 @@ class AdHoc(Record_MySQL.Record):
 		return cls._conf
 
 	@classmethod
-	def sent(cls, _id, custom={}):
+	def fromFillError(cls, error, custom={}):
+		pass
+
+	def sent(self):
 		"""Sent
 
 		Moves the record to the sent table
-
-		Arguments:
-			_id (str): The ID of the record to move
-			custom (dict): Custom Host and DB info
-				'host' the name of the host to get/set data on
-				'append' optional postfix for dynamic DBs
 
 		Returns:
 			None
 		"""
 
-		# Fetch the record structure
-		dStruct = cls.struct(custom)
+		# If the record lacks a primary key (never been created/inserted)
+		if self._dStruct['primary'] not in self._dRecord:
+			raise KeyError(self._dStruct['primary'])
 
-		# Get the fields in the table without the _created
-		lFields = ['`%s`' % s for s in dStruct['tree'].keys() if s != '_created']
+		# Generate the necessary fields
+		sFields = '`crm_type`, `crm_id`, `crm_order`'
 
-		# Generate SQL
-		sSQL = "INSERT INTO `%(db)s`.`%(table)s` (%(fields)s) " \
-				"SELECT %(fields)s FROM `%(db)s`.`%(table)s_sent` " \
-				"WHERE `%(primary)s` = '%(_id)s'; " \
-				"DELETE FROM `%(db)s`.`%(table)s` " \
-				"WHERE `%(primary)s` = '%(_id)s'" % {
-			"db": dStruct['db'],
-			"table": dStruct['table'],
-			"fields": lFields,
-			"primary": dStruct['primary'],
-			"_id": _id
-		}
+		# Statemens
+		lStatements = [
+			"INSERT INTO `%(db)s`.`%(table)s_sent` (`%(primary)s`, %(fields)s)\n" \
+				"SELECT UUID(), %(fields)s FROM `%(db)s`.`%(table)s`\n" \
+				"WHERE `%(primary)s` = '%(_id)s'\n" \
+				"ON DUPLICATE KEY UPDATE `attempts` = `attempts` + 1",
+			"DELETE FROM `%(db)s`.`%(table)s`\n" \
+				"WHERE `%(primary)s` = '%(_id)s'"
+		]
 
-		print(sSQL)
+		# Go through each statement
+		for s in lStatements:
 
-		# Execute the SQL
-		Record_MySQL.Commands.execute(
-			dStruct['host'],
-			sSQL
-		)
+			# Generate the SQL using the variables
+			sSQL = s % {
+				"db": self._dStruct['db'],
+				"table": self._dStruct['table'],
+				"fields": sFields,
+				"primary": self._dStruct['primary'],
+				"_id": self._dRecord[self._dStruct['primary']]
+			}
+
+			# Execute the SQL
+			Record_MySQL.Commands.execute(
+				self._dStruct['host'],
+				sSQL
+			)
 
 # AdHocSent class
 class AdHocSent(Record_MySQL.Record):
@@ -122,6 +127,49 @@ class AdHocSent(Record_MySQL.Record):
 
 		# Return the config
 		return cls._conf
+
+	@classmethod
+	def fromFillError(cls, error, custom={}):
+		"""From Fill Error
+
+		Creates a sent record from something that previously failed
+
+		Arguments:
+			error (PharmacyFillError): The error that re-processed successfully
+			custom (dict): Custom Host and DB info
+				'host' the name of the host to get/set data on
+				'append' optional postfix for dynamic DBs
+
+		Returns:
+			None
+		"""
+
+		# Fetch the record structure
+		dStruct = cls.struct(custom)
+
+		# Generate the necessary fields
+		sFields = '`crm_type`, `crm_id`, `crm_order`'
+
+		# Generate SQL
+		sSQL = "INSERT INTO `%(db)s`.`%(table)s` (`%(primary)s`, %(fields)s)\n" \
+				"VALUES (UUID(), '%(crm_type)s', '%(crm_id)s', '%(crm_order)s')\n" \
+				"ON DUPLICATE KEY UPDATE `attempts` = `attempts` + 1 " % {
+			"db": self._dStruct['db'],
+			"table": self._dStruct['table'],
+			"fields": lFields,
+			"primary": self._dStruct['primary'],
+			"crm_type": error['crm_type'],
+			"crm_id": error['crm_id'],
+			"crm_order": error['crm_order']
+		}
+
+		print(sSQL)
+
+		# Execute the SQL
+		Record_MySQL.Commands.execute(
+			self._dStruct['host'],
+			sSQL
+		)
 
 # Eligibility class
 class Eligibility(Record_MySQL.Record):
@@ -192,8 +240,7 @@ class Eligibility(Record_MySQL.Record):
 				"	((`%(db)s`.`%(table)s` as `wde`\n" \
 				"	JOIN `%(db)s`.`kt_customer` as `ktc` USING (`customerId`))\n" \
 				"	JOIN `%(db)s`.`ds_patient` as `dsp` USING (`customerId`))\n" \
-				"WHERE `wde`.`memberThru` != '0000-00-00 00:00:00'\n" \
-				"LIMIT 100" % {
+				"WHERE `wde`.`memberThru` != '0000-00-00 00:00:00'" % {
 			"db": dStruct['db'],
 			"table": dStruct['table']
 		}
@@ -236,48 +283,90 @@ class Outbound(Record_MySQL.Record):
 		# Return the config
 		return cls._conf
 
-	@classmethod
-	def sent(cls, _id, custom={}):
+	def sent(self):
 		"""Sent
 
 		Moves the record to the sent table
-
-		Arguments:
-			_id (str): The ID of the record to move
-			custom (dict): Custom Host and DB info
-				'host' the name of the host to get/set data on
-				'append' optional postfix for dynamic DBs
 
 		Returns:
 			None
 		"""
 
+		# If the record lacks a primary key (never been created/inserted)
+		if self._dStruct['primary'] not in self._dRecord:
+			raise KeyError(self._dStruct['primary'])
+
+		# Generate the necessary fields
+		sFields = '`crm_type`, `crm_id`, `crm_order`'
+
+		# Statemens
+		lStatements = [
+			"INSERT INTO `%(db)s`.`%(table)s_sent` (`%(primary)s`, %(fields)s)\n" \
+				"SELECT UUID(), %(fields)s FROM `%(db)s`.`%(table)s`\n" \
+				"WHERE `%(primary)s` = '%(_id)s'\n" \
+				"ON DUPLICATE KEY UPDATE `attempts` = `attempts` + 1",
+			"DELETE FROM `%(db)s`.`%(table)s`\n" \
+				"WHERE `%(primary)s` = '%(_id)s'"
+		]
+
+		# Go through each statement
+		for s in lStatements:
+
+			# Generate the SQL using the variables
+			sSQL = s % {
+				"db": self._dStruct['db'],
+				"table": self._dStruct['table'],
+				"fields": sFields,
+				"primary": self._dStruct['primary'],
+				"_id": self._dRecord[self._dStruct['primary']]
+			}
+
+			# Execute the SQL
+			Record_MySQL.Commands.execute(
+				self._dStruct['host'],
+				sSQL
+			)
+
+	@classmethod
+	def withTrigger(cls, custom={}):
+		"""With Trigger
+
+		Fetches outreach joined with trigger so it can be sorted by date
+
+		Arguments:
+			custom (dict): Custom Host and DB info
+				'host' the name of the host to get/set data on
+				'append' optional postfix for dynamic DBs
+
+		Returns:
+			dict
+		"""
+
 		# Fetch the record structure
 		dStruct = cls.struct(custom)
 
-		# Get the fields in the table without _created, wd_rx, and ready
-		lFields = ['`%s`' % s for s in dStruct['tree'].keys() if s not in ['_created', 'wd_rx', 'ready']]
-
 		# Generate SQL
-		sSQL = "INSERT INTO `%(db)s`.`%(table)s` (%(fields)s) " \
-				"SELECT %(fields)s FROM `%(db)s`.`%(table)s_sent` " \
-				"WHERE `%(primary)s` = '%(_id)s' " \
-				"ON DUPLICATE KEY UPDATE `count` = VALUE(`count`) + 1; " \
-				"DELETE FROM `%(db)s`.`%(table)s` " \
-				"WHERE `%(primary)s` = '%(_id)s'" % {
+		sSQL = 'SELECT\n' \
+				'	`wdo`.`_id`,\n' \
+				'	`wdo`.`crm_type`,\n' \
+				'	`wdo`.`crm_id`,\n' \
+				'	`wdo`.`crm_order`,\n' \
+				'	`wdo`.`queue`,\n' \
+				'	`wdo`.`reason`,\n' \
+				'	`wdo`.`ready`,\n' \
+				'	CAST(`wdt`.`_created` as date) as `triggered`\n' \
+				'FROM `%(db)s`.`%(table)s` as `wdo`\n' \
+				'LEFT JOIN `%(db)s`.`welldyne_trigger` as `wdt` USING (`crm_type`, `crm_id`, `crm_order`)\n' \
+				'ORDER BY `triggered` ASC' % {
 			"db": dStruct['db'],
-			"table": dStruct['table'],
-			"fields": lFields,
-			"primary": dStruct['primary'],
-			"_id": _id
+			"table": dStruct['table']
 		}
 
-		print(sSQL)
-
-		# Execute the SQL
-		Record_MySQL.Commands.execute(
+		# Execute and return the select
+		return Record_MySQL.Commands.select(
 			dStruct['host'],
-			sSQL
+			sSQL,
+			Record_MySQL.ESelect.ALL
 		)
 
 # OutboundSent class
@@ -309,6 +398,49 @@ class OutboundSent(Record_MySQL.Record):
 
 		# Return the config
 		return cls._conf
+
+	@classmethod
+	def fromFillError(cls, error, custom={}):
+		"""From Fill Error
+
+		Creates a sent record from something that previously failed
+
+		Arguments:
+			error (PharmacyFillError): The error that re-processed successfully
+			custom (dict): Custom Host and DB info
+				'host' the name of the host to get/set data on
+				'append' optional postfix for dynamic DBs
+
+		Returns:
+			None
+		"""
+
+		# Fetch the record structure
+		dStruct = cls.struct(custom)
+
+		# Generate the necessary fields
+		sFields = '`crm_type`, `crm_id`, `crm_order`'
+
+		# Generate SQL
+		sSQL = "INSERT INTO `%(db)s`.`%(table)s` (`%(primary)s`, %(fields)s)\n" \
+				"VALUES (UUID(), '%(crm_type)s', '%(crm_id)s', '%(crm_order)s')\n" \
+				"ON DUPLICATE KEY UPDATE `attempts` = `attempts` + 1 " % {
+			"db": self._dStruct['db'],
+			"table": self._dStruct['table'],
+			"fields": lFields,
+			"primary": self._dStruct['primary'],
+			"crm_type": error['crm_type'],
+			"crm_id": error['crm_id'],
+			"crm_order": error['crm_order']
+		}
+
+		print(sSQL)
+
+		# Execute the SQL
+		Record_MySQL.Commands.execute(
+			self._dStruct['host'],
+			sSQL
+		)
 
 # RxNumber class
 class RxNumber(Record_MySQL.Record):
@@ -422,7 +554,7 @@ class Trigger(Record_MySQL.Record):
 				'append' optional postfix for dynamic DBs
 
 		Returns:
-			dict
+			dict[]
 		"""
 
 		# Fetch the record structure
@@ -432,20 +564,24 @@ class Trigger(Record_MySQL.Record):
 		sSQL = "SELECT\n" \
 				"	`wdt`.`crm_type` as `crm_type`,\n" \
 				"	`wdt`.`crm_id` as `crm_id`,\n" \
-				"	`wdt`.`triggered` as `triggered`,\n" \
+				"	`wdt`.`crm_order` as `crm_order`,\n" \
+				"	`wdt`.`_created` as `triggered`,\n" \
+				"	`wdt`.`type` as `type`,\n" \
 				"	`wdt`.`opened` as `opened`,\n" \
 				"	`wdt`.`shipped` as `shipped`,\n" \
-				"	`wdo`.`queue` as `outreachQueue`,\n" \
-				"	`wdo`.`reason` as `outreachReason`,\n" \
-				"	`wde`.`memberSince` as `eligSince`,\n" \
-				"	`wde`.`memberThru` as `eligThru`,\n" \
+				"	`pfe`.`type` as `error_type`,\n" \
+				"	`pfe`.`reason` as `error_reason`,\n" \
+				"	`pfe`.`fail_count` as `error_count`,\n" \
+				"	`wdo`.`queue` as `outbound_queue`,\n" \
+				"	`wdo`.`reason` as `outbound_reason`,\n" \
 				"	`wda`.`type` as `adhocType`\n" \
 				"FROM `%(db)s`.`%(table)s` as `wdt`\n" \
-				"LEFT JOIN `%(db)s`.`welldyne_outreach` as `wdo` ON (`crm_type`, `crm_id`)\n" \
-				"LEFT JOIN `%(db)s`.`welldyne_eligibility` as `wde` ON (`crm_type`, `crm_id`)\n" \
-				"LEFT JOIN `%(db)s`.`welldyne_adhoc` as `wda` ON (`crm_type`, `crm_id`)\n" \
+				"LEFT JOIN `%(db)s`.`prescriptions_pharmacy_fill_error` as `pfe` USING (`crm_type`, `crm_id`, `crm_order`)\n" \
+				"LEFT JOIN `%(db)s`.`welldyne_outbound` as `wdo` USING (`crm_type`, `crm_id`, `crm_order`)\n" \
+				"LEFT JOIN `%(db)s`.`welldyne_adhoc` as `wda` USING (`crm_type`, `crm_id`, `crm_order`)\n" \
 				"WHERE `wdt`.`crm_type` = '%(crm_type)s'\n" \
-				"AND `wdt`.`crm_id` = '%(crm_id)s'" % {
+				"AND `wdt`.`crm_id` = '%(crm_id)s'\n" \
+				"ORDER BY `triggered` DESC" % {
 			"db": dStruct['db'],
 			"table": dStruct['table'],
 			"crm_type": crm_type,
@@ -456,7 +592,7 @@ class Trigger(Record_MySQL.Record):
 		return Record_MySQL.Commands.select(
 			dStruct['host'],
 			sSQL,
-			Record_MySQL.ESelect.ROW
+			Record_MySQL.ESelect.ALL
 		)
 
 

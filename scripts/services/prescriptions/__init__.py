@@ -20,6 +20,9 @@ from urllib.parse import urlencode
 import requests
 from RestOC import Conf, DictHelper, Errors, Services, StrHelper
 
+# Shared imports
+from shared import Rights
+
 # Service imports
 from .records import Medication, Pharmacy, PharmacyFillError
 
@@ -760,24 +763,23 @@ class Prescriptions(Services.Service):
 			return Services.Effect(error=Rights.INVALID)
 
 		# Fetch all the records joined with the trigger table
-		lRecords = PharmacyFillError.filter({"failCount": {
+		lRecords = PharmacyFillError.filter({"fail_count": {
 			"neq": 0
-		}}, raw=True, orderby=[('failCount', 'DESC')])
+		}}, raw=True, orderby=[('fail_count', 'DESC')])
 
 		# If we have records
 		if lRecords:
 
 			# Find all the customer names
 			oEff = Services.read('monolith', 'customer/name', {
-				"customerId": [str(d['customerId']) for d in lRecords]
+				"customerId": [d['crm_id'] for d in lRecords]
 			}, sesh)
 			if oEff.errorExists(): return oEff
 			dCustomers = {k:'%s %s' % (d['firstName'], d['lastName']) for k,d in oEff.data.items()}
 
 			# Go through each record and add the customer and user names
 			for d in lRecords:
-				sCustId = str(d['customerId'])
-				d['customerName'] = sCustId in dCustomers and dCustomers[sCustId] or 'Unknown'
+				d['customer_name'] = d['crm_id'] in dCustomers and dCustomers[d['crm_id']] or 'Unknown'
 
 			# Return all records
 			return Services.Effect(lRecords)

@@ -46,7 +46,8 @@ def run():
 		oPharmacy = Pharmacy({
 			"_created": arrow.get(d['createdAt']).timestamp,
 			"name": d['name'],
-			"pharmacyId": d['pharmacyId']
+			"pharmacyId": d['pharmacyId'],
+			"reports_to": 'bast@maleexcel.com'
 		})
 
 		# Create the record

@@ -50,24 +50,12 @@ def initialise():
 		for d in Pharmacy.get(raw=['name', 'pharmacyId'])
 	}
 
-	#print('Pharmacies')
-	#print(_mdPharmacies)
-	#print('--------------------------------------')
-
 	# Fetch all the medications and store them by id and name
 	lMeds = Medication.get(raw=['name', 'dsIds', 'synonyms'])
 	for d in lMeds:
 		_mdMedByName[d['name']] = d['synonyms'].split(',')
 		for s in d['dsIds'].split(','):
 			_mdMedById[int(s)] = d['name']
-
-	#print('Meds By Name')
-	#print(_mdMedByName)
-	#print('--------------------------------------')
-
-	#print('Meds By ID')
-	#print(_mdMedById)
-	#print('--------------------------------------')
 
 	# Init expiring soon
 	_mlExpiring = []
@@ -146,6 +134,7 @@ def prescriptions(l):
 		# If the product hasn't been seen yet
 		if sMed not in dRet:
 			dRet[sMed] = {
+				"id": d['PrescriptionId'],
 				"pharmacy": sPharmacy,
 				"date": d['WrittenDate'],
 				"display": '%s x %s' %(d['DisplayName'], d['Quantity']),
@@ -156,6 +145,7 @@ def prescriptions(l):
 		# Else, overwrite it if the date is newer
 		elif dRet[sMed]['date'] < d['WrittenDate']:
 			dRet[sMed] = {
+				"id": d['PrescriptionId'],
 				"pharmacy": sPharmacy,
 				"date": d['WrittenDate'],
 				"display": '%s x %s' %(d['DisplayName'], d['Quantity']),
@@ -208,8 +198,10 @@ def process(item):
 			} for d in oOrder['items'].values()]
 
 		# Store the relevant data
-		dRet['customer'] = item['crm_id']
-		dRet['order'] = item['crm_order']
+		dRet['crm_type'] = item['crm_type']
+		dRet['crm_id'] = item['crm_id']
+		dRet['crm_order'] = item['crm_order']
+		dRet['rx'] = ''
 		dRet['type'] = lOrders[0]['orderType'] == 'NEW_SALE' and 'initial' or 'refill'
 		dRet['email'] = lOrders[0]['emailAddress']
 		dRet['phone'] = lOrders[0]['phoneNumber']
@@ -260,9 +252,6 @@ def process(item):
 	# Filter down the prescriptions by medication
 	dPrescriptions = prescriptions(lPrescriptions)
 
-	print(dPrescriptions)
-	print('-----------------------------')
-
 	# If we have no prescriptions
 	if not dPrescriptions:
 		return {"status": False, "data": "NO VALID PRESCRIPTIONS"}
@@ -310,6 +299,7 @@ def process(item):
 		# Set the product and add the row to the pharmacy
 		dRet['medication'] = dPrescription['display']
 		dRet['pharmacy'] = dPrescription['pharmacy']
+		dRet['ds_id'] = dPrescription['id']
 
 		# Return success
 		return {"status": True, "data": [dRet]}
@@ -356,8 +346,9 @@ def process(item):
 				})
 
 			# Store the medication name
-			dRet['medication'] = oPrescription['display']
+			dRet['medication'] = dPrescription['display']
 			dRet['pharmacy'] = dPrescription['pharmacy']
+			dRet['ds_id'] = dPrescription['id']
 
 			# Add it to the list
 			lRet.append(DictHelper.clone(dRet))

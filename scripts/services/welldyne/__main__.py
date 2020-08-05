@@ -61,31 +61,14 @@ REST.Server({
 	"/adhoc": {"methods": REST.CREATE | REST.DELETE, "session": True},
 	"/adhocs": {"methods": REST.READ, "session": True},
 
-	"/outreach": {"methods": REST.DELETE, "session": True},
-	"/outreach/adhoc": {"methods": REST.UPDATE, "session": True},
-	"/outreach/ready": {"methods": REST.UPDATE, "session": True},
-	"/outreachs": {"methods": REST.READ, "session": True},
+	"/outbound": {"methods": REST.DELETE, "session": True},
+	"/outbound/adhoc": {"methods": REST.UPDATE, "session": True},
+	"/outbound/ready": {"methods": REST.UPDATE, "session": True},
+	"/outbounds": {"methods": REST.READ, "session": True},
 
 	"/stats": {"methods": REST.READ, "session": True},
 
-	"/trigger/info": {"methods": REST.READ, "session": True},
-
-
-
-
-
-	# Keep for now
-	"/old/adhoc": {"methods": REST.CREATE | REST.DELETE, "session": True},
-	"/old/adhocs": {"methods": REST.READ, "session": True},
-
-	"/old/outreach": {"methods": REST.DELETE, "session": True},
-	"/old/outreach/adhoc": {"methods": REST.UPDATE, "session": True},
-	"/old/outreach/ready": {"methods": REST.UPDATE, "session": True},
-	"/old/outreachs": {"methods": REST.READ, "session": True},
-
-	"/old/stats": {"methods": REST.READ, "session": True},
-
-	"/old/trigger/info": {"methods": REST.READ, "session": True}
+	"/trigger/info": {"methods": REST.READ, "session": True}
 
 }, 'welldyne', "https?://(.*\\.)?%s" % Conf.get(("rest","allowed")).replace('.', '\\.')).run(
 	host=oRestConf['welldyne']['host'],

@@ -1,6 +1,9 @@
 # coding=utf8
 """ Copy the triggers"""
 
+# Python imports
+import time
+
 # Pip imports
 import arrow
 
@@ -34,32 +37,43 @@ def run():
 
 		# Init the dict for the record
 		dRecord = {
-			"_created": arrow.get(d['triggered']).timestamp,
+			"_created": arrow.get(d['createdAt']).timestamp,
+			"_updated": arrow.get(d['updatedAt']).timestamp,
 			"crm_type": 'knk',
 			"crm_id": str(d['customerId']),
 			"crm_order": '',
+			"medication": '',
 			"rx_id": '',
 			"type": d['type'],
 			"opened": d['opened'] or d['shipped'],
-			"shipped": d['shipped']
+			"shipped": d['shipped'],
+			"raw": ''
 		}
 
 		# Convert data
 		lDT = dateToKnk(d['triggered'])
 
-		# Find the latest order before this trigger was created
-		lRes = oKNK._request('order/query', {
-			"customerId": d['customerId'],
-			"sortDir": 0,
-			"startDate": "01/01/2010",
-			"startTime": "00:00:00",
-			"endDate": lDT[0],
-			"endTime": lDT[1]
-		})
+		while True:
+			try:
+				# Find the latest order before this trigger was created
+				lRes = oKNK._request('order/query', {
+					"customerId": d['customerId'],
+					"sortDir": 0,
+					"startDate": "01/01/2010",
+					"startTime": "00:00:00",
+					"endDate": lDT[0],
+					"endTime": lDT[1]
+				})
 
-		# If we got a value
-		if lRes:
-			dRecord['crm_order'] = lRes[0]['orderId']
+				# If we got a value
+				if lRes:
+					dRecord['crm_order'] = lRes[0]['orderId']
+
+				# Break out of the loop
+				break
+
+			except Exception:
+				time.sleep(1)
 
 		# Create the instance
 		oTrigger = Trigger(dRecord)

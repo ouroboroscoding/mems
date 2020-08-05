@@ -12,7 +12,7 @@ __email__		= "chris@fuelforthefire.ca"
 __created__		= "2020-05-17"
 
 # Pip imports
-from RestOC import Conf, DictHelper, Errors, Services
+from RestOC import DictHelper, Errors, Services
 
 # Shared imports
 from shared import Rights
