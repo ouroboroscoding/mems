@@ -299,7 +299,7 @@ def process(item, backfill=None):
 		emailError('Unknown Pharmacy', str({
 			"crm_type": item['crm_type'],
 			"crm_id": item['crm_id'],
-			"PharmacyIds": ','.join([d['PharmacyId'] for d in lPrescriptions])
+			"PharmacyIds": ','.join([str(d['PharmacyId']) for d in lPrescriptions])
 		}))
 
 	# If we have only one prescription and one product
