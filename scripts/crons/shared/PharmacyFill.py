@@ -143,7 +143,7 @@ def prescriptions(l, max_date=None):
 				"id": d['PrescriptionId'],
 				"pharmacy": sPharmacy,
 				"date": d['WrittenDate'],
-				"display": '%s x %s' %(d['DisplayName'], d['Quantity']),
+				"display": '%s (%s)' %(d['DisplayName'], d['Quantity']),
 				"effective": d['EffectiveDate'] and d['EffectiveDate'] or d['WrittenDate'],
 				"refills": int(d['Refills'])
 			}
@@ -154,7 +154,7 @@ def prescriptions(l, max_date=None):
 				"id": d['PrescriptionId'],
 				"pharmacy": sPharmacy,
 				"date": d['WrittenDate'],
-				"display": '%s x %s' %(d['DisplayName'], d['Quantity']),
+				"display": '%s (%s)' %(d['DisplayName'], d['Quantity']),
 				"effective": d['EffectiveDate'] and d['EffectiveDate'] or d['WrittenDate'],
 				"refills": int(d['Refills'])
 			}

@@ -565,16 +565,19 @@ class Trigger(Record_MySQL.Record):
 				"	`wdt`.`crm_type` as `crm_type`,\n" \
 				"	`wdt`.`crm_id` as `crm_id`,\n" \
 				"	`wdt`.`crm_order` as `crm_order`,\n" \
+				"	`wdt`.`rx_id` as `rx_id`,\n" \
+				"	`wdt`.`medication` as `medication`,\n" \
 				"	`wdt`.`_created` as `triggered`,\n" \
 				"	`wdt`.`type` as `type`,\n" \
 				"	`wdt`.`opened` as `opened`,\n" \
 				"	`wdt`.`shipped` as `shipped`,\n" \
+				"	`wdt`.`raw` as `raw`,\n" \
 				"	`pfe`.`type` as `error_type`,\n" \
 				"	`pfe`.`reason` as `error_reason`,\n" \
 				"	`pfe`.`fail_count` as `error_count`,\n" \
 				"	`wdo`.`queue` as `outbound_queue`,\n" \
 				"	`wdo`.`reason` as `outbound_reason`,\n" \
-				"	`wda`.`type` as `adhocType`\n" \
+				"	`wda`.`type` as `adhoc_type`\n" \
 				"FROM `%(db)s`.`%(table)s` as `wdt`\n" \
 				"LEFT JOIN `%(db)s`.`prescriptions_pharmacy_fill_error` as `pfe` USING (`crm_type`, `crm_id`, `crm_order`)\n" \
 				"LEFT JOIN `%(db)s`.`welldyne_outbound` as `wdo` USING (`crm_type`, `crm_id`, `crm_order`)\n" \
