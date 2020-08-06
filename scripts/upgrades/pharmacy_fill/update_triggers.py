@@ -3,6 +3,7 @@
 
 # Python imports
 import time
+import traceback
 
 # Pip imports
 import arrow
@@ -103,7 +104,7 @@ def run():
 				break
 
 			except Exception as e:
-				print(e)
+				print(traceback.format_exc())
 				print([str(s) for s in e.args])
 				time.sleep(1)
 
