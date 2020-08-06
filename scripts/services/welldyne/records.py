@@ -163,8 +163,6 @@ class AdHocSent(Record_MySQL.Record):
 			"crm_order": error['crm_order']
 		}
 
-		print(sSQL)
-
 		# Execute the SQL
 		Record_MySQL.Commands.execute(
 			self._dStruct['host'],
@@ -244,7 +242,6 @@ class Eligibility(Record_MySQL.Record):
 			"db": dStruct['db'],
 			"table": dStruct['table']
 		}
-		print(sSQL)
 
 		# Run the select and return the data
 		return Record_MySQL.Commands.select(
@@ -433,8 +430,6 @@ class OutboundSent(Record_MySQL.Record):
 			"crm_id": error['crm_id'],
 			"crm_order": error['crm_order']
 		}
-
-		print(sSQL)
 
 		# Execute the SQL
 		Record_MySQL.Commands.execute(

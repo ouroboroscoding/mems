@@ -76,7 +76,8 @@ class TriggerFile(object):
 		# If it's an initial
 		if data['type'] == 'initial':
 
-			# If we have one, and the rx_id matches the ds_id
+			# If we have one, and the rx_id matches the ds_id, it's a new order
+			#	but not a new prescription
 			if dLastTrigger and dLastTrigger['rx_id'] == str(data['ds_id']):
 
 				# Overwrite the type
@@ -85,13 +86,14 @@ class TriggerFile(object):
 		# If the type is refill
 		if data['type'] == 'refill':
 
-			# If we have one, and the rx_id does not matches the ds_id
+			# If we have one, and the rx_id does not matches the ds_id, it's
+			#	a recurring order, but the prescription has changed
 			if dLastTrigger and dLastTrigger['rx_id'] != str(data['ds_id']):
 
 				# Overwrite the type
 				data['type'] = 'initial'
 
-			# Else
+			# Else, a legitimate refill
 			else:
 
 				# Try to find the customer's RX number
@@ -99,7 +101,7 @@ class TriggerFile(object):
 					"member_id": sMemberID
 				}, raw=['number'], limit=1)
 
-				# If it exists
+				# If it exists, add it to the trigger
 				if dRx:
 					data['rx'] = dRx['number']
 
@@ -300,9 +302,6 @@ def eligibilityUpload(file_time):
 	sFolder = dSFTP.pop('folder', None)
 	if sFolder:
 		sFilename = '%s/%s' % (sFolder, sFilename)
-
-	print(sFilename)
-	return
 
 	# Upload the file to the sFTP
 	print('Connecting to sFTP')
