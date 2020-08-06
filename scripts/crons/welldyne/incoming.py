@@ -11,6 +11,9 @@ __maintainer__	= "Chris Nasr"
 __email__		= "bast@maleexcel.com"
 __created__		= "2020-07-29"
 
+# Python imports
+import os
+
 # Pip imports
 import arrow
 import pysftp
