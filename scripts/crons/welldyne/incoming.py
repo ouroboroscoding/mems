@@ -161,16 +161,20 @@ def outbound_failed_claims(time):
 			"crm_id": sCrmID,
 		}, raw=['crm_order'], orderby=[('_created', 'DESC')], limit=1)
 
+		# Create the reason string
+		sReason = '%s %s' % (d['reason'] or '', d['exception'] or '')
+
+		# If it's empty
+		if len(sReason) == 0 or sReason == ' ':
+			sReason = '(empty)'
+
 		# Create the instance
 		oOutbound = Outbound({
 			"crm_type": 'knk',
 			"crm_id": sCrmID,
 			"crm_order": dTrigger and dTrigger['crm_order'] or '',
 			"queue": d['queue'],
-			"reason": '%s %s' % (
-				d['reason'] or '',
-				d['exception'] or ''
-			),
+			"reason": sReason[:255],
 			"wd_rx": d['wd_rx'],
 			"ready": False
 		})
