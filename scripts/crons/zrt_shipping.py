@@ -94,7 +94,7 @@ def run():
 
 	# If we got no emails
 	if not lEmails:
-		return 1
+		return True
 
 	# Go througg each email
 	for d in lEmails:
@@ -206,4 +206,4 @@ def run():
 			continue
 
 	# Return OK
-	return 1
+	return True

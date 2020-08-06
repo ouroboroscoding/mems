@@ -55,4 +55,4 @@ except ImportError as e:
 	sys.exit(1)
 
 # Run the cron with whatever additional arguments were passed
-sys.exit(oCron.run(*(sys.argv[2:])))
+sys.exit((not oCron.run(*(sys.argv[2:]))) and 1 or 0)
