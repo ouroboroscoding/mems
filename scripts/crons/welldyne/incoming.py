@@ -165,7 +165,7 @@ def outbound_failed_claims(time):
 		oOutbound = Outbound({
 			"crm_type": 'knk',
 			"crm_id": sCrmID,
-			"crm_order": dTrigger['crm_order'],
+			"crm_order": dTrigger and dTrigger['crm_order'] or '',
 			"queue": d['queue'],
 			"reason": '%s %s' % (
 				d['reason'] or '',
@@ -273,7 +273,7 @@ def shipped_claims(time):
 		# Send the tracking to Memo
 		dRes = Memo.create('rest/shipping', {
 			"code": d['tracking'],
-			"type": 'USPS',
+			"type": d['tracking'][0:2] == '1Z' and 'UPS' or 'USPS',
 			"date": d['shipped'],
 			"customerId": sCrmID
 		})

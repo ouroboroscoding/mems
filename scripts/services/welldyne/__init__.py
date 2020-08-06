@@ -358,6 +358,10 @@ class WellDyne(Services.Service):
 		if not oOutbound:
 			return Services.Effect(error=1104)
 
+		# If there's no order
+		if not oOutbound['crm_order'] or oOutbound['crm_order'] == '':
+			return Services.Effect(error=1800)
+
 		# Update the ready state
 		oOutbound['ready'] = data['ready'] and True or False
 
