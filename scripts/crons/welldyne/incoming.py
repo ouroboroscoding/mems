@@ -152,6 +152,11 @@ def outbound_failed_claims(time):
 	# Go through each item
 	for d in lData:
 
+		# If we got no ID
+		if not d['crm_id']:
+			emailError('OUTBOUND FAILED', str(d))
+			continue
+
 		# Get the CRM ID
 		sCrmID = d['crm_id'].lstrip('0')
 
@@ -173,9 +178,9 @@ def outbound_failed_claims(time):
 			"crm_type": 'knk',
 			"crm_id": sCrmID,
 			"crm_order": dTrigger and dTrigger['crm_order'] or '',
-			"queue": d['queue'],
+			"queue": d['queue'] or '(empty)',
 			"reason": sReason[:255],
-			"wd_rx": d['wd_rx'],
+			"wd_rx": d['wd_rx'] or '',
 			"ready": False
 		})
 
