@@ -350,11 +350,11 @@ class WellDyne(Services.Service):
 			return Services.Effect(error=Rights.INVALID)
 
 		# Verify minimum fields
-		try: DictHelper.eval(data, ['id', 'ready'])
+		try: DictHelper.eval(data, ['_id', 'ready'])
 		except ValueError as e: return Services.Effect(error=(1001, [(f, 'missing') for f in e.args]))
 
 		# Find the record
-		oOutbound = Outbound.get(data['id'])
+		oOutbound = Outbound.get(data['_id'])
 		if not oOutbound:
 			return Services.Effect(error=1104)
 
