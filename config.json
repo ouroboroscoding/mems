@@ -41,7 +41,7 @@
 	},
 
 	"memo": {
-		"domain": "memologin.com",
+		"domain": "https://memologin.com",
 		"user": "User",
 		"pass": "Pass"
 	},

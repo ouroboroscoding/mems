@@ -107,3 +107,8 @@ def run():
 				print([str(s) for s in e.args])
 				time.sleep(1)
 
+	# Clean console
+	print('\nDone')
+
+	# Return OK
+	return True

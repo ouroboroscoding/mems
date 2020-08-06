@@ -18,7 +18,7 @@ from urllib.parse import urlencode
 
 # Pip imports
 import requests
-from RestOC import Conf, DictHelper, Errors, Services, StrHelper
+from RestOC import Conf, DictHelper, Errors, Record_MySQL, Services, StrHelper
 
 # Shared imports
 from shared import Rights
@@ -704,9 +704,15 @@ class Prescriptions(Services.Service):
 		except ValueError as e:
 			return Services.Effect(error=(1001, e.args[0]))
 
+		# Create the record and get the ID
+		try:
+			sID = oFillError.create()
+		except Record_MySQL.DuplicateException:
+			return Services.Effect(error=1101)
+
 		# Create the record and return the result
 		return Services.Effect({
-			"_id": oFillError.create(),
+			"_id": sID,
 			"customer_name": '%s %s' % (dCustomer['firstName'], dCustomer['lastName'])
 		})
 
