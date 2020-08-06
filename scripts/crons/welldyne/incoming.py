@@ -250,11 +250,13 @@ def shipped_claims(time):
 		"member_id": {"column": 17, "type": Excel.STRING}
 	}, start_row=1)
 
-	# Go through each item
+	# Go through each one and keep only uniques
+	dData = {}
 	for d in lData:
+		dData[d['member_id'].lstrip('0')] = d
 
-		# Get the CRM ID
-		sCrmID = d['member_id'].lstrip('0')
+	# Go through each item
+	for sCrmID,d in dData.items():
 
 		# Find the last trigger associated with the ID
 		oTrigger = Trigger.filter({
@@ -282,21 +284,21 @@ def shipped_claims(time):
 		})
 		oRx.create(conflict=['number'])
 
-		# Send the tracking to Memo
-		dRes = Memo.create('rest/shipping', {
-			"code": d['tracking'],
-			"type": d['tracking'][0:2] == '1Z' and 'UPS' or 'USPS',
-			"date": d['shipped'],
-			"customerId": sCrmID
-		})
-		if dRes['error']:
-			print(dRes['error'])
+	# Send the tracking to Memo
+	dRes = Memo.create('rest/shipping', [{
+		"code": d['tracking'],
+		"type": d['tracking'][0:2] == '1Z' and 'UPS' or 'USPS',
+		"date": d['shipped'],
+		"customerId": sCrmID
+	} for sCrmID,d in dData.items()])
+	if dRes['error']:
+		print(dRes['error'])
 
 	# Delete the file
 	os.remove(sGet)
 
 	# Return OK
-	return OK
+	return True
 
 def run(report, time=None):
 	"""Run
