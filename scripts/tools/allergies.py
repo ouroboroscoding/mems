@@ -52,8 +52,8 @@ if __name__ == "__main__":
 	# Try to find the landings
 	lLandings = TfLanding.find(
 		dCustomer['lastName'],
-		dCustomer['emailAddress'],
-		dCustomer['phoneNumber']
+		dCustomer['emailAddress'] or '',
+		dCustomer['phoneNumber'] or ''
 	)
 	if lLandings:
 		lLandings = [d['landing_id'] for d in lLandings]

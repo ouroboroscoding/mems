@@ -24,7 +24,6 @@ from RestOC import Conf, Record_MySQL
 sClaimedSQL = ''
 sClaimedNewSQL = ''
 sConversationSQL = ''
-sLandingSQL = ''
 sLatestStatusSQL = ''
 sMsgPhoneUpdateSQL = ''
 sSmpNotes = ''
@@ -51,8 +50,6 @@ def init():
 		sClaimedNewSQL = oF.read()
 	with open('./services/monolith/sql/conversation.sql') as oF:
 		sConversationSQL = oF.read()
-	with open('./services/monolith/sql/landing.sql') as oF:
-		sLandingSQL = oF.read()
 	with open('./services/monolith/sql/latest_status.sql') as oF:
 		sLatestStatusSQL = oF.read()
 	with open('./services/monolith/sql/msg_phone_update.sql') as oF:
@@ -185,6 +182,7 @@ class CustomerCommunication(Record_MySQL.Record):
 		# Generate the list of numbers
 		lNumbers = []
 		for s in numbers:
+			s = Record_MySQL.Commands.escape(dStruct['host'], s)
 			lNumbers.extend([s, '1%s' % s])
 
 		# Generate SQL
@@ -227,7 +225,7 @@ class CustomerCommunication(Record_MySQL.Record):
 			sConversationSQL % {
 				"db": dStruct['db'],
 				"table": dStruct['table'],
-				"number": number
+				"number": Record_MySQL.Commands.escape(dStruct['host'], number)
 			}
 		)
 
@@ -289,7 +287,7 @@ class CustomerMsgPhone(Record_MySQL.Record):
 			"date": date,
 			"direction": 'Incoming',
 			"message": Record_MySQL.Commands.escape(dStruct['host'], message),
-			"customerPhone": customerPhone,
+			"customerPhone": Record_MySQL.Commands.escape(dStruct['host'], customerPhone),
 			"hidden": 'N',
 			"increment": 'totalIncoming'
 		}
@@ -324,7 +322,7 @@ class CustomerMsgPhone(Record_MySQL.Record):
 			"date": date,
 			"direction": 'Outgoing',
 			"message": Record_MySQL.Commands.escape(dStruct['host'], message),
-			"customerPhone": customerPhone,
+			"customerPhone": Record_MySQL.Commands.escape(dStruct['host'], customerPhone),
 			"hidden": 'Y',
 			"increment": 'totalOutGoing'
 		}
@@ -383,11 +381,11 @@ class CustomerMsgPhone(Record_MySQL.Record):
 		# Generate SQL Where
 		lWhere = []
 		if 'phone' in q and q['phone']:
-			lWhere.append("`customerPhone` LIKE '%%%s%%'" % q['phone'][-10:])
+			lWhere.append("`customerPhone` LIKE '%%%s%%'" % Record_MySQL.Commands.escape(dStruct['host'], q['phone'][-10:]))
 		if 'name' in q and q['name']:
-			lWhere.append("`customerName` LIKE '%%%s%%'" % q['name'])
+			lWhere.append("`customerName` LIKE '%%%s%%'" % Record_MySQL.Commands.escape(dStruct['host'], q['name']))
 		if 'content' in q and q['content']:
-			lWhere.append("`lastMsg` LIKE '%%%s%%'" % q['content'])
+			lWhere.append("`lastMsg` LIKE '%%%s%%'" % Record_MySQL.Commands.escape(dStruct['host'], q['content']))
 
 		# Generate SQL
 		sSQL = sSearchSQL % {
@@ -556,8 +554,8 @@ class KtCustomer(Record_MySQL.Record):
 				"LIMIT 1" % {
 			"db": dStruct['db'],
 			"table": dStruct['table'],
-			"name": name,
-			"zip": zip_
+			"name": Record_MySQL.Commands.escape(dStruct['host'], name),
+			"zip": Record_MySQL.Commands.escape(dStruct['host'], zip_)
 		}
 
 		# Execute and return the select
@@ -598,7 +596,7 @@ class KtCustomer(Record_MySQL.Record):
 				"LIMIT 1" % {
 			"db": dStruct['db'],
 			"table": dStruct['table'],
-			"number": number
+			"number": Record_MySQL.Commands.escape(dStruct['host'], number)
 		}
 
 		# Execute and return the select
@@ -684,7 +682,7 @@ class KtOrder(Record_MySQL.Record):
 			sNumOfOrdersSQL % {
 				"db": dStruct['db'],
 				"table": dStruct['table'],
-				"phone": phone
+				"phone": Record_MySQL.Commands.escape(dStruct['host'], phone)
 			},
 			Record_MySQL.ESelect.COLUMN
 		)
@@ -1017,12 +1015,21 @@ class TfLanding(Record_MySQL.Record):
 		dStruct = cls.struct(custom)
 
 		# Generate SQL
-		sSQL = sLandingSQL % {
+		sSQL = "SELECT `landing_id`, `formId`, `submitted_at`, `complete`\n" \
+				"FROM `%(db)s`.`%(table)s`\n" \
+				"WHERE `lastName` = '%(lastName)s'\n" \
+				"AND `birthDay` IS NOT NULL\n" \
+				"AND `birthDay` != ''\n" \
+				"AND (\n" \
+				"	`email` = '%(email)s' OR\n" \
+				"	`phone` IN ('1%(phone)s', '%(phone)s')\n" \
+				")\n" \
+				"ORDER BY `submitted_at` DESC\n" % {
 			"db": dStruct['db'],
 			"table": dStruct['table'],
-			"lastName": last_name,
-			"email": email,
-			"phone": phone
+			"lastName": Record_MySQL.Commands.escape(dStruct['host'], last_name),
+			"email": Record_MySQL.Commands.escape(dStruct['host'], email),
+			"phone": Record_MySQL.Commands.escape(dStruct['host'], phone)
 		}
 
 		# Execute and return the select

@@ -11,20 +11,15 @@ __maintainer__	= "Chris Nasr"
 __email__		= "chris@fuelforthefire.ca"
 __created__		= "2020-07-03"
 
-# Python imports
-import re
-from time import time
-import uuid
-
 # Pip imports
-import arrow
-from RestOC import Conf, DictHelper, Errors, Services, Sesh
+from RestOC import DictHelper, Services
 
 # Shared imports
 from shared import Rights
 
 # Service imports
-from .records import AdHoc, Eligibility, Outreach, Trigger
+from .records import AdHoc, AdHocSent, Eligibility, Outbound, OutboundSent, \
+						RxNumber, Trigger
 
 class WellDyne(Services.Service):
 	"""WellDyne Service class
@@ -32,7 +27,7 @@ class WellDyne(Services.Service):
 	Service for WellDyne, sign in, sign up, etc.
 	"""
 
-	_install = []
+	_install = [AdHoc, AdHocSent, Outbound, OutboundSent, RxNumber, Trigger]
 	"""Record types called in install"""
 
 	def initialise(self):
@@ -66,9 +61,9 @@ class WellDyne(Services.Service):
 				print("Failed to create `%s` table" % o.tableName())
 
 	def adhoc_create(self, data, sesh):
-		"""AdHoc Create
+		"""OldAdHoc Create
 
-		Adds a new record to the AdHoc report
+		Adds a new record to the OldAdHoc report
 
 		Arguments:
 			data (dict): Data sent with the request
@@ -87,15 +82,22 @@ class WellDyne(Services.Service):
 			return Services.Effect(error=Rights.INVALID)
 
 		# Verify minimum fields
-		try: DictHelper.eval(data, ['customerId', 'type'])
+		try: DictHelper.eval(data, ['crm_type', 'crm_id', 'type'])
 		except ValueError as e: return Services.Effect(error=(1001, [(f, 'missing') for f in e.args]))
 
-		# Check the customer exists
-		oEff = Services.read('monolith', 'customer/name', {
-			"customerId": str(data['customerId'])
-		}, sesh)
-		if oEff.errorExists(): return oEff
-		dCustomer = oEff.data
+		# If the CRM is Konnektive
+		if data['crm_type'] == 'knk':
+
+			# Check the customer exists
+			oEff = Services.read('monolith', 'customer/name', {
+				"customerId": data['crm_id']
+			}, sesh)
+			if oEff.errorExists(): return oEff
+			dCustomer = oEff.data
+
+		# Else, invalid CRM
+		else:
+			return Services.Effect(error=1003)
 
 		# Get the user name
 		oEff = Services.read('monolith', 'user/name', {
@@ -104,23 +106,18 @@ class WellDyne(Services.Service):
 		if oEff.errorExists(): return oEff
 		dUser = oEff.data
 
-		# Get current date/time
-		sDT = arrow.get().format('YYYY-MM-DD HH:mm:ss')
-
 		# Try to create a new instance of the adhoc
 		try:
-			data['user'] = sesh['memo_id']
-			data['createdAt'] = sDT
-			data['updatedAt'] = sDT
+			data['memo_user'] = sesh['memo_id']
 			oAdHoc = AdHoc(data)
 		except ValueError as e:
 			return Services.Effect(error=(1001, e.args[0]))
 
 		# Create the record and return the result
 		return Services.Effect({
-			"id": oAdHoc.create(),
-			"customerName": '%s %s' % (dCustomer['firstName'], dCustomer['lastName']),
-			"userName": '%s %s' % (dUser['firstName'], dUser['lastName'])
+			"_id": oAdHoc.create(),
+			"customer_name": '%s %s' % (dCustomer['firstName'], dCustomer['lastName']),
+			"user_name": '%s %s' % (dUser['firstName'], dUser['lastName'])
 		})
 
 	def adhoc_delete(self, data, sesh):
@@ -145,11 +142,11 @@ class WellDyne(Services.Service):
 			return Services.Effect(error=Rights.INVALID)
 
 		# Verify minimum fields
-		try: DictHelper.eval(data, ['id'])
+		try: DictHelper.eval(data, ['_id'])
 		except ValueError as e: return Services.Effect(error=(1001, [(f, 'missing') for f in e.args]))
 
 		# Find the record
-		oAdHoc = AdHoc.get(data['id'])
+		oAdHoc = AdHoc.get(data['_id'])
 		if not oAdHoc:
 			return Services.Effect(error=1104)
 
@@ -180,39 +177,38 @@ class WellDyne(Services.Service):
 			return Services.Effect(error=Rights.INVALID)
 
 		# Fetch all the records
-		lRecords = AdHoc.get(raw=['id', 'customerId', 'type', 'user'])
+		lRecords = AdHoc.get(raw=True)
 
 		# If we have records
 		if lRecords:
 
 			# Find all the customer names
 			oEff = Services.read('monolith', 'customer/name', {
-				"customerId": [str(d['customerId']) for d in lRecords]
+				"customerId": [d['crm_id'] for d in lRecords]
 			}, sesh)
 			if oEff.errorExists(): return oEff
 			dCustomers = {k:'%s %s' % (d['firstName'], d['lastName']) for k,d in oEff.data.items()}
 
 			# Find all the user names
 			oEff = Services.read('monolith', 'user/name', {
-				"id": list(set([d['user'] for d in lRecords]))
+				"id": list(set([d['memo_user'] for d in lRecords]))
 			}, sesh)
 			if oEff.errorExists(): return oEff
 			dUsers = {k:'%s %s' % (d['firstName'], d['lastName']) for k,d in oEff.data.items()}
 
-			# Go through each record and add the customer and user names
+			# Go through each record and add the customer names
 			for d in lRecords:
-				sCustId = str(d['customerId'])
-				sUserId = str(d['user'])
-				d['customerName'] = sCustId in dCustomers and dCustomers[sCustId] or 'Unknown'
-				d['userName'] = sUserId in dUsers and dUsers[sUserId] or 'Unknown'
+				d['customer_name'] = d['crm_id'] in dCustomers and dCustomers[d['crm_id']] or 'Unknown'
+				sUserId = str(d['memo_user'])
+				d['user_name'] = sUserId in dUsers and dUsers[sUserId] or 'Unknown'
 
 		# Return all records
 		return Services.Effect(lRecords)
 
-	def outreach_delete(self, data, sesh):
-		"""Outreach Delete
+	def outbound_delete(self, data, sesh):
+		"""Outbound Delete
 
-		Deletes an existing record from the Outreach report
+		Deletes an existing record from the Outbound report
 
 		Arguments:
 			data (dict): Data sent with the request
@@ -224,28 +220,28 @@ class WellDyne(Services.Service):
 
 		# Make sure the user has the proper rights
 		oEff = Services.read('auth', 'rights/verify', {
-			"name": "welldyne_outreach",
+			"name": "welldyne_outbound",
 			"right": Rights.DELETE
 		}, sesh)
 		if not oEff.data:
 			return Services.Effect(error=Rights.INVALID)
 
 		# Verify minimum fields
-		try: DictHelper.eval(data, ['id'])
+		try: DictHelper.eval(data, ['_id'])
 		except ValueError as e: return Services.Effect(error=(1001, [(f, 'missing') for f in e.args]))
 
 		# Find the record
-		oOutreach = Outreach.get(data['id'])
-		if not oOutreach:
+		oOutbound = Outbound.get(data['_id'])
+		if not oOutbound:
 			return Services.Effect(error=1104)
 
 		# Delete the record and return the result
 		return Services.Effect(
-			oOutreach.delete()
+			oOutbound.delete()
 		)
 
-	def outreachAdhoc_update(self, data, sesh):
-		"""Outreach AdHoc
+	def outboundAdhoc_update(self, data, sesh):
+		"""Outbound OldAdHoc
 
 		Removes a customer from the outreach and puts them as an adhoc / remove
 		error record
@@ -260,7 +256,7 @@ class WellDyne(Services.Service):
 
 		# Make sure the user has the proper outreach rights
 		oEff = Services.read('auth', 'rights/verify', {
-			"name": "welldyne_outreach",
+			"name": "welldyne_outbound",
 			"right": Rights.DELETE
 		}, sesh)
 		if not oEff.data:
@@ -275,20 +271,27 @@ class WellDyne(Services.Service):
 			return Services.Effect(error=Rights.INVALID)
 
 		# Verify minimum fields
-		try: DictHelper.eval(data, ['id'])
+		try: DictHelper.eval(data, ['_id'])
 		except ValueError as e: return Services.Effect(error=(1001, [(f, 'missing') for f in e.args]))
 
 		# Find the record
-		oOutreach = Outreach.get(data['id'])
-		if not oOutreach:
+		oOutbound = Outbound.get(data['_id'])
+		if not oOutbound:
 			return Services.Effect(error=1104)
 
-		# Check the customer exists
-		oEff = Services.read('monolith', 'customer/name', {
-			"customerId": str(oOutreach['customerId'])
-		}, sesh)
-		if oEff.errorExists(): return oEff
-		dCustomer = oEff.data
+		# If the CRM is Konnektive
+		if oOutbound['type'] == 'knk':
+
+			# Check the customer exists
+			oEff = Services.read('monolith', 'customer/name', {
+				"customerId": oOutbound['crm_id']
+			}, sesh)
+			if oEff.errorExists(): return oEff
+			dCustomer = oEff.data
+
+		# Else, invalid CRM type
+		else:
+			return Services.Effect(error=1003)
 
 		# Get the user name
 		oEff = Services.read('monolith', 'user/name', {
@@ -297,17 +300,14 @@ class WellDyne(Services.Service):
 		if oEff.errorExists(): return oEff
 		dUser = oEff.data
 
-		# Get current date/time
-		sDT = arrow.get().format('YYYY-MM-DD HH:mm:ss')
-
 		# Try to create a new adhoc instance
 		try:
 			oAdHoc = AdHoc({
-				"customerId": oOutreach['customerId'],
+				"crm_type": oOutbound['crm_type'],
+				"crm_id": oOutbound['crm_id'],
+				"crm_order": oOutbound['crm_order'],
 				"type": "Remove Error",
-				"user": sesh['memo_id'],
-				"createdAt": sDT,
-				"updatedAt": sDT
+				"memo_user": sesh['memo_id']
 			})
 		except ValueError as e:
 			return Services.Effect(error=(1001, e.args[0]))
@@ -316,20 +316,20 @@ class WellDyne(Services.Service):
 		iID = oAdHoc.create();
 
 		# Delete the outreach record
-		oOutreach.delete()
+		oOutbound.delete()
 
 		# Turn the adhoc instance into a dict
 		dAdHoc = oAdHoc.record()
 
 		# Add the names
-		dAdHoc['customerName'] = "%s %s" % (dCustomer['firstName'], dCustomer['lastName'])
-		dAdHoc['userName'] = "%s %s" % (dUser['firstName'], dUser['lastName'])
+		dAdHoc['customer_name'] = "%s %s" % (dCustomer['firstName'], dCustomer['lastName'])
+		dAdHoc['user_name'] = "%s %s" % (dUser['firstName'], dUser['lastName'])
 
 		# Return the new adhoc data
 		return Services.Effect(dAdHoc)
 
-	def outreachReady_update(self, data, sesh):
-		"""Outreach Ready
+	def outboundReady_update(self, data, sesh):
+		"""Outbound Ready
 
 		Updates the ready state of an existing outreach record
 
@@ -343,31 +343,35 @@ class WellDyne(Services.Service):
 
 		# Make sure the user has the proper rights
 		oEff = Services.read('auth', 'rights/verify', {
-			"name": "welldyne_outreach",
+			"name": "welldyne_outbound",
 			"right": Rights.UPDATE
 		}, sesh)
 		if not oEff.data:
 			return Services.Effect(error=Rights.INVALID)
 
 		# Verify minimum fields
-		try: DictHelper.eval(data, ['id', 'ready'])
+		try: DictHelper.eval(data, ['_id', 'ready'])
 		except ValueError as e: return Services.Effect(error=(1001, [(f, 'missing') for f in e.args]))
 
 		# Find the record
-		oOutreach = Outreach.get(data['id'])
-		if not oOutreach:
+		oOutbound = Outbound.get(data['_id'])
+		if not oOutbound:
 			return Services.Effect(error=1104)
 
+		# If there's no order
+		if not oOutbound['crm_order'] or oOutbound['crm_order'] == '':
+			return Services.Effect(error=1800)
+
 		# Update the ready state
-		oOutreach['ready'] = data['ready'] and True or False
+		oOutbound['ready'] = data['ready'] and True or False
 
 		# Save and return the result
 		return Services.Effect(
-			oOutreach.save()
+			oOutbound.save()
 		)
 
-	def outreachs_read(self, data, sesh):
-		"""Outreachs
+	def outbounds_read(self, data, sesh):
+		"""Outbounds
 
 		Returns all outreach records
 
@@ -381,39 +385,28 @@ class WellDyne(Services.Service):
 
 		# Make sure the user has the proper rights
 		oEff = Services.read('auth', 'rights/verify', {
-			"name": "welldyne_outreach",
+			"name": "welldyne_outbound",
 			"right": Rights.READ
 		}, sesh)
 		if not oEff.data:
 			return Services.Effect(error=Rights.INVALID)
 
 		# Fetch all the records joined with the trigger table
-		lRecords = Outreach.withTrigger()
+		lRecords = Outbound.withTrigger()
 
 		# If we have records
 		if lRecords:
 
 			# Find all the customer names
 			oEff = Services.read('monolith', 'customer/name', {
-				"customerId": [str(d['customerId']) for d in lRecords]
+				"customerId": [d['crm_id'] for d in lRecords]
 			}, sesh)
 			if oEff.errorExists(): return oEff
 			dCustomers = {k:'%s %s' % (d['firstName'], d['lastName']) for k,d in oEff.data.items()}
 
-			# Find all the user names
-			oEff = Services.read('monolith', 'user/name', {
-				"id": list(set([d['user'] for d in lRecords]))
-			}, sesh)
-			if oEff.errorExists(): return oEff
-			dUsers = {k:'%s %s' % (d['firstName'], d['lastName']) for k,d in oEff.data.items()}
-			dUsers['0'] = 'WellDyneRX'
-
-			# Go through each record and add the customer and user names
+			# Go through each record and add the customer names
 			for d in lRecords:
-				sCustId = str(d['customerId'])
-				sUserId = str(d['user'])
-				d['customerName'] = sCustId in dCustomers and dCustomers[sCustId] or 'Unknown'
-				d['userName'] = sUserId in dUsers and dUsers[sUserId] or 'Unknown'
+				d['customer_name'] = d['crm_id'] in dCustomers and dCustomers[d['crm_id']] or 'Unknown'
 
 			# Return all records
 			return Services.Effect(lRecords)
@@ -462,15 +455,25 @@ class WellDyne(Services.Service):
 		#	return Services.Effect(error=Rights.INVALID)
 
 		# Verify fields
-		try: DictHelper.eval(data, ['customerId'])
+		try: DictHelper.eval(data, ['crm_type', 'crm_id'])
 		except ValueError as e: return Services.Effect(error=(1001, [(f, "missing") for f in e.args]))
 
 		# Look for a trigger with any possible outreach and eligibility
-		dTrigger = Trigger.withOutreachEligibility(data['customerId'])
+		lTrigger = Trigger.withOutreachEligibility(data['crm_type'], data['crm_id'])
 
 		# If there's nothing
-		if not dTrigger:
-			dTrigger = 0
+		if not lTrigger:
+			return Services.Effect(0)
+
+		# Find the eligibility associated
+		dElig = Eligibility.filter({
+			"customerId": data['crm_id']
+		}, raw=['memberSince', 'memberThru'], limit=1)
+
+		# Add the eligibility to each
+		for d in lTrigger:
+			d['elig_since'] = dElig and dElig['memberSince'] or None
+			d['elig_thru'] = dElig and dElig['memberThru'] or None
 
 		# Return
-		return Services.Effect(dTrigger)
+		return Services.Effect(lTrigger)

@@ -47,8 +47,8 @@ def __request(action, path, data):
 	dConf = Conf.get('memo')
 
 	# Generate the URL to reach the service
-	sURL = "%s%s?user=%s&pass=%" % (
-		dConf['host'],
+	sURL = "%s/%s?user=%s&pass=%s" % (
+		dConf['domain'],
 		path,
 		dConf['user'],
 		dConf['pass']
