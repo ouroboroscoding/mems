@@ -819,10 +819,19 @@ class Prescriptions(Services.Service):
 		if not oEff.data:
 			return Services.Effect(error=Rights.INVALID)
 
-		# Fetch all the records joined with the trigger table
-		lRecords = PharmacyFillError.filter({"fail_count": {
+		# Init the base requirements
+		dFilter = {"fail_count": {
 			"neq": 0
-		}}, raw=True, orderby=[('fail_count', 'DESC')])
+		}}
+
+		# If a type or ID were passed
+		if 'crm_type' in data:
+			dFilter['crm_type'] = data['crm_type']
+		if 'crm_id' in data:
+			dFilter['crm_id'] = data['crm_id']
+
+		# Fetch all the records joined with the trigger table
+		lRecords = PharmacyFillError.filter(dFilter, raw=True, orderby=[('fail_count', 'DESC')])
 
 		# If we have records
 		if lRecords:

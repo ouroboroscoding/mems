@@ -29,7 +29,7 @@ def run():
 			"crm_type": 'knk',
 			"crm_id": str(d['customerId']),
 			"crm_order": d['orderId'],
-			"list": d['list'],
+			"list": d['list'] == 'outreach' and 'outbound' or d['list'],
 			"type": d['type'],
 			"reason": d['reason'],
 			"fail_count": d['failCount'],

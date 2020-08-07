@@ -143,7 +143,7 @@ def prescriptions(l, max_date=None):
 				"id": d['PrescriptionId'],
 				"pharmacy": sPharmacy,
 				"date": d['WrittenDate'],
-				"display": '%s x %s' %(d['DisplayName'], d['Quantity']),
+				"display": '%s (%s)' %(d['DisplayName'], d['Quantity']),
 				"effective": d['EffectiveDate'] and d['EffectiveDate'] or d['WrittenDate'],
 				"refills": int(d['Refills'])
 			}
@@ -154,7 +154,7 @@ def prescriptions(l, max_date=None):
 				"id": d['PrescriptionId'],
 				"pharmacy": sPharmacy,
 				"date": d['WrittenDate'],
-				"display": '%s x %s' %(d['DisplayName'], d['Quantity']),
+				"display": '%s (%s)' %(d['DisplayName'], d['Quantity']),
 				"effective": d['EffectiveDate'] and d['EffectiveDate'] or d['WrittenDate'],
 				"refills": int(d['Refills'])
 			}
@@ -299,7 +299,7 @@ def process(item, backfill=None):
 		emailError('Unknown Pharmacy', str({
 			"crm_type": item['crm_type'],
 			"crm_id": item['crm_id'],
-			"pharmacyIds": ','.join([d['pharmacyId'] for d in lPrescriptions])
+			"PharmacyIds": ','.join([str(d['PharmacyId']) for d in lPrescriptions])
 		}))
 
 	# If we have only one prescription and one product

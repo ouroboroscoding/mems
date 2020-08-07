@@ -70,7 +70,7 @@ def run(period=None):
 
 	# Else, invalid time period
 	else:
-		print('Invalid time period: %s' % time)
+		print('Invalid time period: %s' % period)
 		return False
 
 	# Go through each type, CAPTURE and SALE
@@ -156,7 +156,7 @@ def run(period=None):
 		dRes = PharmacyFill.process({
 			"crm_type": o['crm_type'],
 			"crm_id": o['crm_id'],
-			"crm_order": d['crm_order']
+			"crm_order": o['crm_order']
 		})
 
 		# If we get success

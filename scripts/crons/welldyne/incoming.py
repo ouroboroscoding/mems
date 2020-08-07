@@ -11,6 +11,9 @@ __maintainer__	= "Chris Nasr"
 __email__		= "bast@maleexcel.com"
 __created__		= "2020-07-29"
 
+# Python imports
+import os
+
 # Pip imports
 import arrow
 import pysftp
@@ -152,6 +155,11 @@ def outbound_failed_claims(time):
 	# Go through each item
 	for d in lData:
 
+		# If we got no ID
+		if not d['crm_id']:
+			emailError('OUTBOUND FAILED', str(d))
+			continue
+
 		# Get the CRM ID
 		sCrmID = d['crm_id'].lstrip('0')
 
@@ -161,17 +169,21 @@ def outbound_failed_claims(time):
 			"crm_id": sCrmID,
 		}, raw=['crm_order'], orderby=[('_created', 'DESC')], limit=1)
 
+		# Create the reason string
+		sReason = '%s %s' % (d['reason'] or '', d['exception'] or '')
+
+		# If it's empty
+		if len(sReason) == 0 or sReason == ' ':
+			sReason = '(empty)'
+
 		# Create the instance
 		oOutbound = Outbound({
 			"crm_type": 'knk',
 			"crm_id": sCrmID,
-			"crm_order": dTrigger['crm_order'],
-			"queue": d['queue'],
-			"reason": '%s %s' % (
-				d['reason'] or '',
-				d['exception'] or ''
-			),
-			"wd_rx": d['wd_rx'],
+			"crm_order": dTrigger and dTrigger['crm_order'] or '',
+			"queue": d['queue'] or '(empty)',
+			"reason": sReason[:255],
+			"wd_rx": d['wd_rx'] or '',
 			"ready": False
 		})
 
@@ -238,11 +250,13 @@ def shipped_claims(time):
 		"member_id": {"column": 17, "type": Excel.STRING}
 	}, start_row=1)
 
-	# Go through each item
+	# Go through each one and keep only uniques
+	dData = {}
 	for d in lData:
+		dData[d['member_id'].lstrip('0')] = d
 
-		# Get the CRM ID
-		sCrmID = d['member_id'].lstrip('0')
+	# Go through each item
+	for sCrmID,d in dData.items():
 
 		# Find the last trigger associated with the ID
 		oTrigger = Trigger.filter({
@@ -270,21 +284,21 @@ def shipped_claims(time):
 		})
 		oRx.create(conflict=['number'])
 
-		# Send the tracking to Memo
-		dRes = Memo.create('rest/shipping', {
-			"code": d['tracking'],
-			"type": 'USPS',
-			"date": d['shipped'],
-			"customerId": sCrmID
-		})
-		if dRes['error']:
-			print(dRes['error'])
+	# Send the tracking to Memo
+	dRes = Memo.create('rest/shipping', [{
+		"code": d['tracking'],
+		"type": d['tracking'][0:2] == '1Z' and 'UPS' or 'USPS',
+		"date": d['shipped'],
+		"customerId": sCrmID
+	} for sCrmID,d in dData.items()])
+	if dRes['error']:
+		print(dRes['error'])
 
 	# Delete the file
 	os.remove(sGet)
 
 	# Return OK
-	return OK
+	return True
 
 def run(report, time=None):
 	"""Run
