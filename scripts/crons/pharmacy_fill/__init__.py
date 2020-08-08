@@ -209,7 +209,7 @@ def run(period=None):
 		dRes = PharmacyFill.process({
 			"crm_type": o['crm_type'],
 			"crm_id": o['crm_id'],
-			"crm_order": d['crm_order']
+			"crm_order": o['crm_order']
 		})
 
 		# If we get success
