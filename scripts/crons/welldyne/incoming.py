@@ -138,7 +138,7 @@ def outbound_failed_claims(time):
 		try:
 			sGet = '%s/%s' % (sTemp, sFilename)
 			oCon.get(sFilename, sGet)
-			#oCon.rename(sFilename, 'processed/%s' % sFilename)
+			oCon.rename(sFilename, 'processed/%s' % sFilename)
 		except FileNotFoundError:
 			emailError('WellDyne Incoming Failed', '%s file not found on sFTP' % sFilename)
 			return False
@@ -237,7 +237,7 @@ def shipped_claims(time):
 		try:
 			sGet = '%s/%s' % (sTemp, sFilename)
 			oCon.get(sFilename, sGet)
-			#oCon.rename(sFilename, 'processed/%s' % sFilename)
+			oCon.rename(sFilename, 'processed/%s' % sFilename)
 		except FileNotFoundError:
 			emailError('WellDyne Incoming Failed', '%s file not found on sFTP' % sFilename)
 			return False
