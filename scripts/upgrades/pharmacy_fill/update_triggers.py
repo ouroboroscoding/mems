@@ -65,7 +65,7 @@ def run():
 						"crm_order": ''
 					}, {
 						"order": lRes[0],
-						"max_date": o['_created']
+						"max_date": o['_updated']
 					})
 
 					# If it was successful
