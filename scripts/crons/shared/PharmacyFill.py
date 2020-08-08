@@ -323,7 +323,8 @@ def process(item, backfill=None):
 			_mlExpiring.append({
 				"crm_type": item['crm_type'],
 				"crm_id": item['crm_id'],
-				"crm_order": item['crm_order']
+				"crm_order": item['crm_order'],
+				"ds_id": dPrescription['id']
 			})
 
 		# Set the product and add the row to the pharmacy
@@ -372,7 +373,8 @@ def process(item, backfill=None):
 				_mlExpiring.append({
 					"crm_type": item['crm_type'],
 					"crm_id": item['crm_id'],
-					"crm_order": item['crm_order']
+					"crm_order": item['crm_order'],
+					"ds_id": dPrescription['id']
 				})
 
 			# Store the medication name
