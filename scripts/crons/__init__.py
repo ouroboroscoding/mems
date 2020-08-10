@@ -51,7 +51,7 @@ def emailError(subject, error):
 	"""
 
 	# For debugging
-	print('Emailing: %s' % error)
+	print('Emailing: %s, %s' % (subject, error))
 
 	# Send the email
 	oEff = Services.create('communications', 'email', {

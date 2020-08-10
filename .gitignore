@@ -1,4 +1,5 @@
 # Files
+*_client_secret.json
 config.*.json
 install.log
 _upgrade.log

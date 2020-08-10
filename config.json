@@ -31,7 +31,22 @@
 			"tls": true,
 			"user": "postmaster@localhost",
 			"passwd": "password"
+		},
+		"imap": {
+			"tls": true,
+			"server": {
+				"host": "maleexcel.com",
+				"port": 993
+			},
+			"auth": {
+				"user": "email",
+				"pass": "password"
+			}
 		}
+	},
+
+	"google": {
+		"sheets": {}
 	},
 
 	"konnektive": {
@@ -44,6 +59,24 @@
 		"domain": "https://memologin.com",
 		"user": "User",
 		"pass": "Pass"
+	},
+
+	"missed_calls": {
+		"sheets": {
+			"default": {
+				"key": "",
+				"worksheet": "Missed Calls"
+			},
+			"hrt": {
+				"key": "",
+				"worksheet": "Missed Calls"
+			}
+		},
+		"justcall": {
+			"from": "help@justcall.io",
+			"numbers": {}
+		},
+		"signia": "notifications@virtualacd.biz"
 	},
 
 	"mysql": {
