@@ -85,6 +85,10 @@ class WellDyne(Services.Service):
 		try: DictHelper.eval(data, ['crm_type', 'crm_id', 'type'])
 		except ValueError as e: return Services.Effect(error=(1001, [(f, 'missing') for f in e.args]))
 
+		# If the type isn't set
+		if 'crm_type' not in data:
+			data['crm_type'] = 'knk'
+
 		# If the CRM is Konnektive
 		if data['crm_type'] == 'knk':
 
