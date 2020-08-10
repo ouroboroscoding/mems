@@ -82,7 +82,7 @@ class WellDyne(Services.Service):
 			return Services.Effect(error=Rights.INVALID)
 
 		# Verify minimum fields
-		try: DictHelper.eval(data, ['crm_type', 'crm_id', 'type'])
+		try: DictHelper.eval(data, ['crm_id', 'type'])
 		except ValueError as e: return Services.Effect(error=(1001, [(f, 'missing') for f in e.args]))
 
 		# If the type isn't set
