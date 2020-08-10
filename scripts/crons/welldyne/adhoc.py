@@ -160,113 +160,124 @@ def run(period=None):
 		bool
 	"""
 
-	# Init the PharmacyFill module
-	PharmacyFill.initialise()
+	try:
 
-	# Create a new instance of the WellDyne Trigger File
-	oTrigger = TriggerFile()
+		# Init the PharmacyFill module
+		PharmacyFill.initialise()
 
-	# If we're doing the noon run
-	if period == 'noon':
-		sFileTime = '120000'
+		# Create a new instance of the WellDyne Trigger File
+		oTrigger = TriggerFile()
 
-	# Else, if we're doing the mid day run
-	elif period == 'afternoon':
-		sFileTime = '160000'
+		# If we're doing the noon run
+		if period == 'noon':
+			sFileTime = '120000'
 
-	# Else, invalid time period
-	else:
-		print('Invalid time period: %s' % time)
-		return False
+		# Else, if we're doing the mid day run
+		elif period == 'afternoon':
+			sFileTime = '160000'
 
-	# Find all AdHoc records
-	lAdHocs = AdHoc.get()
+		# Else, invalid time period
+		else:
+			print('Invalid time period: %s' % time)
+			return False
 
-	# Go through each one
-	for o in lAdHocs:
+		# Find all AdHoc records
+		lAdHocs = AdHoc.get()
 
-		print('\tWorking on %s...' % o['crm_id'])
+		# Go through each one
+		for o in lAdHocs:
 
-		# Try to process it
-		dRes = PharmacyFill.process({
-			"crm_type": o['crm_type'],
-			"crm_id": o['crm_id'],
-			"crm_order": o['crm_order']
+			print('\tWorking on %s...' % o['crm_id'])
+
+			# Try to process it
+			dRes = PharmacyFill.process({
+				"crm_type": o['crm_type'],
+				"crm_id": o['crm_id'],
+				"crm_order": o['crm_order']
+			})
+
+			# If we get success
+			if dRes['status']:
+
+				# Go through each medication returned
+				for dData in dRes['data']:
+
+					# Overwrite the type
+					dData['type'] = o['type']
+
+					# If the pharmacy is Castia/WellDyne
+					if dData['pharmacy'] in ['Castia', 'WellDyne']:
+
+						# Add it to the Trigger
+						oTrigger.add(dData)
+
+					else:
+						emailError('NON-WELLDYNE ADHOC', str(o.record()))
+						continue
+
+				# Move it to the sent table
+				o.sent()
+
+		# Fetch all previous adhoc error records that are ready to be re-processed
+		lFillErrors = PharmacyFillError.filter({
+			"list": 'adhoc',
+			"ready": True
 		})
 
-		# If we get success
-		if dRes['status']:
+		# Go through each record
+		for o in lFillErrors:
 
-			# Go through each medication returned
-			for dData in dRes['data']:
+			# Try to process it
+			dRes = PharmacyFill.process({
+				"crm_type": o['crm_type'],
+				"crm_id": o['crm_id'],
+				"crm_order": d['crm_order']
+			})
 
-				# Overwrite the type
-				dData['type'] = o['type']
+			# If we get success
+			if dRes['status']:
 
-				# If the pharmacy is Castia/WellDyne
-				if dData['pharmacy'] in ['Castia', 'WellDyne']:
+				# Go through each medication returned
+				for dData in dRes['data']:
+
+					# Overwrite the type
+					dData['type'] = o['type']
+
+					# If the pharmacy is Castia/WellDyne
+					if dData['pharmacy'] not in ['Castia', 'WellDyne']:
+						emailError('WELLDYNE PHARMACY SWITCH', str(o.record()))
+						continue
 
 					# Add it to the Trigger
 					oTrigger.add(dData)
 
-				else:
-					emailError('NON-WELLDYNE ADHOC', str(o.record()))
-					continue
+					# Add it to the adhoc sent
+					AdHocSent.fromFillError(o)
 
-			# Move it to the sent table
-			o.sent()
+				# Delete it
+				o.delete()
 
-	# Fetch all previous adhoc error records that are ready to be re-processed
-	lFillErrors = PharmacyFillError.filter({
-		"list": 'adhoc',
-		"ready": True
-	})
+			# Else, if it failed to process again
+			else:
 
-	# Go through each record
-	for o in lFillErrors:
+				# Increment the fail count, overwrite the reason, and reset the
+				#	ready flag
+				o['fail_count'] += 1
+				o['reason'] = dRes['data']
+				o['ready'] = False
+				o.save();
 
-		# Try to process it
-		dRes = PharmacyFill.process({
-			"crm_type": o['crm_type'],
-			"crm_id": o['crm_id'],
-			"crm_order": d['crm_order']
-		})
+		# Upload the WellDyne trigger file
+		oTrigger.upload(sFileTime)
 
-		# If we get success
-		if dRes['status']:
+		# Return OK
+		return True
 
-			# Go through each medication returned
-			for dData in dRes['data']:
-
-				# Overwrite the type
-				dData['type'] = o['type']
-
-				# If the pharmacy is Castia/WellDyne
-				if dData['pharmacy'] not in ['Castia', 'WellDyne']:
-					emailError('WELLDYNE PHARMACY SWITCH', str(o.record()))
-					continue
-
-				# Add it to the Trigger
-				oTrigger.add(dData)
-
-				# Add it to the adhoc sent
-				AdHocSent.fromFillError(o)
-
-			# Delete it
-			o.delete()
-
-		# Else, if it failed to process again
-		else:
-
-			# Increment the fail count, overwrite the reason, and reset the
-			#	ready flag
-			o['fail_count'] += 1
-			o['reason'] = dRes['data']
-			o['ready'] = False
-			o.save();
-
-	# Upload the WellDyne trigger file
-	oTrigger.upload(sFileTime)
-
-	# Return OK
-	return True
+	# Catch any error and email it
+	except Exception as e:
+		sBody = '%s\n\n%s' % (
+			', '.join([str(s) for s in e.args]),
+			traceback.format_exc()
+		)
+		emailError('AdHoc Failed', sBody)
+		return False
