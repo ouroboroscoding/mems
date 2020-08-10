@@ -70,6 +70,7 @@ class TriggerFile(object):
 		dLastTrigger = Trigger.filter({
 			"crm_type": data['crm_type'],
 			"crm_id": data['crm_id'],
+			"crm_order": {"neq": data['crm_order']},
 			"medication": data['medication']
 		}, raw=['rx_id'], orderby=[('_created', 'DESC')], limit=1)
 
