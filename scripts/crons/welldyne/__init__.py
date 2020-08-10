@@ -21,7 +21,7 @@ def run(type_, report, arg1=None):
 		arg1 (str): Possible data passed to the report
 
 	Returns:
-		int
+		bool
 	"""
 
 	# If the type is adhoc

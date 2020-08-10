@@ -310,7 +310,7 @@ def run(report, time=None):
 		time (str): The time of day of the report
 
 	Returns:
-		int
+		bool
 	"""
 
 	# If no time sent, assume morning

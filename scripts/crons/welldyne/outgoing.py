@@ -100,7 +100,7 @@ def run(type, arg1=None):
 		arg1 (str): Possible data passed to the report
 
 	Returns:
-		int
+		bool
 	"""
 
 	# Trigger No Feedback report
