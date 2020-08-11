@@ -55,6 +55,10 @@ REST.Server({
 	"/agent/internal": {"methods": REST.READ, "session": True},
 	"/agent/names": {"methods": REST.READ, "session": True},
 	"/agent/permissions": {"methods": REST.READ | REST.UPDATE, "session": True},
+
+	"/escalate_agent": {"methods": REST.READ, "session": True},
+	"/escalate_agents": {"methods": REST.READ, "session": True},
+
 	"/template/email": {"methods": REST.ALL, "session": True},
 	"/template/emails": {"methods": REST.READ, "session": True},
 	"/template/sms": {"methods": REST.ALL, "session": True},

@@ -27,5 +27,5 @@ DELETE	= 0x08
 ALL		= 0x0F
 """Allowed to CRUD"""
 
-INVALID = 1002
+INVALID = 1000
 """REST invalid rights error code"""

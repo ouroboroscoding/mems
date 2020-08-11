@@ -1,3 +1,11 @@
+Turd
+	7044518407
+	bigboy.44jf@gmail.com
+	34 dfdf
+	Unit 37
+	Lenoir, NC
+	US, 23223
+
 DEV:
 	python -m tools.fake_msg 5148026900 2564884325 "Hello ME" support
 	python -m tools.fake_msg 5148026900 2564884325 "My name is Arthur Morgan" support

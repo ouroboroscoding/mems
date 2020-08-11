@@ -24,7 +24,7 @@ from RestOC import Conf, DictHelper, Errors, Services, \
 from shared import Rights
 
 # Service imports
-from .records import Forgot, Permission, User, UserPatient, UserPatientSetup
+from .records import Forgot, Permission, User
 
 # Regex for validating email
 _emailRegex = re.compile(r"[^@\s]+@[^@\s]+\.[a-zA-Z0-9]{2,}$")
@@ -35,7 +35,7 @@ class Auth(Services.Service):
 	Service for Authorization, sign in, sign up, etc.
 	"""
 
-	_install = [Forgot, Permission, User, UserPatient, UserPatientSetup]
+	_install = [Forgot, Permission, User]
 	"""Record types called in install"""
 
 	def initialise(self):
@@ -57,7 +57,6 @@ class Auth(Services.Service):
 		# Pass the Redis connection to records that need it
 		Permission.redis(self._redis)
 		User.redis(self._redis)
-		UserPatient.redis(self._redis)
 
 	@classmethod
 	def install(cls):
@@ -79,101 +78,6 @@ class Auth(Services.Service):
 
 		# Return OK
 		return True
-
-	def patientVerifyEmail_create(self, data, sesh):
-		"""Patient Verify Create
-
-		Creates a record used in starting the process to create a customer
-		patient login account, then sends out an email to the customer to
-		start the process of verifying themselves
-
-		Arguments:
-			data (dict): Data sent with the request
-			sesh (Sesh._Session): The session associated with the request
-
-		Returns:
-			Services.Effect
-		"""
-
-		# Make sure the user has the proper rights
-		oEff = self.rightsVerify_read({
-			"name": "patient_user",
-			"right": Rights.CREATE
-		}, sesh)
-		if not oEff.data:
-			return Services.Effect(error=Rights.INVALID)
-
-		# Verify fields
-		try: DictHelper.eval(data, ['type', "crm_id"])
-		except ValueError as e: return Services.Effect(error=(1001, [(f, "missing") for f in e.args]))
-
-		# Which CRM is this customer from?
-		if data['type'] == 'knk':
-
-			# Fetch the customer's details from Konnektive
-			oEff = Services.read('konnektive', 'customer', {
-				"id": data['crm_id']
-			})
-			if oEff.errorExists():
-				return oEff
-
-			# Store the email address
-			sEmail = oEff.data['email']
-
-		# Create an instance of the setup record
-		try:
-			oSetup = UserPatientSetup({
-				"_id": StrHelper.random(32, ['aZ', '10', '!*']),
-				"type": data['type'],
-				"crm_id": data['crm_id']
-			})
-		except ValueError as e:
-			return Services.Effect(error=(1001, e.args[0]))
-
-		# Create the record
-		if not oSetup.create():
-			return Services.Effect(error=1100)
-
-		# Patient setup email template variables
-		dTpl = {
-			"key": oSetup['_id'],
-			"url": Conf.get(('services', 'auth', 'pp_verify_link')) % oSetup['_id']
-		}
-
-		# Email the user the key
-		oEffect = Services.create('communications', 'email', {
-			"_internal_": Services.internalKey(),
-			"html_body": Templates.generate('email/patient_setup.html', dTpl, dUser['locale']),
-			"subject": Templates.generate('email/patient_setup_subject.txt', {}, dUser['locale']),
-			"to": sEmail,
-		})
-		if oEffect.errorExists():
-			return oEffect
-
-		# Return OK
-		return Services.Effect(True)
-
-	def patientVerifyEmail_update(self, data):
-		"""Patient Verify Update
-
-		Checks the passed key against the setup table to make sure the user
-		is who they say they are,
-
-		Arguments:
-			data (dict): Data sent with the request
-			sesh (Sesh._Session): The session associated with the request
-
-		Returns:
-			Services.Effect
-		"""
-
-		# Make sure the user has the proper rights
-		oEff = self.rightsVerify_read({
-			"name": "patient_user",
-			"right": Rights.CREATE
-		}, sesh)
-		if not oEff.data:
-			return Services.Effect(error=Rights.INVALID)
 
 	def permissions_read(self, data, sesh):
 		"""Permissions
@@ -209,7 +113,7 @@ class Auth(Services.Service):
 
 		# Verify fields
 		try: DictHelper.eval(data, ['user_id'])
-		except ValueError as e: return Services.Effect(error=(1001, [(f, "missing") for f in e.args]))
+		except ValueError as e: return Services.Effect(error=(1001, [(f, 'missing') for f in e.args]))
 
 		# Fetch the Permissions
 		dPermissions = Permission.cache(data['user_id'])
@@ -269,7 +173,7 @@ class Auth(Services.Service):
 
 		# Verify fields
 		try: DictHelper.eval(data, ['user', 'permissions'])
-		except ValueError as e: return Services.Effect(error=(1001, [(f, "missing") for f in e.args]))
+		except ValueError as e: return Services.Effect(error=(1001, [(f, 'missing') for f in e.args]))
 
 		# Get the user's current permissions
 		dOldPermissions = Permission.cache(data['user'])
@@ -345,7 +249,7 @@ class Auth(Services.Service):
 
 		# Verify fields
 		try: DictHelper.eval(data, ['name', 'right'])
-		except ValueError as e: return Services.Effect(error=(1001, [(f, "missing") for f in e.args]))
+		except ValueError as e: return Services.Effect(error=(1001, [(f, 'missing') for f in e.args]))
 
 		# Find the permissions
 		dPermissions = Permission.cache(sesh['user_id'])
@@ -387,7 +291,7 @@ class Auth(Services.Service):
 
 		# Verify fields
 		try: DictHelper.eval(data, ['filter'])
-		except ValueError as e: return Services.Effect(error=(1001, [(f, "missing") for f in e.args]))
+		except ValueError as e: return Services.Effect(error=(1001, [(f, 'missing') for f in e.args]))
 
 		# If the filter isn't a dict
 		if not isinstance(data['filter'], dict):
@@ -443,7 +347,7 @@ class Auth(Services.Service):
 
 		# Verify fields
 		try: DictHelper.eval(data, ['email', 'passwd'])
-		except ValueError as e: return Services.Effect(error=(1001, [(f, "missing") for f in e.args]))
+		except ValueError as e: return Services.Effect(error=(1001, [(f, 'missing') for f in e.args]))
 
 		# Look for the user by alias
 		oUser = User.filter({"email": data['email']}, limit=1)
@@ -513,7 +417,7 @@ class Auth(Services.Service):
 
 		# Verify fields
 		try: DictHelper.eval(data, ['email', 'passwd'])
-		except ValueError as e: return Services.Effect(error=(1001, [(f, "missing") for f in e.args]))
+		except ValueError as e: return Services.Effect(error=(1001, [(f, 'missing') for f in e.args]))
 
 		# Check if a user with that email already exists
 		if User.exists(data['email'], 'email'):
@@ -661,7 +565,7 @@ class Auth(Services.Service):
 
 		# Verify fields
 		try: DictHelper.eval(data, ['email', 'email_passwd'])
-		except ValueError as e: return Services.Effect(error=(1001, [(f, "missing") for f in e.args]))
+		except ValueError as e: return Services.Effect(error=(1001, [(f, 'missing') for f in e.args]))
 
 		# Find the user
 		oUser = User.get(sesh['user_id'])
@@ -709,7 +613,7 @@ class Auth(Services.Service):
 
 		# Verify fields
 		try: DictHelper.eval(data, ['passwd', 'new_passwd'])
-		except ValueError as e: return Services.Effect(error=(1001, [(f, "missing") for f in e.args]))
+		except ValueError as e: return Services.Effect(error=(1001, [(f, 'missing') for f in e.args]))
 
 		# Find the user
 		oUser = User.get(sesh['user']['_id'])
@@ -746,7 +650,7 @@ class Auth(Services.Service):
 
 		# Verify fields
 		try: DictHelper.eval(data, ['email', 'url'])
-		except ValueError as e: return Services.Effect(error=(1001, [(f, "missing") for f in e.args]))
+		except ValueError as e: return Services.Effect(error=(1001, [(f, 'missing') for f in e.args]))
 
 		# Look for the user by email
 		dUser = User.filter({"email": data['email']}, raw=['_id', 'locale'], limit=1)
@@ -756,7 +660,7 @@ class Auth(Services.Service):
 		# Look for a forgot record by user id
 		oForgot = Forgot.get(dUser['_id'])
 
-		# Is there already a key in the user?
+		# Is there already a key for the user?
 		if oForgot and 'regenerate' not in data:
 
 			# Is it not expired?
@@ -809,7 +713,7 @@ class Auth(Services.Service):
 
 		# Verify fields
 		try: DictHelper.eval(data, ['passwd', 'key'])
-		except ValueError as e: return Services.Effect(error=(1001, [(f, "missing") for f in e.args]))
+		except ValueError as e: return Services.Effect(error=(1001, [(f, 'missing') for f in e.args]))
 
 		# Look for the forgot by the key
 		oForgot = Forgot.filter({"key": data['key']}, limit=1)

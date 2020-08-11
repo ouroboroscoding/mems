@@ -110,7 +110,7 @@
 	},
 
 	"rest": {
-		"allowed": "(?:mecrm.local|mecsr.local)",
+		"allowed": "(?:mecrm.local|mecsr.local|mepp.local)",
 		"default": {
 			"domain": "localhost",
 			"host": "0.0.0.0",
@@ -124,6 +124,7 @@
 			"csr": {"port": 9},
 			"konnektive": {"port": 7},
 			"monolith": {"port": 6},
+			"patient": {"port": 11},
 			"payment": {"port": 5},
 			"prescriptions": {"port": 8},
 			"webpoll": {"port": 2},
@@ -134,8 +135,11 @@
 	"services": {
 		"salt": null,
 		"auth": {
-			"forgot_expire": 600,
-			"pp_verify_link": "https://mepp.local/verify/%s"
+			"forgot_expire": 600
+		},
+		"patient": {
+			"max_attempts": 3,
+			"support_email": "bast@maleexcel.com"
 		},
 		"queue": {
 			"key": null

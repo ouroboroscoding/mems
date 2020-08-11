@@ -557,6 +557,7 @@ class Trigger(Record_MySQL.Record):
 
 		# Generate SQL
 		sSQL = "SELECT\n" \
+				"	`wdt`.`_id` as `_id`,\n" \
 				"	`wdt`.`crm_type` as `crm_type`,\n" \
 				"	`wdt`.`crm_id` as `crm_id`,\n" \
 				"	`wdt`.`crm_order` as `crm_order`,\n" \

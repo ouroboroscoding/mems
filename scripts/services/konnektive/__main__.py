@@ -37,7 +37,10 @@ if 'VERBOSE' in os.environ and os.environ['VERBOSE'] == '1':
 	Services.verbose()
 
 # Get all the services
-dServices = {"konnektive": Konnektive()}
+dServices = {
+	"auth": None,
+	"konnektive": Konnektive()
+}
 
 # Register all services
 Services.register(dServices, oRestConf, Conf.get(('services', 'salt')))
@@ -47,7 +50,8 @@ Templates.init('../templates')
 
 # Create the HTTP server and map requests to service
 REST.Server({
-	"/customer": {"methods": REST.READ, "session": True},
+	"/customer": {"methods": REST.READ | REST.UPDATE, "session": True},
+	"/customer/purchases": {"methods": REST.READ, "session": True},
 	"/customer/orders": {"methods": REST.READ, "session": True},
 	"/customer/transactions": {"methods": REST.READ, "session": True},
 	"/order/transactions": {"methods": REST.READ, "session": True}

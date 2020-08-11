@@ -94,6 +94,7 @@ class WellDyne(Services.Service):
 
 			# Check the customer exists
 			oEff = Services.read('monolith', 'customer/name', {
+				"_internal_": Services.internalKey(),
 				"customerId": data['crm_id']
 			}, sesh)
 			if oEff.errorExists(): return oEff
@@ -105,6 +106,7 @@ class WellDyne(Services.Service):
 
 		# Get the user name
 		oEff = Services.read('monolith', 'user/name', {
+			"_internal_": Services.internalKey(),
 			"id": sesh['memo_id']
 		}, sesh)
 		if oEff.errorExists(): return oEff
@@ -188,6 +190,7 @@ class WellDyne(Services.Service):
 
 			# Find all the customer names
 			oEff = Services.read('monolith', 'customer/name', {
+				"_internal_": Services.internalKey(),
 				"customerId": [d['crm_id'] for d in lRecords]
 			}, sesh)
 			if oEff.errorExists(): return oEff
@@ -195,6 +198,7 @@ class WellDyne(Services.Service):
 
 			# Find all the user names
 			oEff = Services.read('monolith', 'user/name', {
+				"_internal_": Services.internalKey(),
 				"id": list(set([d['memo_user'] for d in lRecords]))
 			}, sesh)
 			if oEff.errorExists(): return oEff
@@ -284,10 +288,11 @@ class WellDyne(Services.Service):
 			return Services.Effect(error=1104)
 
 		# If the CRM is Konnektive
-		if oOutbound['type'] == 'knk':
+		if oOutbound['crm_type'] == 'knk':
 
 			# Check the customer exists
 			oEff = Services.read('monolith', 'customer/name', {
+				"_internal_": Services.internalKey(),
 				"customerId": oOutbound['crm_id']
 			}, sesh)
 			if oEff.errorExists(): return oEff
@@ -299,6 +304,7 @@ class WellDyne(Services.Service):
 
 		# Get the user name
 		oEff = Services.read('monolith', 'user/name', {
+			"_internal_": Services.internalKey(),
 			"id": sesh['memo_id']
 		}, sesh)
 		if oEff.errorExists(): return oEff
@@ -403,6 +409,7 @@ class WellDyne(Services.Service):
 
 			# Find all the customer names
 			oEff = Services.read('monolith', 'customer/name', {
+				"_internal_": Services.internalKey(),
 				"customerId": [d['crm_id'] for d in lRecords]
 			}, sesh)
 			if oEff.errorExists(): return oEff
