@@ -93,7 +93,7 @@ def fetch_imap(user, passwd, host='localhost', port=143, tls=False, box='INBOX',
 				lPayloads = oMsg.get_payload()
 
 				# Go through each one and print what it is
-				for o in mPayloads:
+				for o in lPayloads:
 
 					# If the type is text/plain
 					if o.get_content_type() == 'text/plain':
