@@ -92,6 +92,7 @@ REST.Server({
 	"/stats/claimed": {"methods": REST.READ, "session": True},
 
 	"/user": {"methods": REST.CREATE | REST.READ | REST.UPDATE, "session": True},
+	"/users": {"methods": REST.READ, "session": True},
 	"/user/active": {"methods": REST.UPDATE, "session": True},
 	"/user/name": {"methods": REST.READ, "session": True},
 	"/user/passwd": {"methods": REST.UPDATE, "session": True}

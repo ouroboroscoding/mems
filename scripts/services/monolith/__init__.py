@@ -1742,3 +1742,34 @@ class Monolith(Services.Service):
 
 		# Return OK
 		return Services.Effect(True)
+
+	def users_read(self, data, sesh):
+		"""Users
+
+		Returns users by ID
+
+		Arguments:
+			data (dict): Data sent with the request
+			sesh (Sesh._Session): The session associated with the user
+
+		Returns:
+			Effect
+		"""
+
+		# Verify fields
+		try: DictHelper.eval(data, ['_internal_', 'id'])
+		except ValueError as e: return Services.Effect(error=(1001, [(f, "missing") for f in e.args]))
+
+		# Verify the key, remove it if it's ok
+		if not Services.internalKey(data['_internal_']):
+			return Services.Effect(error=Errors.SERVICE_INTERNAL_KEY)
+		del data['_internal_']
+
+		# If the fields aren't passed
+		if 'fields' not in data:
+			data['fields'] = True
+
+		# Fetch and return the users
+		return Services.Effect(
+			User.get(data['id'], raw=data['fields'])
+		)
