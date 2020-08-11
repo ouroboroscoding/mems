@@ -578,6 +578,7 @@ class CSR(Services.Service):
 
 		# Fetch all the Memo user's associated
 		oEff = Services.read('monolith', 'users', {
+			"_internal_": Services.internalKey(),
 			"id": [d['memo_id'] for d in lAgents],
 			"fields": ['id', 'userName', 'firstName', 'lastName', 'email', 'dsClinicId', 'dsClinicianId']
 		}, sesh)
