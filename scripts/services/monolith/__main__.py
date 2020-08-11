@@ -70,15 +70,19 @@ REST.Server({
 	"/customer/shipping": {"methods": REST.READ, "session": True},
 
 	"/message/incoming": {"methods": REST.CREATE},
-	"/message/outgoing": {"methods": REST.CREATE, "session": True},
+	"/message/outgoing": {"methods": REST.CREATE},
 	"/msgs/claimed": {"methods": REST.READ, "session": True},
 	"/msgs/claimed/new": {"methods": REST.READ, "session": True},
 	"/msgs/search": {"methods": REST.READ, "session": True},
 	"/msgs/search/customer": {"methods": REST.READ, "session": True},
+	"/msgs/status": {"methods": REST.READ, "session": True},
 	"/msgs/unclaimed": {"methods": REST.READ, "session": True},
 	"/msgs/unclaimed/count": {"methods": REST.READ, "session": True},
 
 	"/passwd/forgot": {"methods": REST.CREATE | REST.UPDATE},
+
+	"/pharmacy/fill/error": {"methods": REST.UPDATE | REST.DELETE, "session": True},
+	"/pharmacy/fill/errors": {"methods": REST.READ, "session": True},
 
 	"/session": {"methods": REST.READ, "session": True},
 

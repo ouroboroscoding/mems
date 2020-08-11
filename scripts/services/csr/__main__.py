@@ -53,6 +53,7 @@ REST.Server({
 	"/agent": {"methods": REST.ALL, "session": True},
 	"/agents": {"methods": REST.READ, "session": True},
 	"/agent/internal": {"methods": REST.READ, "session": True},
+	"/agent/names": {"methods": REST.READ, "session": True},
 	"/agent/permissions": {"methods": REST.READ | REST.UPDATE, "session": True},
 
 	"/escalate_agent": {"methods": REST.READ, "session": True},

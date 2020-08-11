@@ -16,6 +16,9 @@ import atexit
 import os
 import sys
 
+# Pip imports
+from RestOC import Conf, Services
+
 # Keep a list of running pidfiles
 _lPidFiles = []
 
@@ -34,6 +37,35 @@ def _cleanupPidfiles():
 
 # Register at exit function
 atexit.register(_cleanupPidfiles)
+
+def emailError(subject, error):
+	"""Email Error
+
+	Send out an email with an error message
+
+	Arguments:
+		error (str): The error to email
+
+	Returns:
+		bool
+	"""
+
+	# For debugging
+	print('Emailing: %s, %s' % (subject, error))
+
+	# Send the email
+	oEff = Services.create('communications', 'email', {
+		"_internal_": Services.internalKey(),
+		"text_body": error,
+		"subject": subject,
+		"to": Conf.get(('developer', 'emails'))
+	})
+	if oEff.errorExists():
+		print(oEff.error)
+		return False
+
+	# Return OK
+	return True
 
 def isRunning(name):
 	"""Is Running

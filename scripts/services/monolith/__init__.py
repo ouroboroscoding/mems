@@ -28,8 +28,9 @@ from shared import Rights
 
 # Service imports
 from .records import CustomerClaimed, CustomerCommunication, CustomerMsgPhone, \
-						DsPatient, Forgot, KtCustomer, KtOrder, ShippingInfo, \
-						SmpNote, SmpOrderStatus, SMSStop, TfAnswer, TfLanding, \
+						DsPatient, Forgot, KtCustomer, KtOrder, \
+						PharmacyFillError, ShippingInfo, SmpNote, \
+						SmpOrderStatus, SMSStop, TfAnswer, TfLanding, \
 						TfQuestion, TfQuestionOption, User, \
 						init as recInit
 
@@ -150,7 +151,12 @@ class Monolith(Services.Service):
 
 		# If we got a duplicate exception
 		except Record_MySQL.DuplicateException:
-			return Services.Effect(error=1101)
+
+			# Fine the user who claimed it
+			dClaim = CustomerClaimed.get(data['phoneNumber'], raw=['user']);
+
+			# Return the error with the user ID
+			return Services.Effect(error=(1101, dClaim['user']))
 
 		# Else, we failed to create the record
 		return Services.Effect(False)
@@ -216,48 +222,25 @@ class Monolith(Services.Service):
 		if not oClaim:
 			return Services.Effect(error=(1104, data['phoneNumber']))
 
-		# Switch the user associated to the logged in user
-		oClaim['user'] = sesh['memo_id']
-		oClaim.save()
-
-		# Return OK
-		return Services.Effect(True)
-
-	def customerClaimEscalate_update(self, data, sesh):
-		"""Customer Claim Escalate
-
-		Escalate the claim to another agent
-
-		Arguments:
-			data (dict): Data sent with the request
-			sesh (Sesh._Session): The session associated with the request
-
-		Returns:
-			Services.Effect
-		"""
-
-		# Make sure the user has the proper permission to do this
-		oEff = Services.read('auth', 'rights/verify', {
-			"name": "csr_claims",
-			"right": Rights.CREATE
-		}, sesh)
-		if not oEff.data:
-			return Services.Effect(error=Rights.INVALID)
-
-		# Verify fields
-		try: DictHelper.eval(data, ['phoneNumber', 'user_id'])
-		except ValueError as e: return Services.Effect(error=(1001, [(f, 'missing') for f in e.args]))
-
-		# Make sure the user is in the escalate table
-		oEff = Services.read('csr', 'escalate_agent', {
-			"_id": data['user_id']
-		}, sesh)
-		if oEff.errorExists(): return oEff
-
-		# Find the claim
-		oClaim = CustomerClaimed.get(data['phoneNumber'])
+		# If it doesn't exist
 		if not oClaim:
 			return Services.Effect(error=(1104, data['phoneNumber']))
+
+		# If the current owner of the claim is not the person transfering,
+		#	check permissions
+		if oClaim['user'] != sesh['memo_id']:
+
+			# Make sure the user has the proper rights
+			oEff = Services.read('auth', 'rights/verify', {
+				"name": "csr_overwrite",
+				"right": Rights.CREATE
+			}, sesh)
+			if not oEff.data:
+				return Services.Effect(error=Rights.INVALID)
+
+		# Find the user
+		if not User.exists(data['user_id']):
+			return Services.Effect(error=(1104, data['user_id']))
 
 		# Switch the user associated to the logged in user
 		oClaim['user'] = data['user_id']
@@ -376,19 +359,14 @@ class Monolith(Services.Service):
 		except ValueError as e: return Services.Effect(error=(1001, [(f, 'missing') for f in e.args]))
 
 		# Look for the latest customer with the given number
-		dCustomer = KtCustomer.filter(
-			{"phoneNumber": [data['phoneNumber'], '1%s' % data['phoneNumber']]},
-			raw=['customerId'],
-			orderby=[('updatedAt', 'DESC')],
-			limit=1
-		)
+		dRes = KtCustomer.byPhone(data['phoneNumber'])
 
 		# If there's no customer
-		if not dCustomer:
+		if not dRes:
 			return Services.Effect(0)
 
 		# Return the ID
-		return Services.Effect(dCustomer['customerId'])
+		return Services.Effect(dRes)
 
 	def customerMessages_read(self, data, sesh):
 		"""Customer Messages
@@ -468,7 +446,7 @@ class Monolith(Services.Service):
 		# Try to find the landing
 		lLandings = TfLanding.find(
 			dCustomer['lastName'],
-			dCustomer['emailAddress'],
+			dCustomer['emailAddress'] or '',
 			dCustomer['phoneNumber']
 		)
 
@@ -909,7 +887,7 @@ class Monolith(Services.Service):
 		# Return OK
 		return Services.Effect(True)
 
-	def messageOutgoing_create(self, data, sesh):
+	def messageOutgoing_create(self, data, sesh=None):
 		"""Message Outgoing
 
 		Sends a message to the customer
@@ -922,13 +900,9 @@ class Monolith(Services.Service):
 			Services.Effect
 		"""
 
-		# Make sure the user has the proper permission to do this
-		oEff = Services.read('auth', 'rights/verify', {
-			"name": "csr_messaging",
-			"right": Rights.CREATE
-		}, sesh)
-		if not oEff.data:
-			return Services.Effect(error=Rights.INVALID)
+		# If we have no session and no key
+		if not sesh and '_internal_' not in data:
+			return Services.Effect(error=(1001, [('_internal_', 'missing')]))
 
 		# Verify fields
 		try: DictHelper.eval(data, ['customerPhone', 'content', 'type'])
@@ -938,9 +912,31 @@ class Monolith(Services.Service):
 		if SMSStop.filter({"phoneNumber": data['customerPhone'], "service": data['type']}):
 			return Services.Effect(error=1500)
 
-		# Get the user's name
-		dUser = User.get(sesh['memo_id'], raw=['firstName', 'lastName'])
-		sName = '%s %s' % (dUser['firstName'], dUser['lastName'])
+		# If it's internal
+		if '_internal_' in data:
+
+			# Verify the key, remove it if it's ok
+			if not Services.internalKey(data['_internal_']):
+				return Services.Effect(error=Errors.SERVICE_INTERNAL_KEY)
+			del data['_internal_']
+
+			# If we don't have the name
+			if 'name' not in data:
+				return Services.Effect(error=(1001, [('name', 'missing')]))
+
+		# Else, verify the user and user their name
+		else:
+
+			# Make sure the user has the proper permission to do this
+			oEff = Services.read('auth', 'rights/verify', {
+				"name": "csr_messaging",
+				"right": Rights.CREATE
+			}, sesh)
+			if not oEff.data:
+				return Services.Effect(error=Rights.INVALID)
+
+			dUser = User.get(sesh['memo_id'], raw=['firstName', 'lastName'])
+			data['name'] = '%s %s' % (dUser['firstName'], dUser['lastName'])
 
 		# Get current date/time
 		sDT = arrow.get().format('YYYY-MM-DD HH:mm:ss')
@@ -949,7 +945,7 @@ class Monolith(Services.Service):
 		try:
 			oCustomerCommunication = CustomerCommunication({
 				"type": "Outgoing",
-				"fromName": sName,
+				"fromName": data['name'],
 				"toPhone": data['customerPhone'],
 				"notes": data['content'],
 				"createdAt": sDT,
@@ -971,6 +967,7 @@ class Monolith(Services.Service):
 			return oEff
 
 		# Store the message record
+		oCustomerCommunication['sid'] = oEff.data
 		oCustomerCommunication.create()
 
 		# Catch issues with summary
@@ -981,7 +978,7 @@ class Monolith(Services.Service):
 				data['customerPhone'],
 				sDT,
 				'\n--------\nSent by %s at %s\n%s\n' % (
-					sName,
+					data['name'],
 					sDT,
 					data['content']
 				)
@@ -1007,8 +1004,8 @@ class Monolith(Services.Service):
 			# Return OK but with a warning
 			return Services.Effect(True, warning="Message sent to customer, but Memo summary failed to update")
 
-		# Return OK
-		return Services.Effect(True)
+		# Return the ID of the new message
+		return Services.Effect(oCustomerCommunication['id'])
 
 	def msgsClaimed_read(self, data, sesh):
 		"""Messages: Claimed
@@ -1182,6 +1179,28 @@ class Monolith(Services.Service):
 		# Fetch and return the data based on the phone number
 		return Services.Effect(
 			CustomerMsgPhone.search({"phone": dCustomer['phoneNumber']})
+		)
+
+	def msgsStatus_read(self, data, sesh):
+		"""Messages: Status
+
+		Get the status of a sent messages
+
+		Arguments:
+			data (dict): Data sent with the request
+			sesh (Sesh._Session): The session associated with the request
+
+		Returns:
+			Services.Effect
+		"""
+
+		# Verify fields
+		try: DictHelper.eval(data, ['ids'])
+		except ValueError as e: return Services.Effect(error=(1001, [(f, "missing") for f in e.args]))
+
+		# Get the status and error message of a specific message and return it
+		return Services.Effect(
+			CustomerCommunication.get(data['ids'], raw=['id', 'status', 'errorMessage'])
 		)
 
 	def msgsUnclaimed_read(self, data, sesh):

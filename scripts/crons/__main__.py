@@ -34,6 +34,7 @@ if os.path.isfile(sConfOverride):
 # Add the global prepend and primary host to mysql
 Record_Base.dbPrepend(Conf.get(("mysql", "prepend"), ''))
 Record_MySQL.addHost('primary', Conf.get(("mysql", "hosts", "primary")))
+Record_MySQL.addHost('monolith', Conf.get(("mysql", "hosts", "monolith")))
 
 # Register all services
 Services.register(
@@ -54,4 +55,4 @@ except ImportError as e:
 	sys.exit(1)
 
 # Run the cron with whatever additional arguments were passed
-sys.exit(oCron.run(*(sys.argv[2:])))
+sys.exit((not oCron.run(*(sys.argv[2:]))) and 1 or 0)

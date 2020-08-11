@@ -1,7 +1,7 @@
 # coding=utf8
-""" CSR Records
+""" Prescriptions Records
 
-Handles the record structures for the CSR service
+Handles the record structures for the prescriptions service
 """
 
 __author__		= "Chris Nasr"
@@ -9,17 +9,17 @@ __copyright__	= "MaleExcelMedical"
 __version__		= "1.0.0"
 __maintainer__	= "Chris Nasr"
 __email__		= "bast@maleexecl.com"
-__created__		= "2020-05-17"
+__created__		= "2020-08-01"
 
 # Pip imports
 from FormatOC import Tree
-from RestOC import Conf, Record_MySQL
+from RestOC import Record_MySQL
 
-# Agent class
-class Agent(Record_MySQL.Record):
-	"""Agent
+# Medication class
+class Medication(Record_MySQL.Record):
+	"""Medication
 
-	Represents a memo user in mems
+	Represents a valid medication in DoseSpot
 	"""
 
 	_conf = None
@@ -38,18 +38,18 @@ class Agent(Record_MySQL.Record):
 		# If we haven loaded the config yet
 		if not cls._conf:
 			cls._conf = Record_MySQL.Record.generateConfig(
-				Tree.fromFile('../definitions/csr/agent.json'),
+				Tree.fromFile('../definitions/prescriptions/medication.json'),
 				'mysql'
 			)
 
 		# Return the config
 		return cls._conf
 
-# TemplateEmail class
-class TemplateEmail(Record_MySQL.Record):
-	"""TemplateEmail
+# Pharmacy class
+class Pharmacy(Record_MySQL.Record):
+	"""Pharmacy
 
-	Represents an email template
+	Represents a valid pharmacy in DoseSpot
 	"""
 
 	_conf = None
@@ -68,18 +68,18 @@ class TemplateEmail(Record_MySQL.Record):
 		# If we haven loaded the config yet
 		if not cls._conf:
 			cls._conf = Record_MySQL.Record.generateConfig(
-				Tree.fromFile('../definitions/csr/tpl_email.json'),
+				Tree.fromFile('../definitions/prescriptions/pharmacy.json'),
 				'mysql'
 			)
 
 		# Return the config
 		return cls._conf
 
-# TemplateSMS class
-class TemplateSMS(Record_MySQL.Record):
-	"""TemplateSMS
+# PharmacyFillError class
+class PharmacyFillError(Record_MySQL.Record):
+	"""PharmacyFillError
 
-	Represents an SMS template
+	Represents an error while attempting to fill an order with a pharmacy
 	"""
 
 	_conf = None
@@ -98,7 +98,7 @@ class TemplateSMS(Record_MySQL.Record):
 		# If we haven loaded the config yet
 		if not cls._conf:
 			cls._conf = Record_MySQL.Record.generateConfig(
-				Tree.fromFile('../definitions/csr/tpl_sms.json'),
+				Tree.fromFile('../definitions/prescriptions/pharmacy_fill_error.json'),
 				'mysql'
 			)
 

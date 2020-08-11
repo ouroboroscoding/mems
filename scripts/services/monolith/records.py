@@ -24,7 +24,6 @@ from RestOC import Conf, Record_MySQL
 sClaimedSQL = ''
 sClaimedNewSQL = ''
 sConversationSQL = ''
-sLandingSQL = ''
 sLatestStatusSQL = ''
 sMsgPhoneUpdateSQL = ''
 sSmpNotes = ''
@@ -39,9 +38,10 @@ def init():
 	Need to find a better way to do this
 	"""
 
-	global sClaimedSQL, sClaimedNewSQL, sConversationSQL, sLandingSQL, \
-			sLatestStatusSQL, sMsgPhoneUpdateSQL, sSmpNotes, sNumOfOrdersSQL, \
-			sSearchSQL, sUnclaimedSQL, sUnclaimedCountSQL
+	global sClaimedSQL, sClaimedNewSQL, sConversationSQL, \
+			sLandingSQL, sLatestStatusSQL, sMsgPhoneUpdateSQL, \
+			sSmpNotes, sNumOfOrdersSQL, sSearchSQL, \
+			sUnclaimedSQL, sUnclaimedCountSQL
 
 	# SQL files
 	with open('./services/monolith/sql/claimed.sql') as oF:
@@ -50,8 +50,6 @@ def init():
 		sClaimedNewSQL = oF.read()
 	with open('./services/monolith/sql/conversation.sql') as oF:
 		sConversationSQL = oF.read()
-	with open('./services/monolith/sql/landing.sql') as oF:
-		sLandingSQL = oF.read()
 	with open('./services/monolith/sql/latest_status.sql') as oF:
 		sLatestStatusSQL = oF.read()
 	with open('./services/monolith/sql/msg_phone_update.sql') as oF:
@@ -184,6 +182,7 @@ class CustomerCommunication(Record_MySQL.Record):
 		# Generate the list of numbers
 		lNumbers = []
 		for s in numbers:
+			s = Record_MySQL.Commands.escape(dStruct['host'], s)
 			lNumbers.extend([s, '1%s' % s])
 
 		# Generate SQL
@@ -226,7 +225,7 @@ class CustomerCommunication(Record_MySQL.Record):
 			sConversationSQL % {
 				"db": dStruct['db'],
 				"table": dStruct['table'],
-				"number": number
+				"number": Record_MySQL.Commands.escape(dStruct['host'], number)
 			}
 		)
 
@@ -288,7 +287,7 @@ class CustomerMsgPhone(Record_MySQL.Record):
 			"date": date,
 			"direction": 'Incoming',
 			"message": Record_MySQL.Commands.escape(dStruct['host'], message),
-			"customerPhone": customerPhone,
+			"customerPhone": Record_MySQL.Commands.escape(dStruct['host'], customerPhone),
 			"hidden": 'N',
 			"increment": 'totalIncoming'
 		}
@@ -323,7 +322,7 @@ class CustomerMsgPhone(Record_MySQL.Record):
 			"date": date,
 			"direction": 'Outgoing',
 			"message": Record_MySQL.Commands.escape(dStruct['host'], message),
-			"customerPhone": customerPhone,
+			"customerPhone": Record_MySQL.Commands.escape(dStruct['host'], customerPhone),
 			"hidden": 'Y',
 			"increment": 'totalOutGoing'
 		}
@@ -382,11 +381,11 @@ class CustomerMsgPhone(Record_MySQL.Record):
 		# Generate SQL Where
 		lWhere = []
 		if 'phone' in q and q['phone']:
-			lWhere.append("`customerPhone` LIKE '%%%s%%'" % q['phone'][-10:])
+			lWhere.append("`customerPhone` LIKE '%%%s%%'" % Record_MySQL.Commands.escape(dStruct['host'], q['phone'][-10:]))
 		if 'name' in q and q['name']:
-			lWhere.append("`customerName` LIKE '%%%s%%'" % q['name'])
+			lWhere.append("`customerName` LIKE '%%%s%%'" % Record_MySQL.Commands.escape(dStruct['host'], q['name']))
 		if 'content' in q and q['content']:
-			lWhere.append("`lastMsg` LIKE '%%%s%%'" % q['content'])
+			lWhere.append("`lastMsg` LIKE '%%%s%%'" % Record_MySQL.Commands.escape(dStruct['host'], q['content']))
 
 		# Generate SQL
 		sSQL = sSearchSQL % {
@@ -527,6 +526,87 @@ class KtCustomer(Record_MySQL.Record):
 	"""Configuration"""
 
 	@classmethod
+	def byNameAndZip(cls, name, zip_, custom={}):
+		"""By Phone
+
+		Returns the ID and claimed state of the customer from their phone number
+
+		Arguments:
+			name (str): The full shipping name of the customer
+			zip (str): The shipping zip code of the customer
+			custom (dict): Custom Host and DB info
+				'host' the name of the host to get/set data on
+				'append' optional postfix for dynamic DBs
+
+		Returns:
+			dict
+		"""
+
+		# Fetch the record structure
+		dStruct = cls.struct(custom)
+
+		# Generate SQL
+		sSQL = "SELECT `customerId`, `phoneNumber`, `firstName`, `lastName` " \
+				"FROM `%(db)s`.`%(table)s` " \
+				"WHERE CONCAT(`shipFirstName`, ' ', `shipLastName`) = '%(name)s' " \
+				"AND `shipPostalCode` = '%(zip)s' " \
+				"ORDER BY `updatedAt` DESC " \
+				"LIMIT 1" % {
+			"db": dStruct['db'],
+			"table": dStruct['table'],
+			"name": Record_MySQL.Commands.escape(dStruct['host'], name),
+			"zip": Record_MySQL.Commands.escape(dStruct['host'], zip_)
+		}
+
+		# Execute and return the select
+		return Record_MySQL.Commands.select(
+			dStruct['host'],
+			sSQL,
+			Record_MySQL.ESelect.ROW
+		)
+
+	@classmethod
+	def byPhone(cls, number, custom={}):
+		"""By Phone
+
+		Returns the ID and claimed state of the customer from their phone number
+
+		Arguments:
+			number (str): The phone number of the customer
+			custom (dict): Custom Host and DB info
+				'host' the name of the host to get/set data on
+				'append' optional postfix for dynamic DBs
+
+		Returns:
+			dict
+		"""
+
+		# Fetch the record structure
+		dStruct = cls.struct(custom)
+
+		# Generate SQL
+		sSQL = "SELECT " \
+				"`ktc`.`customerId` as `customerId`, " \
+				"CONCAT(`ktc`.`firstName`, ' ', `ktc`.`lastName`) as `customerName`, " \
+				"`cc`.`user` as `claimedUser` " \
+				"FROM `%(db)s`.`%(table)s` as `ktc` " \
+				"LEFT JOIN `%(db)s`.`customer_claimed` as `cc` ON `ktc`.`phoneNumber` = `cc`.`phoneNumber` " \
+				"WHERE `ktc`.`phoneNumber` IN ('%(number)s', '1%(number)s') " \
+				"ORDER BY `ktc`.`updatedAt` DESC " \
+				"LIMIT 1" % {
+			"db": dStruct['db'],
+			"table": dStruct['table'],
+			"number": Record_MySQL.Commands.escape(dStruct['host'], number)
+		}
+
+		# Execute and return the select
+		return Record_MySQL.Commands.select(
+			dStruct['host'],
+			sSQL,
+			Record_MySQL.ESelect.ROW
+		)
+
+	@classmethod
 	def config(cls):
 		"""Config
 
@@ -602,10 +682,40 @@ class KtOrder(Record_MySQL.Record):
 			sNumOfOrdersSQL % {
 				"db": dStruct['db'],
 				"table": dStruct['table'],
-				"phone": phone
+				"phone": Record_MySQL.Commands.escape(dStruct['host'], phone)
 			},
 			Record_MySQL.ESelect.COLUMN
 		)
+
+# PharmacyFillError class
+class PharmacyFillError(Record_MySQL.Record):
+	"""PharmacyFillError
+
+	Represents an error while attempting to fill an order with a pharmacy
+	"""
+
+	_conf = None
+	"""Configuration"""
+
+	@classmethod
+	def config(cls):
+		"""Config
+
+		Returns the configuration data associated with the record type
+
+		Returns:
+			dict
+		"""
+
+		# If we haven loaded the config yet
+		if not cls._conf:
+			cls._conf = Record_MySQL.Record.generateConfig(
+				Tree.fromFile('../definitions/monolith/pharmacy_fill_error.json'),
+				'mysql'
+			)
+
+		# Return the config
+		return cls._conf
 
 # ShippingInfo class
 class ShippingInfo(Record_MySQL.Record):
@@ -793,6 +903,36 @@ class SMSStop(Record_MySQL.Record):
 		# Return the config
 		return cls._conf
 
+# SMSTemplate class
+class SMSTemplate(Record_MySQL.Record):
+	"""SMSTemplate
+
+	Represents an SMS template for the workflow
+	"""
+
+	_conf = None
+	"""Configuration"""
+
+	@classmethod
+	def config(cls):
+		"""Config
+
+		Returns the configuration data associated with the record type
+
+		Returns:
+			dict
+		"""
+
+		# If we haven loaded the config yet
+		if not cls._conf:
+			cls._conf = Record_MySQL.Record.generateConfig(
+				Tree.fromFile('../definitions/monolith/sms_template.json'),
+				'mysql'
+			)
+
+		# Return the config
+		return cls._conf
+
 # TfAnswer class
 class TfAnswer(Record_MySQL.Record):
 	"""TfAnswer
@@ -875,12 +1015,21 @@ class TfLanding(Record_MySQL.Record):
 		dStruct = cls.struct(custom)
 
 		# Generate SQL
-		sSQL = sLandingSQL % {
+		sSQL = "SELECT `landing_id`, `formId`, `submitted_at`, `complete`\n" \
+				"FROM `%(db)s`.`%(table)s`\n" \
+				"WHERE `lastName` = '%(lastName)s'\n" \
+				"AND `birthDay` IS NOT NULL\n" \
+				"AND `birthDay` != ''\n" \
+				"AND (\n" \
+				"	`email` = '%(email)s' OR\n" \
+				"	`phone` IN ('1%(phone)s', '%(phone)s')\n" \
+				")\n" \
+				"ORDER BY `submitted_at` DESC\n" % {
 			"db": dStruct['db'],
 			"table": dStruct['table'],
-			"lastName": last_name,
-			"email": email,
-			"phone": phone
+			"lastName": Record_MySQL.Commands.escape(dStruct['host'], last_name),
+			"email": Record_MySQL.Commands.escape(dStruct['host'], email),
+			"phone": Record_MySQL.Commands.escape(dStruct['host'], phone)
 		}
 
 		# Execute and return the select

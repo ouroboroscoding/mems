@@ -6,78 +6,25 @@ Turd
 	Lenoir, NC
 	US, 23223
 
-MePP
+DEV:
+	python -m tools.fake_msg 5148026900 2564884325 "Hello ME" support
+	python -m tools.fake_msg 5148026900 2564884325 "My name is Arthur Morgan" support
+	python -m tools.fake_msg 5148026900 2564884325 "Fetch me a whiskey" support
 
-	- CC change, call support
+UAT:
+	python -m tools.fake_msg 2017881801 9198000609 "Hello ME" support
+	python -m tools.fake_msg 4232410925 9198000609 "Hello ME" support
+	python -m tools.fake_msg 6062547285 9198000609 "Hello ME" support
 
-	- Addresses Changes through KNK
-		- Urgent
 
-	- Email Reports (support@maleexcel.com)
-		- Type
-			- Credit Card info change
-			- Cancel Order w/ note
-			- Cancel Subscription w/ note
+- Switch date/times to EST
 
-	- Latest Order
-		- knk purchase/query/
+- Add email functionality
+	- Dropdown - company
+		- Dropdown - templates
 
-	- Time of account creation
-		- On medication approval
+- Take over stop/start system from twilio
 
-MeCSR
-
-	DEV:
-		python -m tools.fake_msg 5148026900 2564884325 "Hello ME" support
-		python -m tools.fake_msg 5148026900 2564884325 "My name is Arthur Morgan" support
-		python -m tools.fake_msg 5148026900 2564884325 "Fetch me a whiskey" support
-
-	UAT:
-		python -m tools.fake_msg 2017881801 9198000609 "Hello ME" support
-		python -m tools.fake_msg 4232410925 9198000609 "Hello ME" support
-		python -m tools.fake_msg 6062547285 9198000609 "Hello ME" support
-
-	- Switch date/times to EST
-
-	- Add permissions uinique to CSR Tool / Users
-		- Overwrite claim
-
-	- Add email functionality
-		- Dropdown - company
-			- Dropdown - templates
-
-	- Take over stop/start system from twilio
-
-	- Customer
-		- SMS
-			- DOB in header
-
-	- Done
-		- Fix name in summary
-		- Filter
-			- Sales vs Support
-				- Sales: some outgoing vs no outgoing
-		- Header to messages
-			- Phone number (with copy)
-			- Service type: support vs sales
-			- Show customers who have unsubscribed/blocked/whatever
-		- Prepopulate SMS templates
-		- Make MIP edittable
-		- Add tracking codes
-		- # messages of unclaimed in header
-		- Reload unclaimed on customer remove
-		- Soap/Doctor Notes
-		- Add search of summary
-		- Show whether claimed or not in search
-		- Added transactions to KNK orders
-		- Show all mips (w/ completed status)
-		- Links to create new mips
-		- Ability to write new CSR notes
-		- Add Account details / change password
-		- Set close (x) to /unclaimed
-		- Add resolve/escalate step to removing from claims
-		- Allow enter to signin
-		- Add WD triggers to RX page
-		- Order labels in notes
-		- DoseSpot SSO
-
+- Customer
+	- SMS
+		- DOB in header

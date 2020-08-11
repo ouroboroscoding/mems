@@ -1,4 +1,10 @@
 {
+	"crons": {
+		"welldyne": {
+			"reports": ["bast@maleexcel.com"]
+		}
+	},
+
 	"developer": {
 		"emails": ["bast@maleexcel.com"]
 	},
@@ -25,7 +31,22 @@
 			"tls": true,
 			"user": "postmaster@localhost",
 			"passwd": "password"
+		},
+		"imap": {
+			"tls": true,
+			"server": {
+				"host": "maleexcel.com",
+				"port": 993
+			},
+			"auth": {
+				"user": "email",
+				"pass": "password"
+			}
 		}
+	},
+
+	"google": {
+		"sheets": {}
 	},
 
 	"konnektive": {
@@ -35,9 +56,27 @@
 	},
 
 	"memo": {
-		"domain": "memologin.com",
-		"user": "",
-		"pass": ""
+		"domain": "https://memologin.com",
+		"user": "User",
+		"pass": "Pass"
+	},
+
+	"missed_calls": {
+		"sheets": {
+			"default": {
+				"key": "",
+				"worksheet": "Missed Calls"
+			},
+			"hrt": {
+				"key": "",
+				"worksheet": "Missed Calls"
+			}
+		},
+		"justcall": {
+			"from": "help@justcall.io",
+			"numbers": {}
+		},
+		"signia": "notifications@virtualacd.biz"
 	},
 
 	"mysql": {
@@ -108,7 +147,7 @@
 	},
 
 	"sms": {
-		"method": "direct"
+		"allowed": []
 	},
 
 	"temp_folder": "/tmp",
@@ -126,5 +165,13 @@
 	"websocket": {
 		"host": "0.0.0.0",
 		"port": 8001
+	},
+
+	"welldyne": {
+		"sftp": {
+			"host": null,
+			"username": null,
+			"password": null
+		}
 	}
 }

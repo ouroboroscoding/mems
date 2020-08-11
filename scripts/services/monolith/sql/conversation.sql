@@ -1,4 +1,7 @@
 SELECT
+	`id`,
+	`status`,
+	`errorMessage` as `error`,
 	`fromName`,
 	`notes`,
 	`createdAt`,

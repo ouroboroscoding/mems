@@ -18,7 +18,13 @@ from urllib.parse import urlencode
 
 # Pip imports
 import requests
-from RestOC import Conf, DictHelper, Errors, Services, StrHelper
+from RestOC import Conf, DictHelper, Errors, Record_MySQL, Services, StrHelper
+
+# Shared imports
+from shared import Rights
+
+# Service imports
+from .records import Medication, Pharmacy, PharmacyFillError
 
 # Shared imports
 from shared import Rights
@@ -110,7 +116,10 @@ class Prescriptions(Services.Service):
 	Service for Prescriptions access
 	"""
 
-	def __generateIds(self, clinician_id):
+	_install = [Medication, Pharmacy, PharmacyFillError]
+	"""Record types called in install"""
+
+	def _generateIds(self, clinician_id):
 		"""Generate IDs
 
 		Generates the encrypted clinic and clinician IDs
@@ -152,7 +161,7 @@ class Prescriptions(Services.Service):
 		# Return the IDs
 		return (sClinicId, sClinicianId)
 
-	def __generateToken(self, clinician_id):
+	def _generateToken(self, clinician_id):
 		"""Generate Token
 
 		Generates the Auth token needed for all HTTP requests
@@ -168,7 +177,7 @@ class Prescriptions(Services.Service):
 		"""
 
 		# Generate the encrypted IDs
-		lIDs = self.__generateIds(clinician_id)
+		lIDs = self._generateIds(clinician_id)
 
 		# Generate the request headers
 		sAuth = '%d:%s' % (self._clinic_id, lIDs[0])
@@ -229,7 +238,13 @@ class Prescriptions(Services.Service):
 		Returns:
 			bool
 		"""
-		return True
+
+		# Go through each Record type
+		for o in cls._install:
+
+			# Install the table
+			if not o.tableCreate():
+				print("Failed to create `%s` table" % o.tableName())
 
 	def patient_read(self, data, sesh):
 		"""Patient
@@ -268,7 +283,7 @@ class Prescriptions(Services.Service):
 			if lErrors: return Services.Effect(error=(1001, lErrors))
 
 		# Generate the token
-		sToken = self.__generateToken(data['clinician_id'])
+		sToken = self._generateToken(data['clinician_id'])
 
 		# Generate the URL
 		sURL = 'https://%s/webapi/api/patients/%d' % (
@@ -338,7 +353,7 @@ class Prescriptions(Services.Service):
 			if lErrors: return Services.Effect(error=(1001, lErrors))
 
 		# Generate the token
-		sToken = self.__generateToken(data['clinician_id'])
+		sToken = self._generateToken(data['clinician_id'])
 
 		# Generate the URL
 		sURL = 'https://%s/webapi/api/patients/%d/pharmacies' % (
@@ -408,7 +423,7 @@ class Prescriptions(Services.Service):
 			if lErrors: return Services.Effect(error=(1001, lErrors))
 
 		# Generate the token
-		sToken = self.__generateToken(data['clinician_id'])
+		sToken = self._generateToken(data['clinician_id'])
 
 		# Generate the URL
 		sURL = 'https://%s/webapi/api/patients/%d/pharmacies/%s' % (
@@ -479,7 +494,7 @@ class Prescriptions(Services.Service):
 			if lErrors: return Services.Effect(error=(1001, lErrors))
 
 		# Generate the token
-		sToken = self.__generateToken(data['clinician_id'])
+		sToken = self._generateToken(data['clinician_id'])
 
 		# Generate the URL
 		sURL = 'https://%s/webapi/api/patients/%d/pharmacies/%s' % (
@@ -511,7 +526,7 @@ class Prescriptions(Services.Service):
 		# Return the pharmacies
 		return Services.Effect(True)
 
-	def patientPrescriptions_read(self, data, sesh):
+	def patientPrescriptions_read(self, data, sesh=None):
 		"""Patient Prescriptions
 
 		Fetches all prescriptions associated with a patient. Requires internal
@@ -524,6 +539,29 @@ class Prescriptions(Services.Service):
 		Returns:
 			Services.Effect
 		"""
+
+		# If we have no session and no key
+		if not sesh and '_internal_' not in data:
+			return Services.Effect(error=(1001, [('_internal_', 'missing')]))
+
+		# If it's internal
+		if '_internal_' in data:
+
+			# Verify the key, remove it if it's ok
+			if not Services.internalKey(data['_internal_']):
+				return Services.Effect(error=Errors.SERVICE_INTERNAL_KEY)
+			del data['_internal_']
+
+		# Else
+		else:
+
+			# Make sure the user has the proper rights
+			oEff = self.verify_read({
+				"name": "prescriptions",
+				"right": Rights.READ
+			}, sesh)
+			if not oEff.data:
+				return Services.Effect(error=Rights.INVALID)
 
 		# Verify fields
 		try: DictHelper.eval(data, ['patient_id'])
@@ -549,7 +587,7 @@ class Prescriptions(Services.Service):
 			if lErrors: return Services.Effect(error=(1001, lErrors))
 
 		# Generate the token
-		sToken = self.__generateToken(data['clinician_id'])
+		sToken = self._generateToken(data['clinician_id'])
 
 		# Generate the URL
 		sURL = 'https://%s/webapi/api/patients/%d/prescriptions' % (
@@ -624,7 +662,7 @@ class Prescriptions(Services.Service):
 			if lErrors: return Services.Effect(error=(1001, lErrors))
 
 		# Generate the IDs
-		lIDs = self.__generateIds(data['clinician_id'])
+		lIDs = self._generateIds(data['clinician_id'])
 
 		# Generate the URL
 		sURL = 'https://%s/LoginSingleSignOn.aspx?%s' % (
@@ -641,3 +679,198 @@ class Prescriptions(Services.Service):
 
 		# Return the URL
 		return Services.Effect(sURL)
+
+	def pharmacyFillError_create(self, data, sesh):
+		"""Pharmacy Fill Error Create
+
+		Creates a new record in the PharmacyFillError report
+
+		Arguments:
+			data (dict): Data sent with the request
+			sesh (Sesh._Session): The session associated with the request
+
+		Returns:
+			Services.Effect
+		"""
+
+		# Make sure the user has the proper rights
+		oEff = Services.read('auth', 'rights/verify', {
+			"name": "pharmacy_fill",
+			"right": Rights.CREATE
+		}, sesh)
+		if not oEff.data:
+			return Services.Effect(error=Rights.INVALID)
+
+		# Verify minimum fields
+		try: DictHelper.eval(data, ['crm_type', 'crm_id'])
+		except ValueError as e: return Services.Effect(error=(1001, [(f, 'missing') for f in e.args]))
+
+		# If the CRM is Konnektive
+		if data['crm_type'] == 'knk':
+
+			# Check the customer exists
+			oEff = Services.read('monolith', 'customer/name', {
+				"customerId": data['crm_id']
+			}, sesh)
+			if oEff.errorExists(): return oEff
+			dCustomer = oEff.data
+
+		# Else, invalid CRM
+		else:
+			return Services.Effect(error=1003)
+
+		# Try to create a new instance of the adhoc
+		try:
+			oFillError = PharmacyFillError(data)
+		except ValueError as e:
+			return Services.Effect(error=(1001, e.args[0]))
+
+		# Create the record and get the ID
+		try:
+			sID = oFillError.create()
+		except Record_MySQL.DuplicateException:
+			return Services.Effect(error=1101)
+
+		# Create the record and return the result
+		return Services.Effect({
+			"_id": sID,
+			"customer_name": '%s %s' % (dCustomer['firstName'], dCustomer['lastName'])
+		})
+
+	def pharmacyFillError_delete(self, data, sesh):
+		"""Pharmacy Fill Error Delete
+
+		Deletes an existing record from the PharmacyFillError report
+
+		Arguments:
+			data (dict): Data sent with the request
+			sesh (Sesh._Session): The session associated with the request
+
+		Returns:
+			Services.Effect
+		"""
+
+		# Make sure the user has the proper rights
+		oEff = Services.read('auth', 'rights/verify', {
+			"name": "pharmacy_fill",
+			"right": Rights.DELETE
+		}, sesh)
+		if not oEff.data:
+			return Services.Effect(error=Rights.INVALID)
+
+		# Verify minimum fields
+		try: DictHelper.eval(data, ['_id'])
+		except ValueError as e: return Services.Effect(error=(1001, [(f, 'missing') for f in e.args]))
+
+		# Find the record
+		oPharmacyFillError = PharmacyFillError.get(data['_id'])
+		if not oPharmacyFillError:
+			return Services.Effect(error=1104)
+
+		# Delete the record and return the result
+		return Services.Effect(
+			oPharmacyFillError.delete()
+		)
+
+	def pharmacyFillError_update(self, data, sesh):
+		"""Pharmacy Fill Error Update
+
+		Updates the ready or orderId values of an existing pharmacyFillError record
+
+		Arguments:
+			data (dict): Data sent with the request
+			sesh (Sesh._Session): The session associated with the request
+
+		Returns:
+			Services.Effect
+		"""
+
+		# Make sure the user has the proper rights
+		oEff = Services.read('auth', 'rights/verify', {
+			"name": "pharmacy_fill",
+			"right": Rights.UPDATE
+		}, sesh)
+		if not oEff.data:
+			return Services.Effect(error=Rights.INVALID)
+
+		# Verify minimum fields
+		try: DictHelper.eval(data, ['_id'])
+		except ValueError as e: return Services.Effect(error=(1001, [(f, 'missing') for f in e.args]))
+
+		# If we have neither the ready or the order ID
+		if 'ready' not in data and 'crm_order' not in data:
+			return Services.Effect(error=(1001, [('ready', 'missing'), ('crm_order', 'missing')]))
+
+		# Find the record
+		oPharmacyFillError = PharmacyFillError.get(data['_id'])
+		if not oPharmacyFillError:
+			return Services.Effect(error=1104)
+
+		# Update the ready state if we got it
+		if 'ready' in data:
+			oPharmacyFillError['ready'] = data['ready'] and True or False
+
+		# Update the order ID if we got it
+		if 'crm_order' in data:
+			oPharmacyFillError['crm_order'] = data['crm_order']
+
+		# Save and return the result
+		return Services.Effect(
+			oPharmacyFillError.save()
+		)
+
+	def pharmacyFillErrors_read(self, data, sesh):
+		"""Pharmacy Fill Errors
+
+		Returns all pharmacy fill error records with a count of at least one
+
+		Arguments:
+			data (dict): Data sent with the request
+			sesh (Sesh._Session): The session associated with the request
+
+		Returns:
+			Services.Effect
+		"""
+
+		# Make sure the user has the proper rights
+		oEff = Services.read('auth', 'rights/verify', {
+			"name": "pharmacy_fill",
+			"right": Rights.READ
+		}, sesh)
+		if not oEff.data:
+			return Services.Effect(error=Rights.INVALID)
+
+		# Init the base requirements
+		dFilter = {"fail_count": {
+			"neq": 0
+		}}
+
+		# If a type or ID were passed
+		if 'crm_type' in data:
+			dFilter['crm_type'] = data['crm_type']
+		if 'crm_id' in data:
+			dFilter['crm_id'] = data['crm_id']
+
+		# Fetch all the records joined with the trigger table
+		lRecords = PharmacyFillError.filter(dFilter, raw=True, orderby=[('fail_count', 'DESC')])
+
+		# If we have records
+		if lRecords:
+
+			# Find all the customer names
+			oEff = Services.read('monolith', 'customer/name', {
+				"customerId": [d['crm_id'] for d in lRecords]
+			}, sesh)
+			if oEff.errorExists(): return oEff
+			dCustomers = {k:'%s %s' % (d['firstName'], d['lastName']) for k,d in oEff.data.items()}
+
+			# Go through each record and add the customer and user names
+			for d in lRecords:
+				d['customer_name'] = d['crm_id'] in dCustomers and dCustomers[d['crm_id']] or 'Unknown'
+
+			# Return all records
+			return Services.Effect(lRecords)
+
+		# Else return an empty array
+		else:
+			return Services.Effect([])

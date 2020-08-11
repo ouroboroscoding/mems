@@ -12,6 +12,7 @@ __email__		= "bast@maleexcel.com"
 __created__		= "2020-03-30"
 
 # Python imports
+from base64 import b64decode
 from hashlib import md5
 
 # Pip imports
@@ -234,13 +235,6 @@ class Service(Services.Service):
 		if self.emailMethod not in ['direct']:
 			raise ValueError('Communications.emailMethod', self.emailMethod)
 
-		# Get the method for sending sms
-		self.smsMethod = Conf.get(('sms', 'method'))
-
-		# If it's invalid
-		if self.smsMethod not in ['direct']:
-			raise ValueError('Communications.smsMethod', self.smsMethod)
-
 		# Get allowed numbers
 		self.smsAllowed = Conf.get(('sms', 'allowed'), [])
 
@@ -279,51 +273,21 @@ class Service(Services.Service):
 		if data['service'] not in self._smsServices:
 			return Services.Effect(error=(1001, [('service', 'invalid')]))
 
-		# If we got a _queue_ value
-		if '_queue_' in data:
+		try:
 
-			# Store it
-			sQueueKey = data.pop('_queue_')
+			# Only send if anyone is allowed, or the to is in the allowed
+			if not self.smsAllowed or data['to'] in self.smsAllowed:
+				dRes = self._twilio.messages.create(
+					to=data['to'],
+					body=data['content'],
+					messaging_service_sid=self._smsServices[data['service']]
+				)
 
-			# If it's not valid
-			if not self._queueKey(data, sQueueKey):
-				return Services.Effect(error=1001)
+				# Return the SID of the message
+				return Services.Effect(dRes.sid)
 
-			# Else, we're good
-			data['_queue_'] = True
+			# Return the SID of the message
+			return Services.Effect('not sent')
 
-		# If we are sending direct, or we got a valid request from the queue
-		if self.smsMethod == 'direct' or '_queue_' in data:
-
-			try:
-				# Only send if anyone is allowed, or the to is in the allowed
-				if not self.smsAllowed or data['to'] in self.smsAllowed:
-					self._twilio.messages.create(
-						to=data['to'],
-						body=data['content'],
-						messaging_service_sid=self._smsServices[data['service']]
-					)
-			except TwilioRestException as e:
-				return Services.Effect(error=(1304, str(e)))
-
-		# Else, we are sending to the queue first
-		else:
-
-			# Add a queue key to the data
-			data['_queue_'] = self._queueKey(data)
-
-			# Send the data to the queue service
-			oEff = Services.create('queue', 'msg', {
-				"_internal_": Services.internalKey(),
-				"service": "communications",
-				"path": "sms",
-				"method": "create",
-				"data": data
-			})
-
-			# Return if there's an error
-			if oEff.errorExists():
-				return oEff
-
-		# Return OK
-		return Services.Effect(True)
+		except TwilioRestException as e:
+			return Services.Effect(error=(1304, str(e)))

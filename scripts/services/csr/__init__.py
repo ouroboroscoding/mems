@@ -12,13 +12,13 @@ __email__		= "chris@fuelforthefire.ca"
 __created__		= "2020-05-17"
 
 # Pip imports
-from RestOC import Conf, DictHelper, Errors, Services
+from RestOC import DictHelper, Errors, Services
 
 # Shared imports
 from shared import Rights
 
 # Service imports
-from .records import Agent, EscalateAgent, TemplateEmail, TemplateSMS
+from .records import Agent, TemplateEmail, TemplateSMS
 
 class CSR(Services.Service):
 	"""CSR Service class
@@ -26,7 +26,7 @@ class CSR(Services.Service):
 	Service for CSR access
 	"""
 
-	_install = [Agent, EscalateAgent, TemplateEmail, TemplateSMS]
+	_install = [Agent, TemplateEmail, TemplateSMS]
 	"""Record types called in install"""
 
 	def initialise(self):
@@ -419,6 +419,43 @@ class CSR(Services.Service):
 		# Return whatever monolith returned
 		return oEff
 
+	def agentInternal_read(self, data, sesh):
+		"""Agent Internal
+
+		Fetches a memo user by their Memo ID rather then their primary key.
+		Internal function, can not be used from outside
+
+		Arguments:
+			data (mixed): Data sent with the request
+			sesh (Sesh._Session): The session associated with the request
+
+		Returns:
+			Services.Effect
+		"""
+
+		# Verify minimum fields
+		try: DictHelper.eval(data, ['_internal_', 'id'])
+		except ValueError as e: return Services.Effect(error=(1001, [(f, 'missing') for f in e.args]))
+
+		# Verify the key, remove it if it's ok
+		if not Services.internalKey(data['_internal_']):
+			return Services.Effect(error=Errors.SERVICE_INTERNAL_KEY)
+		del data['_internal_']
+
+		# Look up the record
+		dUser = Agent.filter(
+			{"memo_id": data['id']},
+			raw=True,
+			limit=1
+		)
+
+		# If there's no such user
+		if not dUser:
+			return Services.Effect(error=1104)
+
+		# Return the user
+		return Services.Effect(dUser)
+
 	def agentPermissions_read(self, data, sesh):
 		"""Agent Permissions Read
 
@@ -490,6 +527,31 @@ class CSR(Services.Service):
 		# Return whatever was found
 		return oEff
 
+	def agentNames_read(self, data, sesh):
+		"""Agent Names
+
+		Returns the list of agents who can have issues transfered / escalated to
+		them
+
+		Arguments:
+			data (mixed): Data sent with the request
+			sesh (Sesh._Session): The session associated with the request
+
+		Returns:
+			Services.Effect
+		"""
+
+		# Fetch all the agents
+		lAgents = Agent.get(raw=['memo_id'])
+
+		# Fetch their names
+		oEff = Services.read('monolith', 'user/name', {
+			"id": [d['memo_id'] for d in lAgents]
+		}, sesh)
+
+		# Regardless of what we got, retun the effect
+		return oEff
+
 	def agents_read(self, data, sesh):
 		"""Agents
 
@@ -543,88 +605,6 @@ class CSR(Services.Service):
 
 		# Return the agents in order of userName
 		return Services.Effect(sorted(lAgents, key=lambda o: o['userName']))
-
-	def agentInternal_read(self, data, sesh):
-		"""Agent Internal
-
-		Fetches a memo user by their Memo ID rather then their primary key.
-		Internal function, can not be used from outside
-
-		Arguments:
-			data (mixed): Data sent with the request
-			sesh (Sesh._Session): The session associated with the request
-
-		Returns:
-			Services.Effect
-		"""
-
-		# Verify minimum fields
-		try: DictHelper.eval(data, ['_internal_', 'id'])
-		except ValueError as e: return Services.Effect(error=(1001, [(f, 'missing') for f in e.args]))
-
-		# Verify the key, remove it if it's ok
-		if not Services.internalKey(data['_internal_']):
-			return Services.Effect(error=Errors.SERVICE_INTERNAL_KEY)
-		del data['_internal_']
-
-		# Look up the record
-		dUser = Agent.filter(
-			{"memo_id": data['id']},
-			raw=True,
-			limit=1
-		)
-
-		# If there's no such user
-		if not dUser:
-			return Services.Effect(error=1104)
-
-		# Return the user
-		return Services.Effect(dUser)
-
-	def escalateAgent_read(self, data, sesh):
-		"""Escalate Agent
-
-		Returns an existing escalate agent
-
-		Arguments:
-			data (mixed): Data sent with the request
-			sesh (Sesh._Session): The session associated with the request
-
-		Returns:
-			Services.Effect
-		"""
-
-		# Fetch the agent
-		dAgent = EscalateAgent.get(data['_id'], raw=['_id'])
-		if not dAgent:
-			return Services.Effect(error=1104)
-
-		# Return the agent
-		return Services.Effect(dAgent)
-
-	def escalateAgents_read(self, data, sesh):
-		"""Escalate Agents
-
-		Returns the list of agents who can have issues escalated to them
-
-		Arguments:
-			data (mixed): Data sent with the request
-			sesh (Sesh._Session): The session associated with the request
-
-		Returns:
-			Services.Effect
-		"""
-
-		# Fetch all the agents
-		lAgents = EscalateAgent.get(raw=['_id'])
-
-		# Fetch their names
-		oEff = Services.read('monolith', 'user/name', {
-			"id": [d['_id'] for d in lAgents]
-		}, sesh)
-
-		# Regardless of what we got, retun the effect
-		return oEff
 
 	def templateEmail_create(self, data, sesh):
 		"""Template Email Create
