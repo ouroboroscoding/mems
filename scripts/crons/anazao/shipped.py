@@ -69,7 +69,7 @@ def run():
 		port=993,
 		tls=True,
 		from_='myAnazao@AnazaoHealth.com',
-		markread=False
+		markread=True
 	)
 
 	# If we got no emails
@@ -117,9 +117,10 @@ def run():
 
 		except Exception as e:
 			# Generate the body of the email
-			sBody = '%s\n\n%s' % (
+			sBody = '%s\n\n%s\n\n%s' % (
 				', '.join([str(s) for s in e.args]),
-				traceback.format_exc()
+				traceback.format_exc(),
+				d['html']
 			)
 			emailError('Anazao Email Error', sBody)
 			continue
