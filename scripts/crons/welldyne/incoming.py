@@ -257,7 +257,7 @@ def shipped_claims(time):
 		dData[d['customerId']] = d
 
 	# Store just the values
-	lData = dData.values()
+	lData = list(dData.values())
 
 	# Go through each item
 	for d in lData:
