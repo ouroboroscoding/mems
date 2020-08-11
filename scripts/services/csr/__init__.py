@@ -301,10 +301,12 @@ class CSR(Services.Service):
 			"_internal_": Services.internalKey(),
 			"user": sID,
 			"permissions": {
-				"csr_claims": 13,
+				"csr_claims": 14,
 				"csr_messaging": 5,
 				"csr_templates": 1,
 				"crm_customers": 1,
+				"memo_mips": 3,
+				"memo_notes": 5,
 				"prescriptions": 3,
 				"welldyne_adhoc": 4
 			}
