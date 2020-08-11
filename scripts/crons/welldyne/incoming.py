@@ -253,15 +253,19 @@ def shipped_claims(time):
 	# Go through each one and keep only uniques
 	dData = {}
 	for d in lData:
-		dData[d['member_id'].lstrip('0')] = d
+		d['customerId'] = d['member_id'].lstrip('0')
+		dData[d['customerId']] = d
+
+	# Store just the values
+	lData = dData.values()
 
 	# Go through each item
-	for sCrmID,d in dData.items():
+	for d in lData:
 
 		# Find the last trigger associated with the ID
 		oTrigger = Trigger.filter({
 			"crm_type": 'knk',
-			"crm_id": sCrmID,
+			"crm_id": d['customerId'],
 		}, orderby=[('_created', 'DESC')], limit=1)
 
 		# If we found one
@@ -284,15 +288,25 @@ def shipped_claims(time):
 		})
 		oRx.create(conflict=['number'])
 
-	# Send the tracking to Memo
-	dRes = Memo.create('rest/shipping', [{
-		"code": d['tracking'],
-		"type": d['tracking'][0:2] == '1Z' and 'UPS' or 'USPS',
-		"date": d['shipped'],
-		"customerId": sCrmID
-	} for sCrmID,d in dData.items()])
-	if dRes['error']:
-		print(dRes['error'])
+	# Go through 20 records at a time
+	for i in range(0, len(lData), 20):
+
+		# Get the chunk
+		lChunk = lData[i:i+20]
+
+		# Shipped chunk
+		lShipped = [{
+			"code": d['tracking'],
+			"customerId": d['customerId'],
+			"date": d['shipped'],
+			"type": d['tracking'][0:2] == '1Z' and 'UPS' or 'USPS'
+		} for d in lChunk]
+
+		# Make the Shipped request
+		oRes = Memo.create('rest/shipping', lShipped)
+		if dRes['error']:
+			emailError('Memo Shipped Failed', dRes['error'])
+			return False
 
 	# Delete the file
 	os.remove(sGet)
