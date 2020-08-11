@@ -303,7 +303,7 @@ def shipped_claims(time):
 		} for d in lChunk]
 
 		# Make the Shipped request
-		oRes = Memo.create('rest/shipping', lShipped)
+		dRes = Memo.create('rest/shipping', lShipped)
 		if dRes['error']:
 			emailError('Memo Shipped Failed', dRes['error'])
 			return False
