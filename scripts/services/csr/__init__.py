@@ -546,6 +546,7 @@ class CSR(Services.Service):
 
 		# Fetch their names
 		oEff = Services.read('monolith', 'user/name', {
+			"_internal_": Services.internalKey(),
 			"id": [d['memo_id'] for d in lAgents]
 		}, sesh)
 

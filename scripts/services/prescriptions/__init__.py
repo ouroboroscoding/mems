@@ -555,8 +555,8 @@ class Prescriptions(Services.Service):
 		# Else
 		else:
 
-			# Make sure the user has the proper rights
-			oEff = self.verify_read({
+			# Make sure the user has the proper permission to do this
+			oEff = Services.read('auth', 'rights/verify', {
 				"name": "prescriptions",
 				"right": Rights.READ
 			}, sesh)
@@ -859,6 +859,7 @@ class Prescriptions(Services.Service):
 
 			# Find all the customer names
 			oEff = Services.read('monolith', 'customer/name', {
+				"_internal_": Services.internalKey(),
 				"customerId": [d['crm_id'] for d in lRecords]
 			}, sesh)
 			if oEff.errorExists(): return oEff
