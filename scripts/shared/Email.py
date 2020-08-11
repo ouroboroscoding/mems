@@ -12,6 +12,7 @@ __email__		= "chris@fuelforthefire.ca"
 __created__		= "2020-07-28"
 
 # Python imports
+import base64
 import email
 import imaplib
 
@@ -64,6 +65,14 @@ def fetch_imap(user, passwd, host='localhost', port=143, tls=False, box='INBOX',
 		# Step through them
 		for sID in lIDs:
 
+			# Init the email dict
+			dEmail = {
+				'attachments': None,
+				'headers': {},
+				'html': None,
+				'text': None
+			}
+
 			# Fetch the email
 			sTyp, lData = oServer.fetch(sID, '(BODY.PEEK[])')
 
@@ -73,40 +82,61 @@ def fetch_imap(user, passwd, host='localhost', port=143, tls=False, box='INBOX',
 			# Load the email into the email library
 			oMsg = email.message_from_string(sBody)
 
-			# Get the payloads
-			lPayloads = oMsg.get_payload()
+			# Get the headers
+			for l in oMsg.items():
+				dEmail['headers'][l[0]] = l[1]
 
-			# Init the email dict
-			dEmail = {
-				'text': None,
-				'html': None,
-				'attachments': None
-			}
+			# If it's multipart
+			if oMsg.is_multipart():
 
-			# Go through each one and print what it is
-			for o in lPayloads:
+				# Get the payloads
+				lPayloads = oMsg.get_payload()
 
-				# If the type is text/plain
-				if o.get_content_type() == 'text/plain':
-					dEmail['text'] = o.get_payload(decode=True)
+				# Go through each one and print what it is
+				for o in mPayloads:
 
-				# Else if the type is text/html
-				elif o.get_content_type() == 'text/html':
-					dEmail['html'] = o.get_payload(decode=True)
+					# If the type is text/plain
+					if o.get_content_type() == 'text/plain':
+						dEmail['text'] = o.get_payload(decode=True)
 
-				# Else it's most likely an attachment
+					# Else if the type is text/html
+					elif o.get_content_type() == 'text/html':
+						dEmail['html'] = o.get_payload(decode=True)
+
+					# Else it's most likely an attachment
+					else:
+
+						# If we don't have a list yet
+						if dEmail['attachments'] is None:
+							dEmail['attachments'] = []
+
+						# Store the type, filename, and content
+						dEmail['attachments'].append({
+							"type": o.get_content_type(),
+							"filename": o.get_filename(),
+							"content": o.get_payload(decode=True)
+						})
+
+			# Else, it's a single part
+			else:
+
+				# Get the payload
+				sPayload = oMsg.get_payload()
+
+				# If there's encoding
+				if 'Content-Transfer-Encoding' in dEmail['headers']:
+					if dEmail['headers']['Content-Transfer-Encoding'] == 'base64':
+						sPayload = base64.b64decode(sPayload)
+					else:
+						raise ValueError('Unknown Content-Transfer-Encoding: %s' % dEmail['headers']['Content-Transfer-Encoding'])
+
+				# If it's html
+				if oMsg.get_content_type() == 'text/html':
+					dEmail['html'] = sPayload
+				elif oMsg.get_content_type() == 'text/plain':
+					dEmail['text'] = sPayload
 				else:
-
-					# If we don't have a list yet
-					if dEmail['attachments'] is None:
-						dEmail['attachments'] = []
-
-					# Store the type, filename, and content
-					dEmail['attachments'].append({
-						"type": o.get_content_type(),
-						"filename": o.get_filename(),
-						"content": o.get_payload(decode=True)
-					})
+					raise ValueError('Unknown Content-Type: %s' % oMsg.get_content_type())
 
 			# Add the email to the return list
 			lRet.append(dEmail)

@@ -25,7 +25,7 @@ from shared import Email
 from services.monolith.records import KtCustomer, ShippingInfo, SMSTemplate
 
 # Cron imports
-from . import isRunning
+from . import isRunning, emailError
 
 reContent = re.compile(
 	r'Tracking Number:\s+([A-Z0-9]+)\s+(http:\/\/.*?datesent=([0-9]{8}).*)\s+Ship To:\s+([^\n]+)\s+([^\n]+)\s+([^,]+),\s+([A-Z]{2})\s+([0-9]{5}(?:-[0-9]{4})?)\s+US',
@@ -35,34 +35,6 @@ reContent = re.compile(
 HRT_GROUP = 4
 ZRT_KIT_SHIPPED = 27
 ZRT_KIT_DELIVERED = 28
-
-def emailError(error):
-	"""Email Error
-
-	Send out an email with an error message
-
-	Arguments:
-		error (str): The error to email
-
-	Returns:
-		bool
-	"""
-
-	print(error)
-
-	# Send the email
-	oEff = Services.create('communications', 'email', {
-		"_internal_": Services.internalKey(),
-		"text_body": error,
-		"subject": 'ZRT Shipping Error',
-		"to": Conf.get(('developer', 'emails'))
-	})
-	if oEff.errorExists():
-		print(oEff.error)
-		return False
-
-	# Return OK
-	return True
 
 def run():
 	"""Run
@@ -111,7 +83,7 @@ def run():
 
 		# If we didn't find the match
 		if not oMatch:
-			emailError('No regex match for:\n\n%s' % d['text']);
+			emailError('ZRT Shipping Error', 'No regex match for:\n\n%s' % d['text']);
 			continue
 
 		# Store the matches
@@ -125,7 +97,7 @@ def run():
 
 		# If no customer
 		if not dKtCustomer:
-			emailError('No customer found for:\n\n%s' % str(lMatches))
+			emailError('ZRT Shipping Error', 'No customer found for:\n\n%s' % str(lMatches))
 			continue
 
 		# Make the date readable
@@ -154,7 +126,7 @@ def run():
 					"updatedAt": sDT
 				})
 			except ValueError as e:
-				emailError('Couldn\'t create ShippingInfo for:\n\n%s\n\n%s' % (
+				emailError('ZRT Shipping Error', 'Couldn\'t create ShippingInfo for:\n\n%s\n\n%s' % (
 					dKtCustomer['customerId'],
 					str(lMatches)
 				))
@@ -168,7 +140,7 @@ def run():
 
 		# Unknown email
 		else:
-			emailError('Unknown email type:\n\n%s\n\n%s' % (
+			emailError('ZRT Shipping Error', 'Unknown email type:\n\n%s\n\n%s' % (
 				dKtCustomer['customerId'],
 				str(lMatches)
 			))
@@ -198,7 +170,7 @@ def run():
 			"type": 'support'
 		})
 		if oEff.errorExists():
-			emailError('Couldn\'t send sms:\n\n%s\n\n%s\n\n%s' % (
+			emailError('ZRT Shipping Error', 'Couldn\'t send sms:\n\n%s\n\n%s\n\n%s' % (
 				dKtCustomer['customerId'],
 				str(lMatches),
 				str(oEff)
