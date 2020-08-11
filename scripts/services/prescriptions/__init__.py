@@ -26,6 +26,9 @@ from shared import Rights
 # Service imports
 from .records import Medication, Pharmacy, PharmacyFillError
 
+# Shared imports
+from shared import Rights
+
 _dPharmacies = {
 	6141: "Belmar Pharmacy",
 	26493: "WellDyneRx",
@@ -256,17 +259,18 @@ class Prescriptions(Services.Service):
 			Services.Effect
 		"""
 
-		# Make sure the user has the proper rights
-		#oEff = self.verify_read({
-		#	"name": "prescriptions",
-		#	"right": Rights.READ
-		#}, sesh)
-		#if not oEff.data:
-		#	return Services.Effect(error=Rights.INVALID)
-
 		# Verify fields
 		try: DictHelper.eval(data, ['patient_id'])
-		except ValueError as e: return Services.Effect(error=(1001, [(f, "missing") for f in e.args]))
+		except ValueError as e: return Services.Effect(error=(1001, [(f, 'missing') for f in e.args]))
+
+		# Make sure the user has the proper permission to do this
+		oEff = Services.read('auth', 'rights/verify', {
+			"name": "prescriptions",
+			"right": Rights.CREATE,
+			"ident": data['patient_id']
+		}, sesh)
+		if not oEff.data:
+			return Services.Effect(error=Rights.INVALID)
 
 		# If the clinician ID isn't passed
 		if 'clinician_id' not in data or not data['clinician_id']:
@@ -323,17 +327,20 @@ class Prescriptions(Services.Service):
 			Services.Effect
 		"""
 
-		# Make sure the user has the proper rights
-		#oEff = self.verify_read({
-		#	"name": "prescriptions",
-		#	"right": Rights.READ
-		#}, sesh)
-		#if not oEff.data:
-		#	return Services.Effect(error=Rights.INVALID)
+		return Services.Effect(False)
 
 		# Verify fields
 		try: DictHelper.eval(data, ['patient_id'])
-		except ValueError as e: return Services.Effect(error=(1001, [(f, "missing") for f in e.args]))
+		except ValueError as e: return Services.Effect(error=(1001, [(f, 'missing') for f in e.args]))
+
+		# Make sure the user has the proper permission to do this
+		oEff = Services.read('auth', 'rights/verify', {
+			"name": "prescriptions",
+			"right": Rights.READ,
+			"ident": data['patient_id']
+		}, sesh)
+		if not oEff.data:
+			return Services.Effect(error=Rights.INVALID)
 
 		# If the clinician ID isn't passed
 		if 'clinician_id' not in data or not data['clinician_id']:
@@ -390,17 +397,20 @@ class Prescriptions(Services.Service):
 			Services.Effect
 		"""
 
-		# Make sure the user has the proper rights
-		#oEff = self.verify_read({
-		#	"name": "prescriptions",
-		#	"right": Rights.UPDATE
-		#}, sesh)
-		#if not oEff.data:
-		#	return Services.Effect(error=Rights.INVALID)
+		return Services.Effect(False)
 
 		# Verify fields
 		try: DictHelper.eval(data, ['patient_id', 'pharmacy_id'])
-		except ValueError as e: return Services.Effect(error=(1001, [(f, "missing") for f in e.args]))
+		except ValueError as e: return Services.Effect(error=(1001, [(f, 'missing') for f in e.args]))
+
+		# Make sure the user has the proper permission to do this
+		oEff = Services.read('auth', 'rights/verify', {
+			"name": "prescriptions",
+			"right": Rights.UPDATE,
+			"ident": data['patient_id']
+		}, sesh)
+		if not oEff.data:
+			return Services.Effect(error=Rights.INVALID)
 
 		# If the clinician ID isn't passed
 		if 'clinician_id' not in data or not data['clinician_id']:
@@ -458,17 +468,20 @@ class Prescriptions(Services.Service):
 			Services.Effect
 		"""
 
-		# Make sure the user has the proper rights
-		#oEff = self.verify_read({
-		#	"name": "prescriptions",
-		#	"right": Rights.UPDATE
-		#}, sesh)
-		#if not oEff.data:
-		#	return Services.Effect(error=Rights.INVALID)
+		return Services.Effect(False)
 
 		# Verify fields
 		try: DictHelper.eval(data, ['patient_id', 'pharmacy_id'])
-		except ValueError as e: return Services.Effect(error=(1001, [(f, "missing") for f in e.args]))
+		except ValueError as e: return Services.Effect(error=(1001, [(f, 'missing') for f in e.args]))
+
+		# Make sure the user has the proper permission to do this
+		oEff = Services.read('auth', 'rights/verify', {
+			"name": "prescriptions",
+			"right": Rights.UPDATE,
+			"ident": data['patient_id']
+		}, sesh)
+		if not oEff.data:
+			return Services.Effect(error=Rights.INVALID)
 
 		# If the clinician ID isn't passed
 		if 'clinician_id' not in data or not data['clinician_id']:
@@ -540,7 +553,6 @@ class Prescriptions(Services.Service):
 			del data['_internal_']
 
 		# Else
-		"""
 		else:
 
 			# Make sure the user has the proper rights
@@ -550,11 +562,19 @@ class Prescriptions(Services.Service):
 			}, sesh)
 			if not oEff.data:
 				return Services.Effect(error=Rights.INVALID)
-		"""
 
 		# Verify fields
 		try: DictHelper.eval(data, ['patient_id'])
-		except ValueError as e: return Services.Effect(error=(1001, [(f, "missing") for f in e.args]))
+		except ValueError as e: return Services.Effect(error=(1001, [(f, 'missing') for f in e.args]))
+
+		# Make sure the user has the proper permission to do this
+		oEff = Services.read('auth', 'rights/verify', {
+			"name": "prescriptions",
+			"right": Rights.READ,
+			"ident": data['patient_id']
+		}, sesh)
+		if not oEff.data:
+			return Services.Effect(error=Rights.INVALID)
 
 		# If the clinician ID isn't passed
 		if 'clinician_id' not in data or not data['clinician_id']:
@@ -597,7 +617,7 @@ class Prescriptions(Services.Service):
 
 		# If there's no items
 		if not dData['Items']:
-			return Services.Effect(0)
+			return Services.Effect([])
 
 		# Go through each item and add the text versions of integer values
 		for d in dData['Items']:
@@ -622,17 +642,18 @@ class Prescriptions(Services.Service):
 			Services.Effect
 		"""
 
-		# Make sure the user has the proper rights
-		#oEff = self.verify_read({
-		#	"name": "prescriptions",
-		#	"right": Rights.UPDATE
-		#}, sesh)
-		#if not oEff.data:
-		#	return Services.Effect(error=Rights.INVALID)
-
 		# Verify fields
 		try: DictHelper.eval(data, ['clinician_id', 'patient_id'])
-		except ValueError as e: return Services.Effect(error=(1001, [(f, "missing") for f in e.args]))
+		except ValueError as e: return Services.Effect(error=(1001, [(f, 'missing') for f in e.args]))
+
+		# Make sure the user has the proper permission to do this
+		oEff = Services.read('auth', 'rights/verify', {
+			"name": "prescriptions",
+			"right": Rights.UPDATE,
+			"ident": data['patient_id']
+		}, sesh)
+		if not oEff.data:
+			return Services.Effect(error=Rights.INVALID)
 
 		# Make sure we got ints
 		for s in ['clinician_id', 'patient_id']:

@@ -1,0 +1,70 @@
+# coding=utf8
+""" Konnektive Service
+
+Handles all Konnektive requests
+"""
+
+__author__		= "Chris Nasr"
+__copyright__	= "MaleExcelMedical"
+__version__		= "1.0.0"
+__maintainer__	= "Chris Nasr"
+__email__		= "chris@fuelforthefire.ca"
+__created__		= "2020-07-17"
+
+# Python imports
+import sys
+import urllib.parse
+
+# Pip imports
+import requests
+import xmltodict
+
+def address_verify(data):
+	"""Address Verify
+
+	Sends address info to USPS in order to verify it's correct. Returns
+	a string describing any errors, else the properly formatted address
+	based on what was provided
+
+	Arguments:
+		data (dict): Address info
+
+	Returns:
+		str|dict
+	"""
+
+	# Generate the query data
+	dQuery = {
+		"API": "Verify",
+		"XML": '<AddressValidateRequest USERID="665MALEE6869">' \
+					'<Address ID="0">' \
+						'<Address1>%s</Address1><Address2>%s</Address2>' \
+						'<City>%s</City><State>%s</State>' \
+						'<Zip5>%s</Zip5><Zip4></Zip4>' \
+					'</Address>' \
+				'</AddressValidateRequest>' % (
+			data['Address1'], data['Address2'],
+			data['City'], data['State'],
+			data['Zip5']
+		)
+	}
+
+	# Send to USPS
+	try:
+		oRes = requests.get('https://secure.shippingapis.com/ShippingAPI.dll?%s' % urllib.parse.urlencode(dQuery))
+	except ConnectionError as e:
+		print('Connection error', file=sys.stderr)
+		print(', '.join([str(s) for s in e.args[0]]), file=sys.stderr)
+		return 'Failed to connect to USPS'
+
+	# If the request failed
+	if oRes.status_code != 200:
+		print(str(oRes.status_code), file=sys.stderr)
+		print(str(oRes.text), file=sys.stderr)
+		return oRes.text
+
+	# Convert the response to a dict
+	dXML = xmltodict.parse(oRes.text)
+
+	# Return the Address part
+	return dXML['AddressValidateResponse']['Address']

@@ -53,7 +53,10 @@ Templates.init('../templates')
 
 # Create the HTTP server and map requests to service
 REST.Server({
-	"/customer/claim": {"methods": REST.CREATE | REST.DELETE | REST.UPDATE, "session": True},
+
+	"/customer/claim": {"methods": REST.CREATE | REST.UPDATE | REST.DELETE, "session": True},
+	"/customer/claim/escalate": {"methods": REST.UPDATE, "session": True},
+	"/customer/dob": {"methods": REST.READ, "session": True},
 	"/customer/dsid": {"methods": REST.READ, "session": True},
 	"/customer/exists": {"methods": REST.READ, "session": True},
 	"/customer/hide": {"methods": REST.UPDATE, "session": True},
@@ -91,8 +94,7 @@ REST.Server({
 	"/user": {"methods": REST.CREATE | REST.READ | REST.UPDATE, "session": True},
 	"/user/active": {"methods": REST.UPDATE, "session": True},
 	"/user/name": {"methods": REST.READ, "session": True},
-	"/user/passwd": {"methods": REST.UPDATE, "session": True},
-	"/users": {"methods": REST.READ, "session": True}
+	"/user/passwd": {"methods": REST.UPDATE, "session": True}
 
 }, 'monolith', "https?://(.*\\.)?%s" % Conf.get(("rest","allowed")).replace('.', '\\.')).run(
 	host=oRestConf['monolith']['host'],

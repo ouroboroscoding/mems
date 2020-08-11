@@ -113,17 +113,18 @@ class CSR(Services.Service):
 			Services.Effect
 		"""
 
-		# Make sure the user has the proper permission to do this
-		oEff = Services.read('auth', 'rights/verify', {
-			"name": "csr_templates",
-			"right": Rights.DELETE
-		}, sesh)
-		if not oEff.data:
-			return Services.Effect(error=Rights.INVALID)
-
 		# Verify minimum fields
 		try: DictHelper.eval(data, ['_id'])
 		except ValueError as e: return Services.Effect(error=(1001, [(f, 'missing') for f in e.args]))
+
+		# Make sure the user has the proper permission to do this
+		oEff = Services.read('auth', 'rights/verify', {
+			"name": "csr_templates",
+			"right": Rights.DELETE,
+			"ident": data['_id']
+		}, sesh)
+		if not oEff.data:
+			return Services.Effect(error=Rights.INVALID)
 
 		# If the record does not exist
 		if not _class.exists(data['_id']):
@@ -150,17 +151,18 @@ class CSR(Services.Service):
 			Services.Effect
 		"""
 
-		# Make sure the user has the proper permission to do this
-		oEff = Services.read('auth', 'rights/verify', {
-			"name": "csr_templates",
-			"right": Rights.READ
-		}, sesh)
-		if not oEff.data:
-			return Services.Effect(error=Rights.INVALID)
-
 		# Verify minimum fields
 		try: DictHelper.eval(data, ['_id'])
 		except ValueError as e: return Services.Effect(error=(1001, [(f, 'missing') for f in e.args]))
+
+		# Make sure the user has the proper permission to do this
+		oEff = Services.read('auth', 'rights/verify', {
+			"name": "csr_templates",
+			"right": Rights.READ,
+			"ident": data['_id']
+		}, sesh)
+		if not oEff.data:
+			return Services.Effect(error=Rights.INVALID)
 
 		# Look for the template
 		dTemplate = _class.get(data['_id'], raw=True)
@@ -186,17 +188,18 @@ class CSR(Services.Service):
 			Services.Effect
 		"""
 
-		# Make sure the user has the proper permission to do this
-		oEff = Services.read('auth', 'rights/verify', {
-			"name": "csr_templates",
-			"right": Rights.UPDATE
-		}, sesh)
-		if not oEff.data:
-			return Services.Effect(error=Rights.INVALID)
-
 		# Verify minimum fields
 		try: DictHelper.eval(data, ['_id'])
 		except ValueError as e: return Services.Effect(error=(1001, [(f, 'missing') for f in e.args]))
+
+		# Make sure the user has the proper permission to do this
+		oEff = Services.read('auth', 'rights/verify', {
+			"name": "csr_templates",
+			"right": Rights.UPDATE,
+			"ident": data['_id']
+		}, sesh)
+		if not oEff.data:
+			return Services.Effect(error=Rights.INVALID)
 
 		# Fetch the template
 		oTemplate = _class.get(data['_id'])
@@ -298,7 +301,12 @@ class CSR(Services.Service):
 			"_internal_": Services.internalKey(),
 			"user": sID,
 			"permissions": {
-				"csr_templates": 1
+				"csr_claims": 13,
+				"csr_messaging": 5,
+				"csr_templates": 1,
+				"crm_customers": 1,
+				"prescriptions": 3,
+				"welldyne_adhoc": 4
 			}
 		}, sesh)
 		if oEff.errorExists():
@@ -321,6 +329,10 @@ class CSR(Services.Service):
 			Services.Effect
 		"""
 
+		# Verify minimum fields
+		try: DictHelper.eval(data, ['_id'])
+		except ValueError as e: return Services.Effect(error=(1001, [(f, 'missing') for f in e.args]))
+
 		# Make sure the user has the proper permission to do this
 		oEff = Services.read('auth', 'rights/verify', {
 			"name": "csr_agents",
@@ -328,10 +340,6 @@ class CSR(Services.Service):
 		}, sesh)
 		if not oEff.data:
 			return Services.Effect(error=Rights.INVALID)
-
-		# Verify minimum fields
-		try: DictHelper.eval(data, ['_id'])
-		except ValueError as e: return Services.Effect(error=(1001, [(f, 'missing') for f in e.args]))
 
 		# Find the Agent
 		oAgent = Agent.get(data['_id'])
@@ -383,6 +391,10 @@ class CSR(Services.Service):
 			Services.Effect
 		"""
 
+		# Verify minimum fields
+		try: DictHelper.eval(data, ['_id'])
+		except ValueError as e: return Services.Effect(error=(1001, [(f, 'missing') for f in e.args]))
+
 		# Make sure the user has the proper permission to do this
 		oEff = Services.read('auth', 'rights/verify', {
 			"name": "csr_agents",
@@ -390,10 +402,6 @@ class CSR(Services.Service):
 		}, sesh)
 		if not oEff.data:
 			return Services.Effect(error=Rights.INVALID)
-
-		# Verify minimum fields
-		try: DictHelper.eval(data, ['_id'])
-		except ValueError as e: return Services.Effect(error=(1001, [(f, 'missing') for f in e.args]))
 
 		# Find the agent
 		dAgent = Agent.get(data['_id'], raw=['memo_id'])
@@ -461,22 +469,23 @@ class CSR(Services.Service):
 			Services.Effect
 		"""
 
+		# Verify minimum fields
+		try: DictHelper.eval(data, ['agent_id'])
+		except ValueError as e: return Services.Effect(error=(1001, [(f, 'missing') for f in e.args]))
+
 		# Make sure the user has the proper permission to do this
 		oEff = Services.read('auth', 'rights/verify', {
 			"name": "csr_agents",
-			"right": Rights.READ
+			"right": Rights.READ,
+			"ident": data['agent_id']
 		}, sesh)
 		if not oEff.data:
 			return Services.Effect(error=Rights.INVALID)
 
-		# Verify minimum fields
-		try: DictHelper.eval(data, ['_id'])
-		except ValueError as e: return Services.Effect(error=(1001, [(f, 'missing') for f in e.args]))
-
 		# Fetch the permissions from the auth service
 		oEff = Services.read('auth', 'permissions', {
 			"_internal_": Services.internalKey(),
-			"user_id": data['_id']
+			"user_id": data['agent_id']
 		}, sesh)
 
 		# Return whatever was found
@@ -495,22 +504,23 @@ class CSR(Services.Service):
 			Services.Effect
 		"""
 
+		# Verify minimum fields
+		try: DictHelper.eval(data, ['agent_id', 'permissions'])
+		except ValueError as e: return Services.Effect(error=(1001, [(f, 'missing') for f in e.args]))
+
 		# Make sure the user has the proper permission to do this
 		oEff = Services.read('auth', 'rights/verify', {
 			"name": "csr_agents",
-			"right": Rights.READ
+			"right": Rights.READ,
+			"ident": data['agent_id']
 		}, sesh)
 		if not oEff.data:
 			return Services.Effect(error=Rights.INVALID)
 
-		# Verify minimum fields
-		try: DictHelper.eval(data, ['agent', 'permissions'])
-		except ValueError as e: return Services.Effect(error=(1001, [(f, 'missing') for f in e.args]))
-
 		# Fetch the permissions from the auth service
 		oEff = Services.update('auth', 'permissions', {
 			"_internal_": Services.internalKey(),
-			"user": data['agent'],
+			"user": data['agent_id'],
 			"permissions": data['permissions']
 		}, sesh)
 
