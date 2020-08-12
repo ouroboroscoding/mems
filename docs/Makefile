@@ -19,5 +19,6 @@ help:
 %: Makefile
 	sphinx-apidoc -f -o source ../crons --separate
 	sphinx-apidoc -f -o source ../records --separate
+	sphinx-apidoc -f -o source ../shared --separate
 	sphinx-apidoc -f -o source ../services --separate
 	@$(SPHINXBUILD) -M $@ "$(SOURCEDIR)" "$(BUILDDIR)" $(SPHINXOPTS) $(O)
