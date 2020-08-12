@@ -400,7 +400,7 @@ class Konnektive(Services.Service):
 			return Services.Effect(error=Rights.INVALID)
 
 		# Make the request to Konnektive
-		lPurchases = self.__request('purchase/query', {
+		lPurchases = self._request('purchase/query', {
 			"dateRangeType": "dateCreated",
 			"customerId": data['customerId'],
 			"sortDir": 0
