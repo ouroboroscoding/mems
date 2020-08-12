@@ -238,6 +238,9 @@ class Patient(Services.Service):
 		try: DictHelper.eval(data, ['email', 'url'])
 		except ValueError as e: return Services.Effect(error=(1001, [(f, 'missing') for f in e.args]))
 
+		# Convert the email to lowercase
+		data['email'] = data['email'].lower()
+
 		# Look for the account by email
 		dAccount = Account.filter({"email": data['email']}, raw=['_id', 'locale', 'crm_type', 'crm_id'], limit=1)
 		if not dAccount:
@@ -292,7 +295,7 @@ class Patient(Services.Service):
 			"_internal_": Services.internalKey(),
 			"html_body": Templates.generate('email/patient/forgot.html', dTpl, dAccount['locale']),
 			"subject": Templates.generate('email/patient/forgot_subject.txt', {}, dAccount['locale']),
-			"to": dAccount['email']
+			"to": data['email']
 		})
 		if oEff.errorExists():
 			return oEff
