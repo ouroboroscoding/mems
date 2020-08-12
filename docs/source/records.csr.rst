@@ -1,7 +1,7 @@
-shared.Sync module
+records.csr module
 ==================
 
-.. automodule:: shared.Sync
+.. automodule:: records.csr
    :members:
    :undoc-members:
    :show-inheritance:

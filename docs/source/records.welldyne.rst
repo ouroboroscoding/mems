@@ -1,7 +1,7 @@
-services.webpoll module
+records.welldyne module
 =======================
 
-.. automodule:: services.webpoll
+.. automodule:: records.welldyne
    :members:
    :undoc-members:
    :show-inheritance:

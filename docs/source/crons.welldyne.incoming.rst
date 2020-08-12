@@ -1,7 +1,7 @@
-services.communications module
+crons.welldyne.incoming module
 ==============================
 
-.. automodule:: services.communications
+.. automodule:: crons.welldyne.incoming
    :members:
    :undoc-members:
    :show-inheritance:

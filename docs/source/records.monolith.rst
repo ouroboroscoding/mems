@@ -1,7 +1,7 @@
-services.webpoll module
+records.monolith module
 =======================
 
-.. automodule:: services.webpoll
+.. automodule:: records.monolith
    :members:
    :undoc-members:
    :show-inheritance:

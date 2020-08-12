@@ -1,7 +1,7 @@
-tools.passwd module
+records.auth module
 ===================
 
-.. automodule:: tools.passwd
+.. automodule:: records.auth
    :members:
    :undoc-members:
    :show-inheritance:

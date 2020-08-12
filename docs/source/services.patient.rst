@@ -1,7 +1,7 @@
-services.webpoll module
+services.patient module
 =======================
 
-.. automodule:: services.webpoll
+.. automodule:: services.patient
    :members:
    :undoc-members:
    :show-inheritance:

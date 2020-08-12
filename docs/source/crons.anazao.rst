@@ -1,5 +1,5 @@
-shared package
-==============
+crons.anazao package
+====================
 
 Submodules
 ----------
@@ -7,15 +7,12 @@ Submodules
 .. toctree::
    :maxdepth: 4
 
-   shared.JSON
-   shared.Memo
-   shared.Rights
-   shared.Sync
+   crons.anazao.shipped
 
 Module contents
 ---------------
 
-.. automodule:: shared
+.. automodule:: crons.anazao
    :members:
    :undoc-members:
    :show-inheritance:

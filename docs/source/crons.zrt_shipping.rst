@@ -1,7 +1,7 @@
-tools.prescriptions module
+crons.zrt\_shipping module
 ==========================
 
-.. automodule:: tools.prescriptions
+.. automodule:: crons.zrt_shipping
    :members:
    :undoc-members:
    :show-inheritance:

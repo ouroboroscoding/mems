@@ -1,7 +1,7 @@
-services.monolith module
+services.welldyne module
 ========================
 
-.. automodule:: services.monolith
+.. automodule:: services.welldyne
    :members:
    :undoc-members:
    :show-inheritance:

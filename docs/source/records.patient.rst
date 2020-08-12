@@ -1,7 +1,7 @@
-tools.fake\_msg module
+records.patient module
 ======================
 
-.. automodule:: tools.fake_msg
+.. automodule:: records.patient
    :members:
    :undoc-members:
    :show-inheritance:

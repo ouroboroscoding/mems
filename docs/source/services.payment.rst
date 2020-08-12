@@ -1,17 +1,5 @@
-services.payment package
-========================
-
-Submodules
-----------
-
-.. toctree::
-   :maxdepth: 4
-
-   services.payment.RocketGate
-   services.payment.records
-
-Module contents
----------------
+services.payment module
+=======================
 
 .. automodule:: services.payment
    :members:

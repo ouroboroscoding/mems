@@ -1,7 +1,7 @@
-services.csr.records module
+crons.welldyne.adhoc module
 ===========================
 
-.. automodule:: services.csr.records
+.. automodule:: crons.welldyne.adhoc
    :members:
    :undoc-members:
    :show-inheritance:

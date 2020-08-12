@@ -1,16 +1,5 @@
-services.auth package
-=====================
-
-Submodules
-----------
-
-.. toctree::
-   :maxdepth: 4
-
-   services.auth.records
-
-Module contents
----------------
+services.auth module
+====================
 
 .. automodule:: services.auth
    :members:

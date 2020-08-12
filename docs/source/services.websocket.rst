@@ -1,8 +1,5 @@
-services.websocket package
-==========================
-
-Module contents
----------------
+services.websocket module
+=========================
 
 .. automodule:: services.websocket
    :members:
