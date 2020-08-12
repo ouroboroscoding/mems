@@ -16,6 +16,7 @@ import traceback
 
 # Pip imports
 import arrow
+from RestOC import Services
 
 # Service imports
 from services.konnektive import Konnektive
@@ -149,6 +150,8 @@ def run(period=None):
 					})
 					oFillError.create(conflict='replace')
 
+		print('Fetching Outbound')
+
 		# Fetch all the outbound failed claims that are ready to be reprocessed
 		lOutbound = Outbound.filter({
 			"ready": True
@@ -199,6 +202,8 @@ def run(period=None):
 					"fail_count": 1
 				})
 				oFillError.create(conflict='replace')
+
+		print('Fetching PharmacyFillError')
 
 		# Fetch all previous fill / outbound error records that are ready to be
 		#	re-processed
