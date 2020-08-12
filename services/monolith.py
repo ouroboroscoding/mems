@@ -28,11 +28,9 @@ from shared import Rights
 
 # Service imports
 from records.monolith import \
-	CustomerClaimed, CustomerCommunication, CustomerMsgPhone, \
-	DsPatient, Forgot, KtCustomer, KtOrder, \
-	PharmacyFillError, ShippingInfo, SmpNote, \
-	SmpOrderStatus, SMSStop, TfAnswer, TfLanding, \
-	TfQuestion, TfQuestionOption, User, \
+	CustomerClaimed, CustomerCommunication, CustomerMsgPhone, DsPatient, \
+	Forgot, KtCustomer, KtOrder, ShippingInfo, SmpNote, SmpOrderStatus, \
+	SMSStop, TfAnswer, TfLanding, TfQuestion, TfQuestionOption, User, \
 	init as recInit
 
 # Regex for validating email
