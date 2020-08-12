@@ -211,7 +211,7 @@ class Patient(Services.Service):
 			"_internal_": Services.internalKey(),
 			"html_body": Templates.generate('email/patient/verify.html', dTpl, oAccount['locale']),
 			"subject": Templates.generate('email/patient/verify_subject.txt', {}, oAccount['locale']),
-			"to": "bast@maleexcel.com",
+			"to": data['email']
 		})
 		if oEff.errorExists():
 			return oEff
@@ -237,6 +237,9 @@ class Patient(Services.Service):
 		# Verify fields
 		try: DictHelper.eval(data, ['email', 'url'])
 		except ValueError as e: return Services.Effect(error=(1001, [(f, 'missing') for f in e.args]))
+
+		# Convert the email to lowercase
+		data['email'] = data['email'].lower()
 
 		# Look for the account by email
 		dAccount = Account.filter({"email": data['email']}, raw=['_id', 'locale', 'crm_type', 'crm_id'], limit=1)
@@ -292,7 +295,7 @@ class Patient(Services.Service):
 			"_internal_": Services.internalKey(),
 			"html_body": Templates.generate('email/patient/forgot.html', dTpl, dAccount['locale']),
 			"subject": Templates.generate('email/patient/forgot_subject.txt', {}, dAccount['locale']),
-			"to": "bast@maleexcel.com",
+			"to": data['email']
 		})
 		if oEff.errorExists():
 			return oEff
@@ -492,7 +495,7 @@ class Patient(Services.Service):
 			"_internal_": Services.internalKey(),
 			"html_body": Templates.generate('email/patient/setup.html', dTpl, 'en-US'),
 			"subject": Templates.generate('email/patient/setup_subject.txt', {}, 'en-US'),
-			"to": "bast@maleexcel.com"
+			"to": dSetup['email']
 		})
 		if oEff.errorExists():
 			return oEff
