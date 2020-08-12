@@ -5,13 +5,14 @@ Fetches the prescriptions associated with a specific customer
 """
 
 # Python imports
-import os, platform, sys
+import os, platform, pprint, sys
 
 # Framework imports
 from RestOC import Conf, Record_MySQL, REST, Services, Sesh
 
 # Services
-from services import monolith, prescriptions
+from services.monolith.records import DsPatient
+from services import prescriptions
 
 # Only run if called directly
 if __name__ == "__main__":
@@ -29,26 +30,19 @@ if __name__ == "__main__":
 	oRestConf = REST.Config(Conf.get("rest"))
 
 	# Register all services
-	Services.register({}, oRestConf, Conf.get(('services', 'salt')))
-
-	# Get an instance of the Monolith service and initialise it
-	oMonolith = monolith.Monolith()
-	oMonolith.initialise()
+	Services.register({"auth":None}, oRestConf, Conf.get(('services', 'salt')))
 
 	print('Customer ID: %s' % sys.argv[1])
 
 	# Get the patient ID from the customer ID
-	oEff = oMonolith.customerDsid_read({"customerId": sys.argv[1]}, {})
-	if oEff.errorExists():
-		print(oEff.error)
-		sys.exit(1);
+	dPatient = DsPatient.filter({"customerId": sys.argv[1]}, raw=['patientId'], limit=1)
 
 	# If we don't have the patient ID
-	if not oEff.data:
+	if not dPatient:
 		print('No patient ID found');
 		sys.exit(0);
 
-	print('Patient ID: %s' % oEff.data)
+	print('Patient ID: %s' % dPatient['patientId'])
 
 	# Get an instance of the Prescriptions service and initialise it
 	oPrescriptions = prescriptions.Prescriptions()
@@ -57,7 +51,7 @@ if __name__ == "__main__":
 	# Get the prescriptions using the patient ID
 	oEff = oPrescriptions.patientPrescriptions_read({
 		"_internal_": Services.internalKey(),
-		"patient_id": int(oEff.data)
+		"patient_id": int(dPatient['patientId'])
 	})
 	if oEff.errorExists():
 		print(oEff.error)
@@ -65,4 +59,4 @@ if __name__ == "__main__":
 
 	# Print the prescriptions
 	print('Prescriptions: ')
-	print(oEff.data);
+	pprint.pprint(oEff.data);
