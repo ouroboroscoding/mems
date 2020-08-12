@@ -544,6 +544,10 @@ class Prescriptions(Services.Service):
 		if not sesh and '_internal_' not in data:
 			return Services.Effect(error=(1001, [('_internal_', 'missing')]))
 
+		# Verify fields
+		try: DictHelper.eval(data, ['patient_id'])
+		except ValueError as e: return Services.Effect(error=(1001, [(f, 'missing') for f in e.args]))
+
 		# If it's internal
 		if '_internal_' in data:
 
@@ -558,23 +562,11 @@ class Prescriptions(Services.Service):
 			# Make sure the user has the proper permission to do this
 			oEff = Services.read('auth', 'rights/verify', {
 				"name": "prescriptions",
-				"right": Rights.READ
+				"right": Rights.READ,
+				"ident": data['patient_id']
 			}, sesh)
 			if not oEff.data:
 				return Services.Effect(error=Rights.INVALID)
-
-		# Verify fields
-		try: DictHelper.eval(data, ['patient_id'])
-		except ValueError as e: return Services.Effect(error=(1001, [(f, 'missing') for f in e.args]))
-
-		# Make sure the user has the proper permission to do this
-		oEff = Services.read('auth', 'rights/verify', {
-			"name": "prescriptions",
-			"right": Rights.READ,
-			"ident": data['patient_id']
-		}, sesh)
-		if not oEff.data:
-			return Services.Effect(error=Rights.INVALID)
 
 		# If the clinician ID isn't passed
 		if 'clinician_id' not in data or not data['clinician_id']:
