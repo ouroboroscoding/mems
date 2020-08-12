@@ -687,36 +687,6 @@ class KtOrder(Record_MySQL.Record):
 			Record_MySQL.ESelect.COLUMN
 		)
 
-# PharmacyFillError class
-class PharmacyFillError(Record_MySQL.Record):
-	"""PharmacyFillError
-
-	Represents an error while attempting to fill an order with a pharmacy
-	"""
-
-	_conf = None
-	"""Configuration"""
-
-	@classmethod
-	def config(cls):
-		"""Config
-
-		Returns the configuration data associated with the record type
-
-		Returns:
-			dict
-		"""
-
-		# If we haven loaded the config yet
-		if not cls._conf:
-			cls._conf = Record_MySQL.Record.generateConfig(
-				Tree.fromFile('definitions/monolith/pharmacy_fill_error.json'),
-				'mysql'
-			)
-
-		# Return the config
-		return cls._conf
-
 # ShippingInfo class
 class ShippingInfo(Record_MySQL.Record):
 	"""ShippingInfo
