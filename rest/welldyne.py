@@ -45,6 +45,7 @@ if 'VERBOSE' in os.environ and os.environ['VERBOSE'] == '1':
 # Get all the services
 dServices = {
 	"auth": None,
+	"communications": None,
 	"monolith": None,
 	"welldyne": WellDyne()
 }
@@ -59,6 +60,7 @@ Templates.init('templates')
 REST.Server({
 
 	"/adhoc": {"methods": REST.CREATE | REST.DELETE, "session": True},
+	"/adhoc/manual": {"methods": REST.READ | REST.DELETE, "session": True},
 	"/adhocs": {"methods": REST.READ, "session": True},
 
 	"/outbound/adhoc": {"methods": REST.UPDATE, "session": True},
