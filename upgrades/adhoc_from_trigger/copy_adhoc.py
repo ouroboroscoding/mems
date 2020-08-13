@@ -5,7 +5,7 @@
 from RestOC import Record_MySQL
 
 # Service imports
-from records.welldyne import AdHoc, Trigger
+from records.welldyne import AdHoc, AdHocManual, Trigger
 
 def run():
 
@@ -39,6 +39,16 @@ def run():
 
 		# If we found a trigger but there's no raw data
 		if not dTrigger['raw']:
+
+			# Create the new adhoc manual
+			oAdHocManual = AdHocManual({
+				"trigger_id": dTrigger['_id'],
+				"type": d['type'],
+				"memo_user": 0
+			})
+			oAdHocManual.create()
+
+			# Notify
 			print('Trigger %s has no raw data for %s' % (dTrigger['_id'], d['_id']))
 			continue
 

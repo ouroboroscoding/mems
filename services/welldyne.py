@@ -342,7 +342,7 @@ class WellDyne(Services.Service):
 	def outboundAdhoc_update(self, data, sesh):
 		"""Outbound OldAdHoc
 
-		Removes a customer from the outreach and puts them as an adhoc / remove
+		Removes a customer from the outbound and puts them as an adhoc / remove
 		error record
 
 		Arguments:
@@ -370,6 +370,57 @@ class WellDyne(Services.Service):
 		if not oOutbound:
 			return Services.Effect(error=1104)
 
+		# Look for a trigger with the same info
+		dTrigger = Trigger.filter({
+			"crm_type": oOutbound['crm_type'],
+			"crm_id": oOutbound['crm_id'],
+			"crm_order": oOutbound['crm_order']
+		}, raw=['_id', 'crm_type', 'crm_id', 'crm_order', 'raw'], limit=1)
+
+		# If there's no tigger
+		if not dTrigger:
+			return Services.Effect(error=1802)
+
+		# Init warning
+		iWarning = None
+
+		# If there's no raw data
+		if not dTrigger['raw']:
+
+			# Try to create a new instance of the adhoc in the manual table
+			try:
+				oAdHocManual = AdHocManual({
+					"trigger_id": dTrigger['_id'],
+					"type": "Remove Error",
+					"memo_user": sesh['memo_id']
+				})
+			except ValueError as e:
+				return Services.Effect(error=(1001, e.args[0]))
+
+			# Create the record
+			try:
+				oAdHocManual.create()
+
+				# Delete the outbound record
+				oOutbound.delete()
+
+				# Notify developer
+				oEff = Services.create('communications', 'email', {
+					"_internal_": Services.internalKey(),
+					"text_body": 'https://cs.meutils.com/manualad',
+					"subject": 'New Manual AdHoc',
+					"to": Conf.get(('developer', 'emails'))
+				})
+				if oEff.errorExists(): return oEff
+
+			# Ignore duplicates, because you know people are gonna click again
+			#	and again
+			except Record_MySQL.DuplicateException:
+				pass
+
+			# Return that we couldn't immediately add the adhoc
+			return Services.Effect(True, warning=1801)
+
 		# If the CRM is Konnektive
 		if oOutbound['crm_type'] == 'knk':
 
@@ -396,9 +447,7 @@ class WellDyne(Services.Service):
 		# Try to create a new adhoc instance
 		try:
 			oAdHoc = AdHoc({
-				"crm_type": oOutbound['crm_type'],
-				"crm_id": oOutbound['crm_id'],
-				"crm_order": oOutbound['crm_order'],
+				"trigger_id": dTrigger['_id'],
 				"type": "Remove Error",
 				"memo_user": sesh['memo_id']
 			})
@@ -406,15 +455,18 @@ class WellDyne(Services.Service):
 			return Services.Effect(error=(1001, e.args[0]))
 
 		# Create the adhoc record
-		iID = oAdHoc.create();
+		oAdHoc.create();
 
-		# Delete the outreach record
+		# Delete the outbound record
 		oOutbound.delete()
 
 		# Turn the adhoc instance into a dict
 		dAdHoc = oAdHoc.record()
 
 		# Add the names
+		dAdHoc['crm_type'] = dTrigger['crm_type']
+		dAdHoc['crm_id'] = dTrigger['crm_id']
+		dAdHoc['crm_order'] = dTrigger['crm_order']
 		dAdHoc['customer_name'] = "%s %s" % (dCustomer['firstName'], dCustomer['lastName'])
 		dAdHoc['user_name'] = "%s %s" % (dUser['firstName'], dUser['lastName'])
 
@@ -424,7 +476,7 @@ class WellDyne(Services.Service):
 	def outboundReady_update(self, data, sesh):
 		"""Outbound Ready
 
-		Updates the ready state of an existing outreach record
+		Updates the ready state of an existing outbound record
 
 		Arguments:
 			data (dict): Data sent with the request
@@ -466,7 +518,7 @@ class WellDyne(Services.Service):
 	def outbounds_read(self, data, sesh):
 		"""Outbounds
 
-		Returns all outreach records
+		Returns all outbound records
 
 		Arguments:
 			data (dict): Data sent with the request
@@ -530,7 +582,7 @@ class WellDyne(Services.Service):
 		"""Trigger Info
 
 		Returns the last trigger associated with the customer, including any
-		possible outreach and eligibility
+		possible outbound and eligibility
 
 		Arguments:
 			data (dict): Data sent with the request
@@ -552,7 +604,7 @@ class WellDyne(Services.Service):
 		try: DictHelper.eval(data, ['crm_type', 'crm_id'])
 		except ValueError as e: return Services.Effect(error=(1001, [(f, "missing") for f in e.args]))
 
-		# Look for a trigger with any possible outreach and eligibility
+		# Look for a trigger with any possible outbound and eligibility
 		lTrigger = Trigger.withOutreachEligibility(data['crm_type'], data['crm_id'])
 
 		# If there's nothing
