@@ -24,7 +24,7 @@ from records.prescriptions import PharmacyFillError
 from records.welldyne import Outbound
 
 # Cron imports
-from crons import isRunning
+from crons import emailError, isRunning
 from crons.shared import PharmacyFill
 
 # Local imports

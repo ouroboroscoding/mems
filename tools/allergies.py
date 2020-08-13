@@ -65,8 +65,8 @@ if __name__ == "__main__":
 		lAnswers = TfAnswer.filter({
 			"landing_id": lLandings,
 			"ref": ['95f9516a-4670-43b1-9b33-4cf822dc5917', 'allergies']
-		}, raw=['answer'])
+		}, raw=['value'])
 		if lAnswers:
-			lAnswers = [d['answer'] for d in lAnswers]
+			lAnswers = [d['value'] for d in lAnswers]
 
 	print('Answers: %s' % ', '.join(lAnswers))

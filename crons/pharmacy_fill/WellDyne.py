@@ -121,16 +121,16 @@ class TriggerFile(object):
 
 		# Create the CSV line
 		lLine = [
-			data['type'],
-			data['medication'],
-			str(data['rx']),
-			data['first'],
-			data['last'],
-			data['dob'],
-			data['address1'],
+			data['type'] or '',
+			data['medication'] or '',
+			str(data['rx']) or '',
+			data['first'] or '',
+			data['last'] or '',
+			data['dob'] or '',
+			data['address1'] or '',
 			data['address2'] or '',
-			data['city'],
-			data['state'],
+			data['city'] or '',
+			data['state'] or '',
 			data['postalCode'],
 			sMemberID,
 			Allergies.fetch(data)
