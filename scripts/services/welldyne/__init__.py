@@ -227,14 +227,6 @@ class WellDyne(Services.Service):
 			Services.Effect
 		"""
 
-		# Make sure the user has the proper outreach rights
-		oEff = Services.read('auth', 'rights/verify', {
-			"name": "welldyne_outbound",
-			"right": Rights.DELETE
-		}, sesh)
-		if not oEff.data:
-			return Services.Effect(error=Rights.INVALID)
-
 		# Make sure the user has the proper adhoc rights
 		oEff = Services.read('auth', 'rights/verify', {
 			"name": "welldyne_adhoc",
