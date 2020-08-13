@@ -1,8 +1,5 @@
-services.konnektive package
-===========================
-
-Module contents
----------------
+services.konnektive module
+==========================
 
 .. automodule:: services.konnektive
    :members:

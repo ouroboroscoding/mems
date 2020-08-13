@@ -26,7 +26,7 @@ apt-get -qq install python3-pip &>> $LOGFILE
 pip3 -q install virtualenv &>> $LOGFILE
 mkdir -p /root/venvs/mems
 virtualenv -p /usr/bin/python3 /root/venvs/mems &>> $LOGFILE
-/root/venvs/mems/bin/pip install -r /mems/scripts/requirements.txt &>> $LOGFILE
+/root/venvs/mems/bin/pip install -r /mems/requirements.txt &>> $LOGFILE
 
 # Make folders and copy etc files
 echo -e "${G}Making folders, copying server config files, and creating aliases...${R}"
@@ -36,7 +36,7 @@ mkdir -p /var/log/mems  &>> $LOGFILE
 cp -R /mems/install/services/* / &>> $LOGFILE
 # Aliases
 echo "alias lf='ls -aCF'" >> ~/.bashrc
-echo "alias src_mems='source /root/venvs/mems/bin/activate; cd /mems/scripts'" >> ~/.bashrc
+echo "alias src_mems='source /root/venvs/mems/bin/activate; cd /mems'" >> ~/.bashrc
 
 # Restart services
 echo -e "${G}Restarting services...${R}"
@@ -45,5 +45,5 @@ service nginx restart &>> $LOGFILE
 
 # Installing Microservices
 echo -e "${G}Installing Microservices...${R}"
-cd /mems/scripts
-#/root/venvs/mems/bin/python install.py
+cd /mems
+/root/venvs/mems/bin/python install.py

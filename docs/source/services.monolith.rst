@@ -1,16 +1,5 @@
-services.monolith package
-=========================
-
-Submodules
-----------
-
-.. toctree::
-   :maxdepth: 4
-
-   services.monolith.records
-
-Module contents
----------------
+services.monolith module
+========================
 
 .. automodule:: services.monolith
    :members:

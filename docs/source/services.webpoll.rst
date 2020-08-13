@@ -1,8 +1,5 @@
-services.webpoll package
-========================
-
-Module contents
----------------
+services.webpoll module
+=======================
 
 .. automodule:: services.webpoll
    :members:

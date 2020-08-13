@@ -1,8 +1,5 @@
-services.communications package
-===============================
-
-Module contents
----------------
+services.communications module
+==============================
 
 .. automodule:: services.communications
    :members:
