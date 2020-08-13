@@ -214,41 +214,6 @@ class WellDyne(Services.Service):
 		# Return all records
 		return Services.Effect(lRecords)
 
-	def outbound_delete(self, data, sesh):
-		"""Outbound Delete
-
-		Deletes an existing record from the Outbound report
-
-		Arguments:
-			data (dict): Data sent with the request
-			sesh (Sesh._Session): The session associated with the request
-
-		Returns:
-			Services.Effect
-		"""
-
-		# Make sure the user has the proper rights
-		oEff = Services.read('auth', 'rights/verify', {
-			"name": "welldyne_outbound",
-			"right": Rights.DELETE
-		}, sesh)
-		if not oEff.data:
-			return Services.Effect(error=Rights.INVALID)
-
-		# Verify minimum fields
-		try: DictHelper.eval(data, ['_id'])
-		except ValueError as e: return Services.Effect(error=(1001, [(f, 'missing') for f in e.args]))
-
-		# Find the record
-		oOutbound = Outbound.get(data['_id'])
-		if not oOutbound:
-			return Services.Effect(error=1104)
-
-		# Delete the record and return the result
-		return Services.Effect(
-			oOutbound.delete()
-		)
-
 	def outboundAdhoc_update(self, data, sesh):
 		"""Outbound OldAdHoc
 
