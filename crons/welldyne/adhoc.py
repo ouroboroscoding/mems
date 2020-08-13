@@ -21,8 +21,11 @@ import arrow
 import pysftp
 from RestOC import Conf, DictHelper
 
-# Service imports
+# Record imports
 from records.welldyne import AdHoc, Eligibility
+
+# Service imports
+from services.konnektive import Konnektive
 
 # Cron imports
 from crons import emailError, isRunning
@@ -45,6 +48,10 @@ def run(period=None):
 		return True
 
 	try:
+
+		# Init the Konnektive service
+		oKnk = Konnektive()
+		oKnk.initialise()
 
 		# Create a list of data that will be added to the file
 		lLines = []
@@ -72,6 +79,12 @@ def run(period=None):
 		# Go through each one
 		for d in lAdHocs:
 
+			# Split the raw data by comma
+			lLine = d['raw'].split(',')
+
+			# Replace the first element
+			lLine[0] = d['type']
+
 			# If the type is extend eligibility
 			if d['type'] == 'Extend Eligibility':
 
@@ -88,11 +101,22 @@ def run(period=None):
 				})
 				oElig.create(conflict=('memberThru', 'updatedAt'))
 
-			# Split the raw data by comma
-			lLine = d['raw'].split(',')
+			# Else, if the type is update address
+			elif d['type'] == 'Update Address':
 
-			# Replace the first element
-			lLine[0] = d['type']
+				# Find the order
+				lOrders = oKnk._request('order/query', {
+					"orderId": d['crm_order']
+				})
+
+				# Update the appropriate fields
+				lLine[3] = lOrders[0]['shipFirstName'] or ''
+				lLine[4] = lOrders[0]['shipLastName'] or ''
+				lLine[6] = lOrders[0]['shipAddress1'] or ''
+				lLine[7] = lOrders[0]['shipAddress1'] or ''
+				lLine[8] = lOrders[0]['shipCity'] or ''
+				lLine[9] = lOrders[0]['shipState'] or ''
+				lLine[10] = lOrders[0]['shipPostalCode'] or ''
 
 			# Add the data to the lines
 			lLines.append(lLine)
