@@ -261,6 +261,37 @@ class Outbound(Record_MySQL.Record):
 	"""Configuration"""
 
 	@classmethod
+	def deleteNotReady(cls, custom={}):
+		"""Delete Not Ready
+
+		Deletes all records in the table that aren't marked as ready
+
+		Arguments:
+			custom (dict): Custom Host and DB info
+				'host' the name of the host to get/set data on
+				'append' optional postfix for dynamic DBs
+
+		Returns:
+			None
+		"""
+
+		# Fetch the record structure
+		dStruct = cls.struct(custom)
+
+		# Generate SQL
+		sSQL = 'DELETE FROM `%(db)s`.`%(table)s`\n' \
+				'WHERE `ready` = 0' % {
+			"db": dStruct['db'],
+			"table": dStruct['table']
+		}
+
+		# Execute and return the select
+		return Record_MySQL.Commands.execute(
+			dStruct['host'],
+			sSQL
+		)
+
+	@classmethod
 	def config(cls):
 		"""Config
 
