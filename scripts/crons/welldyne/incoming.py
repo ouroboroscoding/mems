@@ -152,6 +152,9 @@ def outbound_failed_claims(time):
 		"wd_rx": {"column": 15, "type": Excel.INTEGER}
 	}, start_row=1)
 
+	# Delete all current outbounds that aren't marked as ready
+	Outbound.deleteNotReady()
+
 	# Go through each item
 	for d in lData:
 

@@ -61,7 +61,6 @@ REST.Server({
 	"/adhoc": {"methods": REST.CREATE | REST.DELETE, "session": True},
 	"/adhocs": {"methods": REST.READ, "session": True},
 
-	"/outbound": {"methods": REST.DELETE, "session": True},
 	"/outbound/adhoc": {"methods": REST.UPDATE, "session": True},
 	"/outbound/ready": {"methods": REST.UPDATE, "session": True},
 	"/outbounds": {"methods": REST.READ, "session": True},
