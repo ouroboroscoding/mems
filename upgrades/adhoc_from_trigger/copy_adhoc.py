@@ -44,7 +44,7 @@ def run():
 			oAdHocManual = AdHocManual({
 				"trigger_id": dTrigger['_id'],
 				"type": d['type'],
-				"memo_user": 0
+				"memo_user": 155
 			})
 			oAdHocManual.create()
 
@@ -57,7 +57,7 @@ def run():
 			"_created": d['_created'],
 			"trigger_id": dTrigger['_id'],
 			"type": d['type'],
-			"memo_user": 0
+			"memo_user": 155
 		})
 		oAdHoc.create()
 

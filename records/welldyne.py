@@ -115,6 +115,7 @@ class AdHoc(Record_MySQL.Record):
 				"	`wda`.`trigger_id` as `trigger_id`,\n" \
 				"	`wda`.`type` as `type`,\n" \
 				"	`wdt`.`crm_id` as `crm_id`,\n" \
+				"	`wdt`.`crm_order` as `crm_order`,\n" \
 				"	`wdt`.`raw` as `raw`\n" \
 				"FROM `%(db)s`.`%(table)s` as `wda`\n" \
 				"JOIN `%(db)s`.`welldyne_trigger` as `wdt` ON `wda`.`trigger_id` = `wdt`.`_id`\n" % {
