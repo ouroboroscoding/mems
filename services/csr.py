@@ -12,7 +12,7 @@ __email__		= "chris@fuelforthefire.ca"
 __created__		= "2020-05-17"
 
 # Pip imports
-from RestOC import DictHelper, Errors, Services
+from RestOC import DictHelper, Errors, Record_MySQL, Services
 
 # Shared imports
 from shared import Rights
@@ -61,6 +61,56 @@ class CSR(Services.Service):
 
 		# Return OK
 		return True
+
+	def _agent_create(self, memo_id, sesh):
+		"""Agent Create
+
+		Creates the actual agent record in the DB as well as necessary
+		permissions
+
+		Arguments:
+			memo_id (uint): The ID of the user in Memo
+			sesh (Sesh._Session): The session associated with the request
+
+		Returns:
+			Services.Effect
+		"""
+
+		# Create a new agent instance using the memo ID
+		try:
+			oAgent = Agent({
+				"memo_id": memo_id
+			})
+		except ValueError:
+			return Services.Effect(error=(1001, e.args[0]))
+
+		# Create the agent and store the ID
+		try:
+			sID = oAgent.create()
+		except Record_MySQL.DuplicateException as e:
+			return Services.Effect(error=1101)
+
+		# Create the default permissions
+		oEff = Services.update('auth', 'permissions', {
+			"_internal_": Services.internalKey(),
+			"user": sID,
+			"permissions": {
+				"csr_claims": 14,
+				"csr_messaging": 5,
+				"csr_templates": 1,
+				"crm_customers": 1,
+				"memo_mips": 3,
+				"memo_notes": 5,
+				"prescriptions": 3,
+				"welldyne_adhoc": 4
+			}
+		}, sesh)
+		if oEff.errorExists():
+			print(oEff)
+			return Services.Effect(sID, warning='Failed to creater permissions for agent')
+
+		# Create the agent and return the ID
+		return Services.Effect(sID)
 
 	def _template_create(self, data, sesh, _class):
 		"""Template Create
@@ -285,38 +335,8 @@ class CSR(Services.Service):
 		oEff = Services.create('monolith', 'user', data, sesh)
 		if oEff.errorExists(): return oEff
 
-		# Create a new agent instance using the memo ID
-		try:
-			oAgent = Agent({
-				"memo_id": oEff.data
-			})
-		except ValueError:
-			return Services.Effect(error=(1001, e.args[0]))
-
-		# Create the agent and store the ID
-		sID = oAgent.create()
-
-		# Create the default permissions
-		oEff = Services.update('auth', 'permissions', {
-			"_internal_": Services.internalKey(),
-			"user": sID,
-			"permissions": {
-				"csr_claims": 14,
-				"csr_messaging": 5,
-				"csr_templates": 1,
-				"crm_customers": 1,
-				"memo_mips": 3,
-				"memo_notes": 5,
-				"prescriptions": 3,
-				"welldyne_adhoc": 4
-			}
-		}, sesh)
-		if oEff.errorExists():
-			print(oEff)
-			return Services.Effect(sID, warning='Failed to creater permissions for agent')
-
-		# Create the agent and return the ID
-		return Services.Effect(sID)
+		# Create the agent record
+		return self._agent_create(oEff.data, sesh)
 
 	def agent_delete(self, data, sesh):
 		"""Agent Delete
@@ -379,6 +399,7 @@ class CSR(Services.Service):
 		Returns:
 			Services.Effect
 		"""
+		pass
 
 	def agent_update(self, data, sesh):
 		"""Agent Update
