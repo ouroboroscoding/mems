@@ -53,7 +53,7 @@ def run():
 			"crm_type": d['crm_type'],
 			"crm_id": d['crm_id'],
 			"crm_order": d['crm_order']
-		}, raw=['_id'], limit=1)
+		}, raw=['_id', 'raw'], limit=1)
 
 		# If we didn't find a trigger
 		if not dTrigger:
