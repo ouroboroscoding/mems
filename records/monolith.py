@@ -246,6 +246,7 @@ class CustomerClaimedLast(Record_MySQL.Record):
 					"user": user,
 					"timestamp": ts
 				})
+				oRecord.create()
 			except Record_MySQL.DuplicateException:
 				pass
 
@@ -315,8 +316,6 @@ class CustomerCommunication(Record_MySQL.Record):
 			"ts": ts,
 			"numbers": "'%s'" % "','".join(lNumbers)
 		}
-
-		print(sSQL)
 
 		# Fetch the data
 		lRecords = Record_MySQL.Commands.select(dStruct['host'], sSQL)

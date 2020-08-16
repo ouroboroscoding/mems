@@ -130,7 +130,7 @@ class Monolith(Services.Service):
 		})
 
 		# If they're at or more than the maximum
-		if iCount > self._conf['claims_max']:
+		if iCount >= self._conf['claims_max']:
 			return Services.Effect(error=1504)
 
 		# Attempt to create the record
@@ -158,7 +158,7 @@ class Monolith(Services.Service):
 
 				# Return the ID and phone
 				return Services.Effect({
-					"customerId": dCustomer['customerId'],
+					"customerId": dCustomer and dCustomer['customerId'] or '0',
 					"customerPhone": data['phoneNumber']
 				})
 
