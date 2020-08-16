@@ -317,8 +317,6 @@ class CustomerCommunication(Record_MySQL.Record):
 			"numbers": "'%s'" % "','".join(lNumbers)
 		}
 
-		print(sSQL)
-
 		# Fetch the data
 		lRecords = Record_MySQL.Commands.select(dStruct['host'], sSQL)
 
