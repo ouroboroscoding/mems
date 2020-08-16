@@ -532,7 +532,7 @@ class Konnektive(Services.Service):
 			"couponCode": dO['couponCode'],
 			"date": dO['dateUpdated'],
 			"email": dO['emailAddress'],
-			"encounter": self._encounters[dO['state']],
+			"encounter": dO['state'] and self._encounters[dO['state']] or '',
 			"items": 'items' in dO and [{
 				"campaign": dI['name'],
 				"description": dI['productDescription'],

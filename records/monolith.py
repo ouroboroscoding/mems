@@ -15,6 +15,7 @@ __created__		= "2020-04-26"
 import copy
 from hashlib import sha1
 import re
+from time import time
 
 # Pip imports
 from FormatOC import Tree
@@ -125,6 +126,129 @@ class CustomerClaimed(Record_MySQL.Record):
 
 		# Fetch the data and return the records
 		return Record_MySQL.Commands.select(dStruct['host'], sSQL)
+
+# CustomerClaimedLast class
+class CustomerClaimedLast(Record_MySQL.Record):
+	"""CustomerClaimedLast
+
+	Represents the last time a user looked up new messages on claimed
+	conversations
+	"""
+
+	_conf = None
+	"""Configuration"""
+
+	@classmethod
+	def config(cls):
+		"""Config
+
+		Returns the configuration data associated with the record type
+
+		Returns:
+			dict
+		"""
+
+		# If we haven loaded the config yet
+		if not cls._conf:
+			cls._conf = Record_MySQL.Record.generateConfig(
+				Tree.fromFile('definitions/monolith/customer_claimed_last.json'),
+				'mysql'
+			)
+
+		# Return the config
+		return cls._conf
+
+	@classmethod
+	def get(cls, user, custom={}):
+		"""Get
+
+		Get's the last timestamp for the given user
+
+		Arguments:
+			user (uint): The user to get the timestamp for
+			custom (dict): Custom Host and DB info
+				'host' the name of the host to get/set data on
+				'append' optional postfix for dynamic DBs
+
+		Returns:
+			uint
+		"""
+
+		# Fetch the record structure
+		dStruct = cls.struct(custom)
+
+		# Generate the SQL
+		sSQL = 'SELECT UNIX_TIMESTAMP(`timestamp`)\n' \
+			'FROM `%(db)s`.`%(table)s`\n' \
+			'WHERE `user` = %(user)d' % {
+				"db": dStruct['db'],
+				"table": dStruct['table'],
+				"user": user
+			}
+
+		# Fetch the value
+		iTS = Record_MySQL.Commands.select(
+			dStruct['host'],
+			sSQL,
+			Record_MySQL.ESelect.CELL
+		)
+
+		# If we got no value
+		if not iTS:
+			iTS = int(time())
+
+		# Return the timestamp
+		return iTS
+
+	@classmethod
+	def set(cls, user, ts, custom={}):
+		"""Set
+
+		Updates the current value for the user or else creates it
+
+		Arguments:
+			user (uint): The unique ID of the user the timestamp is
+				associated with
+			ts (uint): The timestamp to store
+			custom (dict): Custom Host and DB info
+				'host' the name of the host to get/set data on
+				'append' optional postfix for dynamic DBs
+
+		Returns:
+			None
+		"""
+
+		# Fetch the record structure
+		dStruct = cls.struct(custom)
+
+		# Generate the SQL
+		sSQL = 'UPDATE `%(db)s`.`%(table)s`\n' \
+			'SET `timestamp` = FROM_UNIXTIME(%(ts)d)\n' \
+			'WHERE `user` = %(user)d' % {
+				"db": dStruct['db'],
+				"table": dStruct['table'],
+				"ts": ts,
+				"user": user
+			}
+
+		# Attempt to update the timestamp
+		iRows = Record_MySQL.Commands.execute(
+			dStruct['host'],
+			sSQL
+		)
+
+		# If we updated nothing
+		if not iRows:
+
+			# Create the new record
+			try:
+				oRecord = cls({
+					"user": user,
+					"timestamp": ts
+				})
+				oRecord.create()
+			except Record_MySQL.DuplicateException:
+				pass
 
 # CustomerCommunication class
 class CustomerCommunication(Record_MySQL.Record):
