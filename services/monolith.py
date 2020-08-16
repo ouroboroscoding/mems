@@ -158,7 +158,7 @@ class Monolith(Services.Service):
 
 				# Return the ID and phone
 				return Services.Effect({
-					"customerId": dCustomer['customerId'],
+					"customerId": dCustomer and dCustomer['customerId'] or '0',
 					"customerPhone": data['phoneNumber']
 				})
 
