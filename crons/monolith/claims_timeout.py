@@ -50,7 +50,9 @@ def run(period=None):
 		iTimeout = Conf.get(('services', 'monolith', 'claims_timeout'), 172800)
 
 		# Generate the date minus the timeout
-		sDT = arrow.get().shift(seconds=iTimeout)
+		sDT = arrow.get().shift(seconds=-iTimeout).format('YYYY-MM-DD HH:mm:ss')
+
+		print(sDT)
 
 		# Find any Claims older than this date
 		lClaims = CustomerClaimed.filter({
