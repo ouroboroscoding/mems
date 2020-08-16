@@ -52,11 +52,9 @@ def run(period=None):
 		# Generate the date minus the timeout
 		sDT = arrow.get().shift(seconds=-iTimeout).format('YYYY-MM-DD HH:mm:ss')
 
-		print(sDT)
-
 		# Find any Claims older than this date
 		lClaims = CustomerClaimed.filter({
-			"createdAt": {"lte": sDT}
+			"updatedAt": {"lte": sDT}
 		})
 
 		# Delete them all

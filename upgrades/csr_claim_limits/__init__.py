@@ -1,6 +1,6 @@
 # Import version files
-from . import create_tables
+from . import create_tables, update_claim_date
 
 modules = [
-	create_tables
+	create_tables, update_claim_date
 ]
