@@ -246,6 +246,7 @@ class CustomerClaimedLast(Record_MySQL.Record):
 					"user": user,
 					"timestamp": ts
 				})
+				oRecord.create()
 			except Record_MySQL.DuplicateException:
 				pass
 
