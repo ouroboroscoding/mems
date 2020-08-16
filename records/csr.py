@@ -45,6 +45,99 @@ class Agent(Record_MySQL.Record):
 		# Return the config
 		return cls._conf
 
+# CustomList class
+class CustomList(Record_MySQL.Record):
+	"""CustomList
+
+	Represents a custom list by a CSR agent
+	"""
+
+	_conf = None
+	"""Configuration"""
+
+	@classmethod
+	def config(cls):
+		"""Config
+
+		Returns the configuration data associated with the record type
+
+		Returns:
+			dict
+		"""
+
+		# If we haven loaded the config yet
+		if not cls._conf:
+			cls._conf = Record_MySQL.Record.generateConfig(
+				Tree.fromFile('definitions/csr/custom_list.json'),
+				'mysql'
+			)
+
+		# Return the config
+		return cls._conf
+
+# CustomListItem class
+class CustomListItem(Record_MySQL.Record):
+	"""CustomListItem
+
+	Represents a single item in a custom list
+	"""
+
+	_conf = None
+	"""Configuration"""
+
+	@classmethod
+	def config(cls):
+		"""Config
+
+		Returns the configuration data associated with the record type
+
+		Returns:
+			dict
+		"""
+
+		# If we haven loaded the config yet
+		if not cls._conf:
+			cls._conf = Record_MySQL.Record.generateConfig(
+				Tree.fromFile('definitions/csr/custom_list_item.json'),
+				'mysql'
+			)
+
+		# Return the config
+		return cls._conf
+
+	@classmethod
+	def deleteByList(cls, list_id, custom={}):
+		"""Delete By List
+
+		Removes all recrods associated with a specific list
+
+		Arguments:
+			list_id (str): The ID of the list to delete items from
+			custom (dict): Custom Host and DB info
+				'host' the name of the host to get/set data on
+				'append' optional postfix for dynamic DBs
+
+		Returns:
+			dict
+		"""
+
+		# Fetch the record structure
+		dStruct = cls.struct(custom)
+
+		# Generate the SQL
+		sSQL = "DELETE FROM `%(db)s`.`%(table)s`\n" \
+				"WHERE `list` = '%(list)s'" % {
+			"db": dStruct['db'],
+			"table": dStruct['table'],
+			"list": list_id
+		}
+
+		# Delete all the records
+		Record_MySQL.Commands.execute(
+			dStruct['host'],
+			sSQL
+		)
+
 # TemplateEmail class
 class TemplateEmail(Record_MySQL.Record):
 	"""TemplateEmail

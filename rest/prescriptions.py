@@ -15,7 +15,7 @@ __created__		= "2020-05-10"
 import os, platform
 
 # Pip imports
-from RestOC import Conf, Record_Base, Record_MySQL, REST, Services, Sesh, Templates
+from RestOC import Conf, Record_Base, Record_MySQL, REST, Services, Sesh
 
 # App imports
 from services.prescriptions import Prescriptions
@@ -49,9 +49,6 @@ dServices = {
 
 # Register all services
 Services.register(dServices, oRestConf, Conf.get(('services', 'salt')))
-
-# Init Templates
-Templates.init('templates')
 
 # Create the HTTP server and map requests to service
 REST.Server({

@@ -28,9 +28,10 @@ from shared import Rights
 
 # Service imports
 from records.monolith import \
-	CustomerClaimed, CustomerCommunication, CustomerMsgPhone, DsPatient, \
-	Forgot, KtCustomer, KtOrder, ShippingInfo, SmpNote, SmpOrderStatus, \
-	SMSStop, TfAnswer, TfLanding, TfQuestion, TfQuestionOption, User, \
+	CustomerClaimed, CustomerClaimedLast, CustomerCommunication, \
+	CustomerMsgPhone, DsPatient, Forgot, KtCustomer, KtOrder, ShippingInfo, \
+	SmpNote, SmpOrderStatus, SMSStop, TfAnswer, TfLanding, TfQuestion, \
+	TfQuestionOption, User, \
 	init as recInit
 
 # Regex for validating email
@@ -45,10 +46,11 @@ class Monolith(Services.Service):
 	Service for Monolith, sign in, sign up, etc.
 	"""
 
-	_install = [CustomerClaimed, Forgot]
+	_install = []
 	"""Record types called in install"""
 
 	_TRACKING_LINKS = {
+		"FDX": "http://www.fedex.com/Tracking?tracknumbers=%s",
 		"UPS": "https://www.ups.com/track?tracknum=%s",
 		"USPS": "https://tools.usps.com/go/TrackConfirmAction?qtc_tLabels1=%s"
 	}
@@ -72,6 +74,9 @@ class Monolith(Services.Service):
 			"port": 6379,
 			"db": 0
 		}))
+
+		# Store conf
+		self._conf = Conf.get(('services', 'monolith'))
 
 		# Return self for chaining
 		return self
@@ -118,6 +123,15 @@ class Monolith(Services.Service):
 		# Verify fields
 		try: DictHelper.eval(data, ['phoneNumber'])
 		except ValueError as e: return Services.Effect(error=(1001, [(f, 'missing') for f in e.args]))
+
+		# Check how many claims this user already has
+		iCount = CustomerClaimed.count(filter={
+			"user": sesh['memo_id']
+		})
+
+		# If they're at or more than the maximum
+		if iCount > self._conf['claims_max']:
+			return Services.Effect(error=1504)
 
 		# Attempt to create the record
 		try:
@@ -1028,10 +1042,6 @@ class Monolith(Services.Service):
 		if not oEff.data:
 			return Services.Effect(error=Rights.INVALID)
 
-		# Store the current time in the session
-		sesh['claimed_last'] = time();
-		sesh.save()
-
 		# Get the claimed records
 		lClaimed = CustomerMsgPhone.claimed(sesh['memo_id'])
 
@@ -1088,11 +1098,12 @@ class Monolith(Services.Service):
 			return Services.Effect(error=(1001, [('numbers', 'invalid')]))
 
 		# Fetch the last claimed time
-		iTS = sesh['claimed_last']
+		iTS = CustomerClaimedLast.get(sesh['memo_id'])
+
+		print(time())
 
 		# Store the new time
-		sesh['claimed_last'] = time();
-		sesh.save()
+		CustomerClaimedLast.set(sesh['memo_id'], int(time()))
 
 		# Fetch and return the list of numbers with new messages
 		return Services.Effect(
