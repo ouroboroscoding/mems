@@ -130,7 +130,7 @@ class Monolith(Services.Service):
 		})
 
 		# If they're at or more than the maximum
-		if iCount > self._conf['claims_max']:
+		if iCount >= self._conf['claims_max']:
 			return Services.Effect(error=1504)
 
 		# Attempt to create the record
