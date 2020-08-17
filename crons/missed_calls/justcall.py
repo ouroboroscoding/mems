@@ -129,11 +129,12 @@ def parse(server):
 
 			except Exception as e:
 				# Generate the body of the email
-				sBody = '%s\n\n%s' % (
+				sBody = '%s\n\n%s\n\n%s' % (
 					', '.join([str(s) for s in e.args]),
-					traceback.format_exc()
+					traceback.format_exc(),
+					sBody
 				)
-				emailError('Missed Calls Error', sBody)
+				emailError('JustCall Missed Calls Error', sBody)
 
 	# Return anything found
 	return dRet
