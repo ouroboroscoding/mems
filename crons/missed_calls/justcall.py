@@ -24,7 +24,7 @@ from RestOC import Conf
 from crons import emailError
 
 reBody = re.compile(
-	r'You have a new voicemail from ([a-zA-Z ]+\(\d+\)|\d+) on ([^\.]+)\.\s+' \
+	r'You have a new voicemail from ([a-zA-Z ]+\(\d+\) |\d+) on ([^\.]+)\.\s+' \
 		'Here\'s the link to listen to this recording - (http:\/\/[^\s]+)',
 	re.M | re.U
 )
