@@ -104,10 +104,13 @@ def process_hrt(conf, data):
 		# Get the customer ID
 		sCustID = get_customer(d['from'])
 
+		# Set the CS tool url
+		sCSR = sCustID and 'https://cs.meutils.com/view/%s/%s' % (d['from'], sCustID) or ''
+
 		# Write to the worksheet
 		GSheets.insert('sg', conf['key'], conf['worksheet'], [
 			d['date'], d['time'], d['type'], d['from'], d['to'], d['url'],
-			sCustID
+			sCustID, sCSR
 		], 2)
 
 def run(period=None):
