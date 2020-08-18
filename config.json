@@ -122,6 +122,7 @@
 			"auth": {"port": 3},
 			"communications": {"port": 4},
 			"csr": {"port": 9},
+			"customers": {"port": 12},
 			"konnektive": {"port": 7},
 			"monolith": {"port": 6},
 			"patient": {"port": 11},
