@@ -210,6 +210,9 @@ def run(period=None):
 			"ready": True
 		})
 
+		# Init a list of the fills that will be deleted
+		lErrorsToDelete = []
+
 		# Go through each record
 		for o in lFillErrors:
 
@@ -266,8 +269,8 @@ def run(period=None):
 						# Add it to the outbound sent
 						OutboundSent.fromFillError(o)
 
-				# Delete it
-				o.delete()
+				# Add it to the delete list
+				lErrorsToDelete.append(o)
 
 			# Else, if it failed to process again
 			else:
@@ -290,6 +293,10 @@ def run(period=None):
 
 		# Regenerate the eligibility
 		WellDyne.eligibilityUpload(sFileTime)
+
+		# Go through each fill error that can be deleted
+		for o in lErrorsToDelete:
+			o.delete()
 
 		# If we have any expiring soon
 		if PharmacyFill._mlExpiring:
