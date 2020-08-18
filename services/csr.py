@@ -480,6 +480,47 @@ class CSR(Services.Service):
 		# Return the user
 		return Services.Effect(dUser)
 
+	def agentPasswd_update(self, data, sesh):
+		"""Agent Password Update
+
+		Updates an agent's password in monolith
+
+		Arguments:
+			data (mixed): Data sent with the request
+			sesh (Sesh._Session): The session associated with the request
+
+		Returns:
+			Services.Effect
+		"""
+
+		# Verify minimum fields
+		try: DictHelper.eval(data, ['agent_id', 'passwd'])
+		except ValueError as e: return Services.Effect(error=(1001, [(f, 'missing') for f in e.args]))
+
+		# Make sure the user has the proper permission to do this
+		oEff = Services.read('auth', 'rights/verify', {
+			"name": "csr_agents",
+			"right": Rights.UPDATE,
+			"ident": data['agent_id']
+		}, sesh)
+		if not oEff.data:
+			return Services.Effect(error=Rights.INVALID)
+
+		# Find the Agent
+		dAgent = Agent.get(data['agent_id'], raw=['memo_id'])
+		if not dAgent:
+			return Services.Effect(error=1104)
+
+		# Send the data to monolith to update the password
+		oEff = Services.update('monolith', 'user/passwd', {
+			"_internal_": Services.internalKey(),
+			"user_id": dAgent['memo_id'],
+			"passwd": data['passwd']
+		}, sesh)
+
+		# Return the result, regardless of what it is
+		return oEff
+
 	def agentPermissions_read(self, data, sesh):
 		"""Agent Permissions Read
 
@@ -509,7 +550,7 @@ class CSR(Services.Service):
 		# Fetch the permissions from the auth service
 		oEff = Services.read('auth', 'permissions', {
 			"_internal_": Services.internalKey(),
-			"user_id": data['agent_id']
+			"user": data['agent_id']
 		}, sesh)
 
 		# Return whatever was found
