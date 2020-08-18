@@ -53,6 +53,7 @@ REST.Server({
 	"/agents": {"methods": REST.READ, "session": True},
 	"/agent/internal": {"methods": REST.READ, "session": True},
 	"/agent/names": {"methods": REST.READ, "session": True},
+	"/agent/passwd": {"methods": REST.UPDATE, "session": True},
 	"/agent/permissions": {"methods": REST.READ | REST.UPDATE, "session": True},
 
 	"/list": {"methods": REST.CREATE | REST.UPDATE | REST.DELETE, "session": True},

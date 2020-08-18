@@ -1728,25 +1728,44 @@ class Monolith(Services.Service):
 			Effect
 		"""
 
-		# Verify fields
-		try: DictHelper.eval(data, ['passwd', 'new_passwd'])
-		except ValueError as e: return Services.Effect(error=(1001, [(f, 'missing') for f in e.args]))
+		# If it's an internal request
+		if '_internal_' in data:
+
+			# Verify fields
+			try: DictHelper.eval(data, ['user_id', 'passwd'])
+			except ValueError as e: return Services.Effect(error=(1001, [(f, 'missing') for f in e.args]))
+
+			bInternal = True
+			sUserId = data['user_id']
+			sPasswd = data['passwd']
+
+		# Else, it must be someone updating their own
+		else:
+
+			# Verify fields
+			try: DictHelper.eval(data, ['passwd', 'new_passwd'])
+			except ValueError as e: return Services.Effect(error=(1001, [(f, 'missing') for f in e.args]))
+
+			bInternal = False
+			sUserId = sesh['memo_id']
+			sPasswd = data['new_passwd']
 
 		# Find the user
-		oUser = User.get(sesh['memo_id'])
+		oUser = User.get(sUserId)
 		if not oUser:
 			return Services.Effect(error=1104)
 
-		# Validate the password
-		if not bcrypt.checkpw(data['passwd'].encode('utf8'), oUser['password'].encode('utf8')):
-			return Services.Effect(error=(1001, [('passwd', 'invalid')]))
+		# Validate the password if necessary
+		if not bInternal:
+			if not bcrypt.checkpw(data['passwd'].encode('utf8'), oUser['password'].encode('utf8')):
+				return Services.Effect(error=(1001, [('passwd', 'invalid')]))
 
 		# Make sure the new password is strong enough
-		if not User.passwordStrength(data['new_passwd']):
+		if not User.passwordStrength(sPasswd):
 			return Services.Effect(error=1204)
 
 		# Set the new password and save
-		oUser['password'] = bcrypt.hashpw(data['new_passwd'].encode('utf8'), bcrypt.gensalt()).decode('utf8')
+		oUser['password'] = bcrypt.hashpw(sPasswd.encode('utf8'), bcrypt.gensalt()).decode('utf8')
 		oUser['updatedAt'] = arrow.get().format('YYYY-MM-DD HH:mm:ss')
 		oUser.save()
 
