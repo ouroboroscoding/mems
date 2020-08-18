@@ -14,7 +14,7 @@ __created__		= "2020-10-18"
 # Pip imports
 from RestOC import Conf, REST
 
-# App imports
+# Service imports
 from services.customers import Customers
 
 # Local imports
@@ -29,7 +29,7 @@ oRestConf = init(
 # Create the HTTP server and map requests to service
 REST.Server({
 
-	"/address": {"methods": REST.CREATE | REST.UPDATE, "session": True},
+	"/address": {"methods": REST.CREATE | REST.READ | REST.UPDATE, "session": True},
 	"/customer": {"methods": REST.CREATE | REST.READ | REST.UPDATE, "session": True},
 	"/customer/addresses": {"methods": REST.READ, "session": True},
 	"/customer/notes": {"methods": REST.READ, "session": True},
