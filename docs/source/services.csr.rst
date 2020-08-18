@@ -1,16 +1,5 @@
-services.csr package
-====================
-
-Submodules
-----------
-
-.. toctree::
-   :maxdepth: 4
-
-   services.csr.records
-
-Module contents
----------------
+services.csr module
+===================
 
 .. automodule:: services.csr
    :members:

@@ -1,5 +1,5 @@
-reports package
-===============
+crons.anazao package
+====================
 
 Submodules
 ----------
@@ -7,12 +7,12 @@ Submodules
 .. toctree::
    :maxdepth: 4
 
-   reports.distinct_allergies
+   crons.anazao.shipped
 
 Module contents
 ---------------
 
-.. automodule:: reports
+.. automodule:: crons.anazao
    :members:
    :undoc-members:
    :show-inheritance:

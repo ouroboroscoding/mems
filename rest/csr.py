@@ -15,8 +15,7 @@ __created__		= "2020-05-17"
 import os, platform
 
 # Pip imports
-from RestOC import Conf, Record_Base, Record_MySQL, REST, \
-					Services, Sesh, Templates
+from RestOC import Conf, Record_Base, Record_MySQL, REST, Services, Sesh
 
 # App imports
 from services.csr import CSR
@@ -54,10 +53,12 @@ REST.Server({
 	"/agents": {"methods": REST.READ, "session": True},
 	"/agent/internal": {"methods": REST.READ, "session": True},
 	"/agent/names": {"methods": REST.READ, "session": True},
+	"/agent/passwd": {"methods": REST.UPDATE, "session": True},
 	"/agent/permissions": {"methods": REST.READ | REST.UPDATE, "session": True},
 
-	"/escalate_agent": {"methods": REST.READ, "session": True},
-	"/escalate_agents": {"methods": REST.READ, "session": True},
+	"/list": {"methods": REST.CREATE | REST.UPDATE | REST.DELETE, "session": True},
+	"/list/item": {"methods": REST.CREATE | REST.DELETE, "session": True},
+	"/lists": {"methods": REST.READ, "session": True},
 
 	"/template/email": {"methods": REST.ALL, "session": True},
 	"/template/emails": {"methods": REST.READ, "session": True},

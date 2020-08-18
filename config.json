@@ -137,6 +137,10 @@
 		"auth": {
 			"forgot_expire": 600
 		},
+		"monolith": {
+			"claims_max": 20,
+			"claims_timeout": 172800
+		},
 		"patient": {
 			"max_attempts": 3,
 			"support_email": "bast@maleexcel.com"

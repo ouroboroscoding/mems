@@ -24,8 +24,8 @@ from RestOC import Conf
 from crons import emailError
 
 reBody = re.compile(
-	r'You have a new voicemail from ([a-zA-Z ]+\(\d+\)|\d+) on ([^\.]+)\.\s+' \
-		'Here\'s the link to listen to this recording - (http:\/\/[^\s]+)',
+	r"You have a new voicemail from ([a-zA-Z ']+\(\d+\) |\d+) on ([^\.]+)\.\s+" \
+		"Here's the link to listen to this recording - (http:\/\/[^\s]+)",
 	re.M | re.U
 )
 reDateHeader = re.compile(
@@ -129,11 +129,12 @@ def parse(server):
 
 			except Exception as e:
 				# Generate the body of the email
-				sBody = '%s\n\n%s' % (
+				sBody = '%s\n\n%s\n\n%s' % (
 					', '.join([str(s) for s in e.args]),
-					traceback.format_exc()
+					traceback.format_exc(),
+					sBody
 				)
-				emailError('Missed Calls Error', sBody)
+				emailError('JustCall Missed Calls Error', sBody)
 
 	# Return anything found
 	return dRet

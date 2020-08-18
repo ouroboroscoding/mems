@@ -14,6 +14,7 @@ __created__		= "2020-08-10"
 # Python imports
 from datetime import datetime
 import imaplib
+import traceback
 
 # Pip imports
 from RestOC import Conf
@@ -25,7 +26,7 @@ from services.konnektive import Konnektive
 from shared import GSheets
 
 # Cron imports
-from crons import isRunning
+from crons import emailError, isRunning
 
 # Local imports
 from . import justcall, signia
@@ -103,10 +104,13 @@ def process_hrt(conf, data):
 		# Get the customer ID
 		sCustID = get_customer(d['from'])
 
+		# Set the CS tool url
+		sCSR = sCustID and 'https://cs.meutils.com/view/%s/%s' % (d['from'], sCustID) or ''
+
 		# Write to the worksheet
 		GSheets.insert('sg', conf['key'], conf['worksheet'], [
 			d['date'], d['time'], d['type'], d['from'], d['to'], d['url'],
-			sCustID
+			sCustID, sCSR
 		], 2)
 
 def run(period=None):
@@ -122,49 +126,55 @@ def run(period=None):
 		bool
 	"""
 
-	# Init the Konnektive instance
-	_knk.initialise()
-
-	# Fetch the configs
-	dImapConf = Conf.get(('email', 'imap'))
-	dSheetsConf = Conf.get(('missed_calls', 'sheets'))
-
-	# Connect to the IMAP server
 	try:
+
+		# Init the Konnektive instance
+		_knk.initialise()
+
+		# Fetch the configs
+		dImapConf = Conf.get(('email', 'imap'))
+		dSheetsConf = Conf.get(('missed_calls', 'sheets'))
+
+		# Connect to the IMAP server
 		if dImapConf['tls']: imap_class = imaplib.IMAP4_SSL
 		else: imap_class = imaplib.IMAP4
 		oIMAP = imap_class(
 			dImapConf['server']['host'],
 			dImapConf['server']['port']
 		)
-	except Exception as e:
-		print(str(e))
-		return False
 
-	# Authenticate
-	try:
+		# Authenticate
 		oIMAP.login(
 			dImapConf['auth']['user'],
 			dImapConf['auth']['pass']
 		)
+
+		# Select the inbox
+		sStatus, lIDs = oIMAP.select('INBOX')
+
+		# Parse the JustCall emails
+		dData = justcall.parse(oIMAP)
+
+		# Process the default calls
+		process_default(dSheetsConf['default'], dData['default'])
+
+		# Process the hrt calls
+		process_hrt(dSheetsConf['hrt'], dData['hrt'])
+
+		# Parse signia emails
+		lData = signia.parse(oIMAP)
+
+		# Process the default calls
+		process_default(dSheetsConf['default'], lData)
+
+		# Return OK
+		return True
+
+	# Catch any error and email it
 	except Exception as e:
-		print(str(e))
+		sBody = '%s\n\n%s' % (
+			', '.join([str(s) for s in e.args]),
+			traceback.format_exc()
+		)
+		emailError('Missed Calls Failed', sBody)
 		return False
-
-	# Select the inbox
-	sStatus, lIDs = oIMAP.select('INBOX')
-
-	# Parse the JustCall emails
-	dData = justcall.parse(oIMAP)
-
-	# Process the default calls
-	process_default(dSheetsConf['default'], dData['default'])
-
-	# Process the hrt calls
-	process_hrt(dSheetsConf['hrt'], dData['hrt'])
-
-	# Parse signia emails
-	lData = signia.parse(oIMAP)
-
-	# Process the default calls
-	process_default(dSheetsConf['default'], lData)

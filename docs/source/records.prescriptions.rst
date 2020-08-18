@@ -1,7 +1,7 @@
-services.auth.records module
+records.prescriptions module
 ============================
 
-.. automodule:: services.auth.records
+.. automodule:: records.prescriptions
    :members:
    :undoc-members:
    :show-inheritance:

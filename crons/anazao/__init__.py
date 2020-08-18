@@ -11,20 +11,20 @@ __maintainer__	= "Chris Nasr"
 __email__		= "bast@maleexcel.com"
 __created__		= "2020-08-10"
 
-def run(type_):
+def run(kind):
 	"""Run
 
 	Entry point into the script
 
 	Arguments:
-		type_ (str): The type_ of process to run
+		kind (str): The kind of process to run
 
 	Returns:
 		bool
 	"""
 
 	# If the type is shipped
-	if type_ == 'shipped':
+	if kind == 'shipped':
 		from . import shipped
 		return shipped.run()
 

@@ -24,7 +24,7 @@ from records.prescriptions import PharmacyFillError
 from records.welldyne import Outbound
 
 # Cron imports
-from crons import isRunning
+from crons import emailError, isRunning
 from crons.shared import PharmacyFill
 
 # Local imports
@@ -144,7 +144,6 @@ def run(period=None):
 						"crm_id": str(d['customerId']),
 						"crm_order": d['orderId'],
 						"list": 'fill',
-						"type": '',
 						"reason": dRes['data'],
 						"fail_count": 1
 					})
@@ -197,7 +196,6 @@ def run(period=None):
 					"crm_id": str(d['customerId']),
 					"crm_order": d['orderId'],
 					"list": 'outbound',
-					"type": '',
 					"reason": dRes['data'],
 					"fail_count": 1
 				})

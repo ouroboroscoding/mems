@@ -21,94 +21,105 @@ import arrow
 import pysftp
 from RestOC import Conf, DictHelper
 
+# Record imports
+from records.welldyne import AdHoc, Eligibility
+
 # Service imports
-from records.prescriptions import PharmacyFillError
-from records.welldyne import AdHoc, RxNumber
+from services.konnektive import Konnektive
 
 # Cron imports
-from crons import isRunning
-from crons.shared import Allergies, PharmacyFill
+from crons import emailError, isRunning
 
-class TriggerFile(object):
-	"""Trigger File
+def run(period=None):
+	"""Run
 
-	Handles generating a file to upload to WellDyne's sFTP
+	Fetches all the adhoc records and generates and uploads the report for
+	WellDyne
+
+	Arguments:
+		period (str): The time period of the day to generate the files for
+
+	Returns:
+		bool
 	"""
 
-	def __init__(self):
-		"""Constructor
+	# If the script already running?
+	if isRunning('wd_adhoc'):
+		return True
 
-		Initialises the instance
+	try:
 
-		Arguments:
-			period (str): The time period of the day to generate the files for
+		# Init the Konnektive service
+		oKnk = Konnektive()
+		oKnk.initialise()
 
-		Returns:
-			TriggerFile
-		"""
+		# Create a list of data that will be added to the file
+		lLines = []
 
-		# Init the lines for the file
-		self.lines = []
+		# Generate the since and thru dates for potential eligibility updates
+		sSince = arrow.get().format('YYYY-MM-DD 00:00:00')
+		sThru = arrow.get().shift(days=15).format('YYYY-MM-DD 00:00:00')
 
-	def add(self, data):
-		"""Add
+		# If we're doing the noon run
+		if period == 'noon':
+			sFileTime = '120000'
 
-		Adds a line to the report
+		# Else, if we're doing the mid day run
+		elif period == 'afternoon':
+			sFileTime = '160000'
 
-		Arguments:
-			data (dict): The data needed to make the line
+		# Else, invalid time period
+		else:
+			print('Invalid time period: %s' % time)
+			return False
 
-		Returns:
-			None
-		"""
+		# Find all AdHoc records
+		lAdHocs = AdHoc.report()
 
-		# Zero fill the member ID
-		sMemberID = data['crm_id'].zfill(6)
+		# Go through each one
+		for d in lAdHocs:
 
-		# Try to find the customer's RX number
-		dRx = RxNumber.filter({
-			"member_id": sMemberID
-		}, raw=['number'], limit=1)
+			# Split the raw data by comma
+			lLine = d['raw'].split(',')
 
-		# If it exists
-		if dRx:
-			data['rx'] = dRx['number']
+			# Replace the first element
+			lLine[0] = d['type']
 
-		# Generate timestamp
-		sDT = arrow.get().format('YYYY-MM-DD HH:mm:ss')
+			# If the type is extend eligibility
+			if d['type'] == 'Extend Eligibility':
 
-		# Create the CSV line
-		lLine = [
-			data['type'],
-			data['medication'],
-			data['rx'],
-			data['first'],
-			data['last'],
-			data['dob'],
-			data['address1'],
-			data['address2'] or '',
-			data['city'],
-			data['state'],
-			data['postalCode'],
-			sMemberID,
-			Allergies.fetch(data)
-		];
+				# Generate timestamp
+				sDT = arrow.get().format('YYYY-MM-DD HH:mm:ss')
 
-		# Add the line to the report
-		self.lines.append(lLine);
+				# Create or update the eligibility
+				oElig = Eligibility({
+					"customerId": d['crm_id'],
+					"memberSince": sSince,
+					"memberThru": sThru,
+					"createdAt": sDT,
+					"updatedAt": sDT
+				})
+				oElig.create(conflict=('memberThru', 'updatedAt'))
 
-	def upload(self, file_time):
-		"""Upload
+			# Else, if the type is update address
+			elif d['type'] == 'Update Address':
 
-		Takes the lines added by the add method and generates the full report
-		then uploads it to the sFTP
+				# Find the order
+				lOrders = oKnk._request('order/query', {
+					"orderId": d['crm_order']
+				})
 
-		Arguments:
-			file_time (str): The time to add to the end of the file name
+				# Update the appropriate fields
+				lLine[3] = lOrders[0]['shipFirstName'] or ''
+				lLine[4] = lOrders[0]['shipLastName'] or ''
+				lLine[6] = lOrders[0]['shipAddress1'] or ''
+				lLine[7] = lOrders[0]['shipAddress1'] or ''
+				lLine[8] = lOrders[0]['shipCity'] or ''
+				lLine[9] = lOrders[0]['shipState'] or ''
+				lLine[10] = lOrders[0]['shipPostalCode'] or ''
 
-		Returns:
-			None
-		"""
+			# Add the data to the lines
+			lLines.append(lLine)
 
 		# Create a new temp file
 		oFile = io.StringIO()
@@ -125,7 +136,7 @@ class TriggerFile(object):
 		])
 
 		# Write each record to the file
-		for l in self.lines:
+		for l in lLines:
 			oCSV.writerow(l)
 
 		# Set the file to the beginning
@@ -133,7 +144,7 @@ class TriggerFile(object):
 		oFile.seek(0)
 
 		# Generate the filename with the current date
-		sDate = '%s%s' % (arrow.get().format('YYYYMMDD'), file_time)
+		sDate = '%s%s' % (arrow.get().format('YYYYMMDD'), sFileTime)
 		sFilename = 'ADHOC%s.CSV' % sDate;
 
 		# Get the sFTP config
@@ -148,128 +159,10 @@ class TriggerFile(object):
 		with pysftp.Connection(**dSFTP) as oCon:
 			oCon.putfo(oFile, sFilename, confirm=False)
 
-def run(period=None):
-	"""Run
-
-	Fetches all the adhoc records and generates and uploads the report for
-	WellDyne
-
-	Arguments:
-		period (str): The time period of the day to generate the files for
-
-	Returns:
-		bool
-	"""
-
-	try:
-
-		# Init the PharmacyFill module
-		PharmacyFill.initialise()
-
-		# Create a new instance of the WellDyne Trigger File
-		oTrigger = TriggerFile()
-
-		# If we're doing the noon run
-		if period == 'noon':
-			sFileTime = '120000'
-
-		# Else, if we're doing the mid day run
-		elif period == 'afternoon':
-			sFileTime = '160000'
-
-		# Else, invalid time period
-		else:
-			print('Invalid time period: %s' % time)
-			return False
-
-		# Find all AdHoc records
-		lAdHocs = AdHoc.get()
-
-		# Go through each one
-		for o in lAdHocs:
-
-			print('\tWorking on %s...' % o['crm_id'])
-
-			# Try to process it
-			dRes = PharmacyFill.process({
-				"crm_type": o['crm_type'],
-				"crm_id": o['crm_id'],
-				"crm_order": o['crm_order']
-			})
-
-			# If we get success
-			if dRes['status']:
-
-				# Go through each medication returned
-				for dData in dRes['data']:
-
-					# Overwrite the type
-					dData['type'] = o['type']
-
-					# If the pharmacy is Castia/WellDyne
-					if dData['pharmacy'] in ['Castia', 'WellDyne']:
-
-						# Add it to the Trigger
-						oTrigger.add(dData)
-
-					else:
-						emailError('NON-WELLDYNE ADHOC', str(o.record()))
-						continue
-
-				# Move it to the sent table
-				o.sent()
-
-		# Fetch all previous adhoc error records that are ready to be re-processed
-		lFillErrors = PharmacyFillError.filter({
-			"list": 'adhoc',
-			"ready": True
-		})
-
-		# Go through each record
-		for o in lFillErrors:
-
-			# Try to process it
-			dRes = PharmacyFill.process({
-				"crm_type": o['crm_type'],
-				"crm_id": o['crm_id'],
-				"crm_order": d['crm_order']
-			})
-
-			# If we get success
-			if dRes['status']:
-
-				# Go through each medication returned
-				for dData in dRes['data']:
-
-					# Overwrite the type
-					dData['type'] = o['type']
-
-					# If the pharmacy is Castia/WellDyne
-					if dData['pharmacy'] not in ['Castia', 'WellDyne']:
-						emailError('WELLDYNE PHARMACY SWITCH', str(o.record()))
-						continue
-
-					# Add it to the Trigger
-					oTrigger.add(dData)
-
-					# Add it to the adhoc sent
-					AdHocSent.fromFillError(o)
-
-				# Delete it
-				o.delete()
-
-			# Else, if it failed to process again
-			else:
-
-				# Increment the fail count, overwrite the reason, and reset the
-				#	ready flag
-				o['fail_count'] += 1
-				o['reason'] = dRes['data']
-				o['ready'] = False
-				o.save();
-
-		# Upload the WellDyne trigger file
-		oTrigger.upload(sFileTime)
+		# Delete the adhocs processed
+		#Adhoc.deleteGet([
+		#	d['_id'] for d in lAdHocs
+		#])
 
 		# Return OK
 		return True

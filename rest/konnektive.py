@@ -15,7 +15,7 @@ __created__		= "2020-05-09"
 import os, platform
 
 # Pip imports
-from RestOC import Conf, REST, Services, Sesh, Templates
+from RestOC import Conf, REST, Services, Sesh
 
 # App imports
 from services.konnektive import Konnektive
@@ -44,9 +44,6 @@ dServices = {
 
 # Register all services
 Services.register(dServices, oRestConf, Conf.get(('services', 'salt')))
-
-# Init Templates
-Templates.init('templates')
 
 # Create the HTTP server and map requests to service
 REST.Server({

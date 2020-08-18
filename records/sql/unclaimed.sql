@@ -5,6 +5,7 @@ SELECT
 	`ktot`.`customerId` as `customerId`,
 	`ktot`.`numberOfOrders` AS `numberOfOrders`,
 	`ktot`.`latest_kto_id` AS `latest_kto_id`,
+	`cmp`.`lastMsgAt` as `lastMsgAt`,
 	`cmp`.`lastMsg` AS `lastMsg`,
 	`cmp`.`totalIncoming` AS `totalIncoming`,
 	`cmp`.`totalOutGoing` AS `totalOutGoing`
@@ -24,3 +25,4 @@ LEFT JOIN `%(db)s`.`customer_claimed` as `cc` ON `cc`.`phoneNumber` = `cmp`.`cus
 WHERE `hiddenFlag` = 'N'
 AND `lastMsgDir` = 'Incoming'
 AND `cc`.`user` IS NULL
+ORDER BY `cmp`.`lastMsgAt` ASC

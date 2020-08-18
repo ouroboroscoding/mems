@@ -51,58 +51,90 @@ class AdHoc(Record_MySQL.Record):
 		return cls._conf
 
 	@classmethod
-	def fromFillError(cls, error, custom={}):
-		pass
+	def display(cls, custom={}):
+		"""Display
 
-	def sent(self):
-		"""Sent
+		Returns all adhoc records with the data in triggers suitable for
+		displaying
 
-		Moves the record to the sent table
+		Arguments:
+			custom (dict): Custom Host and DB info
+				'host' the name of the host to get/set data on
+				'append' optional postfix for dynamic DBs
 
 		Returns:
 			None
 		"""
 
-		# If the record lacks a primary key (never been created/inserted)
-		if self._dStruct['primary'] not in self._dRecord:
-			raise KeyError(self._dStruct['primary'])
+		# Fetch the record structure
+		dStruct = cls.struct(custom)
 
-		# Generate the necessary fields
-		sFields = '`crm_type`, `crm_id`, `crm_order`'
+		# Generate SQL
+		sSQL = "SELECT\n" \
+				"	`wda`.`_id` as `_id`,\n" \
+				"	`wda`.`type` as `type`,\n" \
+				"	`wda`.`memo_user` as `memo_user`,\n" \
+				"	`wdt`.`crm_type` as `crm_type`,\n" \
+				"	`wdt`.`crm_id` as `crm_id`,\n" \
+				"	`wdt`.`crm_order` as `crm_order`\n" \
+				"FROM `%(db)s`.`%(table)s` as `wda`\n" \
+				"JOIN `%(db)s`.`welldyne_trigger` as `wdt` ON `wda`.`trigger_id` = `wdt`.`_id`\n" % {
+			"db": dStruct['db'],
+			"table": dStruct['table']
+		}
 
-		# Statemens
-		lStatements = [
-			"INSERT INTO `%(db)s`.`%(table)s_sent` (`%(primary)s`, %(fields)s)\n" \
-				"SELECT UUID(), %(fields)s FROM `%(db)s`.`%(table)s`\n" \
-				"WHERE `%(primary)s` = '%(_id)s'\n" \
-				"ON DUPLICATE KEY UPDATE `attempts` = `attempts` + 1",
-			"DELETE FROM `%(db)s`.`%(table)s`\n" \
-				"WHERE `%(primary)s` = '%(_id)s'"
-		]
+		# Execute the SQL
+		return Record_MySQL.Commands.select(
+			dStruct['host'],
+			sSQL,
+			Record_MySQL.ESelect.ALL
+		)
 
-		# Go through each statement
-		for s in lStatements:
+	@classmethod
+	def report(cls, custom={}):
+		"""Report
 
-			# Generate the SQL using the variables
-			sSQL = s % {
-				"db": self._dStruct['db'],
-				"table": self._dStruct['table'],
-				"fields": sFields,
-				"primary": self._dStruct['primary'],
-				"_id": self._dRecord[self._dStruct['primary']]
-			}
+		Returns the raw data from the triggers associated to the records in the
+		table
 
-			# Execute the SQL
-			Record_MySQL.Commands.execute(
-				self._dStruct['host'],
-				sSQL
-			)
+		Arguments:
+			custom (dict): Custom Host and DB info
+				'host' the name of the host to get/set data on
+				'append' optional postfix for dynamic DBs
 
-# AdHocSent class
-class AdHocSent(Record_MySQL.Record):
-	"""AdHocSent
+		Returns:
+			None
+		"""
 
-	Represents an adhoc entry that has been sent to WellDyne
+		# Fetch the record structure
+		dStruct = cls.struct(custom)
+
+		# Generate SQL
+		sSQL = "SELECT\n" \
+				"	`wda`.`_id` as `_id`,\n" \
+				"	`wda`.`trigger_id` as `trigger_id`,\n" \
+				"	`wda`.`type` as `type`,\n" \
+				"	`wdt`.`crm_id` as `crm_id`,\n" \
+				"	`wdt`.`crm_order` as `crm_order`,\n" \
+				"	`wdt`.`raw` as `raw`\n" \
+				"FROM `%(db)s`.`%(table)s` as `wda`\n" \
+				"JOIN `%(db)s`.`welldyne_trigger` as `wdt` ON `wda`.`trigger_id` = `wdt`.`_id`\n" % {
+			"db": dStruct['db'],
+			"table": dStruct['table']
+		}
+
+		# Execute the SQL
+		return Record_MySQL.Commands.select(
+			dStruct['host'],
+			sSQL,
+			Record_MySQL.ESelect.ALL
+		)
+
+# AdHocManual class
+class AdHocManual(Record_MySQL.Record):
+	"""AdHocManual
+
+	Represents an adhoc entry that needs to be sent to WellDyne
 	"""
 
 	_conf = None
@@ -121,7 +153,7 @@ class AdHocSent(Record_MySQL.Record):
 		# If we haven loaded the config yet
 		if not cls._conf:
 			cls._conf = Record_MySQL.Record.generateConfig(
-				Tree.fromFile('definitions/welldyne/adhoc_sent.json'),
+				Tree.fromFile('definitions/welldyne/adhoc_manual.json'),
 				'mysql'
 			)
 
@@ -129,13 +161,13 @@ class AdHocSent(Record_MySQL.Record):
 		return cls._conf
 
 	@classmethod
-	def fromFillError(cls, error, custom={}):
-		"""From Fill Error
+	def display(cls, custom={}):
+		"""Display
 
-		Creates a sent record from something that previously failed
+		Returns all adhoc records with the data in triggers suitable for
+		displaying
 
 		Arguments:
-			error (PharmacyFillError): The error that re-processed successfully
 			custom (dict): Custom Host and DB info
 				'host' the name of the host to get/set data on
 				'append' optional postfix for dynamic DBs
@@ -147,27 +179,68 @@ class AdHocSent(Record_MySQL.Record):
 		# Fetch the record structure
 		dStruct = cls.struct(custom)
 
-		# Generate the necessary fields
-		sFields = '`crm_type`, `crm_id`, `crm_order`'
-
 		# Generate SQL
-		sSQL = "INSERT INTO `%(db)s`.`%(table)s` (`%(primary)s`, %(fields)s)\n" \
-				"VALUES (UUID(), '%(crm_type)s', '%(crm_id)s', '%(crm_order)s')\n" \
-				"ON DUPLICATE KEY UPDATE `attempts` = `attempts` + 1 " % {
-			"db": self._dStruct['db'],
-			"table": self._dStruct['table'],
-			"fields": lFields,
-			"primary": self._dStruct['primary'],
-			"crm_type": error['crm_type'],
-			"crm_id": error['crm_id'],
-			"crm_order": error['crm_order']
+		sSQL = "SELECT\n" \
+				"	`wda`.`_id` as `_id`,\n" \
+				"	`wdt`.`crm_type` as `crm_type`,\n" \
+				"	`wdt`.`crm_id` as `crm_id`,\n" \
+				"	`wdt`.`crm_order` as `crm_order`\n" \
+				"FROM `%(db)s`.`%(table)s` as `wda`\n" \
+				"JOIN `%(db)s`.`welldyne_trigger` as `wdt` ON `wda`.`trigger_id` = `wdt`.`_id`\n" % {
+			"db": dStruct['db'],
+			"table": dStruct['table']
 		}
 
 		# Execute the SQL
-		Record_MySQL.Commands.execute(
-			self._dStruct['host'],
-			sSQL
+		return Record_MySQL.Commands.select(
+			dStruct['host'],
+			sSQL,
+			Record_MySQL.ESelect.ALL
 		)
+
+	def move(self):
+		"""Move
+
+		Moves the record from Manual to the actual table
+
+		Returns:
+			None
+		"""
+
+		# If the record lacks a primary key (never been created/inserted)
+		if self._dStruct['primary'] not in self._dRecord:
+			raise KeyError(self._dStruct['primary'])
+
+		# Generate the necessary fields
+		sFields = '`trigger_id`, `type`, `memo_user`'
+
+		# Statemens
+		lStatements = [
+			"INSERT INTO `%(db)s`.`%(table)s` (`%(primary)s`, %(fields)s)\n" \
+				"SELECT UUID(), %(fields)s FROM `%(db)s`.`%(table_manual)s`\n" \
+				"WHERE `%(primary)s` = '%(_id)s'\n",
+			"DELETE FROM `%(db)s`.`%(table_manual)s`\n" \
+				"WHERE `%(primary)s` = '%(_id)s'"
+		]
+
+		# Go through each statement
+		for s in lStatements:
+
+			# Generate the SQL using the variables
+			sSQL = s % {
+				"db": self._dStruct['db'],
+				"table": self._dStruct['table'][:-7],
+				"table_manual": self._dStruct['table'],
+				"fields": sFields,
+				"primary": self._dStruct['primary'],
+				"_id": self._dRecord[self._dStruct['primary']]
+			}
+
+			# Execute the SQL
+			Record_MySQL.Commands.execute(
+				self._dStruct['host'],
+				sSQL
+			)
 
 # Eligibility class
 class Eligibility(Record_MySQL.Record):
@@ -259,6 +332,37 @@ class Outbound(Record_MySQL.Record):
 
 	_conf = None
 	"""Configuration"""
+
+	@classmethod
+	def deleteNotReady(cls, custom={}):
+		"""Delete Not Ready
+
+		Deletes all records in the table that aren't marked as ready
+
+		Arguments:
+			custom (dict): Custom Host and DB info
+				'host' the name of the host to get/set data on
+				'append' optional postfix for dynamic DBs
+
+		Returns:
+			None
+		"""
+
+		# Fetch the record structure
+		dStruct = cls.struct(custom)
+
+		# Generate SQL
+		sSQL = 'DELETE FROM `%(db)s`.`%(table)s`\n' \
+				'WHERE `ready` = 0' % {
+			"db": dStruct['db'],
+			"table": dStruct['table']
+		}
+
+		# Execute and return the select
+		return Record_MySQL.Commands.execute(
+			dStruct['host'],
+			sSQL
+		)
 
 	@classmethod
 	def config(cls):
@@ -568,16 +672,12 @@ class Trigger(Record_MySQL.Record):
 				"	`wdt`.`opened` as `opened`,\n" \
 				"	`wdt`.`shipped` as `shipped`,\n" \
 				"	`wdt`.`raw` as `raw`,\n" \
-				"	`pfe`.`type` as `error_type`,\n" \
-				"	`pfe`.`reason` as `error_reason`,\n" \
-				"	`pfe`.`fail_count` as `error_count`,\n" \
 				"	`wdo`.`queue` as `outbound_queue`,\n" \
 				"	`wdo`.`reason` as `outbound_reason`,\n" \
 				"	`wda`.`type` as `adhoc_type`\n" \
 				"FROM `%(db)s`.`%(table)s` as `wdt`\n" \
-				"LEFT JOIN `%(db)s`.`prescriptions_pharmacy_fill_error` as `pfe` USING (`crm_type`, `crm_id`, `crm_order`)\n" \
 				"LEFT JOIN `%(db)s`.`welldyne_outbound` as `wdo` USING (`crm_type`, `crm_id`, `crm_order`)\n" \
-				"LEFT JOIN `%(db)s`.`welldyne_adhoc` as `wda` USING (`crm_type`, `crm_id`, `crm_order`)\n" \
+				"LEFT JOIN `%(db)s`.`welldyne_adhoc` as `wda` ON `wdt`.`_id` = `wda`.`trigger_id`\n" \
 				"WHERE `wdt`.`crm_type` = '%(crm_type)s'\n" \
 				"AND `wdt`.`crm_id` = '%(crm_id)s'\n" \
 				"ORDER BY `triggered` DESC" % {
@@ -592,264 +692,4 @@ class Trigger(Record_MySQL.Record):
 			dStruct['host'],
 			sSQL,
 			Record_MySQL.ESelect.ALL
-		)
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-# OldAdHoc class
-class OldAdHoc(Record_MySQL.Record):
-	"""OldAdHoc
-
-	Represents a customer in the adhoc table
-	"""
-
-	_conf = None
-	"""Configuration"""
-
-	@classmethod
-	def config(cls):
-		"""Config
-
-		Returns the configuration data associated with the record type
-
-		Returns:
-			dict
-		"""
-
-		# If we haven loaded the config yet
-		if not cls._conf:
-			cls._conf = Record_MySQL.Record.generateConfig(
-				Tree.fromFile('definitions/monolith/wd_adhoc.json'),
-				'mysql'
-			)
-
-		# Return the config
-		return cls._conf
-
-# OldOutreach class
-class OldOutreach(Record_MySQL.Record):
-	"""OldOutreach
-
-	Represents a customer's last outreach issue with WellDyneRx
-	"""
-
-	_conf = None
-	"""Configuration"""
-
-	@classmethod
-	def config(cls):
-		"""Config
-
-		Returns the configuration data associated with the record type
-
-		Returns:
-			dict
-		"""
-
-		# If we haven loaded the config yet
-		if not cls._conf:
-			cls._conf = Record_MySQL.Record.generateConfig(
-				Tree.fromFile('definitions/monolith/wd_outreach.json'),
-				'mysql'
-			)
-
-		# Return the config
-		return cls._conf
-
-	@classmethod
-	def withTrigger(cls, custom={}):
-		"""With Trigger
-
-		Fetches outreach joined with trigger so it can be sorted by date
-
-		Arguments:
-			custom (dict): Custom Host and DB info
-				'host' the name of the host to get/set data on
-				'append' optional postfix for dynamic DBs
-
-		Returns:
-			dict
-		"""
-
-		# Fetch the record structure
-		dStruct = cls.struct(custom)
-
-		# Generate SQL
-		sSQL = 'SELECT\n' \
-				'	`wdo`.`id`,\n' \
-				'	`wdo`.`customerId`,\n' \
-				'	`wdo`.`queue`,\n' \
-				'	`wdo`.`reason`,\n' \
-				'	`wdo`.`user`,\n' \
-				'	`wdo`.`ready`,\n' \
-				'	CAST(`wdt`.`triggered` as date) as `triggered`\n' \
-				'FROM `%(db)s`.`%(table)s` as `wdo`\n' \
-				'LEFT JOIN `%(db)s`.`wd_trigger` as `wdt` ON `wdo`.`customerId` = `wdt`.`customerId`\n' \
-				'ORDER BY `triggered` ASC' % {
-			"db": dStruct['db'],
-			"table": dStruct['table']
-		}
-
-		# Execute and return the select
-		return Record_MySQL.Commands.select(
-			dStruct['host'],
-			sSQL,
-			Record_MySQL.ESelect.ALL
-		)
-
-# OldRxNumber class
-class OldRxNumber(Record_MySQL.Record):
-	"""OldRxNumber
-
-	Represents a customer in the rx_number table
-	"""
-
-	_conf = None
-	"""Configuration"""
-
-	@classmethod
-	def config(cls):
-		"""Config
-
-		Returns the configuration data associated with the record type
-
-		Returns:
-			dict
-		"""
-
-		# If we haven loaded the config yet
-		if not cls._conf:
-			cls._conf = Record_MySQL.Record.generateConfig(
-				Tree.fromFile('definitions/monolith/wd_rx_number.json'),
-				'mysql'
-			)
-
-		# Return the config
-		return cls._conf
-
-# OldTrigger class
-class OldTrigger(Record_MySQL.Record):
-	"""OldTrigger
-
-	Represents a customer's last WellDyneRx trigger
-	"""
-
-	_conf = None
-	"""Configuration"""
-
-	@classmethod
-	def config(cls):
-		"""Config
-
-		Returns the configuration data associated with the record type
-
-		Returns:
-			dict
-		"""
-
-		# If we haven loaded the config yet
-		if not cls._conf:
-			cls._conf = Record_MySQL.Record.generateConfig(
-				Tree.fromFile('definitions/monolith/wd_trigger.json'),
-				'mysql'
-			)
-
-		# Return the config
-		return cls._conf
-
-	@classmethod
-	def vsShipped(cls, custom={}):
-		"""Vs Shipped
-
-		Fetches the latest triggers and gives the count vs how many have been
-		shipped
-
-		Arguments:
-			custom (dict): Custom Host and DB info
-				'host' the name of the host to get/set data on
-				'append' optional postfix for dynamic DBs
-
-		Returns:
-			dict
-		"""
-
-		# Fetch the record structure
-		dStruct = cls.struct(custom)
-
-		# Generate SQL
-		sSQL = 'SELECT COUNT(*) as `count`\n' \
-				'FROM `%(db)s`.`%(table)s`\n' \
-				'UNION\n' \
-				'SELECT COUNT(*) as `count`\n' \
-				'FROM `%(db)s`.`%(table)s`\n' \
-				'WHERE `shipped` IS NOT NULL' % {
-			"db": dStruct['db'],
-			"table": dStruct['table']
-		}
-
-		# Execute and return the select
-		return Record_MySQL.Commands.select(
-			dStruct['host'],
-			sSQL,
-			Record_MySQL.ESelect.COLUMN
-		)
-
-	@classmethod
-	def withOutreachEligibility(cls, customer_id, custom={}):
-		"""With Outreach & Eligibility
-
-		Fetches the latest trigger associated with the customer, including any
-		possible outreach and eligibility data
-
-		Arguments:
-			customer_id (int): The ID of the customer to look up
-			custom (dict): Custom Host and DB info
-				'host' the name of the host to get/set data on
-				'append' optional postfix for dynamic DBs
-
-		Returns:
-			dict
-		"""
-
-		# Fetch the record structure
-		dStruct = cls.struct(custom)
-
-		# Generate SQL
-		sSQL = 'SELECT\n' \
-				'	`wdt`.`customerId` as `customerId`,\n' \
-				'	`wdt`.`triggered` as `triggered`,\n' \
-				'	`wdt`.`opened` as `opened`,\n' \
-				'	`wdt`.`shipped` as `shipped`,\n' \
-				'	`wdo`.`queue` as `outreachQueue`,\n' \
-				'	`wdo`.`reason` as `outreachReason`,\n' \
-				'	`wde`.`memberSince` as `eligSince`,\n' \
-				'	`wde`.`memberThru` as `eligThru`,\n' \
-				'	`wda`.`type` as `adhocType`\n' \
-				'FROM `%(db)s`.`%(table)s` as `wdt`\n' \
-				'LEFT JOIN `%(db)s`.`wd_outreach` as `wdo` ON `wdt`.`customerId` = `wdo`.`customerId`\n' \
-				'LEFT JOIN `%(db)s`.`wd_eligibility` as `wde` on `wdt`.`customerId` = `wde`.`customerId`\n' \
-				'LEFT JOIN `%(db)s`.`wd_adhoc` as `wda` on `wdt`.`customerId` = `wda`.`customerId`\n' \
-				'WHERE `wdt`.`customerId` = \'%(customerId)s\'' % {
-			"db": dStruct['db'],
-			"table": dStruct['table'],
-			"customerId": customer_id
-		}
-
-		# Execute and return the select
-		return Record_MySQL.Commands.select(
-			dStruct['host'],
-			sSQL,
-			Record_MySQL.ESelect.ROW
 		)

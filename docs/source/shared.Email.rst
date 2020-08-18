@@ -1,7 +1,7 @@
-tools.passwd module
+shared.Email module
 ===================
 
-.. automodule:: tools.passwd
+.. automodule:: shared.Email
    :members:
    :undoc-members:
    :show-inheritance:

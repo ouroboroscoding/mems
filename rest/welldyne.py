@@ -15,8 +15,7 @@ __created__		= "2020-07-01"
 import os, platform
 
 # Pip imports
-from RestOC import Conf, Record_Base, Record_MySQL, REST, \
-					Services, Sesh, Templates
+from RestOC import Conf, Record_Base, Record_MySQL, REST, Services, Sesh
 
 # App imports
 from services.welldyne import WellDyne
@@ -45,6 +44,7 @@ if 'VERBOSE' in os.environ and os.environ['VERBOSE'] == '1':
 # Get all the services
 dServices = {
 	"auth": None,
+	"communications": None,
 	"monolith": None,
 	"welldyne": WellDyne()
 }
@@ -52,16 +52,13 @@ dServices = {
 # Register all services
 Services.register(dServices, oRestConf, Conf.get(('services', 'salt')))
 
-# Init Templates
-Templates.init('templates')
-
 # Create the HTTP server and map requests to service
 REST.Server({
 
 	"/adhoc": {"methods": REST.CREATE | REST.DELETE, "session": True},
+	"/adhoc/manual": {"methods": REST.READ | REST.DELETE, "session": True},
 	"/adhocs": {"methods": REST.READ, "session": True},
 
-	"/outbound": {"methods": REST.DELETE, "session": True},
 	"/outbound/adhoc": {"methods": REST.UPDATE, "session": True},
 	"/outbound/ready": {"methods": REST.UPDATE, "session": True},
 	"/outbounds": {"methods": REST.READ, "session": True},

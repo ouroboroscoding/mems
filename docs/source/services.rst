@@ -1,8 +1,8 @@
 services package
 ================
 
-Subpackages
------------
+Submodules
+----------
 
 .. toctree::
    :maxdepth: 4
@@ -10,12 +10,14 @@ Subpackages
    services.auth
    services.communications
    services.csr
-   services.dosespot
    services.konnektive
    services.monolith
+   services.patient
    services.payment
+   services.prescriptions
    services.webpoll
    services.websocket
+   services.welldyne
 
 Module contents
 ---------------
