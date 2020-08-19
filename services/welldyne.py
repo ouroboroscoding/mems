@@ -17,7 +17,7 @@ from RestOC import Conf, DictHelper, Record_MySQL, Services
 # Shared imports
 from shared import Rights
 
-# Service imports
+# Records imports
 from records.welldyne import \
 	AdHoc, AdHocManual, Eligibility, Outbound, OutboundSent, RxNumber, Trigger
 

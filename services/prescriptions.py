@@ -23,7 +23,7 @@ from RestOC import Conf, DictHelper, Errors, Record_MySQL, Services, StrHelper
 # Shared imports
 from shared import Rights
 
-# Service imports
+# Records imports
 from records.prescriptions import Medication, Pharmacy, PharmacyFillError
 
 _dPharmacies = {

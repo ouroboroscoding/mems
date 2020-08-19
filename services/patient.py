@@ -23,7 +23,7 @@ from RestOC import Conf, DictHelper, Errors, Services, \
 # Shared imports
 from shared import Rights
 
-# Service imports
+# Records imports
 from records.patient import Account, AccountSetup, Verify
 
 # Support request types
@@ -63,6 +63,9 @@ class Patient(Services.Service):
 
 		# Pass the Redis connection to records that need it
 		Account.redis(self._redis)
+
+		# Return self for chaining
+		return self
 
 	@classmethod
 	def install(cls):
@@ -582,7 +585,7 @@ class Patient(Services.Service):
 			"_internal_": Services.internalKey(),
 			"user": oAccount['_id'],
 			"permissions": {
-				"crm_customers": {"rights": 3, "idents": oAccount['crm_id']},
+				"customers": {"rights": 3, "idents": oAccount['crm_id']},
 				"prescriptions": {"rights": 1, "idents": oAccount['rx_id']}
 			}
 		}, oSesh)

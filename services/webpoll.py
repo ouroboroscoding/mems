@@ -190,5 +190,5 @@ class WebPoll(Services.Service):
 			"db": 1
 		}))
 
-		# Return self
+		# Return self for chaining
 		return self

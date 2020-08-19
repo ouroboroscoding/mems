@@ -23,7 +23,7 @@ from RestOC import Conf, DictHelper, Errors, Services, \
 # Shared imports
 from shared import Rights
 
-# Service imports
+# Records imports
 from records.auth import Forgot, Permission, User
 
 # Regex for validating email
@@ -57,6 +57,9 @@ class Auth(Services.Service):
 		# Pass the Redis connection to records that need it
 		Permission.redis(self._redis)
 		User.redis(self._redis)
+
+		# Return self for chaining
+		return self
 
 	@classmethod
 	def install(cls):

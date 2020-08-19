@@ -13,6 +13,7 @@ __created__		= "2020-03-29"
 
 # Python imports
 from time import time
+import traceback
 
 # Project imports
 from shared import JSON
@@ -151,6 +152,7 @@ def run(l, log):
 			res = m.run()
 		except Exception as e:
 			print("%s\n" % str(e))
+			print(traceback.format_exc())
 
 		# If we failed
 		if not res:

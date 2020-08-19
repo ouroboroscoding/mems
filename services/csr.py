@@ -17,7 +17,7 @@ from RestOC import DictHelper, Errors, Record_MySQL, Services
 # Shared imports
 from shared import Rights
 
-# Service imports
+# Records imports
 from records.csr import Agent, CustomList, CustomListItem, TemplateEmail, \
 						TemplateSMS
 
@@ -99,7 +99,7 @@ class CSR(Services.Service):
 				"csr_claims": 14,
 				"csr_messaging": 5,
 				"csr_templates": 1,
-				"crm_customers": 1,
+				"customers": 1,
 				"memo_mips": 3,
 				"memo_notes": 5,
 				"prescriptions": 3,

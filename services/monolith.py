@@ -26,7 +26,7 @@ from RestOC import Conf, DictHelper, Errors, Record_MySQL, Services, \
 # Shared imports
 from shared import Rights
 
-# Service imports
+# Records imports
 from records.monolith import \
 	CustomerClaimed, CustomerClaimedLast, CustomerCommunication, \
 	CustomerMsgPhone, DsPatient, Forgot, KtCustomer, KtOrder, ShippingInfo, \
