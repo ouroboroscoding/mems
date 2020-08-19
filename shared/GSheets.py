@@ -121,6 +121,6 @@ def insert(auth, key, worksheet, data, row, method='USER_ENTERED'):
 		except gspread.exceptions.APIError:
 			try: del _auth[auth]
 			except KeyError: pass
-			try: del _file[key]
+			try: del _files[key]
 			except KeyError: pass
 			continue
