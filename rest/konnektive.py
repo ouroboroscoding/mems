@@ -14,7 +14,7 @@ __created__		= "2020-05-09"
 # Pip imports
 from RestOC import Conf, REST
 
-# App imports
+# Service imports
 from services.konnektive import Konnektive
 
 # Local imports

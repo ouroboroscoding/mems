@@ -186,7 +186,7 @@ class Konnektive(Services.Service):
 
 		# Make sure the user has the proper permission to do this
 		oEff = Services.read('auth', 'rights/verify', {
-			"name": "crm_customers",
+			"name": "customers",
 			"right": Rights.READ,
 			"ident": data['customerId']
 		}, sesh)
@@ -272,7 +272,7 @@ class Konnektive(Services.Service):
 
 		# Make sure the user has the proper permission to do this
 		oEff = Services.read('auth', 'rights/verify', {
-			"name": "crm_customers",
+			"name": "customers",
 			"right": Rights.UPDATE,
 			"ident": data['customerId']
 		}, sesh)
@@ -392,7 +392,7 @@ class Konnektive(Services.Service):
 
 		# Make sure the user has the proper permission to do this
 		oEff = Services.read('auth', 'rights/verify', {
-			"name": "crm_customers",
+			"name": "customers",
 			"right": Rights.READ,
 			"ident": data['customerId']
 		}, sesh)
@@ -470,7 +470,7 @@ class Konnektive(Services.Service):
 
 		# Make sure the user has the proper permission to do this
 		oEff = Services.read('auth', 'rights/verify', {
-			"name": "crm_customers",
+			"name": "customers",
 			"right": Rights.READ,
 			"ident": data['customerId']
 		}, sesh)
@@ -581,7 +581,7 @@ class Konnektive(Services.Service):
 		# Make sure the user has the proper permission to do this
 		if verify:
 			oEff = Services.read('auth', 'rights/verify', {
-				"name": "crm_customers",
+				"name": "customers",
 				"right": Rights.READ,
 				"ident": data['customerId']
 			}, sesh)
@@ -636,7 +636,7 @@ class Konnektive(Services.Service):
 
 		# Make sure the user has the proper permission to do this
 		oEff = Services.read('auth', 'rights/verify', {
-			"name": "crm_customers",
+			"name": "customers",
 			"right": Rights.READ,
 			"ident": data['customerId']
 		}, sesh)

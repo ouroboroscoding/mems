@@ -20,10 +20,10 @@ from RestOC import Conf, DictHelper, Errors, Services
 
 # Shared imports
 from shared import JSON
-
-# Service imports
-from records.payment import Customer
 from shared.RocketGate import *
+
+# Records imports
+from records.payment import Customer
 
 class Payment(Services.Service):
 	"""Payment Service class

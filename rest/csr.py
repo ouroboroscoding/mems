@@ -14,7 +14,7 @@ __created__		= "2020-05-17"
 # Pip imports
 from RestOC import Conf, REST
 
-# App imports
+# Service imports
 from services.csr import CSR
 
 # Local imports
@@ -23,7 +23,7 @@ from . import init
 # Init the REST info
 oRestConf = init(
 	dbs=['primary'],
-	services={'csr':CSR()}
+	services={'csr':CSR()},
 	templates='templates'
 )
 
