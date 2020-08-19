@@ -138,6 +138,9 @@
 		"auth": {
 			"forgot_expire": 600
 		},
+		"customers": {
+			"address_services": []
+		},
 		"monolith": {
 			"claims_max": 20,
 			"claims_timeout": 172800

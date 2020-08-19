@@ -74,7 +74,7 @@ class CSR(Services.Service):
 			sesh (Sesh._Session): The session associated with the request
 
 		Returns:
-			Services.Effect
+			Services.Response
 		"""
 
 		# Create a new agent instance using the memo ID
@@ -83,16 +83,16 @@ class CSR(Services.Service):
 				"memo_id": memo_id
 			})
 		except ValueError:
-			return Services.Effect(error=(1001, e.args[0]))
+			return Services.Response(error=(1001, e.args[0]))
 
 		# Create the agent and store the ID
 		try:
 			sID = oAgent.create()
 		except Record_MySQL.DuplicateException as e:
-			return Services.Effect(error=1101)
+			return Services.Response(error=1101)
 
 		# Create the default permissions
-		oEff = Services.update('auth', 'permissions', {
+		oResponse = Services.update('auth', 'permissions', {
 			"_internal_": Services.internalKey(),
 			"user": sID,
 			"permissions": {
@@ -106,12 +106,12 @@ class CSR(Services.Service):
 				"welldyne_adhoc": 4
 			}
 		}, sesh)
-		if oEff.errorExists():
-			print(oEff)
-			return Services.Effect(sID, warning='Failed to creater permissions for agent')
+		if oResponse.errorExists():
+			print(oResponse)
+			return Services.Response(sID, warning='Failed to creater permissions for agent')
 
 		# Create the agent and return the ID
-		return Services.Effect(sID)
+		return Services.Response(sID)
 
 	def _template_create(self, data, sesh, _class):
 		"""Template Create
@@ -124,29 +124,29 @@ class CSR(Services.Service):
 			_class (class): The class to use
 
 		Returns:
-			Services.Effect
+			Services.Response
 		"""
 
 		# Make sure the user has the proper permission to do this
-		oEff = Services.read('auth', 'rights/verify', {
+		oResponse = Services.read('auth', 'rights/verify', {
 			"name": "csr_templates",
 			"right": Rights.CREATE
 		}, sesh)
-		if not oEff.data:
-			return Services.Effect(error=Rights.INVALID)
+		if not oResponse.data:
+			return Services.Response(error=Rights.INVALID)
 
 		# Verify minimum fields
 		try: DictHelper.eval(data, ['title', 'content'])
-		except ValueError as e: return Services.Effect(error=(1001, [(f, 'missing') for f in e.args]))
+		except ValueError as e: return Services.Response(error=(1001, [(f, 'missing') for f in e.args]))
 
 		# Validate by creating a Record instance
 		try:
 			oTemplate = _class(data)
 		except ValueError as e:
-			return Services.Effect(error=(1001, e.args[0]))
+			return Services.Response(error=(1001, e.args[0]))
 
 		# Create the row and return the result
-		return Services.Effect(
+		return Services.Response(
 			oTemplate.create()
 		)
 
@@ -161,32 +161,32 @@ class CSR(Services.Service):
 			_class (class): The class to use
 
 		Returns:
-			Services.Effect
+			Services.Response
 		"""
 
 		# Verify minimum fields
 		try: DictHelper.eval(data, ['_id'])
-		except ValueError as e: return Services.Effect(error=(1001, [(f, 'missing') for f in e.args]))
+		except ValueError as e: return Services.Response(error=(1001, [(f, 'missing') for f in e.args]))
 
 		# Make sure the user has the proper permission to do this
-		oEff = Services.read('auth', 'rights/verify', {
+		oResponse = Services.read('auth', 'rights/verify', {
 			"name": "csr_templates",
 			"right": Rights.DELETE,
 			"ident": data['_id']
 		}, sesh)
-		if not oEff.data:
-			return Services.Effect(error=Rights.INVALID)
+		if not oResponse.data:
+			return Services.Response(error=Rights.INVALID)
 
 		# If the record does not exist
 		if not _class.exists(data['_id']):
-			return Services.Effect(error=1104)
+			return Services.Response(error=1104)
 
 		# Delete the record
 		if not _class.deleteGet(data['_id']):
-			return Services.Effect(error=1102)
+			return Services.Response(error=1102)
 
 		# Return OK
-		return Services.Effect(True)
+		return Services.Response(True)
 
 	def _template_read(self, data, sesh, _class):
 		"""Template Read
@@ -199,31 +199,31 @@ class CSR(Services.Service):
 			_class (class): The class to use
 
 		Returns:
-			Services.Effect
+			Services.Response
 		"""
 
 		# Verify minimum fields
 		try: DictHelper.eval(data, ['_id'])
-		except ValueError as e: return Services.Effect(error=(1001, [(f, 'missing') for f in e.args]))
+		except ValueError as e: return Services.Response(error=(1001, [(f, 'missing') for f in e.args]))
 
 		# Make sure the user has the proper permission to do this
-		oEff = Services.read('auth', 'rights/verify', {
+		oResponse = Services.read('auth', 'rights/verify', {
 			"name": "csr_templates",
 			"right": Rights.READ,
 			"ident": data['_id']
 		}, sesh)
-		if not oEff.data:
-			return Services.Effect(error=Rights.INVALID)
+		if not oResponse.data:
+			return Services.Response(error=Rights.INVALID)
 
 		# Look for the template
 		dTemplate = _class.get(data['_id'], raw=True)
 
 		# If it doesn't exist
 		if not dTemplate:
-			return Services.Effect(error=1104)
+			return Services.Response(error=1104)
 
 		# Return the template
-		return Services.Effect(dTemplate)
+		return Services.Response(dTemplate)
 
 	def _template_update(self, data, sesh, _class):
 		"""Template Update
@@ -236,28 +236,28 @@ class CSR(Services.Service):
 			_class (class): The class to use
 
 		Returns:
-			Services.Effect
+			Services.Response
 		"""
 
 		# Verify minimum fields
 		try: DictHelper.eval(data, ['_id'])
-		except ValueError as e: return Services.Effect(error=(1001, [(f, 'missing') for f in e.args]))
+		except ValueError as e: return Services.Response(error=(1001, [(f, 'missing') for f in e.args]))
 
 		# Make sure the user has the proper permission to do this
-		oEff = Services.read('auth', 'rights/verify', {
+		oResponse = Services.read('auth', 'rights/verify', {
 			"name": "csr_templates",
 			"right": Rights.UPDATE,
 			"ident": data['_id']
 		}, sesh)
-		if not oEff.data:
-			return Services.Effect(error=Rights.INVALID)
+		if not oResponse.data:
+			return Services.Response(error=Rights.INVALID)
 
 		# Fetch the template
 		oTemplate = _class.get(data['_id'])
 
 		# If it doesn't exist
 		if not oTemplate:
-			return Services.Effect(error=1104)
+			return Services.Response(error=1104)
 
 		# Remove fields that can't be changed
 		del data['_id']
@@ -271,10 +271,10 @@ class CSR(Services.Service):
 
 		# If there was any errors
 		if lErrors:
-			return Services.Effect(error=(1001, lErrors))
+			return Services.Response(error=(1001, lErrors))
 
 		# Update the record and return the result
-		return Services.Effect(
+		return Services.Response(
 			oTemplate.save()
 		)
 
@@ -289,19 +289,19 @@ class CSR(Services.Service):
 			_class (class): The class to use
 
 		Returns:
-			Services.Effect
+			Services.Response
 		"""
 
 		# Make sure the user has the proper permission to do this
-		oEff = Services.read('auth', 'rights/verify', {
+		oResponse = Services.read('auth', 'rights/verify', {
 			"name": "csr_templates",
 			"right": Rights.READ
 		}, sesh)
-		if not oEff.data:
-			return Services.Effect(error=Rights.INVALID)
+		if not oResponse.data:
+			return Services.Response(error=Rights.INVALID)
 
 		# Fetch and return the templates
-		return Services.Effect(
+		return Services.Response(
 			_class.get(raw=True, orderby=['title'])
 		)
 
@@ -316,28 +316,28 @@ class CSR(Services.Service):
 			sesh (Sesh._Session): The session associated with the request
 
 		Returns:
-			Services.Effect
+			Services.Response
 		"""
 
 		# Make sure the user has the proper permission to do this
-		oEff = Services.read('auth', 'rights/verify', {
+		oResponse = Services.read('auth', 'rights/verify', {
 			"name": "csr_agents",
 			"right": Rights.CREATE
 		}, sesh)
-		if not oEff.data:
-			return Services.Effect(error=Rights.INVALID)
+		if not oResponse.data:
+			return Services.Response(error=Rights.INVALID)
 
 		# Verify minimum fields
 		try: DictHelper.eval(data, ['userName', 'firstName', 'lastName', 'password'])
-		except ValueError as e: return Services.Effect(error=(1001, [(f, 'missing') for f in e.args]))
+		except ValueError as e: return Services.Response(error=(1001, [(f, 'missing') for f in e.args]))
 
 		# Send the data to monolith to create the memo user
 		data['_internal_'] = Services.internalKey()
-		oEff = Services.create('monolith', 'user', data, sesh)
-		if oEff.errorExists(): return oEff
+		oResponse = Services.create('monolith', 'user', data, sesh)
+		if oResponse.errorExists(): return oResponse
 
 		# Create the agent record
-		return self._agent_create(oEff.data, sesh)
+		return self._agent_create(oResponse.data, sesh)
 
 	def agent_delete(self, data, sesh):
 		"""Agent Delete
@@ -349,42 +349,42 @@ class CSR(Services.Service):
 			sesh (Sesh._Session): The session associated with the request
 
 		Returns:
-			Services.Effect
+			Services.Response
 		"""
 
 		# Verify minimum fields
 		try: DictHelper.eval(data, ['_id'])
-		except ValueError as e: return Services.Effect(error=(1001, [(f, 'missing') for f in e.args]))
+		except ValueError as e: return Services.Response(error=(1001, [(f, 'missing') for f in e.args]))
 
 		# Make sure the user has the proper permission to do this
-		oEff = Services.read('auth', 'rights/verify', {
+		oResponse = Services.read('auth', 'rights/verify', {
 			"name": "csr_agents",
 			"right": Rights.DELETE
 		}, sesh)
-		if not oEff.data:
-			return Services.Effect(error=Rights.INVALID)
+		if not oResponse.data:
+			return Services.Response(error=Rights.INVALID)
 
 		# Find the Agent
 		oAgent = Agent.get(data['_id'])
 
 		# Use the memo ID to mark the memo user as inactive
-		oEff = Services.update('monolith', 'user/active', {
+		oResponse = Services.update('monolith', 'user/active', {
 			"_internal_": Services.internalKey(),
 			"id": oAgent['memo_id'],
 			"active": False
 		}, sesh)
-		if oEff.errorExists(): return oEff
+		if oResponse.errorExists(): return oResponse
 
 		# Delete all permissions
-		oEff = Services.update('auth', 'permissions', {
+		oResponse = Services.update('auth', 'permissions', {
 			"_internal_": Services.internalKey(),
 			"user": data['_id'],
 			"permissions": {}
 		}, sesh);
-		if oEff.errorExists(): return oEff
+		if oResponse.errorExists(): return oResponse
 
 		# Delete the record and return the result
-		return Services.Effect(
+		return Services.Response(
 			oAgent.delete()
 		)
 
@@ -398,7 +398,7 @@ class CSR(Services.Service):
 			sesh (Sesh._Session): The session associated with the request
 
 		Returns:
-			Services.Effect
+			Services.Response
 		"""
 		pass
 
@@ -412,25 +412,25 @@ class CSR(Services.Service):
 			sesh (Sesh._Session): The session associated with the request
 
 		Returns:
-			Services.Effect
+			Services.Response
 		"""
 
 		# Verify minimum fields
 		try: DictHelper.eval(data, ['_id'])
-		except ValueError as e: return Services.Effect(error=(1001, [(f, 'missing') for f in e.args]))
+		except ValueError as e: return Services.Response(error=(1001, [(f, 'missing') for f in e.args]))
 
 		# Make sure the user has the proper permission to do this
-		oEff = Services.read('auth', 'rights/verify', {
+		oResponse = Services.read('auth', 'rights/verify', {
 			"name": "csr_agents",
 			"right": Rights.UPDATE
 		}, sesh)
-		if not oEff.data:
-			return Services.Effect(error=Rights.INVALID)
+		if not oResponse.data:
+			return Services.Response(error=Rights.INVALID)
 
 		# Find the agent
 		dAgent = Agent.get(data['_id'], raw=['memo_id'])
 		if not dAgent:
-			return Services.Effect(error=1104)
+			return Services.Response(error=1104)
 
 		# Remove the agent ID and add the memo one
 		del data['_id']
@@ -438,10 +438,10 @@ class CSR(Services.Service):
 
 		# Pass the info on to monolith service
 		data['_internal_'] = Services.internalKey()
-		oEff = Services.update('monolith', 'user', data, sesh)
+		oResponse = Services.update('monolith', 'user', data, sesh)
 
 		# Return whatever monolith returned
-		return oEff
+		return oResponse
 
 	def agentInternal_read(self, data, sesh):
 		"""Agent Internal
@@ -454,16 +454,16 @@ class CSR(Services.Service):
 			sesh (Sesh._Session): The session associated with the request
 
 		Returns:
-			Services.Effect
+			Services.Response
 		"""
 
 		# Verify minimum fields
 		try: DictHelper.eval(data, ['_internal_', 'id'])
-		except ValueError as e: return Services.Effect(error=(1001, [(f, 'missing') for f in e.args]))
+		except ValueError as e: return Services.Response(error=(1001, [(f, 'missing') for f in e.args]))
 
 		# Verify the key, remove it if it's ok
 		if not Services.internalKey(data['_internal_']):
-			return Services.Effect(error=Errors.SERVICE_INTERNAL_KEY)
+			return Services.Response(error=Errors.SERVICE_INTERNAL_KEY)
 		del data['_internal_']
 
 		# Look up the record
@@ -475,10 +475,10 @@ class CSR(Services.Service):
 
 		# If there's no such user
 		if not dUser:
-			return Services.Effect(error=1104)
+			return Services.Response(error=1104)
 
 		# Return the user
-		return Services.Effect(dUser)
+		return Services.Response(dUser)
 
 	def agentPasswd_update(self, data, sesh):
 		"""Agent Password Update
@@ -490,36 +490,36 @@ class CSR(Services.Service):
 			sesh (Sesh._Session): The session associated with the request
 
 		Returns:
-			Services.Effect
+			Services.Response
 		"""
 
 		# Verify minimum fields
 		try: DictHelper.eval(data, ['agent_id', 'passwd'])
-		except ValueError as e: return Services.Effect(error=(1001, [(f, 'missing') for f in e.args]))
+		except ValueError as e: return Services.Response(error=(1001, [(f, 'missing') for f in e.args]))
 
 		# Make sure the user has the proper permission to do this
-		oEff = Services.read('auth', 'rights/verify', {
+		oResponse = Services.read('auth', 'rights/verify', {
 			"name": "csr_agents",
 			"right": Rights.UPDATE,
 			"ident": data['agent_id']
 		}, sesh)
-		if not oEff.data:
-			return Services.Effect(error=Rights.INVALID)
+		if not oResponse.data:
+			return Services.Response(error=Rights.INVALID)
 
 		# Find the Agent
 		dAgent = Agent.get(data['agent_id'], raw=['memo_id'])
 		if not dAgent:
-			return Services.Effect(error=1104)
+			return Services.Response(error=1104)
 
 		# Send the data to monolith to update the password
-		oEff = Services.update('monolith', 'user/passwd', {
+		oResponse = Services.update('monolith', 'user/passwd', {
 			"_internal_": Services.internalKey(),
 			"user_id": dAgent['memo_id'],
 			"passwd": data['passwd']
 		}, sesh)
 
 		# Return the result, regardless of what it is
-		return oEff
+		return oResponse
 
 	def agentPermissions_read(self, data, sesh):
 		"""Agent Permissions Read
@@ -531,30 +531,30 @@ class CSR(Services.Service):
 			sesh (Sesh._Session): The session associated with the request
 
 		Returns:
-			Services.Effect
+			Services.Response
 		"""
 
 		# Verify minimum fields
 		try: DictHelper.eval(data, ['agent_id'])
-		except ValueError as e: return Services.Effect(error=(1001, [(f, 'missing') for f in e.args]))
+		except ValueError as e: return Services.Response(error=(1001, [(f, 'missing') for f in e.args]))
 
 		# Make sure the user has the proper permission to do this
-		oEff = Services.read('auth', 'rights/verify', {
+		oResponse = Services.read('auth', 'rights/verify', {
 			"name": "csr_agents",
 			"right": Rights.READ,
 			"ident": data['agent_id']
 		}, sesh)
-		if not oEff.data:
-			return Services.Effect(error=Rights.INVALID)
+		if not oResponse.data:
+			return Services.Response(error=Rights.INVALID)
 
 		# Fetch the permissions from the auth service
-		oEff = Services.read('auth', 'permissions', {
+		oResponse = Services.read('auth', 'permissions', {
 			"_internal_": Services.internalKey(),
 			"user_id": data['agent_id']
 		}, sesh)
 
 		# Return whatever was found
-		return oEff
+		return oResponse
 
 	def agentPermissions_update(self, data, sesh):
 		"""Agent Permissions Update
@@ -566,31 +566,31 @@ class CSR(Services.Service):
 			sesh (Sesh._Session): The session associated with the request
 
 		Returns:
-			Services.Effect
+			Services.Response
 		"""
 
 		# Verify minimum fields
 		try: DictHelper.eval(data, ['agent_id', 'permissions'])
-		except ValueError as e: return Services.Effect(error=(1001, [(f, 'missing') for f in e.args]))
+		except ValueError as e: return Services.Response(error=(1001, [(f, 'missing') for f in e.args]))
 
 		# Make sure the user has the proper permission to do this
-		oEff = Services.read('auth', 'rights/verify', {
+		oResponse = Services.read('auth', 'rights/verify', {
 			"name": "csr_agents",
 			"right": Rights.READ,
 			"ident": data['agent_id']
 		}, sesh)
-		if not oEff.data:
-			return Services.Effect(error=Rights.INVALID)
+		if not oResponse.data:
+			return Services.Response(error=Rights.INVALID)
 
 		# Fetch the permissions from the auth service
-		oEff = Services.update('auth', 'permissions', {
+		oResponse = Services.update('auth', 'permissions', {
 			"_internal_": Services.internalKey(),
 			"user": data['agent_id'],
 			"permissions": data['permissions']
 		}, sesh)
 
 		# Return whatever was found
-		return oEff
+		return oResponse
 
 	def agentNames_read(self, data, sesh):
 		"""Agent Names
@@ -603,20 +603,20 @@ class CSR(Services.Service):
 			sesh (Sesh._Session): The session associated with the request
 
 		Returns:
-			Services.Effect
+			Services.Response
 		"""
 
 		# Fetch all the agents
 		lAgents = Agent.get(raw=['memo_id'])
 
 		# Fetch their names
-		oEff = Services.read('monolith', 'user/name', {
+		oResponse = Services.read('monolith', 'user/name', {
 			"_internal_": Services.internalKey(),
 			"id": [d['memo_id'] for d in lAgents]
 		}, sesh)
 
 		# Regardless of what we got, retun the effect
-		return oEff
+		return oResponse
 
 	def agents_read(self, data, sesh):
 		"""Agents
@@ -628,30 +628,30 @@ class CSR(Services.Service):
 			sesh (Sesh._Session): The session associated with the request
 
 		Returns:
-			Services.Effect
+			Services.Response
 		"""
 
 		# Make sure the user has the proper permission to do this
-		oEff = Services.read('auth', 'rights/verify', {
+		oResponse = Services.read('auth', 'rights/verify', {
 			"name": "csr_agents",
 			"right": Rights.READ
 		}, sesh)
-		if not oEff.data:
-			return Services.Effect(error=Rights.INVALID)
+		if not oResponse.data:
+			return Services.Response(error=Rights.INVALID)
 
 		# Fetch all the agents
 		lAgents = Agent.get(raw=True)
 
 		# Fetch all the Memo user's associated
-		oEff = Services.read('monolith', 'users', {
+		oResponse = Services.read('monolith', 'users', {
 			"_internal_": Services.internalKey(),
 			"id": [d['memo_id'] for d in lAgents],
 			"fields": ['id', 'userName', 'firstName', 'lastName', 'email', 'dsClinicId', 'dsClinicianId']
 		}, sesh)
-		if oEff.errorExists(): return oEff
+		if oResponse.errorExists(): return oResponse
 
 		# Turn it into a dictionary
-		dMemoUsers = {d['id']:d for d in oEff.data}
+		dMemoUsers = {d['id']:d for d in oResponse.data}
 
 		# Go through each user and find the memo user
 		for d in lAgents:
@@ -671,7 +671,7 @@ class CSR(Services.Service):
 				d['dsClinicianId'] = None
 
 		# Return the agents in order of userName
-		return Services.Effect(sorted(lAgents, key=lambda o: o['userName']))
+		return Services.Response(sorted(lAgents, key=lambda o: o['userName']))
 
 	def list_create(self, data, sesh):
 		"""List Create
@@ -683,20 +683,20 @@ class CSR(Services.Service):
 			sesh (Sesh._Session): The session associated with the request
 
 		Returns:
-			Services.Effect
+			Services.Response
 		"""
 
 		# Make sure the user has at least csr messaging permission
-		oEff = Services.read('auth', 'rights/verify', {
+		oResponse = Services.read('auth', 'rights/verify', {
 			"name": "csr_messaging",
 			"right": Rights.READ
 		}, sesh)
-		if not oEff.data:
-			return Services.Effect(error=Rights.INVALID)
+		if not oResponse.data:
+			return Services.Response(error=Rights.INVALID)
 
 		# Verify minimum fields
 		try: DictHelper.eval(data, ['title'])
-		except ValueError as e: return Services.Effect(error=(1001, [(f, 'missing') for f in e.args]))
+		except ValueError as e: return Services.Response(error=(1001, [(f, 'missing') for f in e.args]))
 
 		# Try to make an instance
 		try:
@@ -705,10 +705,10 @@ class CSR(Services.Service):
 				"title": data['title']
 			})
 		except ValueError as e:
-			return Services.Effect(error=(1001, e.args[0]))
+			return Services.Response(error=(1001, e.args[0]))
 
 		# Create the row and return the result
-		return Services.Effect(
+		return Services.Response(
 			oList.create()
 		)
 
@@ -722,35 +722,35 @@ class CSR(Services.Service):
 			sesh (Sesh._Session): The session associated with the request
 
 		Returns:
-			Services.Effect
+			Services.Response
 		"""
 
 		# Make sure the user has at least csr messaging permission
-		oEff = Services.read('auth', 'rights/verify', {
+		oResponse = Services.read('auth', 'rights/verify', {
 			"name": "csr_messaging",
 			"right": Rights.READ
 		}, sesh)
-		if not oEff.data:
-			return Services.Effect(error=Rights.INVALID)
+		if not oResponse.data:
+			return Services.Response(error=Rights.INVALID)
 
 		# Verify minimum fields
 		try: DictHelper.eval(data, ['_id'])
-		except ValueError as e: return Services.Effect(error=(1001, [(f, 'missing') for f in e.args]))
+		except ValueError as e: return Services.Response(error=(1001, [(f, 'missing') for f in e.args]))
 
 		# Look for the list
 		oList = CustomList.get(data['_id'])
 		if not oList:
-			return Services.Effect(error=1104)
+			return Services.Response(error=1104)
 
 		# Make sure the agent owns the list
 		if oList['agent'] != sesh['user_id']:
-			return Services.Effect(error=1105)
+			return Services.Response(error=1105)
 
 		# Delete all the items in the list
 		CustomListItem.deleteByList(data['_id'])
 
 		# Delete the list and return the result
-		return Services.Effect(
+		return Services.Response(
 			oList.delete()
 		)
 
@@ -764,36 +764,36 @@ class CSR(Services.Service):
 			sesh (Sesh._Session): The session associated with the request
 
 		Returns:
-			Services.Effect
+			Services.Response
 		"""
 
 		# Make sure the user has at least csr messaging permission
-		oEff = Services.read('auth', 'rights/verify', {
+		oResponse = Services.read('auth', 'rights/verify', {
 			"name": "csr_messaging",
 			"right": Rights.READ
 		}, sesh)
-		if not oEff.data:
-			return Services.Effect(error=Rights.INVALID)
+		if not oResponse.data:
+			return Services.Response(error=Rights.INVALID)
 
 		# Verify minimum fields
 		try: DictHelper.eval(data, ['_id', 'title'])
-		except ValueError as e: return Services.Effect(error=(1001, [(f, 'missing') for f in e.args]))
+		except ValueError as e: return Services.Response(error=(1001, [(f, 'missing') for f in e.args]))
 
 		# Look for the list
 		oList = CustomList.get(data['_id'])
 		if not oList:
-			return Services.Effect(error=1104)
+			return Services.Response(error=1104)
 
 		# Make sure the agent owns the list
 		if oList['agent'] != sesh['user_id']:
-			return Services.Effect(error=1105)
+			return Services.Response(error=1105)
 
 		# Try to update the title
 		try: oList['title'] = data['title']
-		except ValueError as e: return Services.Effect(error=(1001, [e.args[0]]))
+		except ValueError as e: return Services.Response(error=(1001, [e.args[0]]))
 
 		# Update the record and return the result
-		return Services.Effect(
+		return Services.Response(
 			oList.save()
 		)
 
@@ -807,43 +807,43 @@ class CSR(Services.Service):
 			sesh (Sesh._Session): The session associated with the request
 
 		Returns:
-			Services.Effect
+			Services.Response
 		"""
 
 		# Make sure the user has at least csr messaging permission
-		oEff = Services.read('auth', 'rights/verify', {
+		oResponse = Services.read('auth', 'rights/verify', {
 			"name": "csr_messaging",
 			"right": Rights.READ
 		}, sesh)
-		if not oEff.data:
-			return Services.Effect(error=Rights.INVALID)
+		if not oResponse.data:
+			return Services.Response(error=Rights.INVALID)
 
 		# Verify minimum fields
 		try: DictHelper.eval(data, ['list', 'customer', 'name', 'number'])
-		except ValueError as e: return Services.Effect(error=(1001, [(f, 'missing') for f in e.args]))
+		except ValueError as e: return Services.Response(error=(1001, [(f, 'missing') for f in e.args]))
 
 		# Look for the list
 		oList = CustomList.get(data['list'])
 		if not oList:
-			return Services.Effect(error=1104)
+			return Services.Response(error=1104)
 
 		# Make sure the agent owns the list
 		if oList['agent'] != sesh['user_id']:
-			return Services.Effect(error=1105)
+			return Services.Response(error=1105)
 
 		# Try to make an item instance
 		try:
 			oItem = CustomListItem(data)
 		except ValueError as e:
-			return Services.Effect(error=(1001, e.args[0]))
+			return Services.Response(error=(1001, e.args[0]))
 
 		# Create the item and return the ID
 		try:
-			return Services.Effect(oItem.create())
+			return Services.Response(oItem.create())
 
 		# Data already in the given list, return error
 		except Record_MySQL.DuplicateException:
-			return Services.Effect(error=1101)
+			return Services.Response(error=1101)
 
 	def listItem_delete(self, data, sesh):
 		"""List Item Delete
@@ -855,37 +855,37 @@ class CSR(Services.Service):
 			sesh (Sesh._Session): The session associated with the request
 
 		Returns:
-			Services.Effect
+			Services.Response
 		"""
 
 		# Make sure the user has at least csr messaging permission
-		oEff = Services.read('auth', 'rights/verify', {
+		oResponse = Services.read('auth', 'rights/verify', {
 			"name": "csr_messaging",
 			"right": Rights.READ
 		}, sesh)
-		if not oEff.data:
-			return Services.Effect(error=Rights.INVALID)
+		if not oResponse.data:
+			return Services.Response(error=Rights.INVALID)
 
 		# Verify minimum fields
 		try: DictHelper.eval(data, ['_id'])
-		except ValueError as e: return Services.Effect(error=(1001, [(f, 'missing') for f in e.args]))
+		except ValueError as e: return Services.Response(error=(1001, [(f, 'missing') for f in e.args]))
 
 		# Look for the list item
 		oListItem = CustomListItem.get(data['_id'])
 		if not oListItem:
-			return Services.Effect(error=(1104, 'item'))
+			return Services.Response(error=(1104, 'item'))
 
 		# Find the list associated
 		oList = CustomList.get(oListItem['list'])
 		if not oList:
-			return Services.Effect(error=(1104, 'list'))
+			return Services.Response(error=(1104, 'list'))
 
 		# Make sure the agent owns the list
 		if oList['agent'] != sesh['user_id']:
-			return Services.Effect(error=1105)
+			return Services.Response(error=1105)
 
 		# Delete the list and return the result
-		return Services.Effect(
+		return Services.Response(
 			oListItem.delete()
 		)
 
@@ -899,16 +899,16 @@ class CSR(Services.Service):
 			sesh (Sesh._Session): The session associated with the request
 
 		Returns:
-			Services.Effect
+			Services.Response
 		"""
 
 		# Make sure the user has at least csr messaging permission
-		oEff = Services.read('auth', 'rights/verify', {
+		oResponse = Services.read('auth', 'rights/verify', {
 			"name": "csr_messaging",
 			"right": Rights.READ
 		}, sesh)
-		if not oEff.data:
-			return Services.Effect(error=Rights.INVALID)
+		if not oResponse.data:
+			return Services.Response(error=Rights.INVALID)
 
 		# Find all lists associated with the user
 		lLists = CustomList.filter({
@@ -917,7 +917,7 @@ class CSR(Services.Service):
 
 		# If there's none
 		if not lLists:
-			return Services.Effect([])
+			return Services.Response([])
 
 		# Turn the list into a dictionary
 		dLists = {
@@ -943,7 +943,7 @@ class CSR(Services.Service):
 			})
 
 		# Return everything found sorted by title
-		return Services.Effect(
+		return Services.Response(
 			sorted(dLists.values(), key=lambda d: d['title'])
 		)
 
@@ -957,7 +957,7 @@ class CSR(Services.Service):
 			sesh (Sesh._Session): The session associated with the request
 
 		Returns:
-			Services.Effect
+			Services.Response
 		"""
 		return self._template_create(data, sesh, TemplateEmail)
 
@@ -971,7 +971,7 @@ class CSR(Services.Service):
 			sesh (Sesh._Session): The session associated with the request
 
 		Returns:
-			Services.Effect
+			Services.Response
 		"""
 		return self._template_delete(data, sesh, TemplateEmail)
 
@@ -985,7 +985,7 @@ class CSR(Services.Service):
 			sesh (Sesh._Session): The session associated with the request
 
 		Returns:
-			Services.Effect
+			Services.Response
 		"""
 		return self._template_read(data, sesh, TemplateEmail)
 
@@ -999,7 +999,7 @@ class CSR(Services.Service):
 			sesh (Sesh._Session): The session associated with the request
 
 		Returns:
-			Services.Effect
+			Services.Response
 		"""
 		return self._template_update(data, sesh, TemplateEmail)
 
@@ -1013,7 +1013,7 @@ class CSR(Services.Service):
 			sesh (Sesh._Session): The session associated with the request
 
 		Returns:
-			Services.Effect
+			Services.Response
 		"""
 		return self._templates_read(data, sesh, TemplateEmail)
 
@@ -1027,7 +1027,7 @@ class CSR(Services.Service):
 			sesh (Sesh._Session): The session associated with the request
 
 		Returns:
-			Services.Effect
+			Services.Response
 		"""
 		return self._template_create(data, sesh, TemplateSMS)
 
@@ -1041,7 +1041,7 @@ class CSR(Services.Service):
 			sesh (Sesh._Session): The session associated with the request
 
 		Returns:
-			Services.Effect
+			Services.Response
 		"""
 		return self._template_delete(data, sesh, TemplateSMS)
 
@@ -1055,7 +1055,7 @@ class CSR(Services.Service):
 			sesh (Sesh._Session): The session associated with the request
 
 		Returns:
-			Services.Effect
+			Services.Response
 		"""
 		return self._template_read(data, sesh, TemplateSMS)
 
@@ -1069,7 +1069,7 @@ class CSR(Services.Service):
 			sesh (Sesh._Session): The session associated with the request
 
 		Returns:
-			Services.Effect
+			Services.Response
 		"""
 		return self._template_update(data, sesh, TemplateSMS)
 
@@ -1083,6 +1083,6 @@ class CSR(Services.Service):
 			sesh (Sesh._Session): The session associated with the request
 
 		Returns:
-			Services.Effect
+			Services.Response
 		"""
 		return self._templates_read(data, sesh, TemplateSMS)

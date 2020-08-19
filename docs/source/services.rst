@@ -10,6 +10,7 @@ Submodules
    services.auth
    services.communications
    services.csr
+   services.customers
    services.konnektive
    services.monolith
    services.patient

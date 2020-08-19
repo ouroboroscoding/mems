@@ -97,25 +97,25 @@ class Payment(Services.Service):
 			data (mixed): Data sent with the request
 
 		Returns:
-			Services.Effect
+			Services.Response
 		"""
 
 		# Verify minimum fields
 		try: DictHelper.eval(data, ['_internal_', 'amount', 'customer_id'])
-		except ValueError as e: return Services.Effect(error=(1001, [(f, 'missing') for f in e.args]))
+		except ValueError as e: return Services.Response(error=(1001, [(f, 'missing') for f in e.args]))
 
 		# Verify the key, remove it if it's ok
 		#if not Services.internalKey(data['_internal_']):
-		#	return Services.Effect(error=Errors.SERVICE_INTERNAL_KEY)
+		#	return Services.Response(error=Errors.SERVICE_INTERNAL_KEY)
 		#del data['_internal_']
 
 		# Make sure the customer ID is valid before doing anything
 		if not self._customer_regex.match(data['customer_id']):
-			return Services.Effect(error=1403)
+			return Services.Response(error=1403)
 
 		# Make sure the amount is valid
 		if not self._price.valid(data['amount']):
-			return Services.Effect(error=(1001, [('amount', 'invalid')]))
+			return Services.Response(error=(1001, [('amount', 'invalid')]))
 
 		# Create a RG service instance
 		oService = GatewayService()
@@ -138,9 +138,9 @@ class Payment(Services.Service):
 		if not oCustomer or 'billing' in data:
 
 			# Verify existence of billing fields
-			if 'billing' not in data: return Services.Effect(error=(1001, [('billing', 'missing')]))
+			if 'billing' not in data: return Services.Response(error=(1001, [('billing', 'missing')]))
 			try: DictHelper.eval(data['billing'], self._billing_fields)
-			except ValueError as e: return Services.Effect(error=(1001, [(f, 'missing') for f in e.args]))
+			except ValueError as e: return Services.Response(error=(1001, [(f, 'missing') for f in e.args]))
 
 			# Add all the fields
 			oRequest.Set(GatewayRequest.CARDNO, data['billing']['cc'])
@@ -182,7 +182,7 @@ class Payment(Services.Service):
 		if not bSuccess:
 
 			# Return an error
-			return Services.Effect(error=(1404, {
+			return Services.Response(error=(1404, {
 				"transaction_id": oResponse.Get(GatewayResponse.TRANSACT_ID),
 				"response_code": oResponse.Get(GatewayResponse.RESPONSE_CODE),
 				"responde_msg": oResponse.Get(GatewayResponse.RESPONSE_CODE) in self._error_codes and \
@@ -199,7 +199,7 @@ class Payment(Services.Service):
 			print ("Scrub:", oResponse.Get(GatewayResponse.SCRUB_RESULTS))
 
 			# Return Failure
-			return Services.Effect(False)
+			return Services.Response(False)
 
 		# If there's no customer
 		if not oCustomer:
@@ -224,7 +224,7 @@ class Payment(Services.Service):
 		print ("Scrub:", oResponse.Get(GatewayResponse.SCRUB_RESULTS))
 
 		# Return Success
-		return Services.Effect({
+		return Services.Response({
 			"transaction_id": oResponse.Get(GatewayResponse.TRANSACT_ID),
 			"response_code": oResponse.Get(GatewayResponse.RESPONSE_CODE),
 			"reason_code": oResponse.Get(GatewayResponse.REASON_CODE),
@@ -243,16 +243,16 @@ class Payment(Services.Service):
 			data (mixed): Data sent with the request
 
 		Returns:
-			Services.Effect
+			Services.Response
 		"""
 
 		# Verify minimum fields
 		try: DictHelper.eval(data, ['_internal_', 'transaction_id'])
-		except ValueError as e: return Services.Effect(error=(1001, [(f, 'missing') for f in e.args]))
+		except ValueError as e: return Services.Response(error=(1001, [(f, 'missing') for f in e.args]))
 
 		# Verify the key, remove it if it's ok
 		#if not Services.internalKey(data['_internal_']):
-		#	return Services.Effect(error=Errors.SERVICE_INTERNAL_KEY)
+		#	return Services.Response(error=Errors.SERVICE_INTERNAL_KEY)
 		#del data['_internal_']
 
 		# Create a RG service instance
@@ -273,7 +273,7 @@ class Payment(Services.Service):
 
 			# If it's invalid
 			if not self._price.valid(data['amount']):
-				return Services.Effect(error=(1001, [('amount', 'invalid')]))
+				return Services.Response(error=(1001, [('amount', 'invalid')]))
 
 			# Else add it to the request
 			oRequest.Set(GatewayRequest.AMOUNT, data['amount'])
@@ -288,7 +288,7 @@ class Payment(Services.Service):
 		if not bSuccess:
 
 			# Return an error
-			return Services.Effect(error=(1404, {
+			return Services.Response(error=(1404, {
 				"transaction_id": oResponse.Get(GatewayResponse.TRANSACT_ID),
 				"response_code": oResponse.Get(GatewayResponse.RESPONSE_CODE),
 				"responde_msg": oResponse.Get(GatewayResponse.RESPONSE_CODE) in self._error_codes and \
@@ -302,7 +302,7 @@ class Payment(Services.Service):
 			}))
 
 		# Return Success
-		return Services.Effect({
+		return Services.Response({
 			"transaction_id": oResponse.Get(GatewayResponse.TRANSACT_ID),
 			"response_code": oResponse.Get(GatewayResponse.RESPONSE_CODE),
 			"reason_code": oResponse.Get(GatewayResponse.REASON_CODE),
@@ -318,16 +318,16 @@ class Payment(Services.Service):
 			data (mixed): Data sent with the request
 
 		Returns:
-			Services.Effect
+			Services.Response
 		"""
 
 		# Verify minimum fields
 		try: DictHelper.eval(data, ['_internal_', 'transaction_id'])
-		except ValueError as e: return Services.Effect(error=(1001, [(f, 'missing') for f in e.args]))
+		except ValueError as e: return Services.Response(error=(1001, [(f, 'missing') for f in e.args]))
 
 		# Verify the key, remove it if it's ok
 		#if not Services.internalKey(data['_internal_']):
-		#	return Services.Effect(error=Errors.SERVICE_INTERNAL_KEY)
+		#	return Services.Response(error=Errors.SERVICE_INTERNAL_KEY)
 		#del data['_internal_']
 
 		# Create a RG service instance
@@ -353,7 +353,7 @@ class Payment(Services.Service):
 		if not bSuccess:
 
 			# Return an error
-			return Services.Effect(error=(1404, {
+			return Services.Response(error=(1404, {
 				"transaction_id": oResponse.Get(GatewayResponse.TRANSACT_ID),
 				"response_code": oResponse.Get(GatewayResponse.RESPONSE_CODE),
 				"responde_msg": oResponse.Get(GatewayResponse.RESPONSE_CODE) in self._error_codes and \
@@ -367,7 +367,7 @@ class Payment(Services.Service):
 			}))
 
 		# Return Success
-		return Services.Effect({
+		return Services.Response({
 			"transaction_id": oResponse.Get(GatewayResponse.TRANSACT_ID),
 			"response_code": oResponse.Get(GatewayResponse.RESPONSE_CODE),
 			"reason_code": oResponse.Get(GatewayResponse.REASON_CODE),
@@ -383,25 +383,25 @@ class Payment(Services.Service):
 			data (mixed): Data sent with the request
 
 		Returns:
-			Services.Effect
+			Services.Response
 		"""
 
 		# Verify minimum fields
 		try: DictHelper.eval(data, ['_internal_', 'amount', 'customer_id'])
-		except ValueError as e: return Services.Effect(error=(1001, [(f, 'missing') for f in e.args]))
+		except ValueError as e: return Services.Response(error=(1001, [(f, 'missing') for f in e.args]))
 
 		# Verify the key, remove it if it's ok
 		#if not Services.internalKey(data['_internal_']):
-		#	return Services.Effect(error=Errors.SERVICE_INTERNAL_KEY)
+		#	return Services.Response(error=Errors.SERVICE_INTERNAL_KEY)
 		#del data['_internal_']
 
 		# Make sure the customer ID is valid before doing anything
 		if not self._customer_regex.match(data['customer_id']):
-			return Services.Effect(error=1403)
+			return Services.Response(error=1403)
 
 		# Make sure the amount is valid
 		if not self._price.valid(data['amount']):
-			return Services.Effect(error=(1001, [('amount', 'invalid')]))
+			return Services.Response(error=(1001, [('amount', 'invalid')]))
 
 		# Create a RG service instance
 		oService = GatewayService()
@@ -424,9 +424,9 @@ class Payment(Services.Service):
 		if not oCustomer or 'billing' in data:
 
 			# Verify existence of billing fields
-			if 'billing' not in data: return Services.Effect(error=(1001, [('billing', 'missing')]))
+			if 'billing' not in data: return Services.Response(error=(1001, [('billing', 'missing')]))
 			try: DictHelper.eval(data['billing'], self._billing_fields)
-			except ValueError as e: return Services.Effect(error=(1001, [(f, 'missing') for f in e.args]))
+			except ValueError as e: return Services.Response(error=(1001, [(f, 'missing') for f in e.args]))
 
 			# Add all the fields
 			oRequest.Set(GatewayRequest.CARDNO, data['billing']['cc'])
@@ -468,7 +468,7 @@ class Payment(Services.Service):
 		if not bSuccess:
 
 			# Return an error
-			return Services.Effect(error=(1404, {
+			return Services.Response(error=(1404, {
 				"transaction_id": oResponse.Get(GatewayResponse.TRANSACT_ID),
 				"response_code": oResponse.Get(GatewayResponse.RESPONSE_CODE),
 				"responde_msg": oResponse.Get(GatewayResponse.RESPONSE_CODE) in self._error_codes and \
@@ -503,7 +503,7 @@ class Payment(Services.Service):
 		print ("CardHash:", oResponse.Get(GatewayResponse.CARD_HASH))
 
 		# Return Success
-		return Services.Effect({
+		return Services.Response({
 			"transaction_id": oResponse.Get(GatewayResponse.TRANSACT_ID),
 			"response_code": oResponse.Get(GatewayResponse.RESPONSE_CODE),
 			"reason_code": oResponse.Get(GatewayResponse.REASON_CODE),
@@ -522,16 +522,16 @@ class Payment(Services.Service):
 			data (mixed): Data sent with the request
 
 		Returns:
-			Services.Effect
+			Services.Response
 		"""
 
 		# Verify minimum fields
 		try: DictHelper.eval(data, ['_internal_', 'transaction_id'])
-		except ValueError as e: return Services.Effect(error=(1001, [(f, 'missing') for f in e.args]))
+		except ValueError as e: return Services.Response(error=(1001, [(f, 'missing') for f in e.args]))
 
 		# Verify the key, remove it if it's ok
 		#if not Services.internalKey(data['_internal_']):
-		#	return Services.Effect(error=Errors.SERVICE_INTERNAL_KEY)
+		#	return Services.Response(error=Errors.SERVICE_INTERNAL_KEY)
 		#del data['_internal_']
 
 		# Create a RG service instance
@@ -557,7 +557,7 @@ class Payment(Services.Service):
 		if not bSuccess:
 
 			# Return an error
-			return Services.Effect(error=(1404, {
+			return Services.Response(error=(1404, {
 				"transaction_id": oResponse.Get(GatewayResponse.TRANSACT_ID),
 				"response_code": oResponse.Get(GatewayResponse.RESPONSE_CODE),
 				"responde_msg": oResponse.Get(GatewayResponse.RESPONSE_CODE) in self._error_codes and \
@@ -571,7 +571,7 @@ class Payment(Services.Service):
 			}))
 
 		# Return Success
-		return Services.Effect({
+		return Services.Response({
 			"transaction_id": oResponse.Get(GatewayResponse.TRANSACT_ID),
 			"response_code": oResponse.Get(GatewayResponse.RESPONSE_CODE),
 			"reason_code": oResponse.Get(GatewayResponse.REASON_CODE),

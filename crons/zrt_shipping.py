@@ -162,18 +162,18 @@ def run():
 				replace('{patient_name}', '%s %s' % (dKtCustomer['firstName'], dKtCustomer['lastName']))
 
 		# Send the SMS to the patient
-		oEff = Services.create('monolith', 'message/outgoing', {
+		oResponse = Services.create('monolith', 'message/outgoing', {
 			"_internal_": Services.internalKey(),
 			"name": "HRT Workflow",
 			"customerPhone": dKtCustomer['phoneNumber'],
 			"content": sContent,
 			"type": 'support'
 		})
-		if oEff.errorExists():
+		if oResponse.errorExists():
 			emailError('ZRT Shipping Error', 'Couldn\'t send sms:\n\n%s\n\n%s\n\n%s' % (
 				dKtCustomer['customerId'],
 				str(lMatches),
-				str(oEff)
+				str(oResponse)
 			))
 			continue
 

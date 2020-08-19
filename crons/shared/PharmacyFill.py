@@ -265,19 +265,19 @@ def process(item, backfill=None):
 	dRet['dob'] = dDsPatient['dateOfBirth'];
 
 	# Fetch the patient's prescriptions from dosespot
-	oEff = Services.read('prescriptions', 'patient/prescriptions', {
+	oResponse = Services.read('prescriptions', 'patient/prescriptions', {
 		"_internal_": Services.internalKey(),
 		"patient_id": int(dDsPatient['patientId'])
 	})
-	if oEff.errorExists():
-		return {"status": False, "data": str(oEff.error)}
+	if oResponse.errorExists():
+		return {"status": False, "data": str(oResponse.error)}
 
 	# If we didn't get data back anything from DoseSpot
-	if not oEff.data:
+	if not oResponse.data:
 		return {"status": False, "data": "NO PRESCRIPTIONS IN DOSESPOT"}
 
 	# Store full list of prescriptions
-	lPrescriptions = oEff.data
+	lPrescriptions = oResponse.data
 
 	# Filter down the prescriptions by medication
 	dPrescriptions = prescriptions(lPrescriptions, (backfill and backfill['max_date'] or None))

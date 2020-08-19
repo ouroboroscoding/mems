@@ -13,7 +13,7 @@ The services in MeMS use a custom framework designed around RESTful API micro se
 RestOC itself uses another library called FormatOC which is used to load definition files that allow for easy validation and cleaning up of document or table structures. Documentation for it can be found at http://ouroboroscoding.com/format-oc/
 
 ## Communication
-Communication between different services works using a standard format that must be maintained in order to avoid any confusion or issues with libraries/modules that interact with the services. Services using RestOC.Services handle this using the Effect class (RestOC.Services.Effect), however the format is straight forward and can be easily followed in other languages or without libraries.
+Communication between different services works using a standard format that must be maintained in order to avoid any confusion or issues with libraries/modules that interact with the services. Services using RestOC.Services handle this using the Response class (RestOC.Services.Response), however the format is straight forward and can be easily followed in other languages or without libraries.
 
 ### Format
 The format is JSON using a simple object with three variables of which at least data or error must be included.

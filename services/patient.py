@@ -98,19 +98,19 @@ class Patient(Services.Service):
 			sesh (Sesh._Session): The session associated with the request
 
 		Returns:
-			Services.Effect
+			Services.Response
 		"""
 
 		# If there's an ID, check permissions
 		if '_id' in data:
 
 			# Make sure the user has the proper permission to do this
-			oEff = self.rightsVerify_read({
+			oResponse = self.rightsVerify_read({
 				"name": "patient",
 				"right": Rights.READ
 			}, sesh)
-			if not oEff.data:
-				return Services.Effect(error=Rights.INVALID)
+			if not oResponse.data:
+				return Services.Response(error=Rights.INVALID)
 
 		# Else, assume the signed in user's Record
 		else:
@@ -121,13 +121,13 @@ class Patient(Services.Service):
 
 		# If it doesn't exist
 		if not dAccount:
-			return Services.Effect(error=1104)
+			return Services.Response(error=1104)
 
 		# Remove the passwd
 		del dAccount['passwd']
 
 		# Return the user data
-		return Services.Effect(dAccount)
+		return Services.Response(dAccount)
 
 	def accountEmail_update(self, data, sesh):
 		"""Account Email Update
@@ -139,23 +139,23 @@ class Patient(Services.Service):
 			sesh (Sesh._Session): The session associated with the request
 
 		Returns:
-			Services.Effect
+			Services.Response
 		"""
 
 		# Verify fields
 		try: DictHelper.eval(data, ['email', 'url'])
-		except ValueError as e: return Services.Effect(error=(1001, [(f, 'missing') for f in e.args]))
+		except ValueError as e: return Services.Response(error=(1001, [(f, 'missing') for f in e.args]))
 
 		# If there's an ID, check permissions
 		if '_id' in data:
 
 			# Make sure the user has the proper permission to do this
-			oEff = self.rightsVerify_read({
+			oResponse = self.rightsVerify_read({
 				"name": "patient",
 				"right": Rights.UPDATE
 			}, sesh)
-			if not oEff.data:
-				return Services.Effect(error=Rights.INVALID)
+			if not oResponse.data:
+				return Services.Response(error=Rights.INVALID)
 
 		# Else, assume the signed in user's Record
 		else:
@@ -167,12 +167,12 @@ class Patient(Services.Service):
 		# Check if we already have an account with that email
 		if Account.exists(data['email'], 'email') or \
 			AccountSetup.exists(data['email'], 'email'):
-			return Services.Effect(error=1900)
+			return Services.Response(error=1900)
 
 		# Find the account
 		oAccount = Account.get(data['_id'])
 		if not oAccount:
-			return Services.Effect(error=1104)
+			return Services.Response(error=1104)
 
 		# Update the email
 		oAccount['email'] = data['email']
@@ -182,14 +182,14 @@ class Patient(Services.Service):
 		if oAccount['crm_type'] == 'knk':
 
 			# Find the customer in Konnektive
-			oEff = Services.read('konnektive', 'customer', {
+			oResponse = Services.read('konnektive', 'customer', {
 				"customerId": oAccount['crm_id']
 			}, sesh)
-			if oEff.errorExists():
-				return oEff
+			if oResponse.errorExists():
+				return oResponse
 
 			# Store the first name
-			sFirst = oEff.data['shipping']['firstName']
+			sFirst = oResponse.data['shipping']['firstName']
 
 		# Upsert the record with the
 		sKey = StrHelper.random(32, '_0x')
@@ -198,7 +198,7 @@ class Patient(Services.Service):
 			"key": sKey
 		})
 		if not oVerify.create(conflict="replace"):
-			return Services.Effect(error=1100)
+			return Services.Response(error=1100)
 
 		# Forgot email template variables
 		dTpl = {
@@ -210,17 +210,17 @@ class Patient(Services.Service):
 		}
 
 		# Email the patient the key
-		oEff = Services.create('communications', 'email', {
+		oResponse = Services.create('communications', 'email', {
 			"_internal_": Services.internalKey(),
 			"html_body": Templates.generate('email/patient/verify.html', dTpl, oAccount['locale']),
 			"subject": Templates.generate('email/patient/verify_subject.txt', {}, oAccount['locale']),
 			"to": data['email']
 		})
-		if oEff.errorExists():
-			return oEff
+		if oResponse.errorExists():
+			return oResponse
 
 		# Save and return the result
-		return Services.Effect(
+		return Services.Response(
 			oAccount.save(changes={"user": sesh['user_id']})
 		)
 
@@ -234,12 +234,12 @@ class Patient(Services.Service):
 			data (dict): Data sent with the request
 
 		Returns:
-			Services.Effect
+			Services.Response
 		"""
 
 		# Verify fields
 		try: DictHelper.eval(data, ['email', 'url'])
-		except ValueError as e: return Services.Effect(error=(1001, [(f, 'missing') for f in e.args]))
+		except ValueError as e: return Services.Response(error=(1001, [(f, 'missing') for f in e.args]))
 
 		# Convert the email to lowercase
 		data['email'] = data['email'].lower()
@@ -247,14 +247,14 @@ class Patient(Services.Service):
 		# Look for the account by email
 		dAccount = Account.filter({"email": data['email']}, raw=['_id', 'locale', 'crm_type', 'crm_id'], limit=1)
 		if not dAccount:
-			return Services.Effect(False)
+			return Services.Response(False)
 
 		# Look for a verify record by account id
 		oVerify = Verify.get(dAccount['_id'])
 
 		# Is there already a key for the account?
 		if oVerify and 'regenerate' not in data:
-			return Services.Effect(True)
+			return Services.Response(True)
 
 		# If they're KNK
 		if dAccount['crm_type'] == 'knk':
@@ -265,15 +265,15 @@ class Patient(Services.Service):
 			oSesh.save()
 
 			# Find the customer in Konnektive
-			oEff = Services.read('konnektive', 'customer', {
+			oResponse = Services.read('konnektive', 'customer', {
 				"customerId": dAccount['crm_id']
 			}, oSesh)
 			oSesh.close()
-			if oEff.errorExists():
-				return Services.Effect(error=(oEff.error['code'], 'crm'))
+			if oResponse.errorExists():
+				return Services.Response(error=(oResponse.error['code'], 'crm'))
 
 			# Store the first name
-			sFirst = oEff.data['shipping']['firstName']
+			sFirst = oResponse.data['shipping']['firstName']
 
 		# Upsert the forgot record with a timestamp (for expiry) and the key
 		sKey = StrHelper.random(32, '_0x')
@@ -282,7 +282,7 @@ class Patient(Services.Service):
 			"key": sKey
 		})
 		if not oVerify.create(conflict="replace"):
-			return Services.Effect(error=1100)
+			return Services.Response(error=1100)
 
 		# Forgot email template variables
 		dTpl = {
@@ -294,17 +294,17 @@ class Patient(Services.Service):
 		}
 
 		# Email the patient the key
-		oEff = Services.create('communications', 'email', {
+		oResponse = Services.create('communications', 'email', {
 			"_internal_": Services.internalKey(),
 			"html_body": Templates.generate('email/patient/forgot.html', dTpl, dAccount['locale']),
 			"subject": Templates.generate('email/patient/forgot_subject.txt', {}, dAccount['locale']),
 			"to": data['email']
 		})
-		if oEff.errorExists():
-			return oEff
+		if oResponse.errorExists():
+			return oResponse
 
 		# Return OK
-		return Services.Effect(True)
+		return Services.Response(True)
 
 	def accountForgot_update(self, data):
 		"""Account Password Forgot (Change Password)
@@ -315,26 +315,26 @@ class Patient(Services.Service):
 			data (dict): Data sent with the request
 
 		Returns:
-			Services.Effect
+			Services.Response
 		"""
 
 		# Verify fields
 		try: DictHelper.eval(data, ['passwd', 'key'])
-		except ValueError as e: return Services.Effect(error=(1001, [(f, 'missing') for f in e.args]))
+		except ValueError as e: return Services.Response(error=(1001, [(f, 'missing') for f in e.args]))
 
 		# Look for the verify by the key
 		oVerify = Verify.filter({"key": data['key']}, limit=1)
 		if not oVerify:
-			return Services.Effect(error=1903) # Don't let people know if the key exists or not
+			return Services.Response(error=1903) # Don't let people know if the key exists or not
 
 		# Make sure the new password is strong enough
 		if not Account.passwordStrength(data['passwd']):
-			return Services.Effect(error=1904)
+			return Services.Response(error=1904)
 
 		# Find the Account
 		oAccount = Account.get(oVerify['_account'])
 		if not oAccount:
-			return Services.Effect(error=1903)
+			return Services.Response(error=1903)
 
 		# Store the new password and update
 		oAccount['passwd'] = Account.passwordHash(data['passwd'])
@@ -344,7 +344,7 @@ class Patient(Services.Service):
 		oVerify.delete()
 
 		# Return OK
-		return Services.Effect(True)
+		return Services.Response(True)
 
 	def accountVerify_update(self, data):
 		"""Account Veverify
@@ -355,22 +355,22 @@ class Patient(Services.Service):
 			data (dict): Data sent with the request
 
 		Returns:
-			Services.Effect
+			Services.Response
 		"""
 
 		# Verify fields
 		try: DictHelper.eval(data, ['key'])
-		except ValueError as e: return Services.Effect(error=(1001, [(f, 'missing') for f in e.args]))
+		except ValueError as e: return Services.Response(error=(1001, [(f, 'missing') for f in e.args]))
 
 		# Look for the verify by the key
 		oVerify = Verify.filter({"key": data['key']}, limit=1)
 		if not oVerify:
-			return Services.Effect(error=1903) # Don't let people know if the key exists or not
+			return Services.Response(error=1903) # Don't let people know if the key exists or not
 
 		# Find the Account
 		oAccount = Account.get(oVerify['_account'])
 		if not oAccount:
-			return Services.Effect(error=1903)
+			return Services.Response(error=1903)
 
 		# Update the verified flag
 		oAccount['verified'] = True
@@ -380,7 +380,7 @@ class Patient(Services.Service):
 		oVerify.delete()
 
 		# Return OK
-		return Services.Effect(True)
+		return Services.Response(True)
 
 	def session_read(self, data, sesh):
 		"""Session
@@ -392,9 +392,9 @@ class Patient(Services.Service):
 			sesh (Sesh._Session): The session associated with the request
 
 		Returns:
-			Services.Effect
+			Services.Response
 		"""
-		return Services.Effect({
+		return Services.Response({
 			"account" : {
 				"_id": sesh['user_id']
 			}
@@ -412,20 +412,20 @@ class Patient(Services.Service):
 			sesh (Sesh._Session): The session associated with the request
 
 		Returns:
-			Services.Effect
+			Services.Response
 		"""
 
 		# Make sure the user has the proper permission to do this
-		oEff = Services.read('auth', 'rights/verify', {
+		oResponse = Services.read('auth', 'rights/verify', {
 			"name": "patient_account",
 			"right": Rights.CREATE
 		}, sesh)
-		if not oEff.data:
-			return Services.Effect(error=Rights.INVALID)
+		if not oResponse.data:
+			return Services.Response(error=Rights.INVALID)
 
 		# Verify fields
 		try: DictHelper.eval(data, ['dob', 'crm_type', 'crm_id', 'rx_type', 'rx_id', 'url'])
-		except ValueError as e: return Services.Effect(error=(1001, [(f, 'missing') for f in e.args]))
+		except ValueError as e: return Services.Response(error=(1001, [(f, 'missing') for f in e.args]))
 
 		# Init setup
 		dSetup = {
@@ -439,53 +439,53 @@ class Patient(Services.Service):
 		if data['crm_type'] == 'knk':
 
 			# Find the customer in Konnektive
-			oEff = Services.read('konnektive', 'customer', {
+			oResponse = Services.read('konnektive', 'customer', {
 				"customerId": data['crm_id']
 			}, sesh)
-			if oEff.errorExists():
-				return Services.Effect(error=(oEff.error['code'], 'crm'))
+			if oResponse.errorExists():
+				return Services.Response(error=(oResponse.error['code'], 'crm'))
 
 			dSetup['crm_type'] = 'knk'
 			dSetup['crm_id'] = str(data['crm_id'])
-			dSetup['email'] = oEff.data['email'].lower()
-			dSetup['lname'] = oEff.data['shipping']['lastName']
-			sFirst = oEff.data['shipping']['firstName']
+			dSetup['email'] = oResponse.data['email'].lower()
+			dSetup['lname'] = oResponse.data['shipping']['lastName']
+			sFirst = oResponse.data['shipping']['firstName']
 
 		# Else, invalid CRM type
 		else:
-			return Services.Effect(error=(1001, [('crm_type', 'invalid')]))
+			return Services.Response(error=(1001, [('crm_type', 'invalid')]))
 
 		# Check if we already have an account with that email
 		if Account.exists(dSetup['email'], 'email') or \
 			AccountSetup.exists(dSetup['email'], 'email'):
-			return Services.Effect(error=1900)
+			return Services.Response(error=1900)
 
 		# If they're DoseSpot
 		if data['rx_type'] == 'ds':
 
 			# Find the patient in DoseSpot
-			oEff = Services.read('prescriptions', 'patient/prescriptions', {
+			oResponse = Services.read('prescriptions', 'patient/prescriptions', {
 				"patient_id": int(data['rx_id'])
 			}, sesh)
-			if oEff.errorExists():
-				return Services.Effect(error=(oEff.error['code'], 'rx'))
+			if oResponse.errorExists():
+				return Services.Response(error=(oResponse.error['code'], 'rx'))
 
 			dSetup['rx_type'] = 'ds'
 			dSetup['rx_id'] = str(data['rx_id'])
 
 		# Else, invalid RX type
 		else:
-			return Services.Effect(error=(1001, [('rx_type', 'invalid')]))
+			return Services.Response(error=(1001, [('rx_type', 'invalid')]))
 
 		# Create an instance of the setup record
 		try:
 			oSetup = AccountSetup(dSetup)
 		except ValueError as e:
-			return Services.Effect(error=(1001, e.args[0]))
+			return Services.Response(error=(1001, e.args[0]))
 
 		# Create the record
 		if not oSetup.create():
-			return Services.Effect(error=1100)
+			return Services.Response(error=1100)
 
 		# Patient setup email template variables
 		dTpl = {
@@ -494,17 +494,17 @@ class Patient(Services.Service):
 		}
 
 		# Email the patient the key
-		oEff = Services.create('communications', 'email', {
+		oResponse = Services.create('communications', 'email', {
 			"_internal_": Services.internalKey(),
 			"html_body": Templates.generate('email/patient/setup.html', dTpl, 'en-US'),
 			"subject": Templates.generate('email/patient/setup_subject.txt', {}, 'en-US'),
 			"to": dSetup['email']
 		})
-		if oEff.errorExists():
-			return oEff
+		if oResponse.errorExists():
+			return oResponse
 
 		# Return OK
-		return Services.Effect(True)
+		return Services.Response(True)
 
 	def setupValidate_create(self, data):
 		"""Setup Update
@@ -517,21 +517,21 @@ class Patient(Services.Service):
 			sesh (Sesh._Session): The session associated with the request
 
 		Returns:
-			Services.Effect
+			Services.Response
 		"""
 
 		# Verify fields
 		try: DictHelper.eval(data, ['key', 'dob', 'lname', 'passwd'])
-		except ValueError as e: return Services.Effect(error=(1001, [(f, 'missing') for f in e.args]))
+		except ValueError as e: return Services.Response(error=(1001, [(f, 'missing') for f in e.args]))
 
 		# Look for the record
 		oSetup = AccountSetup.get(data['key'])
 		if not oSetup:
-			return Services.Effect(error=1905)
+			return Services.Response(error=1905)
 
 		# Check if we already have an account with that email
 		if Account.exists(oSetup['email'], 'email'):
-			return Services.Effect(error=1900)
+			return Services.Response(error=1900)
 
 		# Check the dob and last name matches
 		if data['dob'] != oSetup['dob'] or \
@@ -543,16 +543,16 @@ class Patient(Services.Service):
 			# If we've hit the limit, delete the record and return
 			if oSetup['attempts'] == Conf.get(('services', 'patient', 'max_attempts')):
 				oSetup.delete()
-				return Services.Effect(error=1906)
+				return Services.Response(error=1906)
 
 			# Else, save and return
 			else:
 				oSetup.save()
-				return Services.Effect(error=1907)
+				return Services.Response(error=1907)
 
 		# Validate the password strength
 		if not Account.passwordStrength(data['passwd']):
-			return Services.Effect(error=1904)
+			return Services.Response(error=1904)
 
 		# Hash the password
 		data['passwd'] = Account.passwordHash(data['passwd'])
@@ -570,18 +570,18 @@ class Patient(Services.Service):
 				"rx_id": oSetup['rx_id']
 			})
 		except ValueError as e:
-			return Services.Effect(error=(1001, e.args[0]))
+			return Services.Response(error=(1001, e.args[0]))
 
 		# Create the record
 		if not oAccount.create(changes={"user": oSetup['user']}):
-			return Services.Effect(error=1100)
+			return Services.Response(error=1100)
 
 		# Create the permissions
 		sWarning = None
 		oSesh = Sesh.create()
 		oSesh['user_id'] = oSetup['user']
 		oSesh.save()
-		oEff = Services.update('auth', 'permissions', {
+		oResponse = Services.update('auth', 'permissions', {
 			"_internal_": Services.internalKey(),
 			"user": oAccount['_id'],
 			"permissions": {
@@ -590,15 +590,15 @@ class Patient(Services.Service):
 			}
 		}, oSesh)
 		oSesh.close()
-		if oEff.errorExists():
-			print(oEff)
+		if oResponse.errorExists():
+			print(oResponse)
 			sWarning = 'Failed to create permissions for agent'
 
 		# Delete the setup
 		oSetup.delete()
 
 		# Return OK
-		return Services.Effect(True, warning=sWarning)
+		return Services.Response(True, warning=sWarning)
 
 	def signin_create(self, data):
 		"""Signin
@@ -614,7 +614,7 @@ class Patient(Services.Service):
 
 		# Verify fields
 		try: DictHelper.eval(data, ['email', 'passwd'])
-		except ValueError as e: return Services.Effect(error=(1001, [(f, 'missing') for f in e.args]))
+		except ValueError as e: return Services.Response(error=(1001, [(f, 'missing') for f in e.args]))
 
 		# Convert the email to lowercase
 		data['email'] = data['email'].lower()
@@ -622,15 +622,15 @@ class Patient(Services.Service):
 		# Look for the patient by email address
 		oAccount = Account.filter({"email": data['email']}, limit=1)
 		if not oAccount:
-			return Services.Effect(error=1901)
+			return Services.Response(error=1901)
 
 		# Validate the password
 		if not oAccount.passwordValidate(data['passwd']):
-			return Services.Effect(error=1901)
+			return Services.Response(error=1901)
 
 		# If the email hasn't been verified
 		if not oAccount['verified']:
-			return Services.Effect(error=1908)
+			return Services.Response(error=1908)
 
 		# Create a new session
 		oSesh = Sesh.create()
@@ -642,7 +642,7 @@ class Patient(Services.Service):
 		oSesh.save()
 
 		# Return the session ID and primary account data
-		return Services.Effect({
+		return Services.Response({
 			"session": oSesh.id(),
 			"account": {
 				"_id": oSesh['user_id']
@@ -659,14 +659,14 @@ class Patient(Services.Service):
 			sesh (Sesh._Session): The session associated with the account
 
 		Returns:
-			Services.Effect
+			Services.Response
 		"""
 
 		# Close the session so it can no longer be found/used
 		sesh.close()
 
 		# Return OK
-		return Services.Effect(True)
+		return Services.Response(True)
 
 	def supportRequest_create(self, data, sesh):
 		"""Support Request
@@ -678,21 +678,21 @@ class Patient(Services.Service):
 			sesh (Sesh._Session): The session associated with the account
 
 		Returns:
-			Services.Effect
+			Services.Response
 		"""
 
 		# Verify fields
 		try: DictHelper.eval(data, ['type'])
-		except ValueError as e: return Services.Effect(error=(1001, [(f, 'missing') for f in e.args]))
+		except ValueError as e: return Services.Response(error=(1001, [(f, 'missing') for f in e.args]))
 
 		# If the type is invalid
 		if data['type'] not in _dSupportRequest:
-			return Services.Effect(error=(1001, [('type', 'invalid') for f in e.args]))
+			return Services.Response(error=(1001, [('type', 'invalid') for f in e.args]))
 
 		# Find the signed in user
 		oAccount = Account.get(sesh['user_id'], raw=['crm_type', 'crm_id'])
 		if not oAccount:
-			return Services.Effect(error=1104)
+			return Services.Response(error=1104)
 
 		# Email content
 		sBody = _dSupportRequest[data['type']] % {
@@ -701,14 +701,14 @@ class Patient(Services.Service):
 		}
 
 		# Email the patient the key
-		oEff = Services.create('communications', 'email', {
+		oResponse = Services.create('communications', 'email', {
 			"_internal_": Services.internalKey(),
 			"text_body": sBody,
 			"subject": 'Patient Portal Support Request',
 			"to": Conf.get(('services', 'patient', 'support_email'))
 		})
-		if oEff.errorExists():
-			return oEff
+		if oResponse.errorExists():
+			return oResponse
 
 		# Return OK
-		return Services.Effect(True)
+		return Services.Response(True)

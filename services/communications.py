@@ -82,7 +82,7 @@ class Service(Services.Service):
 			sesh (Sesh._Session): Not used
 
 		Returns:
-			Effect
+			Services.Response
 		"""
 
 		# If we are sending an email
@@ -94,7 +94,7 @@ class Service(Services.Service):
 			return self.sms(data)
 
 		# Invalid path
-		return Effect(error=(Errors.SERVICE_NO_SUCH_NOUN, 'POST %s' % path))
+		return Services.Response(error=(Errors.SERVICE_NO_SUCH_NOUN, 'POST %s' % path))
 
 	def email(self, data):
 		"""Email
@@ -106,21 +106,21 @@ class Service(Services.Service):
 			data (dict): The data sent with the request
 
 		Returns:
-			Services.Effect
+			Services.Response
 		"""
 
 		# Verify fields
 		try: DictHelper.eval(data, ['_internal_', 'subject', 'to'])
-		except ValueError as e: return Services.Effect(error=(1001, [(f, 'missing') for f in e.args]))
+		except ValueError as e: return Services.Response(error=(1001, [(f, 'missing') for f in e.args]))
 
 		# Verify the key, remove it if it's ok
 		if not Services.internalKey(data['_internal_']):
-			return Services.Effect(error=Errors.SERVICE_INTERNAL_KEY)
+			return Services.Response(error=Errors.SERVICE_INTERNAL_KEY)
 		del data['_internal_']
 
 		# Check that we have at least one type of body
 		if 'html_body' not in data and 'text_body' not in data:
-			return Services.Effect(error=1300)
+			return Services.Response(error=1300)
 
 		# Add None if either body is missing
 		if 'html_body' not in data:	data['html_body'] = None
@@ -138,7 +138,7 @@ class Service(Services.Service):
 
 			# If it's not valid
 			if not self._queueKey(data, sQueueKey):
-				return Services.Effect(error=1001)
+				return Services.Response(error=1001)
 
 			# Else, we're good
 			data['_queue_'] = True
@@ -161,19 +161,19 @@ class Service(Services.Service):
 
 					# If we didn't get a dictionary
 					if not isinstance(data['attachments'][i], dict):
-						return Services.Effect(error=(1301, "attachments.%d" % i))
+						return Services.Response(error=(1301, "attachments.%d" % i))
 
 					# If the fields are missing
 					try:
 						DictHelper.eval(data['attachments'][i], ['body', 'filename'])
 					except ValueError as e:
-						return Services.Effects(error=(1001, [("attachments.%d.%s" % (i, s), 'invalid') for s in e.args]))
+						return Services.Responses(error=(1001, [("attachments.%d.%s" % (i, s), 'invalid') for s in e.args]))
 
 					# Try to decode the base64
 					try:
 						data['attachments'][i]['body'] = b64decode(data['attachments'][i]['body'])
 					except TypeError:
-						return Services.Effect(error=1302)
+						return Services.Response(error=1302)
 
 				# Set the attachments from the data
 				mAttachments = data['attachments']
@@ -189,7 +189,7 @@ class Service(Services.Service):
 
 			# If there was an error
 			if iRes != SMTP.OK:
-				return Services.Effect(error=(1303, '%i %s' % (iRes, SMTP.lastError())))
+				return Services.Response(error=(1303, '%i %s' % (iRes, SMTP.lastError())))
 
 		# Else, we are sending to the queue first
 		else:
@@ -198,7 +198,7 @@ class Service(Services.Service):
 			data['_queue_'] = self._queueKey(data)
 
 			# Send the data to the queue service
-			oEff = Services.create('queue', 'msg', {
+			oResponse = Services.create('queue', 'msg', {
 				"_internal_": Services.internalKey(),
 				"service": "communications",
 				"path": "email",
@@ -207,11 +207,11 @@ class Service(Services.Service):
 			})
 
 			# Return if there's an error
-			if oEff.errorExists():
-				return oEff
+			if oResponse.errorExists():
+				return oResponse
 
 		# Return OK
-		return Services.Effect(True)
+		return Services.Response(True)
 
 	def initialise(self):
 		"""Initialise
@@ -257,21 +257,21 @@ class Service(Services.Service):
 			data (dict): The data sent with the request
 
 		Returns:
-			Services.Effect
+			Services.Response
 		"""
 
 		# Verify fields
 		try: DictHelper.eval(data, ['_internal_', 'to', 'content', 'service'])
-		except ValueError as e: return Services.Effect(error=(1001, [(f, 'missing') for f in e.args]))
+		except ValueError as e: return Services.Response(error=(1001, [(f, 'missing') for f in e.args]))
 
 		# Verify the key, remove it if it's ok
 		if not Services.internalKey(data['_internal_']):
-			return Services.Effect(error=Errors.SERVICE_INTERNAL_KEY)
+			return Services.Response(error=Errors.SERVICE_INTERNAL_KEY)
 		del data['_internal_']
 
 		# If the service is invalid
 		if data['service'] not in self._smsServices:
-			return Services.Effect(error=(1001, [('service', 'invalid')]))
+			return Services.Response(error=(1001, [('service', 'invalid')]))
 
 		try:
 
@@ -284,10 +284,10 @@ class Service(Services.Service):
 				)
 
 				# Return the SID of the message
-				return Services.Effect(dRes.sid)
+				return Services.Response(dRes.sid)
 
 			# Return the SID of the message
-			return Services.Effect('not sent')
+			return Services.Response('not sent')
 
 		except TwilioRestException as e:
-			return Services.Effect(error=(1304, str(e)))
+			return Services.Response(error=(1304, str(e)))

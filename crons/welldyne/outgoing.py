@@ -73,7 +73,7 @@ def no_feedback(hours):
 		oCSV.writerow([d['customerId'], d['type'], d['triggered'], d['firstName'], d['lastName']])
 
 	# Send the email
-	oEff = Services.create('communications', 'email', {
+	oResponse = Services.create('communications', 'email', {
 		"_internal_": Services.internalKey(),
 		"text_body": 'Triggered orders with no feedback in %d hours' % hours,
 		"subject": 'No Feedback Report',
@@ -83,8 +83,8 @@ def no_feedback(hours):
 			"filename": 'maleexcel_no_feedback_%s.csv' % arrow.get().format('YYYY-MM-DD')
 		}
 	})
-	if oEff.errorExists():
-		print(oEff)
+	if oResponse.errorExists():
+		print(oResponse)
 		return False
 
 	# A-OK

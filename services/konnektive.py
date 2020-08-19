@@ -173,25 +173,25 @@ class Konnektive(Services.Service):
 			sesh (Sesh._Session): The session associated with the request
 
 		Returns:
-			Services.Effect
+			Services.Response
 		"""
 
 		# Verify fields
 		try: DictHelper.eval(data, ['customerId'])
-		except ValueError as e: return Services.Effect(error=(1001, [(f, 'missing') for f in e.args]))
+		except ValueError as e: return Services.Response(error=(1001, [(f, 'missing') for f in e.args]))
 
 		# If detailed flag not passed, don't include
 		if 'detailed' not in data:
 			data['detailed'] = False
 
 		# Make sure the user has the proper permission to do this
-		oEff = Services.read('auth', 'rights/verify', {
+		oResponse = Services.read('auth', 'rights/verify', {
 			"name": "customers",
 			"right": Rights.READ,
 			"ident": data['customerId']
 		}, sesh)
-		if not oEff.data:
-			return Services.Effect(error=Rights.INVALID)
+		if not oResponse.data:
+			return Services.Response(error=Rights.INVALID)
 
 		# Make the request to Konnektive
 		lCustomers = self._request('customer/query', {
@@ -203,7 +203,7 @@ class Konnektive(Services.Service):
 
 		# If there's none
 		if not lCustomers:
-			return Services.Effect(error=1104)
+			return Services.Response(error=1104)
 
 		# Generate the base data
 		dData = {
@@ -251,7 +251,7 @@ class Konnektive(Services.Service):
 			}
 
 		# Return the customer data
-		return Services.Effect(dData)
+		return Services.Response(dData)
 
 	def customer_update(self, data, sesh):
 		"""Customer Update
@@ -263,21 +263,21 @@ class Konnektive(Services.Service):
 			sesh (Sesh._Session): The session associated with the request
 
 		Returns:
-			Services.Effect
+			Services.Response
 		"""
 
 		# Verify fields
 		try: DictHelper.eval(data, ['customerId'])
-		except ValueError as e: return Services.Effect(error=(1001, [(f, 'missing') for f in e.args]))
+		except ValueError as e: return Services.Response(error=(1001, [(f, 'missing') for f in e.args]))
 
 		# Make sure the user has the proper permission to do this
-		oEff = Services.read('auth', 'rights/verify', {
+		oResponse = Services.read('auth', 'rights/verify', {
 			"name": "customers",
 			"right": Rights.UPDATE,
 			"ident": data['customerId']
 		}, sesh)
-		if not oEff.data:
-			return Services.Effect(error=Rights.INVALID)
+		if not oResponse.data:
+			return Services.Response(error=Rights.INVALID)
 
 		# Init the params to KNK
 		dQuery = {}
@@ -304,14 +304,14 @@ class Konnektive(Services.Service):
 
 			# If we got a string back, it's an error
 			if isinstance(mRes, str):
-				return Services.Effect(error=(1700, mRes))
+				return Services.Response(error=(1700, mRes))
 
 			# If we got an error
 			if 'Error' in mRes:
 				if mRes['Error']['Description'] == 'Address Not Found.':
-					return Services.Effect(error=1701)
+					return Services.Response(error=1701)
 				else:
-					return Services.Effect(error=(1700, mRes['Error']))
+					return Services.Response(error=(1700, mRes['Error']))
 
 			# Set the values based on the return
 			dQuery['firstName'] = data['billing']['firstName'] == '' and 'NULL' or data['billing']['firstName']
@@ -338,16 +338,16 @@ class Konnektive(Services.Service):
 
 			# If we got a string back, it's an error
 			if isinstance(mRes, str):
-				return Services.Effect(error=(1700, mRes))
+				return Services.Response(error=(1700, mRes))
 
 			# If we got an error
 			if 'Error' in mRes:
 				if mRes['Error']['Description'] == 'Address Not Found.':
-					return Services.Effect(error=1701)
+					return Services.Response(error=1701)
 				elif mRes['Error']['Description'] == 'Invalid City.':
-					return Services.Effect(error=1702)
+					return Services.Response(error=1702)
 				else:
-					return Services.Effect(error=(1700, mRes['Error']))
+					return Services.Response(error=(1700, mRes['Error']))
 
 			# Set the values based on the return
 			dQuery['shipFirstName'] = data['shipping']['firstName'] == '' and 'NULL' or data['shipping']['firstName']
@@ -368,10 +368,10 @@ class Konnektive(Services.Service):
 
 			# Send the update to Konnektive
 			if not self.__post('customer/update', dQuery):
-				return Services.Effect(error=1103)
+				return Services.Response(error=1103)
 
 		# Return OK
-		return Services.Effect(True)
+		return Services.Response(True)
 
 	def customerPurchases_read(self, data, sesh):
 		"""Customer Purchases
@@ -383,21 +383,21 @@ class Konnektive(Services.Service):
 			sesh (Sesh._Session): The session associated with the request
 
 		Returns:
-			Services.Effect
+			Services.Response
 		"""
 
 		# Verify fields
 		try: DictHelper.eval(data, ['customerId'])
-		except ValueError as e: return Services.Effect(error=(1001, [(f, 'missing') for f in e.args]))
+		except ValueError as e: return Services.Response(error=(1001, [(f, 'missing') for f in e.args]))
 
 		# Make sure the user has the proper permission to do this
-		oEff = Services.read('auth', 'rights/verify', {
+		oResponse = Services.read('auth', 'rights/verify', {
 			"name": "customers",
 			"right": Rights.READ,
 			"ident": data['customerId']
 		}, sesh)
-		if not oEff.data:
-			return Services.Effect(error=Rights.INVALID)
+		if not oResponse.data:
+			return Services.Response(error=Rights.INVALID)
 
 		# Make the request to Konnektive
 		lPurchases = self._request('purchase/query', {
@@ -407,7 +407,7 @@ class Konnektive(Services.Service):
 		});
 
 		# Return what ever's found after removing unnecessary data
-		return Services.Effect([{
+		return Services.Response([{
 			"billing": {
 				"address1": dP['address1'],
 				"address2": dP['address2'],
@@ -461,21 +461,21 @@ class Konnektive(Services.Service):
 			sesh (Sesh._Session): The session associated with the request
 
 		Returns:
-			Services.Effect
+			Services.Response
 		"""
 
 		# Verify fields
 		try: DictHelper.eval(data, ['customerId'])
-		except ValueError as e: return Services.Effect(error=(1001, [(f, 'missing') for f in e.args]))
+		except ValueError as e: return Services.Response(error=(1001, [(f, 'missing') for f in e.args]))
 
 		# Make sure the user has the proper permission to do this
-		oEff = Services.read('auth', 'rights/verify', {
+		oResponse = Services.read('auth', 'rights/verify', {
 			"name": "customers",
 			"right": Rights.READ,
 			"ident": data['customerId']
 		}, sesh)
-		if not oEff.data:
-			return Services.Effect(error=Rights.INVALID)
+		if not oResponse.data:
+			return Services.Response(error=Rights.INVALID)
 
 		# If transactions flag not passed, assume false
 		if 'transactions' not in data:
@@ -492,17 +492,17 @@ class Konnektive(Services.Service):
 		if data['transactions']:
 
 			# Get them from this service
-			oEff = self.customerTransactions_read({
+			oResponse = self.customerTransactions_read({
 				"customerId": data['customerId']
 			}, sesh, False)
 
 			# If there's an error
-			if oEff.errorExists():
-				return oEff
+			if oResponse.errorExists():
+				return oResponse
 
 			# Store them by order ID
 			dTransactions = {}
-			for d in oEff.data[::-1]:
+			for d in oResponse.data[::-1]:
 
 				# If it's an authorize, capture, or sale, store as is
 				if d['type'] in ['AUTHORIZE', 'CAPTURE', 'SALE']:
@@ -516,7 +516,7 @@ class Konnektive(Services.Service):
 					dTransactions[d['orderId']]['voided'] = True
 
 		# Return what ever's found after removing unnecessary data
-		return Services.Effect([{
+		return Services.Response([{
 			"billing": {
 				"address1": dO['address1'],
 				"address2": dO['address2'],
@@ -571,22 +571,22 @@ class Konnektive(Services.Service):
 			verify (bool): Allow bypassing verification for internal calls
 
 		Returns:
-			Services.Effect
+			Services.Response
 		"""
 
 		# Verify fields
 		try: DictHelper.eval(data, ['customerId'])
-		except ValueError as e: return Services.Effect(error=(1001, [(f, 'missing') for f in e.args]))
+		except ValueError as e: return Services.Response(error=(1001, [(f, 'missing') for f in e.args]))
 
 		# Make sure the user has the proper permission to do this
 		if verify:
-			oEff = Services.read('auth', 'rights/verify', {
+			oResponse = Services.read('auth', 'rights/verify', {
 				"name": "customers",
 				"right": Rights.READ,
 				"ident": data['customerId']
 			}, sesh)
-			if not oEff.data:
-				return Services.Effect(error=Rights.INVALID)
+			if not oResponse.data:
+				return Services.Response(error=Rights.INVALID)
 
 		# Make the request to Konnektive
 		lTransactions = self._request('transactions/query', {
@@ -596,7 +596,7 @@ class Konnektive(Services.Service):
 		});
 
 		# Return what ever's found after removing unnecessary data
-		return Services.Effect([{
+		return Services.Response([{
 			"orderId": d['orderId'],
 			"date": d['dateUpdated'],
 			"mid": d['merchant'],
@@ -627,21 +627,21 @@ class Konnektive(Services.Service):
 			sesh (Sesh._Session): The session associated with the request
 
 		Returns:
-			Services.Effect
+			Services.Response
 		"""
 
 		# Verify fields
 		try: DictHelper.eval(data, ['customerId'])
-		except ValueError as e: return Services.Effect(error=(1001, [(f, 'missing') for f in e.args]))
+		except ValueError as e: return Services.Response(error=(1001, [(f, 'missing') for f in e.args]))
 
 		# Make sure the user has the proper permission to do this
-		oEff = Services.read('auth', 'rights/verify', {
+		oResponse = Services.read('auth', 'rights/verify', {
 			"name": "customers",
 			"right": Rights.READ,
 			"ident": data['customerId']
 		}, sesh)
-		if not oEff.data:
-			return Services.Effect(error=Rights.INVALID)
+		if not oResponse.data:
+			return Services.Response(error=Rights.INVALID)
 
 		# Make the request to Konnektive
 		lTransactions = self._request('transactions/query', {
@@ -651,7 +651,7 @@ class Konnektive(Services.Service):
 		});
 
 		# Return what ever's found after removing unnecessary data
-		return Services.Effect([{
+		return Services.Response([{
 			"date": d['dateUpdated'],
 			"mid": d['merchant'],
 			"cycle": d['billingCycleNumber'],
