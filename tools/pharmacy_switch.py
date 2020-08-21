@@ -75,13 +75,13 @@ if __name__ == "__main__":
 		iID = int(dP['patientId'])
 
 		# Get the pharmacies using the patient ID
-		oEff = oPrescriptions.patientPharmacies_read({"patient_id": iID}, oSesh)
-		if oEff.errorExists():
-			print(oEff.error)
+		oResponse = oPrescriptions.patientPharmacies_read({"patient_id": iID}, oSesh)
+		if oResponse.errorExists():
+			print(oResponse.error)
 			sys.exit(1);
 
 		# Go through each pharmacy
-		for dPharmacy in oEff.data:
+		for dPharmacy in oResponse.data:
 
 			# If we find one with the ID to switch out
 			if dPharmacy['PharmacyId'] == iFrom:
@@ -90,15 +90,15 @@ if __name__ == "__main__":
 				print('%d had %d' % (iID, iFrom))
 
 				# Add the new pharmacy
-				oEff = oPrescriptions.patientPharmacy_create({"patient_id": iID, "pharmacy_id": iTo}, oSesh)
-				if oEff.errorExists():
-					print(oEff.error)
+				oResponse = oPrescriptions.patientPharmacy_create({"patient_id": iID, "pharmacy_id": iTo}, oSesh)
+				if oResponse.errorExists():
+					print(oResponse.error)
 					sys.exit(1);
 
 				# Delete the old pharmacy
-				oEff = oPrescriptions.patientPharmacy_delete({"patient_id": iID, "pharmacy_id": iFrom}, oSesh)
-				if oEff.errorExists():
-					print(oEff.error)
+				oResponse = oPrescriptions.patientPharmacy_delete({"patient_id": iID, "pharmacy_id": iFrom}, oSesh)
+				if oResponse.errorExists():
+					print(oResponse.error)
 					sys.exit(1);
 
 				# Stop the loop

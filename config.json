@@ -122,6 +122,7 @@
 			"auth": {"port": 3},
 			"communications": {"port": 4},
 			"csr": {"port": 9},
+			"customers": {"port": 12},
 			"konnektive": {"port": 7},
 			"monolith": {"port": 6},
 			"patient": {"port": 11},
@@ -136,6 +137,9 @@
 		"salt": null,
 		"auth": {
 			"forgot_expire": 600
+		},
+		"customers": {
+			"address_services": []
 		},
 		"monolith": {
 			"claims_max": 20,

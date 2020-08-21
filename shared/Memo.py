@@ -41,7 +41,7 @@ def __request(action, path, data):
 	"""
 
 	try: __funcToRequest[action]
-	except KeyError: Effect(error=(Errors.SERVICE_ACTION, action))
+	except KeyError: return {"error": {"code": Errors.SERVICE_ACTION, "msg": action}}
 
 	# Get the config
 	dConf = Conf.get('memo')
@@ -83,7 +83,7 @@ def create(path, data):
 		data {mixed} -- The data to pass to the request
 
 	Returns:
-		Effect
+		dict
 	"""
 	return __request('create', path, data)
 
@@ -97,7 +97,7 @@ def delete(path, data):
 		data {mixed} -- The data to pass to the request
 
 	Returns:
-		Effect
+		dict
 	"""
 	return __request('delete', path, data)
 
@@ -111,7 +111,7 @@ def read(path, data):
 		data {mixed} -- The data to pass to the request
 
 	Returns:
-		Effect
+		dict
 	"""
 	return __request('read', path, data)
 
@@ -125,6 +125,6 @@ def update(path, data):
 		data {mixed} -- The data to pass to the request
 
 	Returns:
-		Effect
+		dict
 	"""
 	return __request('update', path, data)

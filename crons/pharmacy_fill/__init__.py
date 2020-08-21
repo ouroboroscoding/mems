@@ -310,14 +310,14 @@ def run(period=None):
 			)
 
 			# Send the email
-			oEff = Services.create('communications', 'email', {
+			oResponse = Services.create('communications', 'email', {
 				"_internal_": Services.internalKey(),
 				"html_body": sBody,
 				"subject": 'Prescriptions expiring soon',
 				"to": "ew@maleexcel.com"
 			})
-			if oEff.errorExists():
-				print(oEff.error)
+			if oResponse.errorExists():
+				print(oResponse.error)
 
 		# Return OK
 		return True

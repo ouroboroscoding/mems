@@ -11,37 +11,21 @@ __maintainer__	= "Chris Nasr"
 __email__		= "bast@maleexcel.com"
 __created__		= "2020-05-11"
 
-# Python imports
-import os, platform
-
 # Pip imports
-from RestOC import Conf, Record_Base, Record_MySQL, REST, Services, Sesh
+from RestOC import Conf, REST
 
-# App imports
+# Service imports
 from services.payment import Payment
 
-# Load the config
-Conf.load('config.json')
-sConfOverride = 'config.%s.json' % platform.node()
-if os.path.isfile(sConfOverride):
-	Conf.load_merge(sConfOverride)
+# Local imports
+from . import init
 
-# Add the global prepend and primary host to mysql
-Record_Base.dbPrepend(Conf.get(("mysql", "prepend"), ''))
-Record_MySQL.addHost('primary', Conf.get(("mysql", "hosts", "primary")))
-
-# Create the REST config instance
-oRestConf = REST.Config(Conf.get("rest"))
-
-# Set verbose mode if requested
-if 'VERBOSE' in os.environ and os.environ['VERBOSE'] == '1':
-	Services.verbose()
-
-# Get all the services
-dServices = {"payment": Payment()}
-
-# Register all services
-Services.register(dServices, oRestConf, Conf.get(('services', 'salt')))
+# Init the REST info
+oRestConf = init(
+	dbs=['primary'],
+	services={'payment':Payment()},
+	templates='templates'
+)
 
 # Create the HTTP server and map requests to service
 REST.Server({

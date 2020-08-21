@@ -23,7 +23,7 @@ from RestOC import Conf, DictHelper, Errors, Services, \
 # Shared imports
 from shared import Rights
 
-# Service imports
+# Records imports
 from records.auth import Forgot, Permission, User
 
 # Regex for validating email
@@ -58,6 +58,9 @@ class Auth(Services.Service):
 		Permission.redis(self._redis)
 		User.redis(self._redis)
 
+		# Return self for chaining
+		return self
+
 	@classmethod
 	def install(cls):
 		"""Install
@@ -89,7 +92,7 @@ class Auth(Services.Service):
 			sesh (Sesh._Session): The session associated with the request
 
 		Returns:
-			Services.Effect
+			Services.Response
 		"""
 
 		# If we have an internal key
@@ -97,29 +100,29 @@ class Auth(Services.Service):
 
 			# Verify the key, remove it if it's ok
 			if not Services.internalKey(data['_internal_']):
-				return Services.Effect(error=Errors.SERVICE_INTERNAL_KEY)
+				return Services.Response(error=Errors.SERVICE_INTERNAL_KEY)
 			del data['_internal_']
 
 		# Else, check permissions
 		else:
 
 			# Make sure the user has the proper rights
-			oEff = self.rightsVerify_read({
+			oResponse = self.rightsVerify_read({
 				"name": "permissions",
 				"right": Rights.READ
 			}, sesh)
-			if not oEff.data:
-				return Services.Effect(error=Rights.INVALID)
+			if not oResponse.data:
+				return Services.Response(error=Rights.INVALID)
 
 		# Verify fields
 		try: DictHelper.eval(data, ['user_id'])
-		except ValueError as e: return Services.Effect(error=(1001, [(f, 'missing') for f in e.args]))
+		except ValueError as e: return Services.Response(error=(1001, [(f, 'missing') for f in e.args]))
 
 		# Fetch the Permissions
 		dPermissions = Permission.cache(data['user_id'])
 
 		# Return all permissions
-		return Services.Effect(dPermissions)
+		return Services.Response(dPermissions)
 
 	def permissionsSelf_read(self, data, sesh):
 		"""Permissions Self
@@ -131,11 +134,11 @@ class Auth(Services.Service):
 			sesh (Sesh._Session): The session associated with the request
 
 		Returns:
-			Services.Effect
+			Services.Response
 		"""
 
 		# Fetch and return the permissions for the signed in user
-		return Services.Effect(
+		return Services.Response(
 			Permission.cache(sesh['user_id'])
 		)
 
@@ -149,7 +152,7 @@ class Auth(Services.Service):
 			sesh (Sesh._Session): The session associated with the request
 
 		Returns:
-			Services.Effect
+			Services.Response
 		"""
 
 		# If we have an internal key
@@ -157,23 +160,23 @@ class Auth(Services.Service):
 
 			# Verify the key, remove it if it's ok
 			if not Services.internalKey(data['_internal_']):
-				return Services.Effect(error=Errors.SERVICE_INTERNAL_KEY)
+				return Services.Response(error=Errors.SERVICE_INTERNAL_KEY)
 			del data['_internal_']
 
 		# Else, check permissions
 		else:
 
 			# Make sure the user has the proper rights
-			oEff = self.rightsVerify_read({
+			oResponse = self.rightsVerify_read({
 				"name": "permission",
 				"right": Rights.UPDATE
 			}, sesh)
-			if not oEff.data:
-				return Services.Effect(error=Rights.INVALID)
+			if not oResponse.data:
+				return Services.Response(error=Rights.INVALID)
 
 		# Verify fields
 		try: DictHelper.eval(data, ['user', 'permissions'])
-		except ValueError as e: return Services.Effect(error=(1001, [(f, 'missing') for f in e.args]))
+		except ValueError as e: return Services.Response(error=(1001, [(f, 'missing') for f in e.args]))
 
 		# Get the user's current permissions
 		dOldPermissions = Permission.cache(data['user'])
@@ -204,7 +207,7 @@ class Auth(Services.Service):
 
 		# If there was any errors
 		if lErrors:
-			return Services.Effect(error=(1001, lErrors))
+			return Services.Response(error=(1001, lErrors))
 
 		# Delete all the existing permissions if there are any
 		if dOldPermissions:
@@ -231,7 +234,7 @@ class Auth(Services.Service):
 		Permission.cacheClear(data['user'])
 
 		# Return OK
-		return Services.Effect(True)
+		return Services.Response(True)
 
 	def rightsVerify_read(self, data, sesh):
 		"""Rights Verify
@@ -244,37 +247,37 @@ class Auth(Services.Service):
 			sesh (Sesh._Session): The session associated with the user
 
 		Returns:
-			Effect
+			Services.Response
 		"""
 
 		# Verify fields
 		try: DictHelper.eval(data, ['name', 'right'])
-		except ValueError as e: return Services.Effect(error=(1001, [(f, 'missing') for f in e.args]))
+		except ValueError as e: return Services.Response(error=(1001, [(f, 'missing') for f in e.args]))
 
 		# Find the permissions
 		dPermissions = Permission.cache(sesh['user_id'])
 
 		# If the permission doesn't exist at all
 		if not dPermissions or data['name'] not in dPermissions:
-			return Services.Effect(False)
+			return Services.Response(False)
 
 		# If the permission exists but doesn't contain the proper right
 		if not dPermissions[data['name']]['rights'] & data['right']:
-			return Services.Effect(False)
+			return Services.Response(False)
 
 		# If the permission has idents
 		if dPermissions[data['name']]['idents'] is not None:
 
 			# If no ident was passed
 			if 'ident' not in data:
-				return Services.Effect(False)
+				return Services.Response(False)
 
 			# If the ident isn't in the list
 			if str(data['ident']) not in dPermissions[data['name']]['idents']:
-				return Services.Effect(False)
+				return Services.Response(False)
 
 		# Seems ok
-		return Services.Effect(True)
+		return Services.Response(True)
 
 	def search_read(self, data, sesh):
 		"""Search
@@ -286,20 +289,20 @@ class Auth(Services.Service):
 			sesh (Sesh._Session): The session associated with the request
 
 		Returns:
-			Services.Effect
+			Services.Response
 		"""
 
 		# Verify fields
 		try: DictHelper.eval(data, ['filter'])
-		except ValueError as e: return Services.Effect(error=(1001, [(f, 'missing') for f in e.args]))
+		except ValueError as e: return Services.Response(error=(1001, [(f, 'missing') for f in e.args]))
 
 		# If the filter isn't a dict
 		if not isinstance(data['filter'], dict):
-			return Services.Effect(error=(1001, [('filter', "must be a key:value store")]))
+			return Services.Response(error=(1001, [('filter', "must be a key:value store")]))
 
 		# If fields is not a list
 		if 'fields' in data and not isinstance(data['fields'], list):
-			return Services.Effect(error=(1001, [('fields', "must be an list")]))
+			return Services.Response(error=(1001, [('fields', "must be an list")]))
 
 		# Search based on the data passed
 		lRecords = [d['_id'] for d in User.filter(data['filter'], raw=['_id'])]
@@ -313,7 +316,7 @@ class Auth(Services.Service):
 			del d['passwd']
 
 		# Run a search and return the results
-		return Services.Effect(lRecords)
+		return Services.Response(lRecords)
 
 	def session_read(self, data, sesh):
 		"""Session
@@ -325,9 +328,9 @@ class Auth(Services.Service):
 			sesh (Sesh._Session): The session associated with the request
 
 		Returns:
-			Services.Effect
+			Services.Response
 		"""
-		return Services.Effect({
+		return Services.Response({
 			"user" : {
 				"id": sesh['user_id']
 			}
@@ -347,16 +350,16 @@ class Auth(Services.Service):
 
 		# Verify fields
 		try: DictHelper.eval(data, ['email', 'passwd'])
-		except ValueError as e: return Services.Effect(error=(1001, [(f, 'missing') for f in e.args]))
+		except ValueError as e: return Services.Response(error=(1001, [(f, 'missing') for f in e.args]))
 
 		# Look for the user by alias
 		oUser = User.filter({"email": data['email']}, limit=1)
 		if not oUser:
-			return Services.Effect(error=1201)
+			return Services.Response(error=1201)
 
 		# Validate the password
 		if not oUser.passwordValidate(data['passwd']):
-			return Services.Effect(error=1201)
+			return Services.Response(error=1201)
 
 		# Create a new session
 		oSesh = Sesh.create()
@@ -368,7 +371,7 @@ class Auth(Services.Service):
 		oSesh.save()
 
 		# Return the session ID and primary user data
-		return Services.Effect({
+		return Services.Response({
 			"session": oSesh.id(),
 			"user": {
 				"id": oSesh['user_id']
@@ -385,14 +388,14 @@ class Auth(Services.Service):
 			sesh (Sesh._Session): The session associated with the user
 
 		Returns:
-			Services.Effect
+			Services.Response
 		"""
 
 		# Close the session so it can no longer be found/used
 		sesh.close()
 
 		# Return OK
-		return Services.Effect(True)
+		return Services.Response(True)
 
 	def user_create(self, data, sesh):
 		"""User Create
@@ -404,28 +407,28 @@ class Auth(Services.Service):
 			sesh (Sesh._Session): The session associated with the user
 
 		Returns:
-			Effect
+			Services.Response
 		"""
 
 		# Make sure the user has the proper permission to do this
-		oEff = self.rightsVerify_read({
+		oResponse = self.rightsVerify_read({
 			"name": "user",
 			"right": Rights.CREATE
 		}, sesh)
-		if not oEff.data:
-			return Services.Effect(error=Rights.INVALID)
+		if not oResponse.data:
+			return Services.Response(error=Rights.INVALID)
 
 		# Verify fields
 		try: DictHelper.eval(data, ['email', 'passwd'])
-		except ValueError as e: return Services.Effect(error=(1001, [(f, 'missing') for f in e.args]))
+		except ValueError as e: return Services.Response(error=(1001, [(f, 'missing') for f in e.args]))
 
 		# Check if a user with that email already exists
 		if User.exists(data['email'], 'email'):
-			return Services.Effect(error=1200)
+			return Services.Response(error=1200)
 
 		# Check the password strength
 		if not User.passwordStrength(data['passwd']):
-			return Services.Effect(error=1204)
+			return Services.Response(error=1204)
 
 		# Hash the password
 		data['passwd'] = User.passwordHash(data['passwd'])
@@ -438,10 +441,10 @@ class Auth(Services.Service):
 		try:
 			oUser = User(data)
 		except ValueError as e:
-			return Services.Effect(error=(1001, e.args[0]))
+			return Services.Response(error=(1001, e.args[0]))
 
 		# Create the row and return the result
-		return Services.Effect(
+		return Services.Response(
 			oUser.create(changes={"user": sesh['user_id']})
 		)
 
@@ -455,19 +458,19 @@ class Auth(Services.Service):
 			sesh (Sesh._Session): The session associated with the user
 
 		Returns:
-			Effect
+			Services.Response
 		"""
 
 		# If there's an ID, check permissions
 		if '_id' in data:
 
 			# Make sure the user has the proper permission to do this
-			oEff = self.rightsVerify_read({
+			oResponse = self.rightsVerify_read({
 				"name": "user",
 				"right": Rights.READ
 			}, sesh)
-			if not oEff.data:
-				return Services.Effect(error=Rights.INVALID)
+			if not oResponse.data:
+				return Services.Response(error=Rights.INVALID)
 
 		# Else, assume the signed in user's Record
 		else:
@@ -478,13 +481,13 @@ class Auth(Services.Service):
 
 		# If it doesn't exist
 		if not dUser:
-			return Services.Effect(error=1104)
+			return Services.Response(error=1104)
 
 		# Remove the passwd
 		del dUser['passwd']
 
 		# Return the user data
-		return Services.Effect(dUser)
+		return Services.Response(dUser)
 
 	def user_update(self, data, sesh):
 		"""User Update
@@ -496,7 +499,7 @@ class Auth(Services.Service):
 			sesh (Sesh._Session): The session associated with the user
 
 		Returns:
-			Effect
+			Services.Response
 		"""
 
 		# If there's an ID, check permissions
@@ -504,15 +507,15 @@ class Auth(Services.Service):
 
 			# If the ID isn't set
 			if not data['_id']:
-				return Services.Effect(error=(1001, [('_id', 'missing')]))
+				return Services.Response(error=(1001, [('_id', 'missing')]))
 
 			# Make sure the user has the proper permission to do this
-			oEff = self.rightsVerify_read({
+			oResponse = self.rightsVerify_read({
 				"name": "user",
 				"right": Rights.UPDATE
 			}, sesh)
-			if not oEff.data:
-				return Services.Effect(error=Rights.INVALID)
+			if not oResponse.data:
+				return Services.Response(error=Rights.INVALID)
 
 		# Else, assume the signed in user's Record
 		else:
@@ -538,7 +541,7 @@ class Auth(Services.Service):
 
 		# If there was any errors
 		if lErrors:
-			return Services.Effect(error=(1001, lErrors))
+			return Services.Response(error=(1001, lErrors))
 
 		# Update the record
 		bRes = oUser.save(changes={"user": sesh['user_id']})
@@ -548,7 +551,7 @@ class Auth(Services.Service):
 			User.cacheClear(oUser['_id'])
 
 		# Return the result
-		return Services.Effect(bRes)
+		return Services.Response(bRes)
 
 	def userEmail_update(self, data, sesh):
 		"""User Email
@@ -560,43 +563,43 @@ class Auth(Services.Service):
 			sesh (Sesh._Session): The session associated with the user
 
 		Returns:
-			Effect
+			Services.Response
 		"""
 
 		# Verify fields
 		try: DictHelper.eval(data, ['email', 'email_passwd'])
-		except ValueError as e: return Services.Effect(error=(1001, [(f, 'missing') for f in e.args]))
+		except ValueError as e: return Services.Response(error=(1001, [(f, 'missing') for f in e.args]))
 
 		# Find the user
 		oUser = User.get(sesh['user_id'])
 		if not oUser:
-			return Services.Effect(error=1104)
+			return Services.Response(error=1104)
 
 		# Validate the password
 		if not oUser.passwordValidate(data['email_passwd']):
-			return Services.Effect(error=(1001, [('email_passwd', 'invalid')]))
+			return Services.Response(error=(1001, [('email_passwd', 'invalid')]))
 
 		# Make sure the email is valid structurally
 		if not _emailRegex.match(data['email']):
-			return Services.Effect(error=(1001, [('email', 'invalid')]))
+			return Services.Response(error=(1001, [('email', 'invalid')]))
 
 		# Look for someone else with that email
 		dUser = User.filter({"email": data['email']}, raw=['_id'])
 		if dUser:
-			return Services.Effect(error=1200)
+			return Services.Response(error=1200)
 
 		# Update the email and verified fields
 		try:
 			oUser['email'] = data['email']
 			oUser['verified'] = StrHelper.random(32, '_0x')
 		except ValueError as e:
-			return Services.Effect(error=(1001, e.args[0]))
+			return Services.Response(error=(1001, e.args[0]))
 
 		# Update the user
 		oUser.save(changes={"user":sesh['user_id']})
 
 		# Return OK
-		return Services.Effect(True)
+		return Services.Response(True)
 
 	def userPasswd_update(self, data, sesh):
 		"""User Password
@@ -608,32 +611,32 @@ class Auth(Services.Service):
 			sesh (Sesh._Session): The session associated with the user
 
 		Returns:
-			Effect
+			Services.Response
 		"""
 
 		# Verify fields
 		try: DictHelper.eval(data, ['passwd', 'new_passwd'])
-		except ValueError as e: return Services.Effect(error=(1001, [(f, 'missing') for f in e.args]))
+		except ValueError as e: return Services.Response(error=(1001, [(f, 'missing') for f in e.args]))
 
 		# Find the user
 		oUser = User.get(sesh['user']['_id'])
 		if not oUser:
-			return Services.Effect(error=1104)
+			return Services.Response(error=1104)
 
 		# Validate the password
 		if not oUser.passwordValidate(data['passwd']):
-			return Services.Effect(error=(1001, [('passwd', 'invalid')]))
+			return Services.Response(error=(1001, [('passwd', 'invalid')]))
 
 		# Make sure the new password is strong enough
 		if not User.passwordStrength(data['new_passwd']):
-			return Services.Effect(error=1204)
+			return Services.Response(error=1204)
 
 		# Set the new password and save
 		oUser['passwd'] = User.passwordHash(data['new_passwd'])
 		oUser.save(changes={"user":sesh['user']['_id']})
 
 		# Return OK
-		return Services.Effect(True)
+		return Services.Response(True)
 
 	def userPasswdForgot_create(self, data):
 		"""User Password Forgot (Generate)
@@ -645,17 +648,17 @@ class Auth(Services.Service):
 			data (dict): Data sent with the request
 
 		Returns:
-			Services.Effect
+			Services.Response
 		"""
 
 		# Verify fields
 		try: DictHelper.eval(data, ['email', 'url'])
-		except ValueError as e: return Services.Effect(error=(1001, [(f, 'missing') for f in e.args]))
+		except ValueError as e: return Services.Response(error=(1001, [(f, 'missing') for f in e.args]))
 
 		# Look for the user by email
 		dUser = User.filter({"email": data['email']}, raw=['_id', 'locale'], limit=1)
 		if not dUser:
-			return Services.Effect(False)
+			return Services.Response(False)
 
 		# Look for a forgot record by user id
 		oForgot = Forgot.get(dUser['_id'])
@@ -665,7 +668,7 @@ class Auth(Services.Service):
 
 			# Is it not expired?
 			if oForgot['expires'] > int(time()):
-				return Services.Effect(True)
+				return Services.Response(True)
 
 		# Upsert the forgot record with a timestamp (for expiry) and the key
 		sKey = StrHelper.random(32, '_0x')
@@ -675,7 +678,7 @@ class Auth(Services.Service):
 			"key": sKey
 		})
 		if not oForgot.create(conflict="replace"):
-			return Services.Effect(error=1100)
+			return Services.Response(error=1100)
 
 		# Forgot email template variables
 		dTpl = {
@@ -687,17 +690,17 @@ class Auth(Services.Service):
 		}
 
 		# Email the user the key
-		oEffect = Services.create('communications', 'email', {
+		oResponse = Services.create('communications', 'email', {
 			"_internal_": Services.internalKey(),
 			"html_body": Templates.generate('email/forgot.html', dTpl, dUser['locale']),
 			"subject": Templates.generate('email/forgot_subject.txt', {}, dUser['locale']),
 			"to": data['email'],
 		})
-		if oEffect.errorExists():
-			return oEffect
+		if oResponse.errorExists():
+			return oResponse
 
 		# Return OK
-		return Services.Effect(True)
+		return Services.Response(True)
 
 	def userPasswdForgot_update(self, data):
 		"""User Password Forgot (Change Password)
@@ -708,30 +711,30 @@ class Auth(Services.Service):
 			data (dict): Data sent with the request
 
 		Returns:
-			Services.Effect
+			Services.Response
 		"""
 
 		# Verify fields
 		try: DictHelper.eval(data, ['passwd', 'key'])
-		except ValueError as e: return Services.Effect(error=(1001, [(f, 'missing') for f in e.args]))
+		except ValueError as e: return Services.Response(error=(1001, [(f, 'missing') for f in e.args]))
 
 		# Look for the forgot by the key
 		oForgot = Forgot.filter({"key": data['key']}, limit=1)
 		if not oForgot:
-			return Services.Effect(error=1203) # Don't let people know if the key exists or not
+			return Services.Response(error=1203) # Don't let people know if the key exists or not
 
 		# Check if the key has expired
 		if oForgot['expires'] <= int(time()):
-			return Services.Effect(error=1203)
+			return Services.Response(error=1203)
 
 		# Make sure the new password is strong enough
 		if not User.passwordStrength(data['passwd']):
-			return Services.Effect(error=1204)
+			return Services.Response(error=1204)
 
 		# Find the User
 		oUser = User.get(oForgot['_user'])
 		if not oUser:
-			return Services.Effect(error=1203)
+			return Services.Response(error=1203)
 
 		# Store the new password and update
 		oUser['passwd'] = User.passwordHash(data['passwd'])
@@ -741,4 +744,4 @@ class Auth(Services.Service):
 		oForgot.delete()
 
 		# Return OK
-		return Services.Effect(True)
+		return Services.Response(True)

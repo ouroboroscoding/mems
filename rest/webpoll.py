@@ -11,36 +11,19 @@ __maintainer__	= "Chris Nasr"
 __email__		= "bast@maleexcel.com"
 __created__		= "2019-03-29"
 
-# Python imports
-import os, platform
+# Pip imports
+from RestOC import Conf, REST
 
-# Framework imports
-from RestOC import Conf, REST, Services, Sesh
-
-# App imports
+# Service imports
 from services.webpoll import WebPoll
 
-# Load the config
-Conf.load('config.json')
-sConfOverride = 'config.%s.json' % platform.node()
-if os.path.isfile(sConfOverride):
-	Conf.load_merge(sConfOverride)
+# Local imports
+from . import init
 
-# Init the Sesh module
-Sesh.init(Conf.get(("redis", "primary")))
-
-# Create the REST config instance
-oRestConf = REST.Config(Conf.get("rest"))
-
-# Set verbose mode if requested
-if 'VERBOSE' in os.environ and os.environ['VERBOSE'] == '1':
-	Services.verbose()
-
-# Register all necessary services
-Services.register({
-	"auth": None,
-	"webpoll": WebPoll()
-}, oRestConf, Conf.get(('services', 'salt')))
+# Init the REST info
+oRestConf = init(
+	services={'webpoll':WebPoll()}
+)
 
 # Create the HTTP server and map requests to service
 REST.Server({

@@ -17,7 +17,7 @@ from RestOC import Conf, DictHelper, Record_MySQL, Services
 # Shared imports
 from shared import Rights
 
-# Service imports
+# Records imports
 from records.welldyne import \
 	AdHoc, AdHocManual, Eligibility, Outbound, OutboundSent, RxNumber, Trigger
 
@@ -70,20 +70,20 @@ class WellDyne(Services.Service):
 			sesh (Sesh._Session): The session associated with the request
 
 		Returns:
-			Services.Effect
+			Services.Response
 		"""
 
 		# Make sure the user has the proper rights
-		oEff = Services.read('auth', 'rights/verify', {
+		oResponse = Services.read('auth', 'rights/verify', {
 			"name": "welldyne_adhoc",
 			"right": Rights.CREATE
 		}, sesh)
-		if not oEff.data:
-			return Services.Effect(error=Rights.INVALID)
+		if not oResponse.data:
+			return Services.Response(error=Rights.INVALID)
 
 		# Verify minimum fields
 		try: DictHelper.eval(data, ['trigger_id', 'type'])
-		except ValueError as e: return Services.Effect(error=(1001, [(f, 'missing') for f in e.args]))
+		except ValueError as e: return Services.Response(error=(1001, [(f, 'missing') for f in e.args]))
 
 		# Find the trigger
 		dTrigger = Trigger.get(
@@ -93,7 +93,7 @@ class WellDyne(Services.Service):
 
 		# If it doesn't exist
 		if not dTrigger:
-			return Services.Effect(error=1104)
+			return Services.Response(error=1104)
 
 		# If we got a trigger, but there's no raw
 		if not dTrigger['raw']:
@@ -103,20 +103,20 @@ class WellDyne(Services.Service):
 				data['memo_user'] = sesh['memo_id']
 				oAdHocManual = AdHocManual(data)
 			except ValueError as e:
-				return Services.Effect(error=(1001, e.args[0]))
+				return Services.Response(error=(1001, e.args[0]))
 
 			# Create the record
 			try:
 				oAdHocManual.create()
 
 				# Notify developer
-				oEff = Services.create('communications', 'email', {
+				oResponse = Services.create('communications', 'email', {
 					"_internal_": Services.internalKey(),
 					"text_body": 'https://cs.meutils.com/manualad',
 					"subject": 'New Manual AdHoc',
 					"to": Conf.get(('developer', 'emails'))
 				})
-				if oEff.errorExists(): return oEff
+				if oResponse.errorExists(): return oResponse
 
 			# Ignore duplicates, because you know people are gonna click again
 			#	and again
@@ -124,40 +124,40 @@ class WellDyne(Services.Service):
 				pass
 
 			# Return that we couldn't immediate add the adhoc
-			return Services.Effect(warning=1801)
+			return Services.Response(warning=1801)
 
 		# If the CRM is Konnektive
 		if dTrigger['crm_type'] == 'knk':
 
 			# Check the customer exists
-			oEff = Services.read('monolith', 'customer/name', {
+			oResponse = Services.read('monolith', 'customer/name', {
 				"_internal_": Services.internalKey(),
 				"customerId": dTrigger['crm_id']
 			}, sesh)
-			if oEff.errorExists(): return oEff
-			dCustomer = oEff.data
+			if oResponse.errorExists(): return oResponse
+			dCustomer = oResponse.data
 
 		# Else, invalid CRM
 		else:
-			return Services.Effect(error=1003)
+			return Services.Response(error=1003)
 
 		# Get the user name
-		oEff = Services.read('monolith', 'user/name', {
+		oResponse = Services.read('monolith', 'user/name', {
 			"_internal_": Services.internalKey(),
 			"id": sesh['memo_id']
 		}, sesh)
-		if oEff.errorExists(): return oEff
-		dUser = oEff.data
+		if oResponse.errorExists(): return oResponse
+		dUser = oResponse.data
 
 		# Try to create a new instance of the adhoc
 		try:
 			data['memo_user'] = sesh['memo_id']
 			oAdHoc = AdHoc(data)
 		except ValueError as e:
-			return Services.Effect(error=(1001, e.args[0]))
+			return Services.Response(error=(1001, e.args[0]))
 
 		# Create the record and return the result
-		return Services.Effect({
+		return Services.Response({
 			"_id": oAdHoc.create(),
 			"crm_type": dTrigger['crm_type'],
 			"crm_id": dTrigger['crm_id'],
@@ -176,28 +176,28 @@ class WellDyne(Services.Service):
 			sesh (Sesh._Session): The session associated with the request
 
 		Returns:
-			Services.Effect
+			Services.Response
 		"""
 
 		# Make sure the user has the proper rights
-		oEff = Services.read('auth', 'rights/verify', {
+		oResponse = Services.read('auth', 'rights/verify', {
 			"name": "welldyne_adhoc",
 			"right": Rights.DELETE
 		}, sesh)
-		if not oEff.data:
-			return Services.Effect(error=Rights.INVALID)
+		if not oResponse.data:
+			return Services.Response(error=Rights.INVALID)
 
 		# Verify minimum fields
 		try: DictHelper.eval(data, ['_id'])
-		except ValueError as e: return Services.Effect(error=(1001, [(f, 'missing') for f in e.args]))
+		except ValueError as e: return Services.Response(error=(1001, [(f, 'missing') for f in e.args]))
 
 		# Find the record
 		oAdHoc = AdHoc.get(data['_id'])
 		if not oAdHoc:
-			return Services.Effect(error=1104)
+			return Services.Response(error=1104)
 
 		# Delete the record and return the result
-		return Services.Effect(
+		return Services.Response(
 			oAdHoc.delete()
 		)
 
@@ -211,30 +211,30 @@ class WellDyne(Services.Service):
 			sesh (Sesh._Session): The session associated with the request
 
 		Returns:
-			Services.Effect
+			Services.Response
 		"""
 
 		# Make sure the user has the proper rights
-		oEff = Services.read('auth', 'rights/verify', {
+		oResponse = Services.read('auth', 'rights/verify', {
 			"name": "manual_adhoc",
 			"right": Rights.DELETE
 		}, sesh)
-		if not oEff.data:
-			return Services.Effect(error=Rights.INVALID)
+		if not oResponse.data:
+			return Services.Response(error=Rights.INVALID)
 
 		# Verify minimum fields
 		try: DictHelper.eval(data, ['_id', 'raw'])
-		except ValueError as e: return Services.Effect(error=(1001, [(f, 'missing') for f in e.args]))
+		except ValueError as e: return Services.Response(error=(1001, [(f, 'missing') for f in e.args]))
 
 		# Find the record
 		oAdHoc = AdHocManual.get(data['_id'])
 		if not oAdHoc:
-			return Services.Effect(error=(1104, 'adhoc'))
+			return Services.Response(error=(1104, 'adhoc'))
 
 		# Find the trigger
 		oTrigger = Trigger.get(oAdHoc['trigger_id'])
 		if not oAdHoc:
-			return Services.Effect(error=(1104, 'trigger'))
+			return Services.Response(error=(1104, 'trigger'))
 
 		# Update the trigger
 		oTrigger['raw'] = data['raw']
@@ -244,24 +244,24 @@ class WellDyne(Services.Service):
 		oAdHoc.move()
 
 		# Find the user associated
-		oEff = Services.read('monolith', 'users', {
+		oResponse = Services.read('monolith', 'users', {
 			"_internal_": Services.internalKey(),
 			"id": oAdHoc['memo_user'],
 			"fields": ["email"]
 		}, sesh)
-		if oEff.errorExists(): return oEff
+		if oResponse.errorExists(): return oResponse
 
 		# Notify the user
-		oEff = Services.create('communications', 'email', {
+		oResponse = Services.create('communications', 'email', {
 			"_internal_": Services.internalKey(),
 			"text_body": 'Your AdHoc for customer %s, order %s, has been added' % (oTrigger['crm_id'], oTrigger['crm_order']),
 			"subject": 'AdHoc Added',
-			"to": oEff.data['email']
+			"to": oResponse.data['email']
 		})
-		if oEff.errorExists(): return oEff
+		if oResponse.errorExists(): return oResponse
 
 		# Return OK
-		return Services.Effect(True)
+		return Services.Response(True)
 
 	def adhocManual_read(self, data, sesh):
 		"""AdHoc Manual Read
@@ -273,19 +273,19 @@ class WellDyne(Services.Service):
 			sesh (Sesh._Session): The session associated with the request
 
 		Returns:
-			Services.Effect
+			Services.Response
 		"""
 
 		# Make sure the user has the proper rights
-		oEff = Services.read('auth', 'rights/verify', {
+		oResponse = Services.read('auth', 'rights/verify', {
 			"name": "manual_adhoc",
 			"right": Rights.READ
 		}, sesh)
-		if not oEff.data:
-			return Services.Effect(error=Rights.INVALID)
+		if not oResponse.data:
+			return Services.Response(error=Rights.INVALID)
 
 		# Fetch and return all records
-		return Services.Effect(AdHocManual.display())
+		return Services.Response(AdHocManual.display())
 
 	def adhocs_read(self, data, sesh):
 		"""Adhocs
@@ -297,16 +297,16 @@ class WellDyne(Services.Service):
 			sesh (Sesh._Session): The session associated with the request
 
 		Returns:
-			Services.Effect
+			Services.Response
 		"""
 
 		# Make sure the user has the proper rights
-		oEff = Services.read('auth', 'rights/verify', {
+		oResponse = Services.read('auth', 'rights/verify', {
 			"name": "welldyne_adhoc",
 			"right": Rights.READ
 		}, sesh)
-		if not oEff.data:
-			return Services.Effect(error=Rights.INVALID)
+		if not oResponse.data:
+			return Services.Response(error=Rights.INVALID)
 
 		# Fetch all the records
 		lRecords = AdHoc.display()
@@ -315,20 +315,20 @@ class WellDyne(Services.Service):
 		if lRecords:
 
 			# Find all the customer names
-			oEff = Services.read('monolith', 'customer/name', {
+			oResponse = Services.read('monolith', 'customer/name', {
 				"_internal_": Services.internalKey(),
 				"customerId": [d['crm_id'] for d in lRecords]
 			}, sesh)
-			if oEff.errorExists(): return oEff
-			dCustomers = {k:'%s %s' % (d['firstName'], d['lastName']) for k,d in oEff.data.items()}
+			if oResponse.errorExists(): return oResponse
+			dCustomers = {k:'%s %s' % (d['firstName'], d['lastName']) for k,d in oResponse.data.items()}
 
 			# Find all the user names
-			oEff = Services.read('monolith', 'user/name', {
+			oResponse = Services.read('monolith', 'user/name', {
 				"_internal_": Services.internalKey(),
 				"id": list(set([d['memo_user'] for d in lRecords]))
 			}, sesh)
-			if oEff.errorExists(): return oEff
-			dUsers = {k:'%s %s' % (d['firstName'], d['lastName']) for k,d in oEff.data.items()}
+			if oResponse.errorExists(): return oResponse
+			dUsers = {k:'%s %s' % (d['firstName'], d['lastName']) for k,d in oResponse.data.items()}
 
 			# Go through each record and add the customer names
 			for d in lRecords:
@@ -337,7 +337,7 @@ class WellDyne(Services.Service):
 				d['user_name'] = sUserId in dUsers and dUsers[sUserId] or 'Unknown'
 
 		# Return all records
-		return Services.Effect(lRecords)
+		return Services.Response(lRecords)
 
 	def outboundAdhoc_update(self, data, sesh):
 		"""Outbound OldAdHoc
@@ -350,25 +350,25 @@ class WellDyne(Services.Service):
 			sesh (Sesh._Session): The session associated with the request
 
 		Returns:
-			Services.Effect
+			Services.Response
 		"""
 
 		# Make sure the user has the proper adhoc rights
-		oEff = Services.read('auth', 'rights/verify', {
+		oResponse = Services.read('auth', 'rights/verify', {
 			"name": "welldyne_adhoc",
 			"right": Rights.CREATE
 		}, sesh)
-		if not oEff.data:
-			return Services.Effect(error=Rights.INVALID)
+		if not oResponse.data:
+			return Services.Response(error=Rights.INVALID)
 
 		# Verify minimum fields
 		try: DictHelper.eval(data, ['_id'])
-		except ValueError as e: return Services.Effect(error=(1001, [(f, 'missing') for f in e.args]))
+		except ValueError as e: return Services.Response(error=(1001, [(f, 'missing') for f in e.args]))
 
 		# Find the record
 		oOutbound = Outbound.get(data['_id'])
 		if not oOutbound:
-			return Services.Effect(error=1104)
+			return Services.Response(error=1104)
 
 		# Look for a trigger with the same info
 		dTrigger = Trigger.filter({
@@ -379,7 +379,7 @@ class WellDyne(Services.Service):
 
 		# If there's no tigger
 		if not dTrigger:
-			return Services.Effect(error=1802)
+			return Services.Response(error=1802)
 
 		# Init warning
 		iWarning = None
@@ -395,7 +395,7 @@ class WellDyne(Services.Service):
 					"memo_user": sesh['memo_id']
 				})
 			except ValueError as e:
-				return Services.Effect(error=(1001, e.args[0]))
+				return Services.Response(error=(1001, e.args[0]))
 
 			# Create the record
 			try:
@@ -405,13 +405,13 @@ class WellDyne(Services.Service):
 				oOutbound.delete()
 
 				# Notify developer
-				oEff = Services.create('communications', 'email', {
+				oResponse = Services.create('communications', 'email', {
 					"_internal_": Services.internalKey(),
 					"text_body": 'https://cs.meutils.com/manualad',
 					"subject": 'New Manual AdHoc',
 					"to": Conf.get(('developer', 'emails'))
 				})
-				if oEff.errorExists(): return oEff
+				if oResponse.errorExists(): return oResponse
 
 			# Ignore duplicates, because you know people are gonna click again
 			#	and again
@@ -419,30 +419,30 @@ class WellDyne(Services.Service):
 				pass
 
 			# Return that we couldn't immediately add the adhoc
-			return Services.Effect(True, warning=1801)
+			return Services.Response(True, warning=1801)
 
 		# If the CRM is Konnektive
 		if oOutbound['crm_type'] == 'knk':
 
 			# Check the customer exists
-			oEff = Services.read('monolith', 'customer/name', {
+			oResponse = Services.read('monolith', 'customer/name', {
 				"_internal_": Services.internalKey(),
 				"customerId": oOutbound['crm_id']
 			}, sesh)
-			if oEff.errorExists(): return oEff
-			dCustomer = oEff.data
+			if oResponse.errorExists(): return oResponse
+			dCustomer = oResponse.data
 
 		# Else, invalid CRM type
 		else:
-			return Services.Effect(error=1003)
+			return Services.Response(error=1003)
 
 		# Get the user name
-		oEff = Services.read('monolith', 'user/name', {
+		oResponse = Services.read('monolith', 'user/name', {
 			"_internal_": Services.internalKey(),
 			"id": sesh['memo_id']
 		}, sesh)
-		if oEff.errorExists(): return oEff
-		dUser = oEff.data
+		if oResponse.errorExists(): return oResponse
+		dUser = oResponse.data
 
 		# Try to create a new adhoc instance
 		try:
@@ -452,7 +452,7 @@ class WellDyne(Services.Service):
 				"memo_user": sesh['memo_id']
 			})
 		except ValueError as e:
-			return Services.Effect(error=(1001, e.args[0]))
+			return Services.Response(error=(1001, e.args[0]))
 
 		# Create the adhoc record
 		oAdHoc.create();
@@ -471,7 +471,7 @@ class WellDyne(Services.Service):
 		dAdHoc['user_name'] = "%s %s" % (dUser['firstName'], dUser['lastName'])
 
 		# Return the new adhoc data
-		return Services.Effect(dAdHoc)
+		return Services.Response(dAdHoc)
 
 	def outboundReady_update(self, data, sesh):
 		"""Outbound Ready
@@ -483,35 +483,35 @@ class WellDyne(Services.Service):
 			sesh (Sesh._Session): The session associated with the request
 
 		Returns:
-			Services.Effect
+			Services.Response
 		"""
 
 		# Make sure the user has the proper rights
-		oEff = Services.read('auth', 'rights/verify', {
+		oResponse = Services.read('auth', 'rights/verify', {
 			"name": "welldyne_outbound",
 			"right": Rights.UPDATE
 		}, sesh)
-		if not oEff.data:
-			return Services.Effect(error=Rights.INVALID)
+		if not oResponse.data:
+			return Services.Response(error=Rights.INVALID)
 
 		# Verify minimum fields
 		try: DictHelper.eval(data, ['_id', 'ready'])
-		except ValueError as e: return Services.Effect(error=(1001, [(f, 'missing') for f in e.args]))
+		except ValueError as e: return Services.Response(error=(1001, [(f, 'missing') for f in e.args]))
 
 		# Find the record
 		oOutbound = Outbound.get(data['_id'])
 		if not oOutbound:
-			return Services.Effect(error=1104)
+			return Services.Response(error=1104)
 
 		# If there's no order
 		if not oOutbound['crm_order'] or oOutbound['crm_order'] == '':
-			return Services.Effect(error=1800)
+			return Services.Response(error=1800)
 
 		# Update the ready state
 		oOutbound['ready'] = data['ready'] and True or False
 
 		# Save and return the result
-		return Services.Effect(
+		return Services.Response(
 			oOutbound.save()
 		)
 
@@ -525,16 +525,16 @@ class WellDyne(Services.Service):
 			sesh (Sesh._Session): The session associated with the request
 
 		Returns:
-			Services.Effect
+			Services.Response
 		"""
 
 		# Make sure the user has the proper rights
-		oEff = Services.read('auth', 'rights/verify', {
+		oResponse = Services.read('auth', 'rights/verify', {
 			"name": "welldyne_outbound",
 			"right": Rights.READ
 		}, sesh)
-		if not oEff.data:
-			return Services.Effect(error=Rights.INVALID)
+		if not oResponse.data:
+			return Services.Response(error=Rights.INVALID)
 
 		# Fetch all the records joined with the trigger table
 		lRecords = Outbound.withTrigger()
@@ -543,23 +543,23 @@ class WellDyne(Services.Service):
 		if lRecords:
 
 			# Find all the customer names
-			oEff = Services.read('monolith', 'customer/name', {
+			oResponse = Services.read('monolith', 'customer/name', {
 				"_internal_": Services.internalKey(),
 				"customerId": [d['crm_id'] for d in lRecords]
 			}, sesh)
-			if oEff.errorExists(): return oEff
-			dCustomers = {k:'%s %s' % (d['firstName'], d['lastName']) for k,d in oEff.data.items()}
+			if oResponse.errorExists(): return oResponse
+			dCustomers = {k:'%s %s' % (d['firstName'], d['lastName']) for k,d in oResponse.data.items()}
 
 			# Go through each record and add the customer names
 			for d in lRecords:
 				d['customer_name'] = d['crm_id'] in dCustomers and dCustomers[d['crm_id']] or 'Unknown'
 
 			# Return all records
-			return Services.Effect(lRecords)
+			return Services.Response(lRecords)
 
 		# Else return an empty array
 		else:
-			return Services.Effect([])
+			return Services.Response([])
 
 	def stats_read(self, data, sesh):
 		"""Stats
@@ -571,10 +571,10 @@ class WellDyne(Services.Service):
 			sesh (Sesh._Session): The session associated with the request
 
 		Returns:
-			Services.Effect
+			Services.Response
 		"""
 
-		return Services.Effect({
+		return Services.Response({
 			"vs": Trigger.vsShipped()
 		})
 
@@ -589,27 +589,27 @@ class WellDyne(Services.Service):
 			sesh (Sesh._Session): The session associated with the request
 
 		Returns:
-			Services.Effect
+			Services.Response
 		"""
 
 		# Make sure the user has the proper rights
-		#oEff = Services.read('auth', 'rights/verify', {
+		#oResponse = Services.read('auth', 'rights/verify', {
 		#	"name": "welldyne",
 		#	"right": Rights.READ
 		#}, sesh)
-		#if not oEff.data:
-		#	return Services.Effect(error=Rights.INVALID)
+		#if not oResponse.data:
+		#	return Services.Response(error=Rights.INVALID)
 
 		# Verify fields
 		try: DictHelper.eval(data, ['crm_type', 'crm_id'])
-		except ValueError as e: return Services.Effect(error=(1001, [(f, "missing") for f in e.args]))
+		except ValueError as e: return Services.Response(error=(1001, [(f, "missing") for f in e.args]))
 
 		# Look for a trigger with any possible outbound and eligibility
 		lTrigger = Trigger.withOutreachEligibility(data['crm_type'], data['crm_id'])
 
 		# If there's nothing
 		if not lTrigger:
-			return Services.Effect(0)
+			return Services.Response(0)
 
 		# Find the eligibility associated
 		dElig = Eligibility.filter({
@@ -622,4 +622,4 @@ class WellDyne(Services.Service):
 			d['elig_thru'] = dElig and dElig['memberThru'] or None
 
 		# Return
-		return Services.Effect(lTrigger)
+		return Services.Response(lTrigger)

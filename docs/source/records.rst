@@ -9,6 +9,7 @@ Submodules
 
    records.auth
    records.csr
+   records.customers
    records.monolith
    records.patient
    records.payment

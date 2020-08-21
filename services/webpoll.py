@@ -39,12 +39,12 @@ class WebPoll(Services.Service):
 			sesh (Sesh._Session): The session associated with the request
 
 		Returns:
-			Services.Effect
+			Services.Response
 		"""
 
 		# Verify fields
 		try: DictHelper.eval(data, ['service', 'key', 'count'])
-		except ValueError as e: return Services.Effect(error=(1001, [(f, 'missing') for f in e.args]))
+		except ValueError as e: return Services.Response(error=(1001, [(f, 'missing') for f in e.args]))
 
 		# Clear the messages from the sync cache
 		Sync.clear(
@@ -55,7 +55,7 @@ class WebPoll(Services.Service):
 		)
 
 		# Return OK
-		return Services.Effect(True)
+		return Services.Response(True)
 
 	def join_create(self, data, sesh):
 		"""Join
@@ -68,12 +68,12 @@ class WebPoll(Services.Service):
 			sesh (Sesh._Session): The session associated with the request
 
 		Returns:
-			Services.Effect
+			Services.Response
 		"""
 
 		# Verify fields
 		try: DictHelper.eval(data, ['service', 'key'])
-		except ValueError as e: return Services.Effect(error=(1001, [(f, 'missing') for f in e.args]))
+		except ValueError as e: return Services.Response(error=(1001, [(f, 'missing') for f in e.args]))
 
 		# Update the sync cache
 		Sync.join(
@@ -83,7 +83,7 @@ class WebPoll(Services.Service):
 		)
 
 		# Return OK
-		return Services.Effect(True)
+		return Services.Response(True)
 
 	def leave_create(self, data, sesh):
 		"""Leave
@@ -96,12 +96,12 @@ class WebPoll(Services.Service):
 			sesh (Sesh._Session): The session associated with the request
 
 		Returns:
-			Services.Effect
+			Services.Response
 		"""
 
 		# Verify fields
 		try: DictHelper.eval(data, ['service', 'key'])
-		except ValueError as e: return Services.Effect(error=(1001, [(f, 'missing') for f in e.args]))
+		except ValueError as e: return Services.Response(error=(1001, [(f, 'missing') for f in e.args]))
 
 		# Update the sync cache
 		Sync.leave(
@@ -111,7 +111,7 @@ class WebPoll(Services.Service):
 		)
 
 		# Return OK
-		return Services.Effect(True)
+		return Services.Response(True)
 
 	def pull_read(self, data, sesh):
 		"""Pull
@@ -123,12 +123,12 @@ class WebPoll(Services.Service):
 			sesh (Sesh._Session): The session associated with the request
 
 		Returns:
-			Services.Effect
+			Services.Response
 		"""
 
 		# Verify fields
 		try: DictHelper.eval(data, ['service', 'key'])
-		except ValueError as e: return Services.Effect(error=(1001, [(f, 'missing') for f in e.args]))
+		except ValueError as e: return Services.Response(error=(1001, [(f, 'missing') for f in e.args]))
 
 		# If we have messages to delete
 		if 'messages' in data and data['messages']:
@@ -147,7 +147,7 @@ class WebPoll(Services.Service):
 		)
 
 		# Return whatever was found
-		return Services.Effect(lRet)
+		return Services.Response(lRet)
 
 	def websocket_read(self, data, sesh):
 		"""WebSocket
@@ -160,7 +160,7 @@ class WebPoll(Services.Service):
 			sesh (Sesh._Session): The session associated with the request
 
 		Returns:
-			Services.Effect
+			Services.Response
 		"""
 
 		# Generate a random key
@@ -172,7 +172,7 @@ class WebPoll(Services.Service):
 		})
 
 		# Return the key
-		return Services.Effect(sKey)
+		return Services.Response(sKey)
 
 	def initialise(self):
 		"""Initialise
@@ -190,5 +190,5 @@ class WebPoll(Services.Service):
 			"db": 1
 		}))
 
-		# Return self
+		# Return self for chaining
 		return self

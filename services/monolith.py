@@ -26,9 +26,9 @@ from RestOC import Conf, DictHelper, Errors, Record_MySQL, Services, \
 # Shared imports
 from shared import Rights
 
-# Service imports
+# Records imports
 from records.monolith import \
-	CustomerClaimed, CustomerClaimedLast, CustomerCommunication, \
+	Calendly, CustomerClaimed, CustomerClaimedLast, CustomerCommunication, \
 	CustomerMsgPhone, DsPatient, Forgot, KtCustomer, KtOrder, ShippingInfo, \
 	SmpNote, SmpOrderStatus, SMSStop, TfAnswer, TfLanding, TfQuestion, \
 	TfQuestionOption, User, \
@@ -99,6 +99,37 @@ class Monolith(Services.Service):
 			if not o.tableCreate():
 				print("Failed to create `%s` table" % o.tableName())
 
+	def customerCalendly_read(self, data, sesh):
+		"""Customer Calendly
+
+		Fetches all Calendly appointments that can be found associated with
+		either the customer's email or phone number
+
+		Arguments:
+			data (dict): Data sent with the request
+			sesh (Sesh._Session): The session associated with the request
+
+		Returns:
+			Services.Response
+		"""
+
+		# Make sure the user has the proper permission to do this
+		oResponse = Services.read('auth', 'rights/verify', {
+			"name": "calendly",
+			"right": Rights.READ
+		}, sesh)
+		if not oResponse.data:
+			return Services.Response(error=Rights.INVALID)
+
+		# Verify fields
+		try: DictHelper.eval(data, ['customerId'])
+		except ValueError as e: return Services.Response(error=(1001, [(f, 'missing') for f in e.args]))
+
+		# Fetch all appointments associated with the customer and return them
+		return Services.Response(
+			Calendly.byCustomer(data['customerId'])
+		)
+
 	def customerClaim_create(self, data, sesh):
 		"""Customer Claim Create
 
@@ -109,20 +140,20 @@ class Monolith(Services.Service):
 			sesh (Sesh._Session): The session associated with the request
 
 		Returns:
-			Services.Effect
+			Services.Response
 		"""
 
 		# Make sure the user has the proper permission to do this
-		oEff = Services.read('auth', 'rights/verify', {
+		oResponse = Services.read('auth', 'rights/verify', {
 			"name": "csr_claims",
 			"right": Rights.CREATE
 		}, sesh)
-		if not oEff.data:
-			return Services.Effect(error=Rights.INVALID)
+		if not oResponse.data:
+			return Services.Response(error=Rights.INVALID)
 
 		# Verify fields
 		try: DictHelper.eval(data, ['phoneNumber'])
-		except ValueError as e: return Services.Effect(error=(1001, [(f, 'missing') for f in e.args]))
+		except ValueError as e: return Services.Response(error=(1001, [(f, 'missing') for f in e.args]))
 
 		# Check how many claims this user already has
 		iCount = CustomerClaimed.count(filter={
@@ -131,7 +162,7 @@ class Monolith(Services.Service):
 
 		# If they're at or more than the maximum
 		if iCount >= self._conf['claims_max']:
-			return Services.Effect(error=1504)
+			return Services.Response(error=1504)
 
 		# Attempt to create the record
 		try:
@@ -140,7 +171,7 @@ class Monolith(Services.Service):
 				"user": sesh['memo_id']
 			})
 		except ValueError as e:
-			return Services.Effect(error=(1001, e.args[0]))
+			return Services.Response(error=(1001, e.args[0]))
 
 		# Try to create the record
 		try:
@@ -157,7 +188,7 @@ class Monolith(Services.Service):
 				)
 
 				# Return the ID and phone
-				return Services.Effect({
+				return Services.Response({
 					"customerId": dCustomer and dCustomer['customerId'] or '0',
 					"customerPhone": data['phoneNumber']
 				})
@@ -169,10 +200,10 @@ class Monolith(Services.Service):
 			dClaim = CustomerClaimed.get(data['phoneNumber'], raw=['user']);
 
 			# Return the error with the user ID
-			return Services.Effect(error=(1101, dClaim['user']))
+			return Services.Response(error=(1101, dClaim['user']))
 
 		# Else, we failed to create the record
-		return Services.Effect(False)
+		return Services.Response(False)
 
 	def customerClaim_delete(self, data, sesh):
 		"""Customer Claim Delete
@@ -184,26 +215,26 @@ class Monolith(Services.Service):
 			sesh (Sesh._Session): The session associated with the request
 
 		Returns:
-			Services.Effect
+			Services.Response
 		"""
 
 		# Make sure the user has the proper permission to do this
-		oEff = Services.read('auth', 'rights/verify', {
+		oResponse = Services.read('auth', 'rights/verify', {
 			"name": "csr_claims",
 			"right": Rights.DELETE
 		}, sesh)
-		if not oEff.data:
-			return Services.Effect(error=Rights.INVALID)
+		if not oResponse.data:
+			return Services.Response(error=Rights.INVALID)
 
 		# Verify fields
 		try: DictHelper.eval(data, ['phoneNumber'])
-		except ValueError as e: return Services.Effect(error=(1001, [(f, 'missing') for f in e.args]))
+		except ValueError as e: return Services.Response(error=(1001, [(f, 'missing') for f in e.args]))
 
 		# Attempt to delete the record
 		CustomerClaimed.deleteGet(data['phoneNumber'])
 
 		# Return OK
-		return Services.Effect(True)
+		return Services.Response(True)
 
 	def customerClaim_update(self, data, sesh):
 		"""Customer Claim Update
@@ -215,52 +246,52 @@ class Monolith(Services.Service):
 			sesh (Sesh._Session): The session associated with the request
 
 		Returns:
-			Services.Effect
+			Services.Response
 		"""
 
 		# Make sure the user has the proper permission to do this
-		oEff = Services.read('auth', 'rights/verify', {
+		oResponse = Services.read('auth', 'rights/verify', {
 			"name": "csr_claims",
 			"right": Rights.UPDATE
 		}, sesh)
-		if not oEff.data:
-			return Services.Effect(error=Rights.INVALID)
+		if not oResponse.data:
+			return Services.Response(error=Rights.INVALID)
 
 		# Verify fields
 		try: DictHelper.eval(data, ['phoneNumber'])
-		except ValueError as e: return Services.Effect(error=(1001, [(f, 'missing') for f in e.args]))
+		except ValueError as e: return Services.Response(error=(1001, [(f, 'missing') for f in e.args]))
 
 		# Find the claim
 		oClaim = CustomerClaimed.get(data['phoneNumber'])
 		if not oClaim:
-			return Services.Effect(error=(1104, data['phoneNumber']))
+			return Services.Response(error=(1104, data['phoneNumber']))
 
 		# If it doesn't exist
 		if not oClaim:
-			return Services.Effect(error=(1104, data['phoneNumber']))
+			return Services.Response(error=(1104, data['phoneNumber']))
 
 		# If the current owner of the claim is not the person transfering,
 		#	check permissions
 		if oClaim['user'] != sesh['memo_id']:
 
 			# Make sure the user has the proper rights
-			oEff = Services.read('auth', 'rights/verify', {
+			oResponse = Services.read('auth', 'rights/verify', {
 				"name": "csr_overwrite",
 				"right": Rights.CREATE
 			}, sesh)
-			if not oEff.data:
-				return Services.Effect(error=Rights.INVALID)
+			if not oResponse.data:
+				return Services.Response(error=Rights.INVALID)
 
 		# Find the user
 		if not User.exists(data['user_id']):
-			return Services.Effect(error=(1104, data['user_id']))
+			return Services.Response(error=(1104, data['user_id']))
 
 		# Switch the user associated to the logged in user
 		oClaim['user'] = data['user_id']
 		oClaim.save()
 
 		# Return OK
-		return Services.Effect(True)
+		return Services.Response(True)
 
 	def customerDsid_read(self, data, sesh):
 		"""Customer DoseSpot ID
@@ -272,20 +303,20 @@ class Monolith(Services.Service):
 			sesh (Sesh._Session): The session associated with the request
 
 		Returns:
-			Services.Effect
+			Services.Response
 		"""
 
 		# Make sure the user has the proper permission to do this
-		oEff = Services.read('auth', 'rights/verify', {
+		oResponse = Services.read('auth', 'rights/verify', {
 			"name": "prescriptions",
 			"right": Rights.READ
 		}, sesh)
-		if not oEff.data:
-			return Services.Effect(error=Rights.INVALID)
+		if not oResponse.data:
+			return Services.Response(error=Rights.INVALID)
 
 		# Verify fields
 		try: DictHelper.eval(data, ['customerId'])
-		except ValueError as e: return Services.Effect(error=(1001, [(f, 'missing') for f in e.args]))
+		except ValueError as e: return Services.Response(error=(1001, [(f, 'missing') for f in e.args]))
 
 		# Find the patient ID
 		dPatient = DsPatient.filter(
@@ -296,10 +327,10 @@ class Monolith(Services.Service):
 
 		# If there's no patient
 		if not dPatient:
-			return Services.Effect(0)
+			return Services.Response(0)
 
 		# Return the ID
-		return Services.Effect(dPatient['patientId'])
+		return Services.Response(dPatient['patientId'])
 
 	def customerExists_read(self, data, sesh):
 		"""Customer Exists
@@ -311,15 +342,15 @@ class Monolith(Services.Service):
 			sesh (Sesh._Session): The session associated with the request
 
 		Returns:
-			Services.Effect
+			Services.Response
 		"""
 
 		# Verify fields
 		try: DictHelper.eval(data, ['customerId'])
-		except ValueError as e: return Services.Effect(error=(1001, [(f, 'missing') for f in e.args]))
+		except ValueError as e: return Services.Response(error=(1001, [(f, 'missing') for f in e.args]))
 
 		# Return whether the customer exists or not
-		return Services.Effect(
+		return Services.Response(
 			KtCustomer.exists(data['customerId'], 'customerId')
 		)
 
@@ -333,26 +364,26 @@ class Monolith(Services.Service):
 			sesh (Sesh._Session): The session associated with the request
 
 		Returns:
-			Services.Effect
+			Services.Response
 		"""
 
 		# Make sure the user has the proper permission to do this
-		oEff = Services.read('auth', 'rights/verify', {
+		oResponse = Services.read('auth', 'rights/verify', {
 			"name": "csr_messaging",
 			"right": Rights.CREATE
 		}, sesh)
-		if not oEff.data:
-			return Services.Effect(error=Rights.INVALID)
+		if not oResponse.data:
+			return Services.Response(error=Rights.INVALID)
 
 		# Verify fields
 		try: DictHelper.eval(data, ['customerPhone'])
-		except ValueError as e: return Services.Effect(error=(1001, [(f, 'missing') for f in e.args]))
+		except ValueError as e: return Services.Response(error=(1001, [(f, 'missing') for f in e.args]))
 
 		# Update the records hidden field
 		CustomerMsgPhone.updateField('hiddenFlag', 'Y', filter={"customerPhone": data['customerPhone']})
 
 		# Return OK
-		return Services.Effect(True)
+		return Services.Response(True)
 
 	def customerIdByPhone_read(self, data, sesh):
 		"""Customer ID By Phone
@@ -364,22 +395,22 @@ class Monolith(Services.Service):
 			sesh (Sesh._Session): The session associated with the request
 
 		Returns:
-			Services.Effect
+			Services.Response
 		"""
 
 		# Verify fields
 		try: DictHelper.eval(data, ['phoneNumber'])
-		except ValueError as e: return Services.Effect(error=(1001, [(f, 'missing') for f in e.args]))
+		except ValueError as e: return Services.Response(error=(1001, [(f, 'missing') for f in e.args]))
 
 		# Look for the latest customer with the given number
 		dRes = KtCustomer.byPhone(data['phoneNumber'])
 
 		# If there's no customer
 		if not dRes:
-			return Services.Effect(0)
+			return Services.Response(0)
 
 		# Return the ID
-		return Services.Effect(dRes)
+		return Services.Response(dRes)
 
 	def customerMessages_read(self, data, sesh):
 		"""Customer Messages
@@ -391,20 +422,20 @@ class Monolith(Services.Service):
 			sesh (Sesh._Session): The session associated with the request
 
 		Returns:
-			Services.Effect
+			Services.Response
 		"""
 
 		# Make sure the user has the proper permission to do this
-		oEff = Services.read('auth', 'rights/verify', {
+		oResponse = Services.read('auth', 'rights/verify', {
 			"name": "csr_messaging",
 			"right": Rights.READ
 		}, sesh)
-		if not oEff.data:
-			return Services.Effect(error=Rights.INVALID)
+		if not oResponse.data:
+			return Services.Response(error=Rights.INVALID)
 
 		# Verify fields
 		try: DictHelper.eval(data, ['customerPhone'])
-		except ValueError as e: return Services.Effect(error=(1001, [(f, 'missing') for f in e.args]))
+		except ValueError as e: return Services.Response(error=(1001, [(f, 'missing') for f in e.args]))
 
 		# Get the messages
 		lMsgs = CustomerCommunication.thread(data['customerPhone'])
@@ -416,7 +447,7 @@ class Monolith(Services.Service):
 		bStop = SMSStop.filter({"phoneNumber": data['customerPhone'], "service": sType}) and True or False
 
 		# Fetch and return all the messages associated with the number
-		return Services.Effect({
+		return Services.Response({
 			"messages": CustomerCommunication.thread(data['customerPhone']),
 			"stop": bStop,
 			"type": sType
@@ -433,20 +464,20 @@ class Monolith(Services.Service):
 			sesh (Sesh._Session): The session associated with the request
 
 		Returns:
-			Services.Effect
+			Services.Response
 		"""
 
 		# Verify fields
 		try: DictHelper.eval(data, ['customerId'])
-		except ValueError as e: return Services.Effect(error=(1001, [(f, 'missing') for f in e.args]))
+		except ValueError as e: return Services.Response(error=(1001, [(f, 'missing') for f in e.args]))
 
 		# Make sure the user has the proper permission to do this
-		oEff = Services.read('auth', 'rights/verify', {
+		oResponse = Services.read('auth', 'rights/verify', {
 			"name": "memo_mips",
 			"right": Rights.READ
 		}, sesh)
-		if not oEff.data:
-			return Services.Effect(error=Rights.INVALID)
+		if not oResponse.data:
+			return Services.Response(error=Rights.INVALID)
 
 		# Attempt to find the customer by phone number
 		dCustomer = KtCustomer.filter(
@@ -465,7 +496,7 @@ class Monolith(Services.Service):
 
 		# If there's no mip
 		if not lLandings:
-			return Services.Effect(0)
+			return Services.Response(0)
 
 		# Init the return
 		lRet = []
@@ -522,7 +553,7 @@ class Monolith(Services.Service):
 			lRet.append(dData)
 
 		# Return the landings
-		return Services.Effect(lRet)
+		return Services.Response(lRet)
 
 	def customerMipAnswer_update(self, data, sesh):
 		"""Customer MIP Answer Update
@@ -534,20 +565,20 @@ class Monolith(Services.Service):
 			sesh (Sesh._Session): The session associated with the request
 
 		Returns:
-			Services.Effect
+			Services.Response
 		"""
 
 		# Make sure the user has the proper permission to do this
-		oEff = Services.read('auth', 'rights/verify', {
+		oResponse = Services.read('auth', 'rights/verify', {
 			"name": "memo_mips",
 			"right": Rights.UPDATE
 		}, sesh)
-		if not oEff.data:
-			return Services.Effect(error=Rights.INVALID)
+		if not oResponse.data:
+			return Services.Response(error=Rights.INVALID)
 
 		# Verify fields
 		try: DictHelper.eval(data, ['landing_id', 'ref', 'value'])
-		except ValueError as e: return Services.Effect(error=(1001, [(f, 'missing') for f in e.args]))
+		except ValueError as e: return Services.Response(error=(1001, [(f, 'missing') for f in e.args]))
 
 		# Find the answer
 		oTfAnswer = TfAnswer.filter({
@@ -557,16 +588,16 @@ class Monolith(Services.Service):
 
 		# If it's not found
 		if not oTfAnswer:
-			return Services.Effect(error=1104)
+			return Services.Response(error=1104)
 
 		# Update the value
 		try:
 			oTfAnswer['value'] = data['value']
 		except ValueError as e:
-			return Services.Effect(error=(1001, [e.args[0]]))
+			return Services.Response(error=(1001, [e.args[0]]))
 
 		# Save the record and return the result
-		return Services.Effect(
+		return Services.Response(
 			oTfAnswer.save()
 		)
 
@@ -581,16 +612,16 @@ class Monolith(Services.Service):
 			sesh (Sesh._Session): The session associated with the user
 
 		Returns:
-			Effect
+			Services.Response
 		"""
 
 		# Verify fields
 		try: DictHelper.eval(data, ['_internal_', 'customerId'])
-		except ValueError as e: return Services.Effect(error=(1001, [(f, 'missing') for f in e.args]))
+		except ValueError as e: return Services.Response(error=(1001, [(f, 'missing') for f in e.args]))
 
 		# Verify the key, remove it if it's ok
 		if not Services.internalKey(data['_internal_']):
-			return Services.Effect(error=Errors.SERVICE_INTERNAL_KEY)
+			return Services.Response(error=Errors.SERVICE_INTERNAL_KEY)
 		del data['_internal_']
 
 		# If there's only one
@@ -602,10 +633,10 @@ class Monolith(Services.Service):
 				for d in KtCustomer.filter({"customerId": data['customerId']}, raw=['customerId', 'firstName', 'lastName'])
 			}
 		else:
-			return Services.Effect(error=(1001, [('customerId', 'invalid')]))
+			return Services.Response(error=(1001, [('customerId', 'invalid')]))
 
 		# Return the result
-		return Services.Effect(mRet)
+		return Services.Response(mRet)
 
 	def customerNote_create(self, data, sesh):
 		"""Customer Note Create
@@ -617,24 +648,24 @@ class Monolith(Services.Service):
 			sesh (Sesh._Session): The session associated with the request
 
 		Returns:
-			Services.Effect
+			Services.Response
 		"""
 
 		# Verify fields
 		try: DictHelper.eval(data, ['content', 'action'])
-		except ValueError as e: return Services.Effect(error=(1001, [(f, 'missing') for f in e.args]))
+		except ValueError as e: return Services.Response(error=(1001, [(f, 'missing') for f in e.args]))
 
 		# We must have either a customer ID or order ID
 		if 'customer_id' not in data and 'order_id' not in data:
-			return Services.Effect(error=(1001, [('customer_id', 'missing'), ('order_id', 'missing')]))
+			return Services.Response(error=(1001, [('customer_id', 'missing'), ('order_id', 'missing')]))
 
 		# Make sure the user has the proper permission to do this
-		oEff = Services.read('auth', 'rights/verify', {
+		oResponse = Services.read('auth', 'rights/verify', {
 			"name": "memo_notes",
 			"right": Rights.CREATE
 		}, sesh)
-		if not oEff.data:
-			return Services.Effect(error=Rights.INVALID)
+		if not oResponse.data:
+			return Services.Response(error=Rights.INVALID)
 
 		# Get current date/time
 		sDT = arrow.get().format('YYYY-MM-DD HH:mm:ss')
@@ -655,14 +686,14 @@ class Monolith(Services.Service):
 					"updatedAt": sDT
 				})
 			except ValueError as e:
-				return Services.Effect(error=(1001, e.args[0]))
+				return Services.Response(error=(1001, e.args[0]))
 
 		# Else we got an order ID
 		else:
 
 			# If we have no label
 			if 'label' not in data:
-				return Services.Effect(error=(1001, [('label', 'missing')]))
+				return Services.Response(error=(1001, [('label', 'missing')]))
 
 			# Figure out the role based on the label
 			lLabel = data['label'].split(' - ')
@@ -733,10 +764,10 @@ class Monolith(Services.Service):
 					"updatedAt": sDT
 				})
 			except ValueError as e:
-				return Services.Effect(error=(1001, e.args[0]))
+				return Services.Response(error=(1001, e.args[0]))
 
 		# Create the record and return the result
-		return Services.Effect(
+		return Services.Response(
 			oSmpNote.create()
 		)
 
@@ -750,24 +781,24 @@ class Monolith(Services.Service):
 			sesh (Sesh._Session): The session associated with the request
 
 		Returns:
-			Services.Effect
+			Services.Response
 		"""
 
 		# Make sure the user has the proper permission to do this
-		oEff = Services.read('auth', 'rights/verify', {
+		oResponse = Services.read('auth', 'rights/verify', {
 			"name": "memo_notes",
 			"right": Rights.READ
 		}, sesh)
-		if not oEff.data:
-			return Services.Effect(error=Rights.INVALID)
+		if not oResponse.data:
+			return Services.Response(error=Rights.INVALID)
 
 		# Verify fields
 		try: DictHelper.eval(data, ['customerId'])
-		except ValueError as e: return Services.Effect(error=(1001, [(f, 'missing') for f in e.args]))
+		except ValueError as e: return Services.Response(error=(1001, [(f, 'missing') for f in e.args]))
 
 		# Convert ID to int
 		try: data['customerId'] = int(data['customerId'])
-		except ValueError: return Services.Effect(error=(1001, [('customerId', "invalid")]))
+		except ValueError: return Services.Response(error=(1001, [('customerId', "invalid")]))
 
 		# Fetch all notes
 		lNotes = SmpNote.byCustomer(data['customerId'])
@@ -796,7 +827,7 @@ class Monolith(Services.Service):
 			}
 
 		# Fetch and return all notes
-		return Services.Effect({
+		return Services.Response({
 			"notes": lNotes,
 			"status": dStatus
 		})
@@ -811,12 +842,12 @@ class Monolith(Services.Service):
 			sesh (Sesh._Session): The session associated with the request
 
 		Returns:
-			Services.Effect
+			Services.Response
 		"""
 
 		# Verify fields
 		try: DictHelper.eval(data, ['customerId'])
-		except ValueError as e: return Services.Effect(error=(1001, [(f, 'missing') for f in e.args]))
+		except ValueError as e: return Services.Response(error=(1001, [(f, 'missing') for f in e.args]))
 
 		# Get all the records for the customer
 		lCodes = ShippingInfo.filter(
@@ -831,7 +862,7 @@ class Monolith(Services.Service):
 			except KeyError: d['link'] = None
 
 		# Return the records
-		return Services.Effect(lCodes)
+		return Services.Response(lCodes)
 
 	def messageIncoming_create(self, data):
 		"""Message Incoming
@@ -842,16 +873,16 @@ class Monolith(Services.Service):
 			data (dict): Data sent with the request
 
 		Returns:
-			Services.Effect
+			Services.Response
 		"""
 
 		# Verify fields
 		try: DictHelper.eval(data, ['_internal_', 'customerPhone', 'recvPhone', 'content', 'type'])
-		except ValueError as e: return Services.Effect(error=(1001, [(f, 'missing') for f in e.args]))
+		except ValueError as e: return Services.Response(error=(1001, [(f, 'missing') for f in e.args]))
 
 		# Verify the key, remove it if it's ok
 		if not Services.internalKey(data['_internal_']):
-			return Services.Effect(error=Errors.SERVICE_INTERNAL_KEY)
+			return Services.Response(error=Errors.SERVICE_INTERNAL_KEY)
 		del data['_internal_']
 
 		# Get current date/time
@@ -882,7 +913,7 @@ class Monolith(Services.Service):
 				"updatedAt": sDT
 			})
 		except ValueError as e:
-			return Services.Effect(error=(1001, e.args[0]))
+			return Services.Response(error=(1001, e.args[0]))
 
 		# Store the message record
 		oCustomerCommunication.create()
@@ -898,7 +929,7 @@ class Monolith(Services.Service):
 		)
 
 		# Return OK
-		return Services.Effect(True)
+		return Services.Response(True)
 
 	def messageOutgoing_create(self, data, sesh=None):
 		"""Message Outgoing
@@ -910,43 +941,43 @@ class Monolith(Services.Service):
 			sesh (Sesh._Session): The session associated with the request
 
 		Returns:
-			Services.Effect
+			Services.Response
 		"""
 
 		# If we have no session and no key
 		if not sesh and '_internal_' not in data:
-			return Services.Effect(error=(1001, [('_internal_', 'missing')]))
+			return Services.Response(error=(1001, [('_internal_', 'missing')]))
 
 		# Verify fields
 		try: DictHelper.eval(data, ['customerPhone', 'content', 'type'])
-		except ValueError as e: return Services.Effect(error=(1001, [(f, 'missing') for f in e.args]))
+		except ValueError as e: return Services.Response(error=(1001, [(f, 'missing') for f in e.args]))
 
 		# Check the number isn't blocked
 		if SMSStop.filter({"phoneNumber": data['customerPhone'], "service": data['type']}):
-			return Services.Effect(error=1500)
+			return Services.Response(error=1500)
 
 		# If it's internal
 		if '_internal_' in data:
 
 			# Verify the key, remove it if it's ok
 			if not Services.internalKey(data['_internal_']):
-				return Services.Effect(error=Errors.SERVICE_INTERNAL_KEY)
+				return Services.Response(error=Errors.SERVICE_INTERNAL_KEY)
 			del data['_internal_']
 
 			# If we don't have the name
 			if 'name' not in data:
-				return Services.Effect(error=(1001, [('name', 'missing')]))
+				return Services.Response(error=(1001, [('name', 'missing')]))
 
 		# Else, verify the user and user their name
 		else:
 
 			# Make sure the user has the proper permission to do this
-			oEff = Services.read('auth', 'rights/verify', {
+			oResponse = Services.read('auth', 'rights/verify', {
 				"name": "csr_messaging",
 				"right": Rights.CREATE
 			}, sesh)
-			if not oEff.data:
-				return Services.Effect(error=Rights.INVALID)
+			if not oResponse.data:
+				return Services.Response(error=Rights.INVALID)
 
 			dUser = User.get(sesh['memo_id'], raw=['firstName', 'lastName'])
 			data['name'] = '%s %s' % (dUser['firstName'], dUser['lastName'])
@@ -965,10 +996,10 @@ class Monolith(Services.Service):
 				"updatedAt": sDT
 			})
 		except ValueError as e:
-			return Services.Effect(error=(1001, e.args[0]))
+			return Services.Response(error=(1001, e.args[0]))
 
 		# Send the SMS
-		oEff = Services.create('communications', 'sms', {
+		oResponse = Services.create('communications', 'sms', {
 			"_internal_": Services.internalKey(),
 			"to": data['customerPhone'],
 			"content": data['content'],
@@ -976,11 +1007,11 @@ class Monolith(Services.Service):
 		})
 
 		# If we got an error
-		if oEff.errorExists():
-			return oEff
+		if oResponse.errorExists():
+			return oResponse
 
 		# Store the message record
-		oCustomerCommunication['sid'] = oEff.data
+		oCustomerCommunication['sid'] = oResponse.data
 		oCustomerCommunication.create()
 
 		# Catch issues with summary
@@ -1001,7 +1032,7 @@ class Monolith(Services.Service):
 		except Exception as e:
 			try:
 				# Email the error
-				oEffect = Services.create('communications', 'email', {
+				oResponse = Services.create('communications', 'email', {
 					"_internal_": Services.internalKey(),
 					"html_body": "Phone: %s\nContent: %s\nErrors: %s" % (
 						data['customerPhone'],
@@ -1015,10 +1046,10 @@ class Monolith(Services.Service):
 				pass
 
 			# Return OK but with a warning
-			return Services.Effect(True, warning="Message sent to customer, but Memo summary failed to update")
+			return Services.Response(True, warning="Message sent to customer, but Memo summary failed to update")
 
 		# Return the ID of the new message
-		return Services.Effect(oCustomerCommunication['id'])
+		return Services.Response(oCustomerCommunication['id'])
 
 	def msgsClaimed_read(self, data, sesh):
 		"""Messages: Claimed
@@ -1031,23 +1062,23 @@ class Monolith(Services.Service):
 			sesh (Sesh._Session): The session associated with the request
 
 		Returns:
-			Services.Effect
+			Services.Response
 		"""
 
 		# Make sure the user has the proper permission to do this
-		oEff = Services.read('auth', 'rights/verify', {
+		oResponse = Services.read('auth', 'rights/verify', {
 			"name": "csr_messaging",
 			"right": Rights.READ
 		}, sesh)
-		if not oEff.data:
-			return Services.Effect(error=Rights.INVALID)
+		if not oResponse.data:
+			return Services.Response(error=Rights.INVALID)
 
 		# Get the claimed records
 		lClaimed = CustomerMsgPhone.claimed(sesh['memo_id'])
 
 		# If there's no claimed, return
 		if not lClaimed:
-			return Services.Effect([])
+			return Services.Response([])
 
 		# Get the phone numbers out of them
 		lNumbers = []
@@ -1074,7 +1105,7 @@ class Monolith(Services.Service):
 								0
 
 		# Return the data
-		return Services.Effect(lClaimed)
+		return Services.Response(lClaimed)
 
 	def msgsClaimedNew_read(self, data, sesh):
 		"""Messages Claimed New
@@ -1086,16 +1117,16 @@ class Monolith(Services.Service):
 			sesh (Sesh._Session): The session associated with the request
 
 		Returns:
-			Services.Effect
+			Services.Response
 		"""
 
 		# Verify fields
 		try: DictHelper.eval(data, ['numbers'])
-		except ValueError as e: return Services.Effect(error=(1001, [(f, 'missing') for f in e.args]))
+		except ValueError as e: return Services.Response(error=(1001, [(f, 'missing') for f in e.args]))
 
 		# If it's not a list
 		if not isinstance(data['numbers'], (list,tuple)):
-			return Services.Effect(error=(1001, [('numbers', 'invalid')]))
+			return Services.Response(error=(1001, [('numbers', 'invalid')]))
 
 		# Fetch the last claimed time
 		iTS = CustomerClaimedLast.get(sesh['memo_id'])
@@ -1106,7 +1137,7 @@ class Monolith(Services.Service):
 		CustomerClaimedLast.set(sesh['memo_id'], int(time()))
 
 		# Fetch and return the list of numbers with new messages
-		return Services.Effect(
+		return Services.Response(
 			CustomerCommunication.newMessages(data['numbers'], iTS)
 		)
 
@@ -1120,25 +1151,25 @@ class Monolith(Services.Service):
 			sesh (Sesh._Session): The session associated with the request
 
 		Returns:
-			Services.Effect
+			Services.Response
 		"""
 
 		# Make sure the user has the proper permission to do this
-		oEff = Services.read('auth', 'rights/verify', {
+		oResponse = Services.read('auth', 'rights/verify', {
 			"name": "csr_messaging",
 			"right": Rights.READ
 		}, sesh)
-		if not oEff.data:
-			return Services.Effect(error=Rights.INVALID)
+		if not oResponse.data:
+			return Services.Response(error=Rights.INVALID)
 
 		# Must search at least one
 		if 'phone' not in data and \
 			'name' not in data and \
 			'content' not in data:
-			return Services.Effect(error=(1001, [('content', 'missing')]))
+			return Services.Response(error=(1001, [('content', 'missing')]))
 
 		# Fetch and return the data
-		return Services.Effect(
+		return Services.Response(
 			CustomerMsgPhone.search(data)
 		)
 
@@ -1153,21 +1184,21 @@ class Monolith(Services.Service):
 			sesh (Sesh._Session): The session associated with the request
 
 		Returns:
-			Services.Effect
+			Services.Response
 		"""
 
 		# Make sure the user has the proper permission to do this
-		oEff = Services.read('auth', 'rights/verify', {
+		oResponse = Services.read('auth', 'rights/verify', {
 			"name": "csr_messaging",
 			"right": Rights.READ
 		}, sesh)
-		if not oEff.data:
-			return Services.Effect(error=Rights.INVALID)
+		if not oResponse.data:
+			return Services.Response(error=Rights.INVALID)
 
 		# Must search at least one
 		if 'id' not in data and \
 			'email' not in data:
-			return Services.Effect(error=(1001, [('id', 'missing')]))
+			return Services.Response(error=(1001, [('id', 'missing')]))
 
 		# Figure out what to filter by
 		dFilter = {}
@@ -1184,10 +1215,10 @@ class Monolith(Services.Service):
 
 		# If there's no customer
 		if not dCustomer:
-			return Services.Effect([])
+			return Services.Response([])
 
 		# Fetch and return the data based on the phone number
-		return Services.Effect(
+		return Services.Response(
 			CustomerMsgPhone.search({"phone": dCustomer['phoneNumber']})
 		)
 
@@ -1201,15 +1232,15 @@ class Monolith(Services.Service):
 			sesh (Sesh._Session): The session associated with the request
 
 		Returns:
-			Services.Effect
+			Services.Response
 		"""
 
 		# Verify fields
 		try: DictHelper.eval(data, ['ids'])
-		except ValueError as e: return Services.Effect(error=(1001, [(f, "missing") for f in e.args]))
+		except ValueError as e: return Services.Response(error=(1001, [(f, "missing") for f in e.args]))
 
 		# Get the status and error message of a specific message and return it
-		return Services.Effect(
+		return Services.Response(
 			CustomerCommunication.get(data['ids'], raw=['id', 'status', 'errorMessage'])
 		)
 
@@ -1224,19 +1255,19 @@ class Monolith(Services.Service):
 			sesh (Sesh._Session): The session associated with the request
 
 		Returns:
-			Services.Effect
+			Services.Response
 		"""
 
 		# Make sure the user has the proper permission to do this
-		oEff = Services.read('auth', 'rights/verify', {
+		oResponse = Services.read('auth', 'rights/verify', {
 			"name": "csr_messaging",
 			"right": Rights.READ
 		}, sesh)
-		if not oEff.data:
-			return Services.Effect(error=Rights.INVALID)
+		if not oResponse.data:
+			return Services.Response(error=Rights.INVALID)
 
 		# Fetch and return the data
-		return Services.Effect(
+		return Services.Response(
 			CustomerMsgPhone.unclaimed()
 		)
 
@@ -1251,11 +1282,11 @@ class Monolith(Services.Service):
 			sesh (Sesh._Session): The session associated with the request
 
 		Returns:
-			Services.Effect
+			Services.Response
 		"""
 
 		# Fetch and return the data
-		return Services.Effect(
+		return Services.Response(
 			CustomerMsgPhone.unclaimedCount()
 		)
 
@@ -1269,17 +1300,17 @@ class Monolith(Services.Service):
 			data (dict): Data sent with the request
 
 		Returns:
-			Services.Effect
+			Services.Response
 		"""
 
 		# Verify fields
 		try: DictHelper.eval(data, ['email', 'url'])
-		except ValueError as e: return Services.Effect(error=(1001, [(f, 'missing') for f in e.args]))
+		except ValueError as e: return Services.Response(error=(1001, [(f, 'missing') for f in e.args]))
 
 		# Look for the user by email
 		dUser = User.filter({"email": data['email']}, raw=['id'], limit=1)
 		if not dUser:
-			return Services.Effect(False)
+			return Services.Response(False)
 
 		# Look for a forgot record by user id
 		oForgot = Forgot.get(dUser['id'])
@@ -1289,7 +1320,7 @@ class Monolith(Services.Service):
 
 			# Is it not expired?
 			if oForgot['expires'] > int(time()):
-				return Services.Effect(True)
+				return Services.Response(True)
 
 		# Upsert the forgot record with a timestamp (for expiry) and the key
 		sKey = StrHelper.random(32, '_0x')
@@ -1299,7 +1330,7 @@ class Monolith(Services.Service):
 			"key": sKey
 		})
 		if not oForgot.create(conflict="replace"):
-			return Services.Effect(error=1100)
+			return Services.Response(error=1100)
 
 		# Forgot email template variables
 		dTpl = {
@@ -1311,17 +1342,17 @@ class Monolith(Services.Service):
 		}
 
 		# Email the user the key
-		oEffect = Services.create('communications', 'email', {
+		oResponse = Services.create('communications', 'email', {
 			"_internal_": Services.internalKey(),
 			"html_body": Templates.generate('email/forgot.html', dTpl, dUser['locale']),
 			"subject": Templates.generate('email/forgot_subject.txt', {}, dUser['locale']),
 			"to": data['email'],
 		})
-		if oEffect.errorExists():
-			return oEffect
+		if oResponse.errorExists():
+			return oResponse
 
 		# Return OK
-		return Services.Effect(True)
+		return Services.Response(True)
 
 	def passwdForgot_update(self, data):
 		"""Password Forgot (Change Password)
@@ -1332,30 +1363,30 @@ class Monolith(Services.Service):
 			data (dict): Data sent with the request
 
 		Returns:
-			Services.Effect
+			Services.Response
 		"""
 
 		# Verify fields
 		try: DictHelper.eval(data, ['passwd', 'key'])
-		except ValueError as e: return Services.Effect(error=(1001, [(f, 'missing') for f in e.args]))
+		except ValueError as e: return Services.Response(error=(1001, [(f, 'missing') for f in e.args]))
 
 		# Look for the forgot by the key
 		oForgot = Forgot.filter({"key": data['key']}, limit=1)
 		if not oForgot:
-			return Services.Effect(error=1203) # Don't let people know if the key exists or not
+			return Services.Response(error=1203) # Don't let people know if the key exists or not
 
 		# Check if the key has expired
 		if oForgot['expires'] <= int(time()):
-			return Services.Effect(error=1203)
+			return Services.Response(error=1203)
 
 		# Make sure the new password is strong enough
 		if not User.passwordStrength(data['passwd']):
-			return Services.Effect(error=1204)
+			return Services.Response(error=1204)
 
 		# Find the User
 		oUser = User.get(oForgot['user'])
 		if not oUser:
-			return Services.Effect(error=1203)
+			return Services.Response(error=1203)
 
 		# Store the new password and update
 		oUser['passwd'] = User.passwordHash(data['passwd'])
@@ -1365,7 +1396,7 @@ class Monolith(Services.Service):
 		oForgot.delete()
 
 		# Return OK
-		return Services.Effect(True)
+		return Services.Response(True)
 
 	def session_read(self, data, sesh):
 		"""Session
@@ -1377,9 +1408,9 @@ class Monolith(Services.Service):
 			sesh (Sesh._Session): The session associated with the request
 
 		Returns:
-			Services.Effect
+			Services.Response
 		"""
-		return Services.Effect({
+		return Services.Response({
 			"memo": {"id": sesh['memo_id']},
 			"user" : {"id": sesh['user_id']}
 		})
@@ -1398,20 +1429,20 @@ class Monolith(Services.Service):
 
 		# Verify fields
 		try: DictHelper.eval(data, ['userName', 'passwd'])
-		except ValueError as e: return Services.Effect(error=(1001, [(f, 'missing') for f in e.args]))
+		except ValueError as e: return Services.Response(error=(1001, [(f, 'missing') for f in e.args]))
 
 		# Look for the user by alias
 		oUser = User.filter({"userName": data['userName']}, limit=1)
 		if not oUser:
-			return Services.Effect(error=1201)
+			return Services.Response(error=1201)
 
 		# If the user is not active
 		if oUser['activeFlag'] == 'N':
-			return Services.Effect(error=1503)
+			return Services.Response(error=1503)
 
 		# Validate the password
 		if not bcrypt.checkpw(data['passwd'].encode('utf8'), oUser['password'].encode('utf8')):
-			return Services.Effect(error=1201)
+			return Services.Response(error=1201)
 
 		# Create a new session
 		oSesh = Sesh.create("mono:" + uuid.uuid4().hex)
@@ -1423,24 +1454,24 @@ class Monolith(Services.Service):
 		oSesh.save()
 
 		# Check the CSR tool for the memo user / agent
-		oEff = Services.read('csr', 'agent/internal', {
+		oResponse = Services.read('csr', 'agent/internal', {
 			"_internal_": Services.internalKey(),
 			"id": oUser['id']
 		}, oSesh)
-		if oEff.errorExists():
-			if oEff.error['code'] == 1104:
-				return Services.Effect(error=Rights.INVALID)
-			return oEff
+		if oResponse.errorExists():
+			if oResponse.error['code'] == 1104:
+				return Services.Response(error=Rights.INVALID)
+			return oResponse
 
 		# Store the user ID in the session
-		oSesh['user_id'] = oEff.data['_id']
+		oSesh['user_id'] = oResponse.data['_id']
 		oSesh.save()
 
 		# Return the session ID and primary user data
-		return Services.Effect({
+		return Services.Response({
 			"memo": {"id": oSesh['memo_id']},
 			"session": oSesh.id(),
-			"user": {"id": oEff.data['_id']}
+			"user": {"id": oResponse.data['_id']}
 		})
 
 	def signout_create(self, data, sesh):
@@ -1453,14 +1484,14 @@ class Monolith(Services.Service):
 			sesh (Sesh._Session): The session associated with the user
 
 		Returns:
-			Services.Effect
+			Services.Response
 		"""
 
 		# Close the session so it can no longer be found/used
 		sesh.close()
 
 		# Return OK
-		return Services.Effect(True)
+		return Services.Response(True)
 
 	def statsClaimed_read(self, data, sesh):
 		"""Stats: Claimed
@@ -1472,19 +1503,19 @@ class Monolith(Services.Service):
 			sesh (Sesh._Session): The session associated with the user
 
 		Returns:
-			Effect
+			Services.Response
 		"""
 
 		# Make sure the user has the proper permission to do this
-		oEff = Services.read('auth', 'rights/verify', {
+		oResponse = Services.read('auth', 'rights/verify', {
 			"name": "csr_stats",
 			"right": Rights.READ
 		}, sesh)
-		if not oEff.data:
-			return Services.Effect(error=Rights.INVALID)
+		if not oResponse.data:
+			return Services.Response(error=Rights.INVALID)
 
 		# Fetch and return claim stats
-		return Services.Effect(
+		return Services.Response(
 			CustomerClaimed.stats()
 		)
 
@@ -1498,25 +1529,25 @@ class Monolith(Services.Service):
 			sesh (Sesh._Session): The session associated with the user
 
 		Returns:
-			Effect
+			Services.Response
 		"""
 
 		# Verify fields
 		try: DictHelper.eval(data, ['_internal_', 'userName', 'firstName', 'lastName', 'password'])
-		except ValueError as e: return Services.Effect(error=(1001, [(f, 'missing') for f in e.args]))
+		except ValueError as e: return Services.Response(error=(1001, [(f, 'missing') for f in e.args]))
 
 		# Verify the key, remove it if it's ok
 		if not Services.internalKey(data['_internal_']):
-			return Services.Effect(error=Errors.SERVICE_INTERNAL_KEY)
+			return Services.Response(error=Errors.SERVICE_INTERNAL_KEY)
 		del data['_internal_']
 
 		# Check if a user with that user name already exists
 		if User.exists(data['userName'], 'userName'):
-			return Services.Effect(error=1501)
+			return Services.Response(error=1501)
 
 		# Check the password strength
 		if not User.passwordStrength(data['password']):
-			return Services.Effect(error=1502)
+			return Services.Response(error=1502)
 
 		# Hash the password
 		data['password'] = bcrypt.hashpw(data['password'].encode('utf8'), bcrypt.gensalt()).decode('utf8')
@@ -1533,10 +1564,10 @@ class Monolith(Services.Service):
 		try:
 			oUser = User(data)
 		except ValueError as e:
-			return Services.Effect(error=(1001, e.args[0]))
+			return Services.Response(error=(1001, e.args[0]))
 
 		# Create the row and return the result
-		return Services.Effect(
+		return Services.Response(
 			oUser.create()
 		)
 
@@ -1550,7 +1581,7 @@ class Monolith(Services.Service):
 			sesh (Sesh._Session): The session associated with the user
 
 		Returns:
-			Effect
+			Services.Response
 		"""
 
 		# Fetch it from the DB
@@ -1558,20 +1589,20 @@ class Monolith(Services.Service):
 
 		# If it doesn't exist
 		if not dUser:
-			return Services.Effect(error=1104)
+			return Services.Response(error=1104)
 
 		# Remove the passwd
 		del dUser['password']
 
 		# Fetch the permissions
-		oEff = Services.read('auth', 'permissions/self', {}, sesh)
-		if oEff.errorExists(): return oEff
+		oResponse = Services.read('auth', 'permissions/self', {}, sesh)
+		if oResponse.errorExists(): return oResponse
 
 		# Add the permissions to the dict
-		dUser['permissions'] = oEff.dataExists() and oEff.data or {}
+		dUser['permissions'] = oResponse.dataExists() and oResponse.data or {}
 
 		# Return the user data
-		return Services.Effect(dUser)
+		return Services.Response(dUser)
 
 	def user_update(self, data, sesh):
 		"""User Update
@@ -1583,7 +1614,7 @@ class Monolith(Services.Service):
 			sesh (Sesh._Session): The session associated with the user
 
 		Returns:
-			Effect
+			Services.Response
 		"""
 
 		# If the user is not the one logged in
@@ -1591,17 +1622,17 @@ class Monolith(Services.Service):
 
 			# If there's no internal
 			if '_internal_' not in data:
-				return Services.Effect(error=(1001, [('_internal_', 'missing')]))
+				return Services.Response(error=(1001, [('_internal_', 'missing')]))
 
 			# Verify the key, remove it if it's ok
 			if not Services.internalKey(data['_internal_']):
-				return Services.Effect(error=Errors.SERVICE_INTERNAL_KEY)
+				return Services.Response(error=Errors.SERVICE_INTERNAL_KEY)
 			del data['_internal_']
 
 			# Find the User
 			oUser = User.get(data['id'])
 			if not oUser:
-				return Services.Effect(error=1104)
+				return Services.Response(error=1104)
 
 			# Remove the ID from the data
 			del data['id']
@@ -1620,7 +1651,7 @@ class Monolith(Services.Service):
 
 			# Check if a user with that user name already exists
 			if User.exists(data['userName'], 'userName'):
-				return Services.Effect(error=1501)
+				return Services.Response(error=1501)
 
 		# Step through each field passed and update/validate it
 		lErrors = []
@@ -1633,10 +1664,10 @@ class Monolith(Services.Service):
 
 		# If there was any errors
 		if lErrors:
-			return Services.Effect(error=(1001, lErrors))
+			return Services.Response(error=(1001, lErrors))
 
 		# Update the record and return the result
-		return Services.Effect(
+		return Services.Response(
 			oUser.save()
 		)
 
@@ -1650,22 +1681,22 @@ class Monolith(Services.Service):
 			sesh (Sesh._Session): The session associated with the user
 
 		Returns:
-			Effect
+			Services.Response
 		"""
 
 		# Verify fields
 		try: DictHelper.eval(data, ['_internal_', 'id', 'active'])
-		except ValueError as e: return Services.Effect(error=(1001, [(f, 'missing') for f in e.args]))
+		except ValueError as e: return Services.Response(error=(1001, [(f, 'missing') for f in e.args]))
 
 		# Verify the key, remove it if it's ok
 		if not Services.internalKey(data['_internal_']):
-			return Services.Effect(error=Errors.SERVICE_INTERNAL_KEY)
+			return Services.Response(error=Errors.SERVICE_INTERNAL_KEY)
 		del data['_internal_']
 
 		# Find the User
 		oUser = User.get(data['id'])
 		if not oUser:
-			return Services.Effect(error=1104)
+			return Services.Response(error=1104)
 
 		# Set the new state of the active flag
 		oUser['activeFlag'] = data['active'] and 'Y' or 'N'
@@ -1674,7 +1705,7 @@ class Monolith(Services.Service):
 		oUser['updatedAt'] = arrow.get().format('YYYY-MM-DD HH:mm:ss')
 
 		# Save and return the result
-		return Services.Effect(
+		return Services.Response(
 			oUser.save()
 		)
 
@@ -1689,16 +1720,16 @@ class Monolith(Services.Service):
 			sesh (Sesh._Session): The session associated with the user
 
 		Returns:
-			Effect
+			Services.Response
 		"""
 
 		# Verify fields
 		try: DictHelper.eval(data, ['_internal_', 'id'])
-		except ValueError as e: return Services.Effect(error=(1001, [(f, 'missing') for f in e.args]))
+		except ValueError as e: return Services.Response(error=(1001, [(f, 'missing') for f in e.args]))
 
 		# Verify the key, remove it if it's ok
 		if not Services.internalKey(data['_internal_']):
-			return Services.Effect(error=Errors.SERVICE_INTERNAL_KEY)
+			return Services.Response(error=Errors.SERVICE_INTERNAL_KEY)
 		del data['_internal_']
 
 		# If there's only one
@@ -1710,10 +1741,10 @@ class Monolith(Services.Service):
 				for d in User.get(data['id'], raw=['id', 'firstName', 'lastName'])
 			}
 		else:
-			return Services.Effect(error=(1104, [('id', 'invalid')]))
+			return Services.Response(error=(1104, [('id', 'invalid')]))
 
 		# Return the result
-		return Services.Effect(mRet)
+		return Services.Response(mRet)
 
 	def userPasswd_update(self, data, sesh):
 		"""User Password
@@ -1725,7 +1756,7 @@ class Monolith(Services.Service):
 			sesh (Sesh._Session): The session associated with the user
 
 		Returns:
-			Effect
+			Services.Response
 		"""
 
 		# If it's an internal request
@@ -1733,7 +1764,7 @@ class Monolith(Services.Service):
 
 			# Verify fields
 			try: DictHelper.eval(data, ['user_id', 'passwd'])
-			except ValueError as e: return Services.Effect(error=(1001, [(f, 'missing') for f in e.args]))
+			except ValueError as e: return Services.Response(error=(1001, [(f, 'missing') for f in e.args]))
 
 			bInternal = True
 			sUserId = data['user_id']
@@ -1744,7 +1775,7 @@ class Monolith(Services.Service):
 
 			# Verify fields
 			try: DictHelper.eval(data, ['passwd', 'new_passwd'])
-			except ValueError as e: return Services.Effect(error=(1001, [(f, 'missing') for f in e.args]))
+			except ValueError as e: return Services.Response(error=(1001, [(f, 'missing') for f in e.args]))
 
 			bInternal = False
 			sUserId = sesh['memo_id']
@@ -1753,16 +1784,16 @@ class Monolith(Services.Service):
 		# Find the user
 		oUser = User.get(sUserId)
 		if not oUser:
-			return Services.Effect(error=1104)
+			return Services.Response(error=1104)
 
 		# Validate the password if necessary
 		if not bInternal:
 			if not bcrypt.checkpw(data['passwd'].encode('utf8'), oUser['password'].encode('utf8')):
-				return Services.Effect(error=(1001, [('passwd', 'invalid')]))
+				return Services.Response(error=(1001, [('passwd', 'invalid')]))
 
 		# Make sure the new password is strong enough
 		if not User.passwordStrength(sPasswd):
-			return Services.Effect(error=1204)
+			return Services.Response(error=1204)
 
 		# Set the new password and save
 		oUser['password'] = bcrypt.hashpw(sPasswd.encode('utf8'), bcrypt.gensalt()).decode('utf8')
@@ -1770,7 +1801,7 @@ class Monolith(Services.Service):
 		oUser.save()
 
 		# Return OK
-		return Services.Effect(True)
+		return Services.Response(True)
 
 	def users_read(self, data, sesh):
 		"""Users
@@ -1782,16 +1813,16 @@ class Monolith(Services.Service):
 			sesh (Sesh._Session): The session associated with the user
 
 		Returns:
-			Effect
+			Services.Response
 		"""
 
 		# Verify fields
 		try: DictHelper.eval(data, ['_internal_', 'id'])
-		except ValueError as e: return Services.Effect(error=(1001, [(f, "missing") for f in e.args]))
+		except ValueError as e: return Services.Response(error=(1001, [(f, "missing") for f in e.args]))
 
 		# Verify the key, remove it if it's ok
 		if not Services.internalKey(data['_internal_']):
-			return Services.Effect(error=Errors.SERVICE_INTERNAL_KEY)
+			return Services.Response(error=Errors.SERVICE_INTERNAL_KEY)
 		del data['_internal_']
 
 		# If the fields aren't passed
@@ -1799,6 +1830,6 @@ class Monolith(Services.Service):
 			data['fields'] = True
 
 		# Fetch and return the users
-		return Services.Effect(
+		return Services.Response(
 			User.get(data['id'], raw=data['fields'])
 		)

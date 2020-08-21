@@ -75,23 +75,23 @@ oCSR = CSR()
 oCSR.initialise()
 
 # Create the agent
-oEff = oCSR._agent_create(dUser['id'], oSesh)
+oResponse = oCSR._agent_create(dUser['id'], oSesh)
 
 # Delete the session
 oSesh.close
 
 # If there's an error
-if oEff.errorExists():
+if oResponse.errorExists():
 
 	# If it's a duplicate
-	if oEff.error['code'] == 1101:
+	if oResponse.error['code'] == 1101:
 		print('Memo user already an Agent')
 	else:
-		print('Unknown error: %s' % str(oEff.error))
+		print('Unknown error: %s' % str(oResponse.error))
 
 	# Error exit
 	sys.exit(1)
 
 # Succes message with agent ID
-print('Success: %s' % oEff.data)
+print('Success: %s' % oResponse.data)
 sys.exit(0)

@@ -9,6 +9,7 @@ Subpackages
 
    crons.anazao
    crons.missed_calls
+   crons.monolith
    crons.pharmacy_fill
    crons.welldyne
 

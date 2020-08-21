@@ -54,14 +54,14 @@ def emailError(subject, error):
 	print('Emailing: %s, %s' % (subject, error))
 
 	# Send the email
-	oEff = Services.create('communications', 'email', {
+	oResponse = Services.create('communications', 'email', {
 		"_internal_": Services.internalKey(),
 		"text_body": error,
 		"subject": subject,
 		"to": Conf.get(('developer', 'emails'))
 	})
-	if oEff.errorExists():
-		print(oEff.error)
+	if oResponse.errorExists():
+		print(oResponse.error)
 		return False
 
 	# Return OK

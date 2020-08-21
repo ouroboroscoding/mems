@@ -31,6 +31,7 @@ if __name__ == "__main__":
 	# Install
 	services.auth.Auth.install()
 	services.csr.CSR.install()
+	services.customers.CSR.install()
 	services.patient.Patient.install()
 	services.payment.Payment.install()
 	services.prescriptions.Prescriptions.install()

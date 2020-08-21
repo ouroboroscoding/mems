@@ -23,7 +23,7 @@ from RestOC import Conf, DictHelper, Errors, Record_MySQL, Services, StrHelper
 # Shared imports
 from shared import Rights
 
-# Service imports
+# Records imports
 from records.prescriptions import Medication, Pharmacy, PharmacyFillError
 
 _dPharmacies = {
@@ -167,7 +167,7 @@ class Prescriptions(Services.Service):
 			clinician_id (uint): ID of the clinician making the request
 
 		Raises:
-			EffectException
+			Services.ResponseException
 
 		Returns:
 			str
@@ -199,7 +199,7 @@ class Prescriptions(Services.Service):
 
 		# If we didn't get success
 		if oRes.status_code != 200:
-			raise Services.EffectException(error=(1600, oRes.text))
+			raise Services.ResponseException(error=(1600, oRes.text))
 
 		# Convert the response
 		dRes = oRes.json()
@@ -253,21 +253,21 @@ class Prescriptions(Services.Service):
 			sesh (Sesh._Session): The session associated with the request
 
 		Returns:
-			Services.Effect
+			Services.Response
 		"""
 
 		# Verify fields
 		try: DictHelper.eval(data, ['patient_id'])
-		except ValueError as e: return Services.Effect(error=(1001, [(f, 'missing') for f in e.args]))
+		except ValueError as e: return Services.Response(error=(1001, [(f, 'missing') for f in e.args]))
 
 		# Make sure the user has the proper permission to do this
-		oEff = Services.read('auth', 'rights/verify', {
+		oResponse = Services.read('auth', 'rights/verify', {
 			"name": "prescriptions",
 			"right": Rights.CREATE,
 			"ident": data['patient_id']
 		}, sesh)
-		if not oEff.data:
-			return Services.Effect(error=Rights.INVALID)
+		if not oResponse.data:
+			return Services.Response(error=Rights.INVALID)
 
 		# If the clinician ID isn't passed
 		if 'clinician_id' not in data or not data['clinician_id']:
@@ -277,7 +277,7 @@ class Prescriptions(Services.Service):
 		for s in ['clinician_id', 'patient_id']:
 			lErrors = []
 			if not isinstance(data[s], int): lErrors.append((s, 'must be integer'))
-			if lErrors: return Services.Effect(error=(1001, lErrors))
+			if lErrors: return Services.Response(error=(1001, lErrors))
 
 		# Generate the token
 		sToken = self._generateToken(data['clinician_id'])
@@ -299,17 +299,17 @@ class Prescriptions(Services.Service):
 
 		# If we didn't get a 200
 		if oRes.status_code != 200:
-			return Services.Effect(error=(1601, oRes.text))
+			return Services.Response(error=(1601, oRes.text))
 
 		# Get the data
 		dData = oRes.json()
 
 		# If we got an error
 		if dData['Result']['ResultCode'] == 'ERROR':
-			return Services.Effect(error=(1602, dData['Result']['ResultDescription']))
+			return Services.Response(error=(1602, dData['Result']['ResultDescription']))
 
 		# Return the pharmacies
-		return Services.Effect(dData['Item'])
+		return Services.Response(dData['Item'])
 
 	def patientPharmacies_read(self, data, sesh):
 		"""Patient Pharmacies
@@ -321,23 +321,23 @@ class Prescriptions(Services.Service):
 			sesh (Sesh._Session): The session associated with the request
 
 		Returns:
-			Services.Effect
+			Services.Response
 		"""
 
-		return Services.Effect(False)
+		return Services.Response(False)
 
 		# Verify fields
 		try: DictHelper.eval(data, ['patient_id'])
-		except ValueError as e: return Services.Effect(error=(1001, [(f, 'missing') for f in e.args]))
+		except ValueError as e: return Services.Response(error=(1001, [(f, 'missing') for f in e.args]))
 
 		# Make sure the user has the proper permission to do this
-		oEff = Services.read('auth', 'rights/verify', {
+		oResponse = Services.read('auth', 'rights/verify', {
 			"name": "prescriptions",
 			"right": Rights.READ,
 			"ident": data['patient_id']
 		}, sesh)
-		if not oEff.data:
-			return Services.Effect(error=Rights.INVALID)
+		if not oResponse.data:
+			return Services.Response(error=Rights.INVALID)
 
 		# If the clinician ID isn't passed
 		if 'clinician_id' not in data or not data['clinician_id']:
@@ -347,7 +347,7 @@ class Prescriptions(Services.Service):
 		for s in ['clinician_id', 'patient_id']:
 			lErrors = []
 			if not isinstance(data[s], int): lErrors.append((s, 'must be integer'))
-			if lErrors: return Services.Effect(error=(1001, lErrors))
+			if lErrors: return Services.Response(error=(1001, lErrors))
 
 		# Generate the token
 		sToken = self._generateToken(data['clinician_id'])
@@ -369,17 +369,17 @@ class Prescriptions(Services.Service):
 
 		# If we didn't get a 200
 		if oRes.status_code != 200:
-			return Services.Effect(error=(1601, oRes.text))
+			return Services.Response(error=(1601, oRes.text))
 
 		# Get the data
 		dData = oRes.json()
 
 		# If we got an error
 		if dData['Result']['ResultCode'] == 'ERROR':
-			return Services.Effect(error=(1602, dData['Result']['ResultDescription']))
+			return Services.Response(error=(1602, dData['Result']['ResultDescription']))
 
 		# Return the pharmacies
-		return Services.Effect(dData['Items'])
+		return Services.Response(dData['Items'])
 
 	def patientPharmacy_create(self, data, sesh):
 		"""Patient Pharmacy Create
@@ -391,23 +391,23 @@ class Prescriptions(Services.Service):
 			sesh (Sesh._Session): The session associated with the request
 
 		Returns:
-			Services.Effect
+			Services.Response
 		"""
 
-		return Services.Effect(False)
+		return Services.Response(False)
 
 		# Verify fields
 		try: DictHelper.eval(data, ['patient_id', 'pharmacy_id'])
-		except ValueError as e: return Services.Effect(error=(1001, [(f, 'missing') for f in e.args]))
+		except ValueError as e: return Services.Response(error=(1001, [(f, 'missing') for f in e.args]))
 
 		# Make sure the user has the proper permission to do this
-		oEff = Services.read('auth', 'rights/verify', {
+		oResponse = Services.read('auth', 'rights/verify', {
 			"name": "prescriptions",
 			"right": Rights.UPDATE,
 			"ident": data['patient_id']
 		}, sesh)
-		if not oEff.data:
-			return Services.Effect(error=Rights.INVALID)
+		if not oResponse.data:
+			return Services.Response(error=Rights.INVALID)
 
 		# If the clinician ID isn't passed
 		if 'clinician_id' not in data or not data['clinician_id']:
@@ -417,7 +417,7 @@ class Prescriptions(Services.Service):
 		for s in ['clinician_id', 'patient_id', 'pharmacy_id']:
 			lErrors = []
 			if not isinstance(data[s], int): lErrors.append((s, 'must be integer'))
-			if lErrors: return Services.Effect(error=(1001, lErrors))
+			if lErrors: return Services.Response(error=(1001, lErrors))
 
 		# Generate the token
 		sToken = self._generateToken(data['clinician_id'])
@@ -440,17 +440,17 @@ class Prescriptions(Services.Service):
 
 		# If we didn't get a 200
 		if oRes.status_code != 200:
-			return Services.Effect(error=(1601, oRes.text))
+			return Services.Response(error=(1601, oRes.text))
 
 		# Get the data
 		dData = oRes.json()
 
 		# If we got an error
 		if dData['Result']['ResultCode'] == 'ERROR':
-			return Services.Effect(error=(1602, dData['Result']['ResultDescription']))
+			return Services.Response(error=(1602, dData['Result']['ResultDescription']))
 
 		# Return the pharmacies
-		return Services.Effect(True)
+		return Services.Response(True)
 
 	def patientPharmacy_delete(self, data, sesh):
 		"""Patient Pharmacy Delete
@@ -462,23 +462,23 @@ class Prescriptions(Services.Service):
 			sesh (Sesh._Session): The session associated with the request
 
 		Returns:
-			Services.Effect
+			Services.Response
 		"""
 
-		return Services.Effect(False)
+		return Services.Response(False)
 
 		# Verify fields
 		try: DictHelper.eval(data, ['patient_id', 'pharmacy_id'])
-		except ValueError as e: return Services.Effect(error=(1001, [(f, 'missing') for f in e.args]))
+		except ValueError as e: return Services.Response(error=(1001, [(f, 'missing') for f in e.args]))
 
 		# Make sure the user has the proper permission to do this
-		oEff = Services.read('auth', 'rights/verify', {
+		oResponse = Services.read('auth', 'rights/verify', {
 			"name": "prescriptions",
 			"right": Rights.UPDATE,
 			"ident": data['patient_id']
 		}, sesh)
-		if not oEff.data:
-			return Services.Effect(error=Rights.INVALID)
+		if not oResponse.data:
+			return Services.Response(error=Rights.INVALID)
 
 		# If the clinician ID isn't passed
 		if 'clinician_id' not in data or not data['clinician_id']:
@@ -488,7 +488,7 @@ class Prescriptions(Services.Service):
 		for s in ['clinician_id', 'patient_id', 'pharmacy_id']:
 			lErrors = []
 			if not isinstance(data[s], int): lErrors.append((s, 'must be integer'))
-			if lErrors: return Services.Effect(error=(1001, lErrors))
+			if lErrors: return Services.Response(error=(1001, lErrors))
 
 		# Generate the token
 		sToken = self._generateToken(data['clinician_id'])
@@ -511,17 +511,17 @@ class Prescriptions(Services.Service):
 
 		# If we didn't get a 200
 		if oRes.status_code != 200:
-			return Services.Effect(error=(1601, oRes.text))
+			return Services.Response(error=(1601, oRes.text))
 
 		# Get the data
 		dData = oRes.json()
 
 		# If we got an error
 		if dData['Result']['ResultCode'] == 'ERROR':
-			return Services.Effect(error=(1602, dData['Result']['ResultDescription']))
+			return Services.Response(error=(1602, dData['Result']['ResultDescription']))
 
 		# Return the pharmacies
-		return Services.Effect(True)
+		return Services.Response(True)
 
 	def patientPrescriptions_read(self, data, sesh=None):
 		"""Patient Prescriptions
@@ -534,36 +534,36 @@ class Prescriptions(Services.Service):
 			sesh (Sesh._Session): The session associated with the request
 
 		Returns:
-			Services.Effect
+			Services.Response
 		"""
 
 		# If we have no session and no key
 		if not sesh and '_internal_' not in data:
-			return Services.Effect(error=(1001, [('_internal_', 'missing')]))
+			return Services.Response(error=(1001, [('_internal_', 'missing')]))
 
 		# Verify fields
 		try: DictHelper.eval(data, ['patient_id'])
-		except ValueError as e: return Services.Effect(error=(1001, [(f, 'missing') for f in e.args]))
+		except ValueError as e: return Services.Response(error=(1001, [(f, 'missing') for f in e.args]))
 
 		# If it's internal
 		if '_internal_' in data:
 
 			# Verify the key, remove it if it's ok
 			if not Services.internalKey(data['_internal_']):
-				return Services.Effect(error=Errors.SERVICE_INTERNAL_KEY)
+				return Services.Response(error=Errors.SERVICE_INTERNAL_KEY)
 			del data['_internal_']
 
 		# Else
 		else:
 
 			# Make sure the user has the proper permission to do this
-			oEff = Services.read('auth', 'rights/verify', {
+			oResponse = Services.read('auth', 'rights/verify', {
 				"name": "prescriptions",
 				"right": Rights.READ,
 				"ident": data['patient_id']
 			}, sesh)
-			if not oEff.data:
-				return Services.Effect(error=Rights.INVALID)
+			if not oResponse.data:
+				return Services.Response(error=Rights.INVALID)
 
 		# If the clinician ID isn't passed
 		if 'clinician_id' not in data or not data['clinician_id']:
@@ -573,7 +573,7 @@ class Prescriptions(Services.Service):
 		for s in ['clinician_id', 'patient_id']:
 			lErrors = []
 			if not isinstance(data[s], int): lErrors.append((s, 'must be integer'))
-			if lErrors: return Services.Effect(error=(1001, lErrors))
+			if lErrors: return Services.Response(error=(1001, lErrors))
 
 		# Generate the token
 		sToken = self._generateToken(data['clinician_id'])
@@ -595,18 +595,18 @@ class Prescriptions(Services.Service):
 
 		# If we didn't get a 200
 		if oRes.status_code != 200:
-			return Services.Effect(error=(1601, oRes.text))
+			return Services.Response(error=(1601, oRes.text))
 
 		# Get the data
 		dData = oRes.json()
 
 		# If we got an error
 		if dData['Result']['ResultCode'] == 'ERROR':
-			return Services.Effect(error=(1602, dData['Result']['ResultDescription']))
+			return Services.Response(error=(1602, dData['Result']['ResultDescription']))
 
 		# If there's no items
 		if not dData['Items']:
-			return Services.Effect([])
+			return Services.Response([])
 
 		# Go through each item and add the text versions of integer values
 		for d in dData['Items']:
@@ -616,7 +616,7 @@ class Prescriptions(Services.Service):
 			d['StatusText'] = d['Status'] in _dStatus and _dStatus[d['Status']] or 'Unknown Status'
 
 		# Generate and return the result
-		return Services.Effect(dData['Items'])
+		return Services.Response(dData['Items'])
 
 	def patientSso_read(self, data, sesh):
 		"""Patient SSO
@@ -628,27 +628,27 @@ class Prescriptions(Services.Service):
 			sesh (Sesh._Session): The session associated with the request
 
 		Returns:
-			Services.Effect
+			Services.Response
 		"""
 
 		# Verify fields
 		try: DictHelper.eval(data, ['clinician_id', 'patient_id'])
-		except ValueError as e: return Services.Effect(error=(1001, [(f, 'missing') for f in e.args]))
+		except ValueError as e: return Services.Response(error=(1001, [(f, 'missing') for f in e.args]))
 
 		# Make sure the user has the proper permission to do this
-		oEff = Services.read('auth', 'rights/verify', {
+		oResponse = Services.read('auth', 'rights/verify', {
 			"name": "prescriptions",
 			"right": Rights.UPDATE,
 			"ident": data['patient_id']
 		}, sesh)
-		if not oEff.data:
-			return Services.Effect(error=Rights.INVALID)
+		if not oResponse.data:
+			return Services.Response(error=Rights.INVALID)
 
 		# Make sure we got ints
 		for s in ['clinician_id', 'patient_id']:
 			lErrors = []
 			if not isinstance(data[s], int): lErrors.append((s, 'must be integer'))
-			if lErrors: return Services.Effect(error=(1001, lErrors))
+			if lErrors: return Services.Response(error=(1001, lErrors))
 
 		# Generate the IDs
 		lIDs = self._generateIds(data['clinician_id'])
@@ -667,7 +667,7 @@ class Prescriptions(Services.Service):
 		)
 
 		# Return the URL
-		return Services.Effect(sURL)
+		return Services.Response(sURL)
 
 	def pharmacyFillError_create(self, data, sesh):
 		"""Pharmacy Fill Error Create
@@ -679,49 +679,49 @@ class Prescriptions(Services.Service):
 			sesh (Sesh._Session): The session associated with the request
 
 		Returns:
-			Services.Effect
+			Services.Response
 		"""
 
 		# Make sure the user has the proper rights
-		oEff = Services.read('auth', 'rights/verify', {
+		oResponse = Services.read('auth', 'rights/verify', {
 			"name": "pharmacy_fill",
 			"right": Rights.CREATE
 		}, sesh)
-		if not oEff.data:
-			return Services.Effect(error=Rights.INVALID)
+		if not oResponse.data:
+			return Services.Response(error=Rights.INVALID)
 
 		# Verify minimum fields
 		try: DictHelper.eval(data, ['crm_type', 'crm_id'])
-		except ValueError as e: return Services.Effect(error=(1001, [(f, 'missing') for f in e.args]))
+		except ValueError as e: return Services.Response(error=(1001, [(f, 'missing') for f in e.args]))
 
 		# If the CRM is Konnektive
 		if data['crm_type'] == 'knk':
 
 			# Check the customer exists
-			oEff = Services.read('monolith', 'customer/name', {
+			oResponse = Services.read('monolith', 'customer/name', {
 				"customerId": data['crm_id']
 			}, sesh)
-			if oEff.errorExists(): return oEff
-			dCustomer = oEff.data
+			if oResponse.errorExists(): return oResponse
+			dCustomer = oResponse.data
 
 		# Else, invalid CRM
 		else:
-			return Services.Effect(error=1003)
+			return Services.Response(error=1003)
 
 		# Try to create a new instance of the adhoc
 		try:
 			oFillError = PharmacyFillError(data)
 		except ValueError as e:
-			return Services.Effect(error=(1001, e.args[0]))
+			return Services.Response(error=(1001, e.args[0]))
 
 		# Create the record and get the ID
 		try:
 			sID = oFillError.create()
 		except Record_MySQL.DuplicateException:
-			return Services.Effect(error=1101)
+			return Services.Response(error=1101)
 
 		# Create the record and return the result
-		return Services.Effect({
+		return Services.Response({
 			"_id": sID,
 			"customer_name": '%s %s' % (dCustomer['firstName'], dCustomer['lastName'])
 		})
@@ -736,28 +736,28 @@ class Prescriptions(Services.Service):
 			sesh (Sesh._Session): The session associated with the request
 
 		Returns:
-			Services.Effect
+			Services.Response
 		"""
 
 		# Make sure the user has the proper rights
-		oEff = Services.read('auth', 'rights/verify', {
+		oResponse = Services.read('auth', 'rights/verify', {
 			"name": "pharmacy_fill",
 			"right": Rights.DELETE
 		}, sesh)
-		if not oEff.data:
-			return Services.Effect(error=Rights.INVALID)
+		if not oResponse.data:
+			return Services.Response(error=Rights.INVALID)
 
 		# Verify minimum fields
 		try: DictHelper.eval(data, ['_id'])
-		except ValueError as e: return Services.Effect(error=(1001, [(f, 'missing') for f in e.args]))
+		except ValueError as e: return Services.Response(error=(1001, [(f, 'missing') for f in e.args]))
 
 		# Find the record
 		oPharmacyFillError = PharmacyFillError.get(data['_id'])
 		if not oPharmacyFillError:
-			return Services.Effect(error=1104)
+			return Services.Response(error=1104)
 
 		# Delete the record and return the result
-		return Services.Effect(
+		return Services.Response(
 			oPharmacyFillError.delete()
 		)
 
@@ -771,29 +771,29 @@ class Prescriptions(Services.Service):
 			sesh (Sesh._Session): The session associated with the request
 
 		Returns:
-			Services.Effect
+			Services.Response
 		"""
 
 		# Make sure the user has the proper rights
-		oEff = Services.read('auth', 'rights/verify', {
+		oResponse = Services.read('auth', 'rights/verify', {
 			"name": "pharmacy_fill",
 			"right": Rights.UPDATE
 		}, sesh)
-		if not oEff.data:
-			return Services.Effect(error=Rights.INVALID)
+		if not oResponse.data:
+			return Services.Response(error=Rights.INVALID)
 
 		# Verify minimum fields
 		try: DictHelper.eval(data, ['_id'])
-		except ValueError as e: return Services.Effect(error=(1001, [(f, 'missing') for f in e.args]))
+		except ValueError as e: return Services.Response(error=(1001, [(f, 'missing') for f in e.args]))
 
 		# If we have neither the ready or the order ID
 		if 'ready' not in data and 'crm_order' not in data:
-			return Services.Effect(error=(1001, [('ready', 'missing'), ('crm_order', 'missing')]))
+			return Services.Response(error=(1001, [('ready', 'missing'), ('crm_order', 'missing')]))
 
 		# Find the record
 		oPharmacyFillError = PharmacyFillError.get(data['_id'])
 		if not oPharmacyFillError:
-			return Services.Effect(error=1104)
+			return Services.Response(error=1104)
 
 		# Update the ready state if we got it
 		if 'ready' in data:
@@ -804,7 +804,7 @@ class Prescriptions(Services.Service):
 			oPharmacyFillError['crm_order'] = data['crm_order']
 
 		# Save and return the result
-		return Services.Effect(
+		return Services.Response(
 			oPharmacyFillError.save()
 		)
 
@@ -818,16 +818,16 @@ class Prescriptions(Services.Service):
 			sesh (Sesh._Session): The session associated with the request
 
 		Returns:
-			Services.Effect
+			Services.Response
 		"""
 
 		# Make sure the user has the proper rights
-		oEff = Services.read('auth', 'rights/verify', {
+		oResponse = Services.read('auth', 'rights/verify', {
 			"name": "pharmacy_fill",
 			"right": Rights.READ
 		}, sesh)
-		if not oEff.data:
-			return Services.Effect(error=Rights.INVALID)
+		if not oResponse.data:
+			return Services.Response(error=Rights.INVALID)
 
 		# Init the base requirements
 		dFilter = {"fail_count": {
@@ -847,20 +847,20 @@ class Prescriptions(Services.Service):
 		if lRecords:
 
 			# Find all the customer names
-			oEff = Services.read('monolith', 'customer/name', {
+			oResponse = Services.read('monolith', 'customer/name', {
 				"_internal_": Services.internalKey(),
 				"customerId": [d['crm_id'] for d in lRecords]
 			}, sesh)
-			if oEff.errorExists(): return oEff
-			dCustomers = {k:'%s %s' % (d['firstName'], d['lastName']) for k,d in oEff.data.items()}
+			if oResponse.errorExists(): return oResponse
+			dCustomers = {k:'%s %s' % (d['firstName'], d['lastName']) for k,d in oResponse.data.items()}
 
 			# Go through each record and add the customer and user names
 			for d in lRecords:
 				d['customer_name'] = d['crm_id'] in dCustomers and dCustomers[d['crm_id']] or 'Unknown'
 
 			# Return all records
-			return Services.Effect(lRecords)
+			return Services.Response(lRecords)
 
 		# Else return an empty array
 		else:
-			return Services.Effect([])
+			return Services.Response([])

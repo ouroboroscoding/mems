@@ -118,7 +118,7 @@ class EmailFile(object):
 			oCSV.writerow(l)
 
 		# Send the email
-		oEff = Services.create('communications', 'email', {
+		oResponse = Services.create('communications', 'email', {
 			"_internal_": Services.internalKey(),
 			"text_body": 'This is an automated message, please do not respond',
 			"subject": 'MaleExcel - %s Refill Report' % pharmacy,
@@ -131,5 +131,5 @@ class EmailFile(object):
 				)
 			}
 		})
-		if oEff.errorExists():
-			print(oEff.error)
+		if oResponse.errorExists():
+			print(oResponse.error)

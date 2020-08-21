@@ -49,14 +49,14 @@ if __name__ == "__main__":
 	oPrescriptions.initialise()
 
 	# Get the prescriptions using the patient ID
-	oEff = oPrescriptions.patientPrescriptions_read({
+	oResponse = oPrescriptions.patientPrescriptions_read({
 		"_internal_": Services.internalKey(),
 		"patient_id": int(dPatient['patientId'])
 	})
-	if oEff.errorExists():
-		print(oEff.error)
+	if oResponse.errorExists():
+		print(oResponse.error)
 		sys.exit(1);
 
 	# Print the prescriptions
 	print('Prescriptions: ')
-	pprint.pprint(oEff.data);
+	pprint.pprint(oResponse.data);
