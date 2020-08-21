@@ -28,7 +28,7 @@ from shared import Rights
 
 # Records imports
 from records.monolith import \
-	CustomerClaimed, CustomerClaimedLast, CustomerCommunication, \
+	Calendly, CustomerClaimed, CustomerClaimedLast, CustomerCommunication, \
 	CustomerMsgPhone, DsPatient, Forgot, KtCustomer, KtOrder, ShippingInfo, \
 	SmpNote, SmpOrderStatus, SMSStop, TfAnswer, TfLanding, TfQuestion, \
 	TfQuestionOption, User, \
@@ -98,6 +98,37 @@ class Monolith(Services.Service):
 			# Install the table
 			if not o.tableCreate():
 				print("Failed to create `%s` table" % o.tableName())
+
+	def customerCalendly_read(self, data, sesh):
+		"""Customer Calendly
+
+		Fetches all Calendly appointments that can be found associated with
+		either the customer's email or phone number
+
+		Arguments:
+			data (dict): Data sent with the request
+			sesh (Sesh._Session): The session associated with the request
+
+		Returns:
+			Services.Response
+		"""
+
+		# Make sure the user has the proper permission to do this
+		oResponse = Services.read('auth', 'rights/verify', {
+			"name": "calendly",
+			"right": Rights.READ
+		}, sesh)
+		if not oResponse.data:
+			return Services.Response(error=Rights.INVALID)
+
+		# Verify fields
+		try: DictHelper.eval(data, ['customerId'])
+		except ValueError as e: return Services.Response(error=(1001, [(f, 'missing') for f in e.args]))
+
+		# Fetch all appointments associated with the customer and return them
+		return Services.Response(
+			Calendly.byCustomer(data['customerId'])
+		)
 
 	def customerClaim_create(self, data, sesh):
 		"""Customer Claim Create

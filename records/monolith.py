@@ -66,6 +66,78 @@ def init():
 	with open('records/sql/unclaimed_count.sql') as oF:
 		sUnclaimedCountSQL = oF.read()
 
+# Calendly class
+class Calendly(Record_MySQL.Record):
+	"""Calendly
+
+	Represents a customer conversation that has been claimed by an agent
+	"""
+
+	_conf = None
+	"""Configuration"""
+
+	@classmethod
+	def config(cls):
+		"""Config
+
+		Returns the configuration data associated with the record type
+
+		Returns:
+			dict
+		"""
+
+		# If we haven loaded the config yet
+		if not cls._conf:
+			cls._conf = Record_MySQL.Record.generateConfig(
+				Tree.fromFile('definitions/monolith/calendly.json'),
+				'mysql'
+			)
+
+		# Return the config
+		return cls._conf
+
+	@classmethod
+	def byCustomer(cls, customer_id, custom={}):
+		"""By Customer
+
+		Searches calendly appointments by joining with KtCustomer and comparing
+		phone number or email
+
+		Arguments:
+			customer_id (int): The unique ID of the customer
+			custom (dict): Custom Host and DB info
+				'host' the name of the host to get/set data on
+				'append' optional postfix for dynamic DBs
+
+		Returns:
+			list
+		"""
+
+		# Fetch the record structure
+		dStruct = cls.struct(custom)
+
+		# Generate SQL
+		sSQL = "SELECT `cal`.`prov_name`, `cal`.`prov_emailAddress`, " \
+				"`cal`.`start`, `cal`.`end`\n" \
+				"FROM `%(db)s`.`%(table)s` as `cal`,\n" \
+				"	`%(db)s`.`kt_customer` as `ktc`\n" \
+				"WHERE `ktc`.`customerId` = '%(id)d'\n" \
+				"AND (\n" \
+				"	`ktc`.`phoneNumber` = `cal`.`pat_phoneNumber` OR\n" \
+				"	`ktc`.`emailAddress` = `cal`.`pat_emailAddress`\n" \
+				")" % {
+			"db": dStruct['db'],
+			"table": dStruct['table'],
+			"id": customer_id
+		}
+
+		# Execute and return the select
+		return Record_MySQL.Commands.select(
+			dStruct['host'],
+			sSQL,
+			Record_MySQL.ESelect.ALL
+		)
+
 # CustomerClaimed class
 class CustomerClaimed(Record_MySQL.Record):
 	"""CustomerClaimed
