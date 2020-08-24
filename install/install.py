@@ -11,6 +11,7 @@ import os, platform
 from RestOC import Conf, Record_MySQL
 
 # Services
+from records.auth import Permission, User
 import services
 
 # Only run if called directly
@@ -26,7 +27,7 @@ if __name__ == "__main__":
 	Record_MySQL.addHost('primary', Conf.get(("mysql", "hosts", "primary")))
 
 	# Add the DBs
-	Record_MySQL.dbCreate(Conf.get(("mysql", "primary", "db"), "mems"), 'primary', 'utf8mb4', 'utf8mb4_bin')
+	Record_MySQL.dbCreate(Conf.get(("mysql", "primary", "db"), "mems"), 'primary', 'utf8', 'utf8_bin')
 
 	# Install
 	services.auth.Auth.install()
@@ -35,12 +36,13 @@ if __name__ == "__main__":
 	services.patient.Patient.install()
 	services.payment.Payment.install()
 	services.prescriptions.Prescriptions.install()
+	services.reports.Reports.install()
 	services.welldyne.WellDyne.install()
 
 	# Install admin
-	oUser = auth.records.User({
+	oUser = User({
 		"email": "admin@maleexcel.com",
-		"passwd": auth.records.User.passwordHash('Admin123'),
+		"passwd": User.passwordHash('Admin123'),
 		"locale": "en-US",
 		"firstName": "Admin",
 		"lastName": "Istrator"
@@ -48,7 +50,7 @@ if __name__ == "__main__":
 	sUserId = oUser.create(changes={"user": "system"})
 
 	# Add admin permission
-	auth.records.Permission.createMany([
-		auth.records.Permission({"user": sUserId, "name": "user", "rights": 15}),
-		auth.records.Permission({"user": sUserId, "name": "permission", "rights": 15})
+	Permission.createMany([
+		Permission({"user": sUserId, "name": "user", "rights": 15}),
+		Permission({"user": sUserId, "name": "permission", "rights": 15})
 	])
