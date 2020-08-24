@@ -200,7 +200,7 @@ class Auth(Services.Service):
 					"user": data['user'],
 					"name": sName,
 					"rights": mData['rights'],
-					"idents": mData['idents']
+					"idents": isinstance(mData['idents'], list) and ','.join(mData['idents']) or mData['idents']
 				}))
 			except ValueError as e:
 				lErrors.append(e.args[0])
