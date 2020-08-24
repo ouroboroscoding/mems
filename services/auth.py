@@ -115,11 +115,11 @@ class Auth(Services.Service):
 				return Services.Response(error=Rights.INVALID)
 
 		# Verify fields
-		try: DictHelper.eval(data, ['user_id'])
+		try: DictHelper.eval(data, ['user'])
 		except ValueError as e: return Services.Response(error=(1001, [(f, 'missing') for f in e.args]))
 
 		# Fetch the Permissions
-		dPermissions = Permission.cache(data['user_id'])
+		dPermissions = Permission.cache(data['user'])
 
 		# Return all permissions
 		return Services.Response(dPermissions)
@@ -168,7 +168,7 @@ class Auth(Services.Service):
 
 			# Make sure the user has the proper rights
 			oResponse = self.rightsVerify_read({
-				"name": "permission",
+				"name": "permissions",
 				"right": Rights.UPDATE
 			}, sesh)
 			if not oResponse.data:
@@ -485,6 +485,9 @@ class Auth(Services.Service):
 
 		# Remove the passwd
 		del dUser['passwd']
+
+		# Fetch the permissions and add them to the user
+		dUser['permissions'] = Permission.cache(data['_id'])
 
 		# Return the user data
 		return Services.Response(dUser)

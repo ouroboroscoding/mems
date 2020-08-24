@@ -110,7 +110,7 @@
 	},
 
 	"rest": {
-		"allowed": "(?:mecrm.local|mecsr.local|mepp.local)",
+		"allowed": "(?:meadmin|mecrm|mecsr|mepp).local",
 		"default": {
 			"domain": "localhost",
 			"host": "0.0.0.0",
