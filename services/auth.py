@@ -108,7 +108,7 @@ class Auth(Services.Service):
 
 			# Make sure the user has the proper rights
 			oResponse = self.rightsVerify_read({
-				"name": "permissions",
+				"name": "permission",
 				"right": Rights.READ
 			}, sesh)
 			if not oResponse.data:
@@ -168,7 +168,7 @@ class Auth(Services.Service):
 
 			# Make sure the user has the proper rights
 			oResponse = self.rightsVerify_read({
-				"name": "permissions",
+				"name": "permission",
 				"right": Rights.UPDATE
 			}, sesh)
 			if not oResponse.data:
