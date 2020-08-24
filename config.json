@@ -110,7 +110,7 @@
 	},
 
 	"rest": {
-		"allowed": "(?:mecrm.local|mecsr.local|mepp.local)",
+		"allowed": "(?:meadmin|mecrm|mecsr|mepp).local",
 		"default": {
 			"domain": "localhost",
 			"host": "0.0.0.0",
@@ -128,6 +128,7 @@
 			"patient": {"port": 11},
 			"payment": {"port": 5},
 			"prescriptions": {"port": 8},
+			"reports": {"port": 13},
 			"webpoll": {"port": 2},
 			"welldyne": {"port": 10}
 		}

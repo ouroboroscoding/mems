@@ -1,7 +1,7 @@
 # coding=utf8
 """ Customers Service
 
-Handles Customrs related activities
+Handles Customer related activities
 """
 
 __author__		= "Chris Nasr"
