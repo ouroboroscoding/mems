@@ -74,6 +74,7 @@ def run(hours):
 
 		# If there's no patient
 		if not dPatient:
+			emailError('WellDyne Not Opened Error', "Can't find patient record for customer: %s" % d['crm_id'])
 			continue
 
 		# Add the line
