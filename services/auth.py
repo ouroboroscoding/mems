@@ -178,6 +178,9 @@ class Auth(Services.Service):
 		try: DictHelper.eval(data, ['user', 'permissions'])
 		except ValueError as e: return Services.Response(error=(1001, [(f, 'missing') for f in e.args]))
 
+		# Are we replacing or appending?
+		bAppend = ('append' in data and data['append']) and True or False
+
 		# Get the user's current permissions
 		dOldPermissions = Permission.cache(data['user'])
 
@@ -210,7 +213,7 @@ class Auth(Services.Service):
 			return Services.Response(error=(1001, lErrors))
 
 		# Delete all the existing permissions if there are any
-		if dOldPermissions:
+		if not bAppend and dOldPermissions:
 			Permission.deleteGet(data['user'], 'user')
 
 		# Create the new permissions if there are any
@@ -219,6 +222,9 @@ class Auth(Services.Service):
 
 		# If this is a standard user
 		if User.exists(data['user']):
+
+			# If we're appending
+			data['permissions'] = DictHelper.combine(dOldPermissions, data['permissions'])
 
 			# Get and store the changes
 			dChanges = {"user": sesh['user_id']}

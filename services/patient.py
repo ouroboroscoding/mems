@@ -129,6 +129,54 @@ class Patient(Services.Service):
 		# Return the user data
 		return Services.Response(dAccount)
 
+	def accountByCRM(self, data, sesh):
+		"""Account By CRM
+
+		Returns the ID of the patient account by looking it up from their CRM
+		details
+
+		Arguments:
+			data (dict): Data sent with the request
+			sesh (Sesh._Session): The session associated with the request
+
+		Returns:
+			Services.Response
+		"""
+
+		# Make sure the user has the proper permission to do this
+		oResponse = self.rightsVerify_read({
+			"name": "patient",
+			"right": Rights.READ
+		}, sesh)
+		if not oResponse.data:
+			return Services.Response(error=Rights.INVALID)
+
+		# Verify fields
+		try: DictHelper.eval(data, ['crm_type', 'crm_id'])
+		except ValueError as e: return Services.Response(error=(1001, [(f, 'missing') for f in e.args]))
+
+		# The filter used to find the record
+		dFilter = {
+			"crm_type": data['crm_type'],
+			"crm_id": data['crm_id']
+		}
+
+		# Try to find the record in the setup table
+		dAccount = AccountSetup.filter(dFilter, raw=['_id'], limit=1)
+
+		# If there's no such setup account
+		if not dAccount:
+
+			# Try to find the record in the account table
+			dAccount = Account.filter(dFilter, raw=['_id'], limit=1)
+
+			# If there's no such account
+			if not dAccount:
+				return Services.Response(error=1104)
+
+		# Return the ID
+		return Services.Response(dAccount['_id'])
+
 	def accountEmail_update(self, data, sesh):
 		"""Account Email Update
 
@@ -346,6 +394,88 @@ class Patient(Services.Service):
 		# Return OK
 		return Services.Response(True)
 
+	def accountRx_update(self, data, sesh):
+		"""Account RX Update
+
+		Allows setting of RX type/ID after account creation
+
+		Arguments:
+			data (dict): Data sent with the request
+			sesh (Sesh._Session): The session associated with the request
+
+		Returns:
+			Services.Response
+		"""
+
+		# Verify fields
+		try: DictHelper.eval(data, ['_id', 'rx_type', 'rx_id'])
+		except ValueError as e: return Services.Response(error=(1001, [(f, 'missing') for f in e.args]))
+
+		# Make sure the user has the proper rights
+		oResponse = self.rightsVerify_read({
+			"name": "patient_account",
+			"right": Rights.UPDATE
+		}, sesh)
+		if not oResponse.data:
+			return Services.Response(error=Rights.INVALID)
+
+		# Assume no real account
+		bAccount = False
+
+		# Try to find the record in the setup table
+		oAccount = AccountSetup.get(data['_id'])
+
+		# If there's no such setup account
+		if not oAccount:
+
+			# Try to find the record in the account table
+			oAccount = Account.get(data['_id'])
+
+			# If there's no such account
+			if not oAccount:
+				return Services.Response(error=1104)
+
+			# We have a completed account
+			bAccount = True
+
+		# If the patient already has an RX ID
+		if oAccount['rx_id'] is not None:
+			return Services.Response(error=1909)
+
+		# If they're DoseSpot
+		if data['rx_type'] == 'ds':
+
+			# Find the patient in DoseSpot
+			oResponse = Services.read('prescriptions', 'patient/prescriptions', {
+				"patient_id": int(data['rx_id'])
+			}, sesh)
+			if oResponse.errorExists():
+				return Services.Response(error=(oResponse.error['code'], 'rx'))
+
+			# Store the RX values
+			oAccount['rx_type'] = 'ds'
+			oAccount['rx_id'] = str(data['rx_id'])
+
+		# Else, invalid RX type
+		else:
+			return Services.Response(error=(1001, [('rx_type', 'invalid')]))
+
+		# Append the new permission
+		if bAccount:
+			oResponse = Services.update('auth', 'permissions', {
+				"_internal_": Services.internalKey(),
+				"user": oAccount['_id'],
+				"permissions": {
+					"prescriptions": {"rights": 1, "idents": oAccount['rx_id']}
+				}
+			})
+			if oResponse.errorExists(): return oResponse
+
+		# Save the record and return the result
+		return Services.Response(
+			oAccount.save()
+		)
+
 	def accountVerify_update(self, data):
 		"""Account Veverify
 
@@ -424,7 +554,7 @@ class Patient(Services.Service):
 			return Services.Response(error=Rights.INVALID)
 
 		# Verify fields
-		try: DictHelper.eval(data, ['dob', 'crm_type', 'crm_id', 'rx_type', 'rx_id', 'url'])
+		try: DictHelper.eval(data, ['dob', 'crm_type', 'crm_id', 'url'])
 		except ValueError as e: return Services.Response(error=(1001, [(f, 'missing') for f in e.args]))
 
 		# Init setup
@@ -460,22 +590,29 @@ class Patient(Services.Service):
 			AccountSetup.exists(dSetup['email'], 'email'):
 			return Services.Response(error=1900)
 
-		# If they're DoseSpot
-		if data['rx_type'] == 'ds':
+		# If we have an rx type
+		if 'rx_type' in data:
 
-			# Find the patient in DoseSpot
-			oResponse = Services.read('prescriptions', 'patient/prescriptions', {
-				"patient_id": int(data['rx_id'])
-			}, sesh)
-			if oResponse.errorExists():
-				return Services.Response(error=(oResponse.error['code'], 'rx'))
+			# If we have no ID
+			if 'rx_id' not in data:
+				return Services.Response(error=(1001, [('rx_id', 'missing')]))
 
-			dSetup['rx_type'] = 'ds'
-			dSetup['rx_id'] = str(data['rx_id'])
+			# If they're DoseSpot
+			if data['rx_type'] == 'ds':
 
-		# Else, invalid RX type
-		else:
-			return Services.Response(error=(1001, [('rx_type', 'invalid')]))
+				# Find the patient in DoseSpot
+				oResponse = Services.read('prescriptions', 'patient/prescriptions', {
+					"patient_id": int(data['rx_id'])
+				}, sesh)
+				if oResponse.errorExists():
+					return Services.Response(error=(oResponse.error['code'], 'rx'))
+
+				dSetup['rx_type'] = 'ds'
+				dSetup['rx_id'] = str(data['rx_id'])
+
+			# Else, invalid RX type
+			else:
+				return Services.Response(error=(1001, [('rx_type', 'invalid')]))
 
 		# Create an instance of the setup record
 		try:
@@ -503,8 +640,8 @@ class Patient(Services.Service):
 		if oResponse.errorExists():
 			return oResponse
 
-		# Return OK
-		return Services.Response(True)
+		# Return the ID of the account
+		return Services.Response(oSetup['_id'])
 
 	def setupValidate_create(self, data):
 		"""Setup Update
@@ -557,9 +694,10 @@ class Patient(Services.Service):
 		# Hash the password
 		data['passwd'] = Account.passwordHash(data['passwd'])
 
-		# Create an instance of the account
+		# Create an instance of the account using the same ID used for the setup
 		try:
 			oAccount = Account({
+				"_id": oSetup['_id'],
 				"email": oSetup['email'],
 				"passwd": data['passwd'],
 				"verified": True,
@@ -576,6 +714,15 @@ class Patient(Services.Service):
 		if not oAccount.create(changes={"user": oSetup['user']}):
 			return Services.Response(error=1100)
 
+		# Init permissions
+		dPerms = {
+			"customers": {"rights": 3, "idents": oAccount['crm_id']}
+		}
+
+		# If there's an RX
+		if oSetup['rx_type'] and oSetup['rx_id']:
+			dPerms['prescriptions'] = {"rights": 1, "idents": oAccount['rx_id']}
+
 		# Create the permissions
 		sWarning = None
 		oSesh = Sesh.create()
@@ -584,15 +731,12 @@ class Patient(Services.Service):
 		oResponse = Services.update('auth', 'permissions', {
 			"_internal_": Services.internalKey(),
 			"user": oAccount['_id'],
-			"permissions": {
-				"customers": {"rights": 3, "idents": oAccount['crm_id']},
-				"prescriptions": {"rights": 1, "idents": oAccount['rx_id']}
-			}
+			"permissions": dPerms
 		}, oSesh)
 		oSesh.close()
 		if oResponse.errorExists():
 			print(oResponse)
-			sWarning = 'Failed to create permissions for agent'
+			sWarning = 'Failed to create permissions for patient'
 
 		# Delete the setup
 		oSetup.delete()

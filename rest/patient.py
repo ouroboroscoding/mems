@@ -31,8 +31,10 @@ oRestConf = init(
 REST.Server({
 
 	"/account": {"methods": REST.CREATE | REST.READ | REST.UPDATE, "session": True},
+	"/account/byCRM": {"methods": REST.READ, "session": True},
 	"/account/email": {"methods": REST.UPDATE, "session": True},
 	"/account/forgot": {"methods": REST.CREATE | REST.UPDATE},
+	"/account/rx": {"methods": REST.UPDATE, "session": True},
 	"/account/verify": {"methods": REST.UPDATE},
 
 	"/session": {"methods": REST.READ, "session": True},
