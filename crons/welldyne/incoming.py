@@ -348,4 +348,4 @@ def run(report, time=None):
 
 	# Got an invalid report
 	print('Invalid welldyne incoming report: %s' % report)
-	return 1
+	return False

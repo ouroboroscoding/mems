@@ -20,9 +20,9 @@ import sys
 # Pip imports
 from RestOC import Conf, Record_Base, Record_MySQL, REST, Services
 
-# If the version argument is missing
+# If the script argument is missing
 if len(sys.argv) < 2:
-	print('Must specify the cron to run:\n\tpython -m crons natf')
+	print('Must specify the cron to run:\n\tpython -m crons missed_calls')
 	sys.exit(1)
 
 # Load the config
