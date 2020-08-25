@@ -602,6 +602,47 @@ class Trigger(Record_MySQL.Record):
 		return cls._conf
 
 	@classmethod
+	def notOpened(cls, older_than, custom={}):
+		"""Not Opened
+
+		Looks for triggers of a certain age that have not been opened, shipped,
+		and have no outbound error
+
+		Arguments:
+			older_than (uint): A timestamp representing the minimum age to check
+			custom (dict): Custom Host and DB info
+				'host' the name of the host to get/set data on
+				'append' optional postfix for dynamic DBs
+
+		Returns:
+			dict[]
+		"""
+
+		# Fetch the record structure
+		dStruct = cls.struct(custom)
+
+		# Generate SQL
+		sSQL = "SELECT `wdt`.`_created`, `wdt`.`crm_type`, `wdt`.`crm_id`, `wdt`.`crm_order`\n" \
+				"FROM `%(db)s`.`%(table)s` as `wdt`\n" \
+				"LEFT JOIN `%(db)s`.`welldyne_outbound` as `wdo` USING (`crm_type`, `crm_id`, `crm_order`)\n" \
+				"WHERE `wdt`.`_created` BETWEEN FROM_UNIXTIME(1596844800) AND FROM_UNIXTIME(%(ts)d)\n" \
+				"AND `wdt`.`opened` is NULL\n" \
+				"AND `wdt`.`shipped` is NULL\n" \
+				"AND `wdo`.`_id` is NULL\n" \
+				"ORDER BY `wdt`.`_created`" % {
+			"db": dStruct['db'],
+			"table": dStruct['table'],
+			"ts": older_than
+		}
+
+		# Execute and return the select
+		return Record_MySQL.Commands.select(
+			dStruct['host'],
+			sSQL,
+			Record_MySQL.ESelect.ALL
+		)
+
+	@classmethod
 	def vsShipped(cls, custom={}):
 		"""Vs Shipped
 

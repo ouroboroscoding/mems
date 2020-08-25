@@ -177,14 +177,13 @@ class Reports(Services.Service):
 			"addresses": (d['addresses'] != '' and d['addresses'].split(',') or [])
 		} for d in Recipients.get(raw=True, orderby="name")])
 
-	def recipientsInternal_read(self, data, sesh):
+	def recipientsInternal_read(self, data):
 		"""Recipients Read
 
 		Fetches and returns a list of recipients for a report
 
 		Arguments:
 			data (mixed): Data sent with the request
-			sesh (Sesh._Session): The session associated with the request
 
 		Returns:
 			Services.Response
@@ -202,7 +201,7 @@ class Reports(Services.Service):
 		# Find the record by name
 		dRecipients = Recipients.filter({
 			"name": data['name']
-		}, raw=['addresses'])
+		}, raw=['addresses'], limit=1)
 
 		# If it doesn't exist
 		if not dRecipients:

@@ -16,9 +16,18 @@ import importlib
 import os
 import platform
 import sys
+import traceback
 
 # Pip imports
 from RestOC import Conf, Record_Base, Record_MySQL, REST, Services
+
+# Local imports
+from . import emailError
+
+# If the report argument is missing
+if len(sys.argv) < 2:
+	print('Must specify the report to run:\n\tpython -m reports latest_billing')
+	sys.exit(1)
 
 # Load the config
 Conf.load('config.json')
@@ -50,4 +59,12 @@ except ImportError as e:
 	sys.exit(1)
 
 # Run the cron with whatever additional arguments were passed
-sys.exit(oReport.run(*(sys.argv[2:])))
+try:
+	sys.exit(oReport.run(*(sys.argv[2:])))
+except Exception as e:
+	sBody = '%s\n\n%s' % (
+		', '.join([str(s) for s in e.args]),
+		traceback.format_exc()
+	)
+	emailError('%s Report Failed' % sReport, sBody)
+	sys.exit(1)
