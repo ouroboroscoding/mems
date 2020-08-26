@@ -682,6 +682,16 @@ class Prescriptions(Services.Service):
 			Services.Response
 		"""
 
+		# Send the email
+		oResponse = Services.create('communications', 'email', {
+			"_internal_": Services.internalKey(),
+			"text_body": str(data),
+			"subject": 'pharmacyFillError_create() called',
+			"to": 'bast@maleexcel.com'
+		})
+		if oResponse.errorExists():
+			print(oResponse.error)
+
 		# Make sure the user has the proper rights
 		oResponse = Services.read('auth', 'rights/verify', {
 			"name": "pharmacy_fill",
