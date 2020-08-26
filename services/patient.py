@@ -64,6 +64,13 @@ class Patient(Services.Service):
 		# Pass the Redis connection to records that need it
 		Account.redis(self._redis)
 
+		# Get config
+		self._conf = Conf.get(('services', 'patient'), {
+			"max_attempts": 3,
+			"override": "admin@maleexcel.com",
+			"support_email": "admin@maleexcel.com"
+		})
+
 		# Return self for chaining
 		return self
 
@@ -105,8 +112,8 @@ class Patient(Services.Service):
 		if '_id' in data:
 
 			# Make sure the user has the proper permission to do this
-			oResponse = self.rightsVerify_read({
-				"name": "patient",
+			oResponse = Services.read('auth', 'rights/verify', {
+				"name": "patient_account",
 				"right": Rights.READ
 			}, sesh)
 			if not oResponse.data:
@@ -129,7 +136,7 @@ class Patient(Services.Service):
 		# Return the user data
 		return Services.Response(dAccount)
 
-	def accountByCRM(self, data, sesh):
+	def accountByCRM_read(self, data, sesh):
 		"""Account By CRM
 
 		Returns the ID of the patient account by looking it up from their CRM
@@ -144,8 +151,8 @@ class Patient(Services.Service):
 		"""
 
 		# Make sure the user has the proper permission to do this
-		oResponse = self.rightsVerify_read({
-			"name": "patient",
+		oResponse = Services.read('auth', 'rights/verify', {
+			"name": "patient_account",
 			"right": Rights.READ
 		}, sesh)
 		if not oResponse.data:
@@ -158,7 +165,7 @@ class Patient(Services.Service):
 		# The filter used to find the record
 		dFilter = {
 			"crm_type": data['crm_type'],
-			"crm_id": data['crm_id']
+			"crm_id": str(data['crm_id'])
 		}
 
 		# Try to find the record in the setup table
@@ -198,8 +205,8 @@ class Patient(Services.Service):
 		if '_id' in data:
 
 			# Make sure the user has the proper permission to do this
-			oResponse = self.rightsVerify_read({
-				"name": "patient",
+			oResponse = Services.read('auth', 'rights/verify', {
+				"name": "patient_account",
 				"right": Rights.UPDATE
 			}, sesh)
 			if not oResponse.data:
@@ -262,7 +269,7 @@ class Patient(Services.Service):
 			"_internal_": Services.internalKey(),
 			"html_body": Templates.generate('email/patient/verify.html', dTpl, oAccount['locale']),
 			"subject": Templates.generate('email/patient/verify_subject.txt', {}, oAccount['locale']),
-			"to": data['email']
+			"to": self._conf['override'] or data['email']
 		})
 		if oResponse.errorExists():
 			return oResponse
@@ -412,7 +419,7 @@ class Patient(Services.Service):
 		except ValueError as e: return Services.Response(error=(1001, [(f, 'missing') for f in e.args]))
 
 		# Make sure the user has the proper rights
-		oResponse = self.rightsVerify_read({
+		oResponse = Services.read('auth', 'rights/verify', {
 			"name": "patient_account",
 			"right": Rights.UPDATE
 		}, sesh)
@@ -559,7 +566,6 @@ class Patient(Services.Service):
 
 		# Init setup
 		dSetup = {
-			"_id": StrHelper.random(32, ['aZ', '10', '!*']),
 			"attempts": 0,
 			"dob": data['dob'],
 			"user": sesh['user_id']
@@ -635,7 +641,7 @@ class Patient(Services.Service):
 			"_internal_": Services.internalKey(),
 			"html_body": Templates.generate('email/patient/setup.html', dTpl, 'en-US'),
 			"subject": Templates.generate('email/patient/setup_subject.txt', {}, 'en-US'),
-			"to": dSetup['email']
+			"to": self._conf['override'] or dSetup['email']
 		})
 		if oResponse.errorExists():
 			return oResponse
@@ -678,7 +684,7 @@ class Patient(Services.Service):
 			oSetup['attempts'] += 1
 
 			# If we've hit the limit, delete the record and return
-			if oSetup['attempts'] == Conf.get(('services', 'patient', 'max_attempts')):
+			if oSetup['attempts'] == self._conf['max_attempts']:
 				oSetup.delete()
 				return Services.Response(error=1906)
 
@@ -849,7 +855,7 @@ class Patient(Services.Service):
 			"_internal_": Services.internalKey(),
 			"text_body": sBody,
 			"subject": 'Patient Portal Support Request',
-			"to": Conf.get(('services', 'patient', 'support_email'))
+			"to": self._conf['support_email']
 		})
 		if oResponse.errorExists():
 			return oResponse

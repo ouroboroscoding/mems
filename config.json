@@ -148,6 +148,7 @@
 		},
 		"patient": {
 			"max_attempts": 3,
+			"override": false,
 			"support_email": "bast@maleexcel.com"
 		},
 		"queue": {
