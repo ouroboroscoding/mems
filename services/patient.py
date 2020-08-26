@@ -471,16 +471,17 @@ class Patient(Services.Service):
 		if bAccount:
 			oResponse = Services.update('auth', 'permissions', {
 				"_internal_": Services.internalKey(),
+				"append": True,
 				"user": oAccount['_id'],
 				"permissions": {
 					"prescriptions": {"rights": 1, "idents": oAccount['rx_id']}
 				}
-			})
+			}, sesh)
 			if oResponse.errorExists(): return oResponse
 
 		# Save the record and return the result
 		return Services.Response(
-			oAccount.save()
+			oAccount.save(changes={"user": sesh['user_id']})
 		)
 
 	def accountVerify_update(self, data):
