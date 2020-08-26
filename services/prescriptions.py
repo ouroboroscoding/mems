@@ -699,6 +699,7 @@ class Prescriptions(Services.Service):
 
 			# Check the customer exists
 			oResponse = Services.read('monolith', 'customer/name', {
+				"_internal_": Services.internalKey(),
 				"customerId": data['crm_id']
 			}, sesh)
 			if oResponse.errorExists(): return oResponse
@@ -707,6 +708,10 @@ class Prescriptions(Services.Service):
 		# Else, invalid CRM
 		else:
 			return Services.Response(error=1003)
+
+		# If type is still being sent
+		if 'type' in data:
+			del data['type']
 
 		# Try to create a new instance of the adhoc
 		try:
