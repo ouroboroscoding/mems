@@ -314,9 +314,9 @@ class Konnektive(Services.Service):
 					return Services.Response(error=(1700, mRes['Error']))
 
 			# Set the values based on the return
-			dQuery['firstName'] = data['billing']['firstName'] == '' and 'NULL' or data['billing']['firstName']
-			dQuery['lastName'] = data['billing']['lastName'] == '' and 'NULL' or data['billing']['lastName']
-			dQuery['companyName'] = data['billing']['company'] == '' and 'NULL' or data['billing']['company']
+			dQuery['firstName'] = not data['billing']['firstName'] and 'NULL' or data['billing']['firstName']
+			dQuery['lastName'] = not data['billing']['lastName'] and 'NULL' or data['billing']['lastName']
+			dQuery['companyName'] = not data['billing']['company'] and 'NULL' or data['billing']['company']
 			dQuery['address1'] = mRes['Address2']
 			dQuery['address2'] = 'Address1' in mRes and mRes['Address1'] or 'NULL'
 			dQuery['city'] = mRes['City']
@@ -350,9 +350,9 @@ class Konnektive(Services.Service):
 					return Services.Response(error=(1700, mRes['Error']))
 
 			# Set the values based on the return
-			dQuery['shipFirstName'] = data['shipping']['firstName'] == '' and 'NULL' or data['shipping']['firstName']
-			dQuery['shipLastName'] = data['shipping']['lastName'] == '' and 'NULL' or data['shipping']['lastName']
-			dQuery['shipCompanyName'] = data['shipping']['company'] == '' and 'NULL' or data['shipping']['company']
+			dQuery['shipFirstName'] = not data['shipping']['firstName'] and 'NULL' or data['shipping']['firstName']
+			dQuery['shipLastName'] = not data['shipping']['lastName'] and 'NULL' or data['shipping']['lastName']
+			dQuery['shipCompanyName'] = not data['shipping']['company'] and 'NULL' or data['shipping']['company']
 			dQuery['shipAddress1'] = mRes['Address2']
 			dQuery['shipAddress2'] = 'Address1' in mRes and mRes['Address1'] or 'NULL'
 			dQuery['shipCity'] = mRes['City']
