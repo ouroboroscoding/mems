@@ -353,7 +353,7 @@ class Patient(Services.Service):
 			"_internal_": Services.internalKey(),
 			"html_body": Templates.generate('email/patient/forgot.html', dTpl, dAccount['locale']),
 			"subject": Templates.generate('email/patient/forgot_subject.txt', {}, dAccount['locale']),
-			"to": data['email']
+			"to": self._conf['override'] or data['email']
 		})
 		if oResponse.errorExists():
 			return oResponse
