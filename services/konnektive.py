@@ -106,7 +106,7 @@ class Konnektive(Services.Service):
 		# Return the found transactions
 		return lRet
 
-	def __post(self, path, params):
+	def _post(self, path, params):
 		"""Post
 
 		Posts updates that have no return
@@ -120,7 +120,7 @@ class Konnektive(Services.Service):
 		"""
 
 		# Generate the URL
-		sURL = self.__generateURL(path, params)
+		sURL = self._generateURL(path, params)
 
 		# Fetch the data
 		oRes = requests.post(sURL, headers={"Content-Type": 'application/json; charset=utf-8'})
@@ -367,7 +367,7 @@ class Konnektive(Services.Service):
 			dQuery['customerId'] = data['customerId']
 
 			# Send the update to Konnektive
-			if not self.__post('customer/update', dQuery):
+			if not self._post('customer/update', dQuery):
 				return Services.Response(error=1103)
 
 		# Return OK
