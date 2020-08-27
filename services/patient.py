@@ -168,21 +168,33 @@ class Patient(Services.Service):
 			"crm_id": str(data['crm_id'])
 		}
 
+		# Returned fields
+		lFields = ['_id', 'email', 'crm_type', 'crm_id', 'rx_type', 'rx_id']
+
+		# Account not activated
+		bActivated = False
+
 		# Try to find the record in the setup table
-		dAccount = AccountSetup.filter(dFilter, raw=['_id'], limit=1)
+		dAccount = AccountSetup.filter(dFilter, raw=lFields, limit=1)
 
 		# If there's no such setup account
 		if not dAccount:
 
 			# Try to find the record in the account table
-			dAccount = Account.filter(dFilter, raw=['_id'], limit=1)
+			dAccount = Account.filter(dFilter, raw=lFields, limit=1)
 
 			# If there's no such account
 			if not dAccount:
-				return Services.Response(error=1104)
+				return Services.Response(False)
+
+			# Account activated
+			bActivated = True
+
+		# Add the activated flag
+		dAccount['activated'] = bActivated
 
 		# Return the ID
-		return Services.Response(dAccount['_id'])
+		return Services.Response(dAccount)
 
 	def accountEmail_update(self, data, sesh):
 		"""Account Email Update
