@@ -293,6 +293,64 @@ class Monolith(Services.Service):
 		# Return OK
 		return Services.Response(True)
 
+	def customerDob_read(self, data, sesh):
+		"""Customer DoseSpot ID
+
+		Returns the ID of the DoseSpote patient based on their customer ID
+
+		Arguments:
+			data (dict): Data sent with the request
+			sesh (Sesh._Session): The session associated with the request
+
+		Returns:
+			Services.Response
+		"""
+
+		# Make sure the user has the proper permission to do this
+		oResponse = Services.read('auth', 'rights/verify', {
+			"name": "memo_mips",
+			"right": Rights.READ
+		}, sesh)
+		if not oResponse.data:
+			return Services.Response(error=Rights.INVALID)
+
+		# Verify fields
+		try: DictHelper.eval(data, ['customerId'])
+		except ValueError as e: return Services.Response(error=(1001, [(f, 'missing') for f in e.args]))
+
+		# Find the customer by ID
+		dCustomer = KtCustomer.filter(
+			{"customerId": data['customerId']},
+			raw=['lastName', 'emailAddress', 'phoneNumber'],
+			orderby=[('dateUpdated', 'DESC')],
+			limit=1
+		)
+
+		# If there's no customer
+		if not dCustomer:
+			return Services.Response(error=1104)
+
+		# Try to find the landing based on customer details
+		lLandings = TfLanding.find(
+			dCustomer['lastName'],
+			dCustomer['emailAddress'] or '',
+			dCustomer['phoneNumber']
+		)
+
+		# If there's no mip
+		if not lLandings:
+			return Services.Response(False)
+
+		# Find the dob
+		sDOB = TfAnswer.dob(lLandings[0]['landing_id'])
+
+		# If it's not found
+		if not sDOB:
+			return Services.Response(False)
+
+		# Return the DOB
+		return Services.Response(sDOB)
+
 	def customerDsid_read(self, data, sesh):
 		"""Customer DoseSpot ID
 
@@ -479,7 +537,7 @@ class Monolith(Services.Service):
 		if not oResponse.data:
 			return Services.Response(error=Rights.INVALID)
 
-		# Attempt to find the customer by phone number
+		# Find the customer by ID
 		dCustomer = KtCustomer.filter(
 			{"customerId": data['customerId']},
 			raw=['lastName', 'emailAddress', 'phoneNumber'],

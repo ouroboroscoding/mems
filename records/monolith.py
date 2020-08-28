@@ -1110,6 +1110,35 @@ class TfAnswer(Record_MySQL.Record):
 	"""Configuration"""
 
 	@classmethod
+	def allergies(cls, landing_id, custom={}):
+		"""Allergies
+
+		Finds and returns the allergies answer
+
+		Arguments:
+			landing_id (str): The unique landing ID
+			custom (dict): Custom Host and DB info
+				'host' the name of the host to get/set data on
+				'append' optional postfix for dynamic DBs
+
+		Returns:
+			dict
+		"""
+
+		# Look for answers for the specific questions
+		dAnswer = TfAnswer.filter({
+			"landing_id": landing_id,
+			"ref": ['95f9516a-4670-43b1-9b33-4cf822dc5917', 'allergies']
+		}, raw=['value'], limit=1);
+
+		# If there's no answer
+		if not dAnswer:
+			return False;
+
+		# Return the answer
+		return dAnswer['value']
+
+	@classmethod
 	def config(cls):
 		"""Config
 
@@ -1128,6 +1157,35 @@ class TfAnswer(Record_MySQL.Record):
 
 		# Return the config
 		return cls._conf
+
+	@classmethod
+	def dob(cls, landing_id, custom={}):
+		"""DOB
+
+		Finds and returns the date of birth answer
+
+		Arguments:
+			landing_id (str): The unique landing ID
+			custom (dict): Custom Host and DB info
+				'host' the name of the host to get/set data on
+				'append' optional postfix for dynamic DBs
+
+		Returns:
+			dict
+		"""
+
+		# Look for answers for the specific questions
+		dAnswer = TfAnswer.filter({
+			"landing_id": landing_id,
+			"ref": ['BCs9AUWgBMvn', 'birthdate']
+		}, raw=['value'], limit=1);
+
+		# If there's no answer
+		if not dAnswer:
+			return False;
+
+		# Return the answer
+		return dAnswer['value']
 
 # TfLanding class
 class TfLanding(Record_MySQL.Record):

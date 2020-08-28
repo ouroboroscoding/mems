@@ -40,6 +40,8 @@ REST.Server({
 	"/list/item": {"methods": REST.CREATE | REST.DELETE, "session": True},
 	"/lists": {"methods": REST.READ, "session": True},
 
+	"/patient/account": {"methods": REST.CREATE, "session": True},
+
 	"/template/email": {"methods": REST.ALL, "session": True},
 	"/template/emails": {"methods": REST.READ, "session": True},
 	"/template/sms": {"methods": REST.ALL, "session": True},

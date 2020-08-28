@@ -12,6 +12,7 @@ __email__		= "chris@fuelforthefire.ca"
 __created__		= "2020-05-17"
 
 # Pip imports
+from FormatOC import Node
 from RestOC import DictHelper, Errors, Record_MySQL, Services
 
 # Shared imports
@@ -20,6 +21,9 @@ from shared import Rights
 # Records imports
 from records.csr import Agent, CustomList, CustomListItem, TemplateEmail, \
 						TemplateSMS
+
+# Valid DOB
+_DOB = Node('date')
 
 class CSR(Services.Service):
 	"""CSR Service class
@@ -946,6 +950,47 @@ class CSR(Services.Service):
 		return Services.Response(
 			sorted(dLists.values(), key=lambda d: d['title'])
 		)
+
+	def patientAccount_create(self, data, sesh):
+		"""Patient Account Create
+
+		Gets the necessary data to create a patient account and sends it off
+		to the patient service
+
+		Arguments:
+			data (mixed): Data sent with the request
+			sesh (Sesh._Session): The session associated with the request
+
+		Returns:
+			Services.Response
+		"""
+
+		# Verify minimum fields
+		try: DictHelper.eval(data, ['crm_type', 'crm_id'])
+		except ValueError as e: return Services.Response(error=(1001, [(f, 'missing') for f in e.args]))
+
+		# If the type is KNK
+		if data['crm_type'] == 'knk':
+
+			# Try to get the DOB from monolith
+			oResponse = Services.read('monolith', 'customer/dob', {
+				"customerId": str(data['crm_id'])
+			}, sesh)
+			if oResponse.errorExists(): return oResponse
+
+			# If the DOB isn't valid
+			if not _DOB.valid(oResponse.data):
+				return Services.Response(error=1910)
+
+			# Add the DOB to the data
+			data['dob'] = oResponse.data
+
+		# Else, invalid crm type
+		else:
+			return Services.Response(error=1003)
+
+		# Pass along the details to the patient service and return the result
+		return  Services.create('patient', 'setup/start', data, sesh)
 
 	def templateEmail_create(self, data, sesh):
 		"""Template Email Create
