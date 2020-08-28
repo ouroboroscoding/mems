@@ -163,6 +163,10 @@ def outbound_failed_claims(time):
 			emailError('OUTBOUND FAILED', str(d))
 			continue
 
+		# If all zeros, skip it
+		if d['crm_id'] == '000000':
+			continue
+
 		# Get the CRM ID
 		sCrmID = d['crm_id'].lstrip('0')
 
