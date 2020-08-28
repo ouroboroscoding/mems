@@ -160,9 +160,10 @@ def run(period=None):
 			oCon.putfo(oFile, sFilename, confirm=False)
 
 		# Delete the adhocs processed
-		AdHoc.deleteGet([
-			d['_id'] for d in lAdHocs
-		])
+		if lAdHocs:
+			AdHoc.deleteGet([
+				d['_id'] for d in lAdHocs
+			])
 
 		# Return OK
 		return True
