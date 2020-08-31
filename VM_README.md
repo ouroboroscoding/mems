@@ -101,7 +101,9 @@ It'll be a lot easier to access this machine via SSH as you can't copy/paste int
 We don't need anything, just select Done
 
 #### Reboot
-Once Ubuntu is down installing and updating, select Reboot. Don't worry about the messaging saying to remove media, just hit enter and allow the VM to reboot.
+Once Ubuntu is down installing and updating, select Reboot. If your host is Linux, don't worry about the messaging saying to remove media, just hit enter and allow the VM to reboot.
+
+If you're on Windows, make sure to click on Devices -> Optical Drives -> Remove disk from optical drive.
 
 ## Setup Ubuntu
 Now that ubuntu is running, login as mems/mems and then
