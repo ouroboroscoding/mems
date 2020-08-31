@@ -12,7 +12,7 @@ If you already cloned the repo and didn't add the --recursive command, you can r
 > git submodule update --init --recursive
 
 ## Download Ubuntu
-You will need a copy of the Ubuntu Server ISO to setup your virtual machine, you can download it directly from [Ubuntu](https://releases.ubuntu.com/18.04/ubuntu-18.04.4-live-server-amd64.iso). Store it somewhere you can find it later.
+You will need a copy of the Ubuntu Server ISO to setup your virtual machine, you can download it directly from [Ubuntu](http://releases.ubuntu.com/18.04/ubuntu-18.04.5-live-server-amd64.iso). Store it somewhere you can find it later.
 
 ## Download and Install VirtualBox
 First download the appropriate version for your OS. All versions can be found on the [VirtualBox](https://www.virtualbox.org/wiki/Downloads) download page.

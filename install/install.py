@@ -12,7 +12,8 @@ from RestOC import Conf, Record_MySQL
 
 # Services
 from records.auth import Permission, User
-import services
+from services import auth, csr, customers, patient, payment, prescriptions, \
+					reports, welldyne
 
 # Only run if called directly
 if __name__ == "__main__":
@@ -30,14 +31,14 @@ if __name__ == "__main__":
 	Record_MySQL.dbCreate(Conf.get(("mysql", "primary", "db"), "mems"), 'primary', 'utf8', 'utf8_bin')
 
 	# Install
-	services.auth.Auth.install()
-	services.csr.CSR.install()
-	services.customers.CSR.install()
-	services.patient.Patient.install()
-	services.payment.Payment.install()
-	services.prescriptions.Prescriptions.install()
-	services.reports.Reports.install()
-	services.welldyne.WellDyne.install()
+	auth.Auth.install()
+	csr.CSR.install()
+	customers.Customers.install()
+	patient.Patient.install()
+	payment.Payment.install()
+	prescriptions.Prescriptions.install()
+	reports.Reports.install()
+	welldyne.WellDyne.install()
 
 	# Install admin
 	oUser = User({
@@ -51,6 +52,6 @@ if __name__ == "__main__":
 
 	# Add admin permission
 	Permission.createMany([
-		Permission({"user": sUserId, "name": "user", "rights": 15}),
-		Permission({"user": sUserId, "name": "permission", "rights": 15})
+		Permission({"user": sUserId, "name": "user", "rights": 15, "idents": None}),
+		Permission({"user": sUserId, "name": "permission", "rights": 15, "idents": None})
 	])
