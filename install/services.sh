@@ -12,6 +12,10 @@ LOGFILE=$1
 echo -e "${G}Updating apt...${R}"
 apt-get -qq update &>> $LOGFILE
 
+# Redis
+echo -e "${G}Installing Redis...${R}"
+apt-get -qq install redis &>> $LOGFILE
+
 # Install nginx
 echo -e "${G}Installing NGINX...${R}"
 apt-get -qq install nginx &>> $LOGFILE
@@ -40,6 +44,13 @@ echo "alias src_mems='source /root/venvs/mems/bin/activate; cd /mems'" >> ~/.bas
 
 # Restart services
 echo -e "${G}Restarting services...${R}"
+# Remove the default redis server
+systemctl disable redis-server &>> $LOGFILE
+service redis-server stop &>> $LOGFILE
+rm -f /etc/init.d/redis-server &>> $LOGFILE
+# Install the primary redis server
+update-rc.d redis-primary defaults &>> $LOGFILE
+service redis-primary start &>> $LOGFILE
 # Restart nginx
 service nginx restart &>> $LOGFILE
 
