@@ -13,6 +13,7 @@ __created__		= "2020-07-29"
 
 # Python imports
 import os
+import time
 
 # Pip imports
 import arrow
@@ -28,13 +29,13 @@ from records.welldyne import Outbound, RxNumber, Trigger
 # Cron imports
 from crons import isRunning, emailError
 
-def opened_claims(time):
+def opened_claims(tod):
 	"""Opened Claims
 
 	Lists triggered claims that have been opened by WellDyneRX
 
 	Arguments:
-		time (str): Is it the morning or afternoon report?
+		tod (str): Is it the morning or afternoon report?
 
 	Returns:
 		bool
@@ -44,26 +45,26 @@ def opened_claims(time):
 	if isRunning('wd_opened_triggers'):
 		return True
 
-	# If time is invalid
-	if time not in ['morning', 'afternoon']:
-		print('Invalid time: %s' % time)
+	# If tod is invalid
+	if tod not in ['morning', 'afternoon']:
+		print('Invalid tod: %s' % tod)
 		return False
 
 	# Get the day
 	sDay = arrow.now().format('MMDDYY')
 
 	# Get the sFTP and temp file conf
-	dConf = Conf.get(('welldyne', 'sftp'))
+	dSftpConf = Conf.get(('welldyne', 'sftp'))
 	sTemp = Conf.get(('temp_folder'))
 
 	# Generate the name of the file
 	sFilename = 'MaleExcel_DailyOpenedClaims_%s%s.xlsx' % (
 		sDay,
-		time == 'afternoon' and '_3PM Report' or ''
+		tod == 'afternoon' and '_3PM Report' or ''
 	)
 
 	# Connect to the sFTP
-	with pysftp.Connection(dConf['host'], username=dConf['username'], password=dConf['password']) as oCon:
+	with pysftp.Connection(dSftpConf['host'], username=dSftpConf['username'], password=dSftpConf['password']) as oCon:
 
 		# Get the outreach file
 		try:
@@ -97,13 +98,13 @@ def opened_claims(time):
 	# Return OK
 	return True
 
-def outbound_failed_claims(time):
+def outbound_failed_claims(tod):
 	"""Outbound Failed Claims
 
 	Lists triggered claims that have failed for some reason
 
 	Arguments:
-		time (str): Is it the morning or afternoon report?
+		tod (str): Is it the morning or afternoon report?
 
 	Returns:
 		bool
@@ -113,26 +114,26 @@ def outbound_failed_claims(time):
 	if isRunning('wd_outbound_failed_claims'):
 		return True
 
-	# If time is invalid
-	if time not in ['morning', 'afternoon']:
-		print('Invalid time: %s' % time)
+	# If tod is invalid
+	if tod not in ['morning', 'afternoon']:
+		print('Invalid tod: %s' % tod)
 		return False
 
 	# Get the day
 	sDay = arrow.now().format('MMDDYY')
 
 	# Get the sFTP and temp file conf
-	dConf = Conf.get(('welldyne', 'sftp'))
+	dSftpConf = Conf.get(('welldyne', 'sftp'))
 	sTemp = Conf.get(('temp_folder'))
 
 	# Generate the name of the file
 	sFilename = 'MaleExcel_OutboundFailedClaims_%s%s.xlsx' % (
 		sDay,
-		time == 'afternoon' and '_3PM Report' or ''
+		tod == 'afternoon' and '_3PM Report' or ''
 	)
 
 	# Connect to the sFTP
-	with pysftp.Connection(dConf['host'], username=dConf['username'], password=dConf['password']) as oCon:
+	with pysftp.Connection(dSftpConf['host'], username=dSftpConf['username'], password=dSftpConf['password']) as oCon:
 
 		# Get the outreach file
 		try:
@@ -203,13 +204,13 @@ def outbound_failed_claims(time):
 	# Return OK
 	return True
 
-def shipped_claims(time):
+def shipped_claims(tod):
 	"""Shipped Claims
 
 	Lists triggered claims that have been shipped
 
 	Arguments:
-		time (str): Is it the morning or afternoon report?
+		tod (str): Is it the morning or afternoon report?
 
 	Returns:
 		bool
@@ -219,26 +220,26 @@ def shipped_claims(time):
 	if isRunning('wd_daily_shipped'):
 		return True
 
-	# If time is invalid
-	if time not in ['morning', 'afternoon']:
-		print('Invalid time: %s' % time)
+	# If tod is invalid
+	if tod not in ['morning', 'afternoon']:
+		print('Invalid tod: %s' % tod)
 		return False
 
 	# Get the day
 	sDay = arrow.now().format('MMDDYY')
 
 	# Get the sFTP and temp file conf
-	dConf = Conf.get(('welldyne', 'sftp'))
+	dSftpConf = Conf.get(('welldyne', 'sftp'))
 	sTemp = Conf.get(('temp_folder'))
 
 	# Generate the name of the file
 	sFilename = 'MaleExcel_DailyShippedOrders_%s%s.xlsx' % (
 		sDay,
-		time == 'afternoon' and '_3PM Report' or ''
+		tod == 'afternoon' and '_3PM Report' or ''
 	)
 
 	# Connect to the sFTP
-	with pysftp.Connection(dConf['host'], username=dConf['username'], password=dConf['password']) as oCon:
+	with pysftp.Connection(dSftpConf['host'], username=dSftpConf['username'], password=dSftpConf['password']) as oCon:
 
 		# Get the outreach file
 		try:
@@ -295,11 +296,16 @@ def shipped_claims(time):
 		})
 		oRx.create(conflict=['number'])
 
-	# Go through 20 records at a time
-	for i in range(0, len(lData), 20):
+	# Chunk config
+	dConf = Conf.get(('crons', 'welldyne', 'memo'))
+
+	# Go through a chunk of records at a time
+	for i in range(0, len(lData), dConf['chunk_size']):
+
+		print('working on %d' % i)
 
 		# Get the chunk
-		lChunk = lData[i:i+20]
+		lChunk = lData[i:i+dConf['chunk_size']]
 
 		# Shipped chunk
 		lShipped = [{
@@ -311,9 +317,15 @@ def shipped_claims(time):
 
 		# Make the Shipped request
 		dRes = Memo.create('rest/shipping', lShipped)
+		if not dRes:
+			emailError('Memo Shipped Failed', 'Request failed to return 200')
+			return False
 		if dRes['error']:
 			emailError('Memo Shipped Failed', dRes['error'])
 			return False
+
+		# Sleep because memo is a piece of shit software
+		time.sleep(dConf['chunk_size'] * dConf['sleep_per_record'])
 
 	# Delete the file
 	os.remove(sGet)
@@ -321,34 +333,34 @@ def shipped_claims(time):
 	# Return OK
 	return True
 
-def run(report, time=None):
+def run(report, tod=None):
 	"""Run
 
 	Entry point into the script
 
 	Arguments:
 		report (str): The type of report to parse
-		time (str): The time of day of the report
+		tod (str): The time of day of the report
 
 	Returns:
 		bool
 	"""
 
-	# If no time sent, assume morning
-	if not time:
-		time = 'morning'
+	# If no tod sent, assume morning
+	if not tod:
+		tod = 'morning'
 
 	# Opened claims
 	if report == 'opened':
-		return opened_claims(time)
+		return opened_claims(tod)
 
 	# Outbound failed claims
 	elif report == 'outbound':
-		return outbound_failed_claims(time)
+		return outbound_failed_claims(tod)
 
 	# Shipped claims
 	elif report == 'shipped':
-		return shipped_claims(time)
+		return shipped_claims(tod)
 
 	# Got an invalid report
 	print('Invalid welldyne incoming report: %s' % report)

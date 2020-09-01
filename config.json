@@ -1,7 +1,11 @@
 {
 	"crons": {
 		"welldyne": {
-			"reports": ["bast@maleexcel.com"]
+			"reports": ["bast@maleexcel.com"],
+			"memo": {
+				"chunk_size": 10,
+				"sleep_per_record": 5
+			}
 		}
 	},
 
