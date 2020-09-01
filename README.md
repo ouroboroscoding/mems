@@ -48,8 +48,10 @@ Error should only be set if a valid error has occurred such as a client failing 
 Codes are used to make programming simpler for clients connecting to the services. If additional info about the error is necessary it can be placed in the optional `msg` value. For example, 1001 is a common error code for a request not getting proper data, either missing or invalid. The `code` is the same regardless of which data is wrong, but the `msg` can specify a list of fields that are wrong and the specific issue with them, e.g.
 
     {
-        "error": 1001,
-        "msg": [["user.email", "invalid"], ["user.passwd", "missing]]
+        "error": {
+            "code": 1001,
+            "msg": [["user.email", "invalid"], ["user.passwd", "missing"]]
+        }
     }
 
 #### warning

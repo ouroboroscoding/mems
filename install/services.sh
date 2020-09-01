@@ -38,6 +38,9 @@ echo -e "${G}Making folders, copying server config files, and creating aliases..
 mkdir -p /var/log/mems  &>> $LOGFILE
 # copy etc files
 cp -R /mems/install/services/* / &>> $LOGFILE
+# nginx fix
+cd /etc/nginx/sites-enabled
+ln -sf ../sites-available/www.conf .
 # Aliases
 echo "alias lf='ls -aCF'" >> ~/.bashrc
 echo "alias src_mems='source /root/venvs/mems/bin/activate; cd /mems'" >> ~/.bashrc
@@ -53,8 +56,3 @@ update-rc.d redis-primary defaults &>> $LOGFILE
 service redis-primary start &>> $LOGFILE
 # Restart nginx
 service nginx restart &>> $LOGFILE
-
-# Installing Microservices
-echo -e "${G}Installing Microservices...${R}"
-cd /mems
-/root/venvs/mems/bin/python install.py
