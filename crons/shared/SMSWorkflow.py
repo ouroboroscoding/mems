@@ -239,7 +239,7 @@ def shipping(info):
 
 		# If there's no order or phone number, do nothing
 		if not dOrder or not dOrder['phoneNumber'] or dOrder['phoneNumber'].strip() == '':
-			continue
+			return
 
 		# Find the template
 		sContent = fetchTemplate(
