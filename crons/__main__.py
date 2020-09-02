@@ -16,9 +16,13 @@ import importlib
 import os
 import platform
 import sys
+import traceback
 
 # Pip imports
 from RestOC import Conf, Record_Base, Record_MySQL, REST, Services
+
+# Cron imports
+from . import emailError
 
 # If the script argument is missing
 if len(sys.argv) < 2:
@@ -55,4 +59,12 @@ except ImportError as e:
 	sys.exit(1)
 
 # Run the cron with whatever additional arguments were passed
-sys.exit((not oCron.run(*(sys.argv[2:]))) and 1 or 0)
+try:
+	sys.exit((not oCron.run(*(sys.argv[2:]))) and 1 or 0)
+except Exception as e:
+	sBody = '%s\n\n%s' % (
+		', '.join([str(s) for s in e.args]),
+		traceback.format_exc()
+	)
+	emailError('MeMS Cron Failed', sBody)
+	sys.exit(1)

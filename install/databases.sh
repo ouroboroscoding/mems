@@ -13,10 +13,6 @@ echo -e "${G}Updating apt...${R}"
 apt-get -qq install software-properties-common &>> $LOGFILE
 apt-get -qq update &>> $LOGFILE
 
-# Redis
-echo -e "${G}Installing Redis...${R}"
-apt-get -qq install redis &>> $LOGFILE
-
 # MySQL
 echo -e "${G}Installing MySQL...${R}"
 debconf-set-selections <<< 'mysql-server mysql-server/root_password password mems'
@@ -32,12 +28,5 @@ cp -R /mems/install/databases/* / &>> $LOGFILE
 
 # Restart services
 echo -e "${G}Restarting services...${R}"
-# Remove the default redis server
-systemctl disable redis-server &>> $LOGFILE
-service redis-server stop &>> $LOGFILE
-rm -f /etc/init.d/redis-server &>> $LOGFILE
-# Install the primary redis server
-update-rc.d redis-primary defaults &>> $LOGFILE
-service redis-primary start &>> $LOGFILE
 # Restart mysql
 service mysql restart &>> $LOGFILE
