@@ -234,7 +234,7 @@ def shipping(codes):
 
 			# Find the order
 			dOrder = KtOrder.filter(
-				{"customerId": d['customerId']},
+				{"customerId": str(d['customerId'])},
 				raw=['firstName', 'lastName', 'emailAddress', 'phoneNumber', 'state'],
 				orderby=[['dateCreated', 'DESC']],
 				limit=1
