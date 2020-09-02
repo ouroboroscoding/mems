@@ -269,9 +269,6 @@ def shipped_claims(tod):
 	# Store just the values
 	lData = list(dData.values())
 
-	# Init the list of codes we need to send by SMS
-	lSMS = []
-
 	# Go through each item
 	for d in lData:
 
@@ -315,13 +312,9 @@ def shipped_claims(tod):
 		})
 		bCreated = oShippingInfo.create(conflict="ignore")
 
-		# If the record didn't exist
+		# If the record didn't exist, send an SMS
 		if bCreated:
-			lSMS.append(oShippingInfo.record())
-
-	# If we have any SMSs
-	if lSMS:
-		SMSWorkflow.shipping(lSMS)
+			SMSWorkflow.shipping(oShippingInfo.record())
 
 	# Delete the file
 	os.remove(sGet)

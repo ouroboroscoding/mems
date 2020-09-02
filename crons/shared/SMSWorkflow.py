@@ -205,82 +205,79 @@ def processTemplate(content, order, misc = {}):
 	# Return the new content
 	return content
 
-def shipping(codes):
+def shipping(info):
 	"""Shipping
 
 	Handles sending out a shipped order SMS
 
 	Arguments:
-		codes (dict[]): A list of tracking info to go through
+		info (dict): Tracking info to handle
 
 	Returns:
 		None
 	"""
 
-	# Go through each item in the list
-	for d in codes:
+	try:
 
-		try:
+		# Find the workflow
+		oWorkflow = SMSPatientWorkflow.filter({
+			"customerId": str(info['customerId']),
+			"groupId": GROUP_ED
+		}, orderby=[['createdAt', 'ASC']], limit=1);
 
-			# Find the workflow
-			oWorkflow = SMSPatientWorkflow.filter({
-				"customerId": str(d['customerId']),
-				"groupId": GROUP_ED
-			}, orderby=[['createdAt', 'ASC']], limit=1);
+		# Check if the workflow exists
+		if not oWorkflow:
+			return
 
-			# Check if the workflow exists
-			if not oWorkflow:
-				continue
+		# Find the order
+		dOrder = KtOrder.filter(
+			{"customerId": str(info['customerId'])},
+			raw=['firstName', 'lastName', 'emailAddress', 'phoneNumber', 'state'],
+			orderby=[['dateCreated', 'DESC']],
+			limit=1
+		);
 
-			# Find the order
-			dOrder = KtOrder.filter(
-				{"customerId": d['customerId']},
-				raw=['firstName', 'lastName', 'emailAddress', 'phoneNumber', 'state'],
-				orderby=[['dateCreated', 'DESC']],
-				limit=1
-			);
+		# If there's no order or phone number, do nothing
+		if not dOrder or not dOrder['phoneNumber'] or dOrder['phoneNumber'].strip() == '':
+			return
 
-			# If there's no order or phone number, do nothing
-			if not dOrder or not dOrder['phoneNumber'] or dOrder['phoneNumber'].strip() == '':
-				continue
+		# Find the template
+		sContent = fetchTemplate(
+			oWorkflow['groupId'], oWorkflow['type'], PACKAGE_SHIPPED
+		)
 
-			# Find the template
-			sContent = fetchTemplate(
-				oWorkflow['groupId'], oWorkflow['type'], PACKAGE_SHIPPED
-			)
+		# Generate the link
+		sLink = Shipping.generateLink(info['type'], info['code'])
 
-			# Generate the link
-			sLink = Shipping.generateLink(d['type'], d['code'])
+		# Process the template
+		sContent = processTemplate(sContent, dOrder, {
+			"tracking_code": info['code'],
+			"tracking_link": sLink,
+			"tracking_date": info['date']
+		});
 
-			# Process the template
-			sContent = processTemplate(sContent, dOrder, {
-				"tracking_code": d['code'],
-				"tracking_link": sLink,
-				"tracking_date": d['date']
-			});
+		# Send the SMS to the patient
+		oResponse = Services.create('monolith', 'message/outgoing', {
+			"_internal_": Services.internalKey(),
+			"name": "SMS Workflow",
+			"customerPhone": dOrder['phoneNumber'],
+			"content": sContent,
+			"type": 'support'
+		})
+		if oResponse.errorExists():
+			emailError('SMSWorkflow Shipping Error', 'Couldn\'t send sms:\n\n%s' % str(d))
+			return
 
-			# Send the SMS to the patient
-			oResponse = Services.create('monolith', 'message/outgoing', {
-				"_internal_": Services.internalKey(),
-				"name": "SMS Workflow",
-				"customerPhone": dOrder['phoneNumber'],
-				"content": sContent,
-				"type": 'support'
-			})
-			if oResponse.errorExists():
-				emailError('SMSWorkflow Shipping Error', 'Couldn\'t send sms:\n\n%s' % str(d))
-				continue
+		# Mark the package as shipped if it hasn't already so that we know
+		#  the first order was sent
+		if oWorkflow['shipped'] == 0:
+			oWorkflow['shipped'] = 1
+			oWorkflow.save()
 
-			# Mark the package as shipped if it hasn't already so that we know
-			#  the first order was sent
-			if oWorkflow['shipped'] == 0:
-				oWorkflow['shipped'] = 1
-				oWorkflow.save()
-
-		except Exception as e:
-			sBody = '%s\n\n%s' % (
-				', '.join([str(s) for s in e.args]),
-				traceback.format_exc()
-			)
-			emailError('SMSWorkflow Unknown Error', sBody)
-			continue
+	except Exception as e:
+		sBody = '%s\n\n%s' % (
+			', '.join([str(s) for s in e.args]),
+			traceback.format_exc()
+		)
+		emailError('SMSWorkflow Unknown Error', sBody)
+		return
