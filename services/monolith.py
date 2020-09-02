@@ -29,7 +29,7 @@ from shared import Rights
 # Records imports
 from records.monolith import \
 	Calendly, CustomerClaimed, CustomerClaimedLast, CustomerCommunication, \
-	CustomerMsgPhone, DsPatient, Forgot, KtCustomer, KtOrder, ShippingInfo, \
+	CustomerMsgPhone, DsPatient, Forgot, HrtLabResult, HrtLabResultTests, KtCustomer, KtOrder, ShippingInfo, \
 	SmpNote, SmpOrderStatus, SMSStop, TfAnswer, TfLanding, TfQuestion, \
 	TfQuestionOption, User, \
 	init as recInit
@@ -442,6 +442,35 @@ class Monolith(Services.Service):
 
 		# Return OK
 		return Services.Response(True)
+
+	def customerHrtLabs_read(self, data, sesh):
+		"""Customer HRT Lab Results 
+		
+		Fetches a customer's HRT lab test results
+		
+		Arguments:
+			data (dict): Data sent with request
+			sesh (Sesh._Session): THe session associated with the request
+			
+		Returns:
+			Services.Response
+		"""
+		# Make sure the user has the proper permission to do this
+		oResponse = Services.read('auth', 'rights/verify', {
+			"name": "memo_mips",
+			"right": Rights.READ
+		}, sesh)
+		if not oResponse.data:
+			return Services.Response(error=Rights.INVALID)
+
+			# Verify fields
+		try: DictHelper.eval(data, ['customerId'])
+		except ValueError as e: return Services.Response(error=(1001, [(f, 'missing') for f in e.args]))
+
+		# Look for the latest customer with the given Id
+		dRes = HrtLabResultTests.allLabResults(data['customerId'])
+			
+		return Services.Response(dRes)
 
 	def customerIdByPhone_read(self, data, sesh):
 		"""Customer ID By Phone

@@ -711,6 +711,133 @@ class Forgot(Record_MySQL.Record):
 		# Return the config
 		return cls._conf
 
+# HrtLabResult class
+class HrtLabResult(Record_MySQL.Record):
+	""""HrtLabResult
+
+	Represents a customers HRT lab results in memo
+	"""
+	_conf = None
+	"""Configuration"""
+
+	@classmethod
+	def config(cls):
+		"""Config
+
+		Returns the configuration data associated with the record type
+
+		Returns:
+			dict
+		"""
+
+		# If we haven loaded the config yet
+		if not cls._conf:
+			cls._conf = Record_MySQL.Record.generateConfig(
+				Tree.fromFile('definitions/monolith/hrt_lab_result.json'),
+				'mysql'
+			)
+
+		# Return the config
+		return cls._conf
+
+	@classmethod
+	def allLabResults(cls, customerId, custom={}):
+		"""Latest
+
+		Fetches HRT lab results for the customer
+
+		Arguments:
+			customer_id (int): The ID of the customer
+			custom (dict): Custom Host and DB info
+				'host' the name of the host to get/set data on
+				'append' optional postfix for dynamic DBs
+
+		Returns:
+			dict
+		"""
+			# Fetch the record structure
+		dStruct = cls.struct(custom)
+
+		# Generate SQL
+		sSQL = "SELECT `*`\n" \
+				"FROM `%(db)s`.`%(table)s`\n" \
+				"WHERE `customerId` = '%(customerId)s'\n" %{
+			"db": dStruct['db'],
+			"table": dStruct['table'],
+			"customerId": customerId
+		}
+
+		# Execute and return the select
+		return Record_MySQL.Commands.select(
+			dStruct['host'],
+			sSQL,
+			Record_MySQL.ESelect.ALL
+		)
+
+# HrtLabResultTests class
+class HrtLabResultTests(Record_MySQL.Record):
+	""""HrtLabResult
+
+	Represents a customers lab results test values in memo
+	"""
+	_conf = None
+	"""Configuration"""
+
+	@classmethod
+	def config(cls):
+		"""Config
+
+		Returns the configuration data associated with the record type
+
+		Returns:
+			dict
+		"""
+
+		# If we haven loaded the config yet
+		if not cls._conf:
+			cls._conf = Record_MySQL.Record.generateConfig(
+				Tree.fromFile('definitions/monolith/hrt_lab_result_tests.json'),
+				'mysql'
+			)
+
+		# Return the config
+		return cls._conf
+
+	@classmethod
+	def allLabResults(cls, customerId, custom={}):
+		"""Latest
+
+		Fetches HRT lab test results for the customer
+
+		Arguments:
+			customer_id (int): The ID of the customer
+			custom (dict): Custom Host and DB info
+				'host' the name of the host to get/set data on
+				'append' optional postfix for dynamic DBs
+
+		Returns:
+			dict
+		"""
+			# Fetch the record structure
+		dStruct = cls.struct(custom)
+
+		# Generate SQL
+		sSQL = "SELECT `*`\n" \
+				"FROM `%(db)s`.`%(table)s`\n" \
+				"WHERE `customerId` = '%(customerId)s'\n" %{
+			"db": dStruct['db'],
+			"table": dStruct['table'],
+			"customerId": customerId
+		}
+
+		# Execute and return the select
+		return Record_MySQL.Commands.select(
+			dStruct['host'],
+			sSQL,
+			Record_MySQL.ESelect.ALL
+		)
+
+
 # KtCustomer class
 class KtCustomer(Record_MySQL.Record):
 	"""KtCustomer
