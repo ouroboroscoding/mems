@@ -24,10 +24,12 @@ from RestOC import Conf
 from shared import Excel, Memo
 
 # Service imports
+from records.monolith import ShippingInfo
 from records.welldyne import Outbound, RxNumber, Trigger
 
 # Cron imports
 from crons import isRunning, emailError
+from crons.shared import SMSWorkflow
 
 def opened_claims(tod):
 	"""Opened Claims
@@ -267,6 +269,9 @@ def shipped_claims(tod):
 	# Store just the values
 	lData = list(dData.values())
 
+	# Init the list of codes we need to send by SMS
+	lSMS = []
+
 	# Go through each item
 	for d in lData:
 
@@ -296,36 +301,27 @@ def shipped_claims(tod):
 		})
 		oRx.create(conflict=['number'])
 
-	# Chunk config
-	dConf = Conf.get(('crons', 'welldyne', 'memo'))
+		# Get the date/time
+		sDT = arrow.get().format('YYYY-MM-DD HH:mm:ss')
 
-	# Go through a chunk of records at a time
-	for i in range(0, len(lData), dConf['chunk_size']):
-
-		print('working on %d' % i)
-
-		# Get the chunk
-		lChunk = lData[i:i+dConf['chunk_size']]
-
-		# Shipped chunk
-		lShipped = [{
+		# Create the shipping info
+		oShippingInfo = ShippingInfo({
 			"code": d['tracking'],
 			"customerId": d['customerId'],
-			"date": d['shipped'],
-			"type": d['tracking'][0:2] == '1Z' and 'UPS' or 'USPS'
-		} for d in lChunk]
+			"date": d['shipped'][0:10],
+			"type": d['tracking'][0:2] == '1Z' and 'UPS' or 'USPS',
+			"createdAt": sDT,
+			"updatedAt": sDT
+		})
+		bCreated = oShippingInfo.create(conflict="ignore")
 
-		# Make the Shipped request
-		dRes = Memo.create('rest/shipping', lShipped)
-		if not dRes:
-			emailError('Memo Shipped Failed', 'Request failed to return 200')
-			return False
-		if dRes['error']:
-			emailError('Memo Shipped Failed', dRes['error'])
-			return False
+		# If the record didn't exist
+		if bCreated:
+			lSMS.append(oShippingInfo.record())
 
-		# Sleep because memo is a piece of shit software
-		time.sleep(dConf['chunk_size'] * dConf['sleep_per_record'])
+	# If we have any SMSs
+	if lSMS:
+		SMSWorkflow.shipping(lSMS)
 
 	# Delete the file
 	os.remove(sGet)
