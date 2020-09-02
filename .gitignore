@@ -3,7 +3,7 @@
 config.*.json
 install.log
 _upgrade.log
-
+.vscode/settings.json
 # Folders
 temp
 
