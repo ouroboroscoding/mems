@@ -265,7 +265,7 @@ def shipping(info):
 			"type": 'support'
 		})
 		if oResponse.errorExists():
-			emailError('SMSWorkflow Shipping Error', 'Couldn\'t send sms:\n\n%s' % str(d))
+			emailError('SMSWorkflow Shipping Error', 'Couldn\'t send sms:\n\n%s' % str(info))
 			return
 
 		# Mark the package as shipped if it hasn't already so that we know
