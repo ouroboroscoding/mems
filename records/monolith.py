@@ -740,34 +740,6 @@ class HrtLabResult(Record_MySQL.Record):
 		# Return the config
 		return cls._conf
 
-	@classmethod
-	def allLabResults(cls, customerId, custom={}):
-		"""Latest
-
-		Fetches HRT lab results for the customer
-
-		Arguments:
-			customer_id (int): The ID of the customer
-			custom (dict): Custom Host and DB info
-				'host' the name of the host to get/set data on
-				'append' optional postfix for dynamic DBs
-
-		Returns:
-			dict
-		"""	
-		# Look for patients lab resutls
-		dResults = HrtLabResult.filter({
-			"customerId": customerId},
-			 raw=True)
-
-		# If there are no results
-		if not dResults:
-			return False
-
-		# Return the results
-		return dResults
-		
-
 # HrtLabResultTests class
 class HrtLabResultTests(Record_MySQL.Record):
 	""""HrtLabResult
@@ -796,34 +768,6 @@ class HrtLabResultTests(Record_MySQL.Record):
 
 		# Return the config
 		return cls._conf
-
-	@classmethod
-	def allLabResults(cls, customerId, custom={}):
-		"""Latest
-
-		Fetches HRT lab test results for the customer
-
-		Arguments:
-			customer_id (int): The ID of the customer
-			custom (dict): Custom Host and DB info
-				'host' the name of the host to get/set data on
-				'append' optional postfix for dynamic DBs
-
-		Returns:
-			dict
-		"""
-		# Look for patients lab test resutls
-		dResults = HrtLabResultTests.filter({
-			"customerId": customerId},
-			 raw=True)
-
-		# If there are no results
-		if not dResults:
-			return False
-
-		# Return the results
-		return dResults
-
 
 # KtCustomer class
 class KtCustomer(Record_MySQL.Record):

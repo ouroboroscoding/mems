@@ -467,8 +467,10 @@ class Monolith(Services.Service):
 		try: DictHelper.eval(data, ['customerId'])
 		except ValueError as e: return Services.Response(error=(1001, [(f, 'missing') for f in e.args]))
 
-		# Look for the latest customer with the given Id
-		dRes = HrtLabResultTests.allLabResults(data['customerId'])
+		# Find customers HRT lab test results
+		dRes = HrtLabResultTests.filter({
+			"customerId": data['customerId']},
+			 raw=True)
 			
 		return Services.Response(dRes)
 
