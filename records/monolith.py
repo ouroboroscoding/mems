@@ -711,6 +711,64 @@ class Forgot(Record_MySQL.Record):
 		# Return the config
 		return cls._conf
 
+# HrtLabResult class
+class HrtLabResult(Record_MySQL.Record):
+	""""HrtLabResult
+
+	Represents a customers HRT lab results in memo
+	"""
+	_conf = None
+	"""Configuration"""
+
+	@classmethod
+	def config(cls):
+		"""Config
+
+		Returns the configuration data associated with the record type
+
+		Returns:
+			dict
+		"""
+
+		# If we haven loaded the config yet
+		if not cls._conf:
+			cls._conf = Record_MySQL.Record.generateConfig(
+				Tree.fromFile('definitions/monolith/hrt_lab_result.json'),
+				'mysql'
+			)
+
+		# Return the config
+		return cls._conf
+
+# HrtLabResultTests class
+class HrtLabResultTests(Record_MySQL.Record):
+	""""HrtLabResult
+
+	Represents a customers lab results test values in memo
+	"""
+	_conf = None
+	"""Configuration"""
+
+	@classmethod
+	def config(cls):
+		"""Config
+
+		Returns the configuration data associated with the record type
+
+		Returns:
+			dict
+		"""
+
+		# If we haven loaded the config yet
+		if not cls._conf:
+			cls._conf = Record_MySQL.Record.generateConfig(
+				Tree.fromFile('definitions/monolith/hrt_lab_result_tests.json'),
+				'mysql'
+			)
+
+		# Return the config
+		return cls._conf
+
 # KtCustomer class
 class KtCustomer(Record_MySQL.Record):
 	"""KtCustomer
