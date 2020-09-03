@@ -1153,6 +1153,36 @@ class SmpOrderStatus(Record_MySQL.Record):
 			Record_MySQL.ESelect.ROW
 		)
 
+# SMSPatientWorkflow class
+class SMSPatientWorkflow(Record_MySQL.Record):
+	"""SMS Patient Workflow
+
+	Represents the current state of a new customer in the sms workflow
+	"""
+
+	_conf = None
+	"""Configuration"""
+
+	@classmethod
+	def config(cls):
+		"""Config
+
+		Returns the configuration data associated with the record type
+
+		Returns:
+			dict
+		"""
+
+		# If we haven loaded the config yet
+		if not cls._conf:
+			cls._conf = Record_MySQL.Record.generateConfig(
+				Tree.fromFile('definitions/monolith/sms_patient_workflow.json'),
+				'mysql'
+			)
+
+		# Return the config
+		return cls._conf
+
 # SMSStop class
 class SMSStop(Record_MySQL.Record):
 	"""SMSStop
