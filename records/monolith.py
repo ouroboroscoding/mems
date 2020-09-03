@@ -754,25 +754,19 @@ class HrtLabResult(Record_MySQL.Record):
 
 		Returns:
 			dict
-		"""
-			# Fetch the record structure
-		dStruct = cls.struct(custom)
+		"""	
+		# Look for patients lab resutls
+		dResults = HrtLabResult.filter({
+			"customerId": customerId},
+			 raw=True)
 
-		# Generate SQL
-		sSQL = "SELECT `*`\n" \
-				"FROM `%(db)s`.`%(table)s`\n" \
-				"WHERE `customerId` = '%(customerId)s'\n" %{
-			"db": dStruct['db'],
-			"table": dStruct['table'],
-			"customerId": customerId
-		}
+		# If there are no results
+		if not dResults:
+			return False
 
-		# Execute and return the select
-		return Record_MySQL.Commands.select(
-			dStruct['host'],
-			sSQL,
-			Record_MySQL.ESelect.ALL
-		)
+		# Return the results
+		return dResults
+		
 
 # HrtLabResultTests class
 class HrtLabResultTests(Record_MySQL.Record):
@@ -818,24 +812,17 @@ class HrtLabResultTests(Record_MySQL.Record):
 		Returns:
 			dict
 		"""
-			# Fetch the record structure
-		dStruct = cls.struct(custom)
+		# Look for patients lab test resutls
+		dResults = HrtLabResultTests.filter({
+			"customerId": customerId},
+			 raw=True)
 
-		# Generate SQL
-		sSQL = "SELECT `*`\n" \
-				"FROM `%(db)s`.`%(table)s`\n" \
-				"WHERE `customerId` = '%(customerId)s'\n" %{
-			"db": dStruct['db'],
-			"table": dStruct['table'],
-			"customerId": customerId
-		}
+		# If there are no results
+		if not dResults:
+			return False
 
-		# Execute and return the select
-		return Record_MySQL.Commands.select(
-			dStruct['host'],
-			sSQL,
-			Record_MySQL.ESelect.ALL
-		)
+		# Return the results
+		return dResults
 
 
 # KtCustomer class
