@@ -302,19 +302,27 @@ def shipped_claims(tod):
 		sDT = arrow.get().format('YYYY-MM-DD HH:mm:ss')
 
 		# Create the shipping info
-		oShippingInfo = ShippingInfo({
-			"code": d['tracking'],
-			"customerId": d['customerId'],
-			"date": d['shipped'][0:10],
-			"type": d['tracking'][0:2] == '1Z' and 'UPS' or 'USPS',
-			"createdAt": sDT,
-			"updatedAt": sDT
-		})
-		bCreated = oShippingInfo.create(conflict="ignore")
+		try:
+			dShipInfo = {
+				"code": d['tracking'],
+				"customerId": d['customerId'],
+				"date": d['shipped'][0:10],
+				"type": d['tracking'][0:2] == '1Z' and 'UPS' or 'USPS',
+				"createdAt": sDT,
+				"updatedAt": sDT
+			}
+			oShippingInfo = ShippingInfo(dShipInfo)
+			bCreated = oShippingInfo.create(conflict="ignore")
 
-		# If the record didn't exist, send an SMS
-		if bCreated:
-			SMSWorkflow.shipping(oShippingInfo.record())
+			# If the record didn't exist, send an SMS
+			if bCreated:
+				SMSWorkflow.shipping(oShippingInfo.record())
+		except ValueError as e:
+			emailError('Welldyne Incoming Failed', 'Invalid shipping info: %s\n\n%s' % (
+				str(e.args[0]),
+				str(dShipInfo)
+			))
+			continue
 
 	# Delete the file
 	os.remove(sGet)
