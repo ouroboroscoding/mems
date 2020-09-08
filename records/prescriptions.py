@@ -75,6 +75,36 @@ class Pharmacy(Record_MySQL.Record):
 		# Return the config
 		return cls._conf
 
+# PharmacyFill class
+class PharmacyFill(Record_MySQL.Record):
+	"""PharmacyFill
+
+	Represents an manual fill order with a pharmacy
+	"""
+
+	_conf = None
+	"""Configuration"""
+
+	@classmethod
+	def config(cls):
+		"""Config
+
+		Returns the configuration data associated with the record type
+
+		Returns:
+			dict
+		"""
+
+		# If we haven loaded the config yet
+		if not cls._conf:
+			cls._conf = Record_MySQL.Record.generateConfig(
+				Tree.fromFile('definitions/prescriptions/pharmacy_fill.json'),
+				'mysql'
+			)
+
+		# Return the config
+		return cls._conf
+
 # PharmacyFillError class
 class PharmacyFillError(Record_MySQL.Record):
 	"""PharmacyFillError
