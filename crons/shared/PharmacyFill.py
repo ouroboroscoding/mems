@@ -224,7 +224,7 @@ def process(item, backfill=None):
 
 		# Turn the order items into a list
 		lItems = [];
-		if dOrder['items']:
+		if 'items' in dOrder and dOrder['items']:
 			lItems = [{
 				"name": d['name'],
 				"canceled": d['purchaseStatus'] == 'CANCELLED'

@@ -20,7 +20,7 @@ from RestOC import Services
 
 # Service imports
 from services.konnektive import Konnektive
-from records.prescriptions import PharmacyFillError
+from records.prescriptions import PharmacyFill as FillRecord, PharmacyFillError
 from records.welldyne import Outbound
 
 # Cron imports
@@ -149,6 +149,57 @@ def run(period=None):
 					})
 					oFillError.create(conflict='replace')
 
+		print('Fetching Pharmacy Fill')
+
+		# Fetch all the manual fills
+		lFills = FillRecord.get()
+
+		# Go through each record
+		for o in lFills:
+
+			# Try to process it
+			dRes = PharmacyFill.process({
+				"crm_type": o['crm_type'],
+				"crm_id": o['crm_id'],
+				"crm_order": o['crm_order']
+			})
+
+			# If we get success
+			if dRes['status']:
+
+				# If the pharmacy is Castia/WellDyne
+				if dData['pharmacy'] in ['Castia', 'WellDyne']:
+
+					# Add it to the Trigger
+					oTrigger.add(dData)
+
+				# Else, add it to a generic pharmacy file
+				else:
+
+					# If it's a refill
+					if dData['type'] == 'refill':
+
+						# If we don't have the pharmacy
+						if dData['pharmacy'] not in dReports:
+							dReports[dData['pharmacy']] = Generic.EmailFile(sEndTime)
+
+						# Add a line to the report
+						dReports[dData['pharmacy']].add(dData)
+
+			# Else, if it failed to process again
+			else:
+
+				# Create a new pharmacy fill error record
+				oFillError = PharmacyFillError({
+					"crm_type": o['crm_type'],
+					"crm_id": o['crm_id'],
+					"crm_order": o['crm_order'],
+					"list": 'fill',
+					"reason": dRes['data'],
+					"fail_count": 1
+				})
+				oFillError.create(conflict='replace')
+
 		print('Fetching Outbound')
 
 		# Fetch all the outbound failed claims that are ready to be reprocessed
@@ -192,9 +243,9 @@ def run(period=None):
 
 				# Create a new pharmacy fill error record
 				oFillError = PharmacyFillError({
-					"crm_type": 'knk',
-					"crm_id": str(d['customerId']),
-					"crm_order": d['orderId'],
+					"crm_type": o['crm_type'],
+					"crm_id": o['crm_id'],
+					"crm_order": o['crm_order'],
 					"list": 'outbound',
 					"reason": dRes['data'],
 					"fail_count": 1
@@ -294,7 +345,9 @@ def run(period=None):
 		# Regenerate the eligibility
 		WellDyne.eligibilityUpload(sFileTime)
 
-		# Go through each fill error that can be deleted
+		# Go through each fill and fill error that can be deleted
+		for o in lFills:
+			o.delete()
 		for o in lErrorsToDelete:
 			o.delete()
 
