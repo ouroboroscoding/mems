@@ -323,11 +323,82 @@ class Eligibility(Record_MySQL.Record):
 			Record_MySQL.ESelect.ALL
 		)
 
+# NeverStarted class
+class NeverStarted(Record_MySQL.Record):
+	"""Never Started
+
+	Handles never started errors from WellDyne
+	"""
+
+	_conf = None
+	"""Configuration"""
+
+	@classmethod
+	def config(cls):
+		"""Config
+
+		Returns the configuration data associated with the record type
+
+		Returns:
+			dict
+		"""
+
+		# If we haven loaded the config yet
+		if not cls._conf:
+			cls._conf = Record_MySQL.Record.generateConfig(
+				Tree.fromFile('definitions/welldyne/never_started.json'),
+				'mysql'
+			)
+
+		# Return the config
+		return cls._conf
+
+	@classmethod
+	def withTrigger(cls, custom={}):
+		"""With Trigger
+
+		Fetches outreach joined with trigger so it can be sorted by date
+
+		Arguments:
+			custom (dict): Custom Host and DB info
+				'host' the name of the host to get/set data on
+				'append' optional postfix for dynamic DBs
+
+		Returns:
+			dict
+		"""
+
+		# Fetch the record structure
+		dStruct = cls.struct(custom)
+
+		# Generate SQL
+		sSQL = 'SELECT\n' \
+				'	`wdns`.`_id`,\n' \
+				'	`wdns`.`crm_type`,\n' \
+				'	`wdns`.`crm_id`,\n' \
+				'	`wdns`.`crm_order`,\n' \
+				'	`wdns`.`reason`,\n' \
+				'	`wdns`.`ready`,\n' \
+				'	CAST(`wdt`.`_created` as date) as `triggered`\n' \
+				'FROM `%(db)s`.`%(table)s` as `wdns`\n' \
+				'LEFT JOIN `%(db)s`.`welldyne_trigger` as `wdt` USING (`crm_type`, `crm_id`, `crm_order`)\n' \
+				'ORDER BY `triggered` ASC' % {
+			"db": dStruct['db'],
+			"table": dStruct['table']
+		}
+
+		# Execute and return the select
+		return Record_MySQL.Commands.select(
+			dStruct['host'],
+			sSQL,
+			Record_MySQL.ESelect.ALL
+		)
+
 # Outbound class
 class Outbound(Record_MySQL.Record):
 	"""Outbound
 
-	Represents an outbound failure entry sent by Welldyne
+	Represents an outbound failure entry sent by WellDyne
 	"""
 
 	_conf = None
@@ -602,11 +673,11 @@ class Trigger(Record_MySQL.Record):
 		return cls._conf
 
 	@classmethod
-	def notOpened(cls, older_than, custom={}):
-		"""Not Opened
+	def noFeedback(cls, older_than, custom={}):
+		"""No Feedback
 
 		Looks for triggers of a certain age that have not been opened, shipped,
-		and have no outbound error
+		cancelled, and have no outbound error or record in the never started
 
 		Arguments:
 			older_than (uint): A timestamp representing the minimum age to check
@@ -625,9 +696,12 @@ class Trigger(Record_MySQL.Record):
 		sSQL = "SELECT `wdt`.`_created`, `wdt`.`crm_type`, `wdt`.`crm_id`, `wdt`.`crm_order`\n" \
 				"FROM `%(db)s`.`%(table)s` as `wdt`\n" \
 				"LEFT JOIN `%(db)s`.`welldyne_outbound` as `wdo` USING (`crm_type`, `crm_id`, `crm_order`)\n" \
+				"LEFT JOIN `%(db)s`.`welldyne_never_started` as `wdns` USING(`crm_type`, `crm_id`, `crm_order`)\n" \
 				"WHERE `wdt`.`_created` BETWEEN FROM_UNIXTIME(1596844800) AND FROM_UNIXTIME(%(ts)d)\n" \
+				"AND `wdt`.`type` != 'update'\n" \
 				"AND `wdt`.`opened` is NULL\n" \
 				"AND `wdt`.`shipped` is NULL\n" \
+				"AND `wdt`.`cancelled` is NULL\n" \
 				"AND `wdo`.`_id` is NULL\n" \
 				"ORDER BY `wdt`.`_created`" % {
 			"db": dStruct['db'],

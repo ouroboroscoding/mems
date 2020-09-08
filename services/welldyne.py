@@ -11,15 +11,20 @@ __maintainer__	= "Chris Nasr"
 __email__		= "chris@fuelforthefire.ca"
 __created__		= "2020-07-03"
 
+# Python imports
+import os
+
 # Pip imports
+import pysftp
 from RestOC import Conf, DictHelper, Record_MySQL, Services
 
 # Shared imports
-from shared import Rights
+from shared import Excel, Rights
 
 # Records imports
 from records.welldyne import \
-	AdHoc, AdHocManual, Eligibility, Outbound, OutboundSent, RxNumber, Trigger
+	AdHoc, AdHocManual, Eligibility, NeverStarted, Outbound, OutboundSent, \
+	RxNumber, Trigger
 
 class WellDyne(Services.Service):
 	"""WellDyne Service class
@@ -338,6 +343,211 @@ class WellDyne(Services.Service):
 
 		# Return all records
 		return Services.Response(lRecords)
+
+	def neverStarted_delete(self, data, sesh):
+		"""Neve Started Delete
+
+		Deletes an existing never started record
+
+		Arguments:
+			data (dict): Data sent with the request
+			sesh (Sesh._Session): The session associated with the request
+
+		Returns:
+			Services.Response
+		"""
+
+		# Make sure the user has the proper rights
+		oResponse = Services.read('auth', 'rights/verify', {
+			"name": "welldyne_never_started",
+			"right": Rights.DELETE
+		}, sesh)
+		if not oResponse.data:
+			return Services.Response(error=Rights.INVALID)
+
+		# Verify minimum fields
+		try: DictHelper.eval(data, ['_id'])
+		except ValueError as e: return Services.Response(error=(1001, [(f, 'missing') for f in e.args]))
+
+		# Find the record
+		oNeverStarted = NeverStarted.get(data['_id'])
+		if not oNeverStarted:
+			return Services.Response(error=1104)
+
+		# Delete the record and return the result
+		return Services.Response(
+			oNeverStarted.delete()
+		)
+
+	def neverStartedPoll_update(self, data, sesh):
+		"""Neve Started Poll
+
+		Attempts to get the latest data from the FTP and add it to the table
+
+		Arguments:
+			data (dict): Data sent with the request
+			sesh (Sesh._Session): The session associated with the request
+
+		Returns:
+			Services.Response
+		"""
+
+		# Make sure the user has the proper rights
+		oResponse = Services.read('auth', 'rights/verify', {
+			"name": "welldyne_never_started",
+			"right": Rights.UPDATE
+		}, sesh)
+		if not oResponse.data:
+			return Services.Response(error=Rights.INVALID)
+
+		# Verify minimum fields
+		try: DictHelper.eval(data, ['date'])
+		except ValueError as e: return Services.Response(error=(1001, [(f, 'missing') for f in e.args]))
+
+		# Get the sFTP and temp file conf
+		dSftpConf = Conf.get(('welldyne', 'sftp'))
+		sTemp = Conf.get(('temp_folder'))
+
+		# Generate the name of the file
+		sFilename = 'Never_Started_%s.xlsx' % data['date']
+
+		# Connect to the sFTP
+		with pysftp.Connection(dSftpConf['host'], username=dSftpConf['username'], password=dSftpConf['password']) as oCon:
+
+			# Get the outreach file
+			try:
+				sGet = '%s/%s' % (sTemp, sFilename)
+				oCon.get(sFilename, sGet)
+				#oCon.rename(sFilename, 'processed/%s' % sFilename)
+			except FileNotFoundError:
+				return Services.Response(error=(1803, sFilename))
+
+		# Parse the data
+		lData = Excel.parse(sGet, {
+			"member_id": {"column": 11, "type": Excel.STRING},
+			"reason": {"column": 13, "type": Excel.STRING}
+		}, start_row=1)
+
+		print(lData)
+
+		# Go through each line in the file
+		for d in lData:
+
+			# Get the actual ID
+			sCrmID = d['member_id'].lstrip('0')
+
+			# Find the last trigger associated with the ID
+			dTrigger = Trigger.filter({
+				"crm_type": 'knk',
+				"crm_id": sCrmID,
+				"type": {"neq": 'update'}
+			}, raw=['crm_order'], orderby=[('_created', 'DESC')], limit=1)
+
+			# Create the instance
+			oNeverStarted = NeverStarted({
+				"crm_type": 'knk',
+				"crm_id": sCrmID,
+				"crm_order": dTrigger and dTrigger['crm_order'] or '',
+				"reason": sReason[:255],
+				"ready": False
+			})
+
+			# Create the record in the DB
+			oNeverStarted.create(conflict='replace')
+
+		# Delete the file
+		os.remove(sGet)
+
+		# Return OK
+		return Services.Response(True)
+
+	def neverStartedReady_update(self, data, sesh):
+		"""Never Started Ready
+
+		Updates the ready state of an existing never started record
+
+		Arguments:
+			data (dict): Data sent with the request
+			sesh (Sesh._Session): The session associated with the request
+
+		Returns:
+			Services.Response
+		"""
+
+		# Make sure the user has the proper rights
+		oResponse = Services.read('auth', 'rights/verify', {
+			"name": "welldyne_never_started",
+			"right": Rights.UPDATE
+		}, sesh)
+		if not oResponse.data:
+			return Services.Response(error=Rights.INVALID)
+
+		# Verify minimum fields
+		try: DictHelper.eval(data, ['_id', 'ready'])
+		except ValueError as e: return Services.Response(error=(1001, [(f, 'missing') for f in e.args]))
+
+		# Find the record
+		oNeverStarted = NeverStarted.get(data['_id'])
+		if not oNeverStarted:
+			return Services.Response(error=1104)
+
+		# If there's no order
+		if not oNeverStarted['crm_order'] or oNeverStarted['crm_order'] == '':
+			return Services.Response(error=1800)
+
+		# Update the ready state
+		oNeverStarted['ready'] = data['ready'] and True or False
+
+		# Save and return the result
+		return Services.Response(
+			oNeverStarted.save()
+		)
+
+	def neverStarteds_read(self, data, sesh):
+		"""Never Starteds
+
+		Returns all never started records
+
+		Arguments:
+			data (dict): Data sent with the request
+			sesh (Sesh._Session): The session associated with the request
+
+		Returns:
+			Services.Response
+		"""
+
+		# Make sure the user has the proper rights
+		oResponse = Services.read('auth', 'rights/verify', {
+			"name": "welldyne_never_started",
+			"right": Rights.READ
+		}, sesh)
+		if not oResponse.data:
+			return Services.Response(error=Rights.INVALID)
+
+		# Fetch all the records joined with the trigger table
+		lRecords = NeverStarted.withTrigger()
+
+		# If we have records
+		if lRecords:
+
+			# Find all the customer names
+			oResponse = Services.read('monolith', 'customer/name', {
+				"_internal_": Services.internalKey(),
+				"customerId": [d['crm_id'] for d in lRecords]
+			}, sesh)
+			if oResponse.errorExists(): return oResponse
+			dCustomers = {k:'%s %s' % (d['firstName'], d['lastName']) for k,d in oResponse.data.items()}
+
+			# Go through each record and add the customer names
+			for d in lRecords:
+				d['customer_name'] = d['crm_id'] in dCustomers and dCustomers[d['crm_id']] or 'Unknown'
+
+			# Return all records
+			return Services.Response(lRecords)
+
+		# Else return an empty array
+		else:
+			return Services.Response([])
 
 	def outboundAdhoc_update(self, data, sesh):
 		"""Outbound OldAdHoc

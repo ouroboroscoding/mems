@@ -33,6 +33,11 @@ REST.Server({
 	"/adhoc/manual": {"methods": REST.READ | REST.DELETE, "session": True},
 	"/adhocs": {"methods": REST.READ, "session": True},
 
+	"/never/started": {"methods": REST.DELETE, "session": True},
+	"/never/started/poll": {"methods": REST.UPDATE, "session": True},
+	"/never/started/ready": {"methods": REST.UPDATE, "session": True},
+	"/never/starteds": {"methods": REST.READ, "session": True},
+
 	"/outbound/adhoc": {"methods": REST.UPDATE, "session": True},
 	"/outbound/ready": {"methods": REST.UPDATE, "session": True},
 	"/outbounds": {"methods": REST.READ, "session": True},
