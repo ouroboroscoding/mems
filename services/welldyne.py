@@ -609,7 +609,7 @@ class WellDyne(Services.Service):
 
 		# If there's nothing
 		if not lTrigger:
-			return Services.Response(0)
+			return Services.Response([])
 
 		# Find the eligibility associated
 		dElig = Eligibility.filter({
