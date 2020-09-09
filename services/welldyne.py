@@ -455,7 +455,10 @@ class WellDyne(Services.Service):
 			return Services.Response(error=(1001, e.args[0]))
 
 		# Create the adhoc record
-		oAdHoc.create();
+		try:
+			oAdHoc.create();
+		except Record_MySQL.DuplicateException:
+			return Services.Response(error=1101)
 
 		# Delete the outbound record
 		oOutbound.delete()
