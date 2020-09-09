@@ -167,24 +167,27 @@ def run(period=None):
 			# If we get success
 			if dRes['status']:
 
-				# If the pharmacy is Castia/WellDyne
-				if dData['pharmacy'] in ['Castia', 'WellDyne']:
+				# Go through each medication returned
+				for dData in dRes['data']:
 
-					# Add it to the Trigger
-					oTrigger.add(dData)
+					# If the pharmacy is Castia/WellDyne
+					if dData['pharmacy'] in ['Castia', 'WellDyne']:
 
-				# Else, add it to a generic pharmacy file
-				else:
+						# Add it to the Trigger
+						oTrigger.add(dData)
 
-					# If it's a refill
-					if dData['type'] == 'refill':
+					# Else, add it to a generic pharmacy file
+					else:
 
-						# If we don't have the pharmacy
-						if dData['pharmacy'] not in dReports:
-							dReports[dData['pharmacy']] = Generic.EmailFile(sEndTime)
+						# If it's a refill
+						if dData['type'] == 'refill':
 
-						# Add a line to the report
-						dReports[dData['pharmacy']].add(dData)
+							# If we don't have the pharmacy
+							if dData['pharmacy'] not in dReports:
+								dReports[dData['pharmacy']] = Generic.EmailFile(sEndTime)
+
+							# Add a line to the report
+							dReports[dData['pharmacy']].add(dData)
 
 			# Else, if it failed to process again
 			else:
