@@ -377,11 +377,12 @@ class NeverStarted(Record_MySQL.Record):
 				'	`wdns`.`crm_type`,\n' \
 				'	`wdns`.`crm_id`,\n' \
 				'	`wdns`.`crm_order`,\n' \
+				'	`wdns`.`medication`,\n' \
 				'	`wdns`.`reason`,\n' \
 				'	`wdns`.`ready`,\n' \
 				'	CAST(`wdt`.`_created` as date) as `triggered`\n' \
 				'FROM `%(db)s`.`%(table)s` as `wdns`\n' \
-				'LEFT JOIN `%(db)s`.`welldyne_trigger` as `wdt` USING (`crm_type`, `crm_id`, `crm_order`)\n' \
+				'LEFT JOIN `%(db)s`.`welldyne_trigger` as `wdt` USING (`crm_type`, `crm_id`, `crm_order`, `medication`)\n' \
 				'ORDER BY `triggered` ASC' % {
 			"db": dStruct['db'],
 			"table": dStruct['table']

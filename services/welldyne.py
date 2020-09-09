@@ -424,6 +424,7 @@ class WellDyne(Services.Service):
 
 		# Parse the data
 		lData = Excel.parse(sGet, {
+			"medication": {"column": 1, "type": Excel.STRING},
 			"member_id": {"column": 11, "type": Excel.STRING},
 			"reason": {"column": 13, "type": Excel.STRING}
 		}, start_row=1)
@@ -448,7 +449,8 @@ class WellDyne(Services.Service):
 				"crm_type": 'knk',
 				"crm_id": sCrmID,
 				"crm_order": dTrigger and dTrigger['crm_order'] or '',
-				"reason": sReason[:255],
+				"medication": d['medication'],
+				"reason": d['reason'][:255],
 				"ready": False
 			})
 
