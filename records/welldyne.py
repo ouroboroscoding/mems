@@ -374,15 +374,15 @@ class NeverStarted(Record_MySQL.Record):
 		# Generate SQL
 		sSQL = 'SELECT\n' \
 				'	`wdns`.`_id`,\n' \
-				'	`wdns`.`crm_type`,\n' \
-				'	`wdns`.`crm_id`,\n' \
-				'	`wdns`.`crm_order`,\n' \
-				'	`wdns`.`medication`,\n' \
+				'	`wdt`.`crm_type`,\n' \
+				'	`wdt`.`crm_id`,\n' \
+				'	`wdt`.`crm_order`,\n' \
+				'	`wdt`.`medication`,\n' \
 				'	`wdns`.`reason`,\n' \
 				'	`wdns`.`ready`,\n' \
 				'	CAST(`wdt`.`_created` as date) as `triggered`\n' \
 				'FROM `%(db)s`.`%(table)s` as `wdns`\n' \
-				'LEFT JOIN `%(db)s`.`welldyne_trigger` as `wdt` USING (`crm_type`, `crm_id`, `crm_order`, `medication`)\n' \
+				'JOIN `%(db)s`.`welldyne_trigger` as `wdt` ON `wdns`.`trigger_id` = `wdt`.`_id`\n' \
 				'ORDER BY `triggered` ASC' % {
 			"db": dStruct['db'],
 			"table": dStruct['table']
@@ -704,6 +704,7 @@ class Trigger(Record_MySQL.Record):
 				"AND `wdt`.`shipped` is NULL\n" \
 				"AND `wdt`.`cancelled` is NULL\n" \
 				"AND `wdo`.`_id` is NULL\n" \
+				"AND `wdns`.`_id` is NULL\n" \
 				"ORDER BY `wdt`.`_created`" % {
 			"db": dStruct['db'],
 			"table": dStruct['table'],
@@ -755,11 +756,11 @@ class Trigger(Record_MySQL.Record):
 		)
 
 	@classmethod
-	def withOutreachEligibility(cls, crm_type, crm_id, custom={}):
-		"""With Outreach & Eligibility
+	def withErrorsEligibility(cls, crm_type, crm_id, custom={}):
+		"""With Errors & Eligibility
 
 		Fetches the latest trigger associated with the customer, including any
-		possible outreach and eligibility data
+		possible never started, outbound, and eligibility data
 
 		Arguments:
 			crm_type (str): The type of CRM the customer belongs to
@@ -786,14 +787,18 @@ class Trigger(Record_MySQL.Record):
 				"	`wdt`.`_created` as `triggered`,\n" \
 				"	`wdt`.`type` as `type`,\n" \
 				"	`wdt`.`opened` as `opened`,\n" \
+				"	`wdt`.`opened_state` as `opened_state`,\n" \
 				"	`wdt`.`shipped` as `shipped`,\n" \
+				"	`wdt`.`cancelled` as `cancelled`,\n" \
 				"	`wdt`.`raw` as `raw`,\n" \
 				"	`wdo`.`queue` as `outbound_queue`,\n" \
 				"	`wdo`.`reason` as `outbound_reason`,\n" \
-				"	`wda`.`type` as `adhoc_type`\n" \
+				"	`wda`.`type` as `adhoc_type`,\n" \
+				"	`wdns`.`reason` as `never_started`\n" \
 				"FROM `%(db)s`.`%(table)s` as `wdt`\n" \
 				"LEFT JOIN `%(db)s`.`welldyne_outbound` as `wdo` USING (`crm_type`, `crm_id`, `crm_order`)\n" \
 				"LEFT JOIN `%(db)s`.`welldyne_adhoc` as `wda` ON `wdt`.`_id` = `wda`.`trigger_id`\n" \
+				"LEFT JOIN `%(db)s`.`welldyne_never_started` as `wdns` ON `wdt`.`_id` = `wdns`.`trigger_id`\n" \
 				"WHERE `wdt`.`crm_type` = '%(crm_type)s'\n" \
 				"AND `wdt`.`crm_id` = '%(crm_id)s'\n" \
 				"ORDER BY `triggered` DESC" % {

@@ -15,6 +15,7 @@ __created__		= "2020-07-03"
 import os
 
 # Pip imports
+import arrow
 import pysftp
 from RestOC import Conf, DictHelper, Record_MySQL, Services
 
@@ -91,17 +92,12 @@ class WellDyne(Services.Service):
 		except ValueError as e: return Services.Response(error=(1001, [(f, 'missing') for f in e.args]))
 
 		# Find the trigger
-		dTrigger = Trigger.get(
-			data['trigger_id'],
-			raw=['crm_type', 'crm_id', 'crm_order', 'raw']
-		)
-
-		# If it doesn't exist
-		if not dTrigger:
+		oTrigger = Trigger.get(data['trigger_id'])
+		if not oTrigger:
 			return Services.Response(error=1104)
 
 		# If we got a trigger, but there's no raw
-		if not dTrigger['raw']:
+		if not oTrigger['raw']:
 
 			# Try to create a new instance of the adhoc in the manual table
 			try:
@@ -132,12 +128,12 @@ class WellDyne(Services.Service):
 			return Services.Response(warning=1801)
 
 		# If the CRM is Konnektive
-		if dTrigger['crm_type'] == 'knk':
+		if oTrigger['crm_type'] == 'knk':
 
 			# Check the customer exists
 			oResponse = Services.read('monolith', 'customer/name', {
 				"_internal_": Services.internalKey(),
-				"customerId": dTrigger['crm_id']
+				"customerId": oTrigger['crm_id']
 			}, sesh)
 			if oResponse.errorExists(): return oResponse
 			dCustomer = oResponse.data
@@ -161,12 +157,25 @@ class WellDyne(Services.Service):
 		except ValueError as e:
 			return Services.Response(error=(1001, e.args[0]))
 
+		# Create the AdHoc and store the ID
+		try:
+			sID = oAdHoc.create()
+		except Record_MySQL.DuplicateException:
+			return Services.Response(error=1101)
+
+		# If the request is to "Cancel Order", or it's "Remove Error" and
+		#	there's no shipped date, mark the trigger as cancelled
+		if oAdHoc['type'] == 'Cancel Order' or \
+			(oAdHoc['type'] == 'Remove Error' and oTrigger['shipped'] == None):
+			oTrigger['cancelled'] = arrow.get().format('YYYY-MM-DD HH:mm:ss')
+			oTrigger.save()
+
 		# Create the record and return the result
 		return Services.Response({
-			"_id": oAdHoc.create(),
-			"crm_type": dTrigger['crm_type'],
-			"crm_id": dTrigger['crm_id'],
-			"crm_order": dTrigger['crm_order'],
+			"_id": sID,
+			"crm_type": oTrigger['crm_type'],
+			"crm_id": oTrigger['crm_id'],
+			"crm_order": oTrigger['crm_order'],
 			"customer_name": '%s %s' % (dCustomer['firstName'], dCustomer['lastName']),
 			"user_name": '%s %s' % (dUser['firstName'], dUser['lastName'])
 		})
@@ -241,7 +250,13 @@ class WellDyne(Services.Service):
 		if not oAdHoc:
 			return Services.Response(error=(1104, 'trigger'))
 
-		# Update the trigger
+		# If the request is to "Cancel Order", or it's "Remove Error" and
+		#	there's no shipped date, mark the trigger as cancelled
+		if oAdHoc['type'] == 'Cancel Order' or \
+			(oAdHoc['type'] == 'Remove Error' and oTrigger['shipped'] == None):
+			oTrigger['cancelled'] = arrow.get().format('YYYY-MM-DD HH:mm:ss')
+
+		# Update the raw field and save the trigger
 		oTrigger['raw'] = data['raw']
 		oTrigger.save()
 
@@ -372,7 +387,16 @@ class WellDyne(Services.Service):
 		# Find the record
 		oNeverStarted = NeverStarted.get(data['_id'])
 		if not oNeverStarted:
-			return Services.Response(error=1104)
+			return Services.Response(error=(1104, 'never_started'))
+
+		# Find the trigger associated
+		oTrigger = Trigger.get(oNeverStarted['trigger_id'])
+		if not oTrigger:
+			return Services.Response(error=(1104, 'trigger'))
+
+		# Mark it as cancelled
+		oTrigger['cancelled'] = arrow.get().format('YYYY-MM-DD MM:hh:ss')
+		oTrigger.save()
 
 		# Delete the record and return the result
 		return Services.Response(
@@ -431,6 +455,9 @@ class WellDyne(Services.Service):
 
 		print(lData)
 
+		# Keep track of any that failed
+		lFailed = []
+
 		# Go through each line in the file
 		for d in lData:
 
@@ -441,15 +468,22 @@ class WellDyne(Services.Service):
 			dTrigger = Trigger.filter({
 				"crm_type": 'knk',
 				"crm_id": sCrmID,
+				"medication": d['medication'],
+				"opened": None,
+				"shipped": None,
 				"type": {"neq": 'update'}
-			}, raw=['crm_order'], orderby=[('_created', 'DESC')], limit=1)
+			}, raw=['_id'], orderby=[('_created', 'DESC')], limit=1)
+
+			# If there's no trigger
+			if not dTrigger:
+				lFailed.append('%s, %s, %s' % (
+					d['member_id'], d['medication'], d['reason']
+				))
+				continue
 
 			# Create the instance
 			oNeverStarted = NeverStarted({
-				"crm_type": 'knk',
-				"crm_id": sCrmID,
-				"crm_order": dTrigger and dTrigger['crm_order'] or '',
-				"medication": d['medication'],
+				"trigger": dTrigger['_id'],
 				"reason": d['reason'][:255],
 				"ready": False
 			})
@@ -459,6 +493,28 @@ class WellDyne(Services.Service):
 
 		# Delete the file
 		os.remove(sGet)
+
+		# If we have any failures
+		if lFailed:
+
+			# Get the list of recipients for the report
+			oResponse = Services.read('reports', 'recipients/internal', {
+				"_internal_": Services.internalKey(),
+				"name": 'WellDyne_NeverStartedError'
+			})
+			if oResponse.errorExists():
+				return oResponse
+
+			# Send the email
+			oResponse = Services.create('communications', 'email', {
+				"_internal_": Services.internalKey(),
+				"text_body": 'Could not find trigger to match the following\n\n' \
+								'Member ID, Medication, Reason\n%s' % '\n'.join(lFailed),
+				"subject": 'Never Started Issues',
+				"to": oResponse.data
+			})
+			if oResponse.errorExists():
+				return oResponse
 
 		# Return OK
 		return Services.Response(True)
@@ -583,26 +639,26 @@ class WellDyne(Services.Service):
 			return Services.Response(error=1104)
 
 		# Look for a trigger with the same info
-		dTrigger = Trigger.filter({
+		oTrigger = Trigger.filter({
 			"crm_type": oOutbound['crm_type'],
 			"crm_id": oOutbound['crm_id'],
 			"crm_order": oOutbound['crm_order']
-		}, raw=['_id', 'crm_type', 'crm_id', 'crm_order', 'raw'], limit=1)
+		}, limit=1)
 
 		# If there's no tigger
-		if not dTrigger:
+		if not oTrigger:
 			return Services.Response(error=1802)
 
 		# Init warning
 		iWarning = None
 
 		# If there's no raw data
-		if not dTrigger['raw']:
+		if not oTrigger['raw']:
 
 			# Try to create a new instance of the adhoc in the manual table
 			try:
 				oAdHocManual = AdHocManual({
-					"trigger_id": dTrigger['_id'],
+					"trigger_id": oTrigger['_id'],
 					"type": "Remove Error",
 					"memo_user": sesh['memo_id']
 				})
@@ -667,10 +723,15 @@ class WellDyne(Services.Service):
 			return Services.Response(error=(1001, e.args[0]))
 
 		# Create the adhoc record
-		oAdHoc.create();
+		oAdHoc.create()
 
 		# Delete the outbound record
 		oOutbound.delete()
+
+		# Mark the trigger has no shipped date, mark it as cancelled
+		if oTrigger['shipped'] == None:
+			oTrigger['cancelled'] = arrow.get().format('YYYY-MM-DD HH:mm:ss')
+			oTrigger.save()
 
 		# Turn the adhoc instance into a dict
 		dAdHoc = oAdHoc.record()
@@ -817,7 +878,7 @@ class WellDyne(Services.Service):
 		except ValueError as e: return Services.Response(error=(1001, [(f, "missing") for f in e.args]))
 
 		# Look for a trigger with any possible outbound and eligibility
-		lTrigger = Trigger.withOutreachEligibility(data['crm_type'], data['crm_id'])
+		lTrigger = Trigger.withErrorsEligibility(data['crm_type'], data['crm_id'])
 
 		# If there's nothing
 		if not lTrigger:

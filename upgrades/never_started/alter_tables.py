@@ -10,7 +10,7 @@ def run():
 	Record_MySQL.Commands.execute(
 		'primary',
 		'ALTER TABLE `mems`.`welldyne_trigger` ' \
-		'ADD COLUMN `opened_stage` VARCHAR(127) NULL DEFAULT NULL AFTER `opened`, ' \
+		'ADD COLUMN `opened_state` VARCHAR(127) NULL DEFAULT NULL AFTER `opened`, ' \
 		'ADD COLUMN `cancelled` DATETIME NULL DEFAULT NULL AFTER `shipped`'
 	)
 
