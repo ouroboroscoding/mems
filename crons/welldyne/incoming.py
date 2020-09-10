@@ -79,7 +79,7 @@ def opened_claims(tod):
 
 	# Parse the data
 	lData = Excel.parse(sGet, {
-		"member_id": {"column": 2, "type": Excel.STRING}
+		"member_id": {"column": 2, "type": Excel.STRING},
 		"opened": {"column": 6, "type": Excel.DATETIME},
 		"wd_rx": {"column": 7, "type": Excel.INTEGER},
 		"stage": {"column": 13, "type": Excel.STRING},
@@ -320,7 +320,7 @@ def shipped_claims(tod):
 
 			# Update the shipped date and clear the opened stage
 			oTrigger['shipped'] = d['shipped']
-			oTrigger['opened_stage'] = ''
+			oTrigger['opened_state'] = ''
 
 			# If there's no opened date, update it too
 			if not oTrigger['opened']:
