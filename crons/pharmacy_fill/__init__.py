@@ -455,6 +455,10 @@ def run(period=None):
 
 	global __moTriggers, __moKnk, __mdReports
 
+	# If we're already running
+	if isRunning('pharmacy_fill_%s' % period):
+		return True
+
 	try:
 
 		# If we're doing the early morning run
@@ -464,6 +468,10 @@ def run(period=None):
 		# Else, if we're doing the mid day run
 		elif period == 'noon':
 			sFileTime = '130000'
+
+		else:
+			print('Invalid time period: %s' % str(period))
+			return False
 
 		# Init the PharmacyFill module
 		PharmacyFill.initialise()
