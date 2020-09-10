@@ -174,6 +174,8 @@ def process(item, backfill=None):
 		item (dict): All data necessary to find the medication and rx
 		backfill (dict): A dict of order and max_date, used specifically
 							for transfer from old system to new
+		trigger (str): The ID of a trigger if we want to update the existing
+						instead of making a new one
 
 	Returns:
 		dict

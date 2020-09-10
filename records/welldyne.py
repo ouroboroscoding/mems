@@ -323,11 +323,101 @@ class Eligibility(Record_MySQL.Record):
 			Record_MySQL.ESelect.ALL
 		)
 
+# NeverStarted class
+class NeverStarted(Record_MySQL.Record):
+	"""Never Started
+
+	Handles never started errors from WellDyne
+	"""
+
+	_conf = None
+	"""Configuration"""
+
+	@classmethod
+	def config(cls):
+		"""Config
+
+		Returns the configuration data associated with the record type
+
+		Returns:
+			dict
+		"""
+
+		# If we haven loaded the config yet
+		if not cls._conf:
+			cls._conf = Record_MySQL.Record.generateConfig(
+				Tree.fromFile('definitions/welldyne/never_started.json'),
+				'mysql'
+			)
+
+		# Return the config
+		return cls._conf
+
+	@classmethod
+	def withTrigger(cls, filter=None, custom={}):
+		"""With Trigger
+
+		Fetches outreach joined with trigger so it can be sorted by date
+
+		Arguments:
+			_id (str|str[]): Optional ID(s) to filter by
+			custom (dict): Custom Host and DB info
+				'host' the name of the host to get/set data on
+				'append' optional postfix for dynamic DBs
+
+		Returns:
+			dict
+		"""
+
+		# Fetch the record structure
+		dStruct = cls.struct(custom)
+
+		# Init the where fields
+		lWhere = [];
+
+		# If there's an additional filter
+		if filter:
+
+			# Go through each value
+			for n,v in filter.items():
+
+				# Generate theSQL and append it to the list
+				lWhere.append(
+					'`%s` %s' % (n, cls.processValue(dStruct, n, v))
+				)
+
+		# Generate SQL
+		sSQL = 'SELECT\n' \
+				'	`wdns`.`_id`,\n' \
+				'	`wdns`.`trigger_id`,\n' \
+				'	`wdt`.`crm_type`,\n' \
+				'	`wdt`.`crm_id`,\n' \
+				'	`wdt`.`crm_order`,\n' \
+				'	`wdt`.`medication`,\n' \
+				'	`wdns`.`reason`,\n' \
+				'	`wdns`.`ready`,\n' \
+				'	CAST(`wdt`.`_created` as date) as `triggered`\n' \
+				'FROM `%(db)s`.`%(table)s` as `wdns`\n' \
+				'JOIN `%(db)s`.`welldyne_trigger` as `wdt` ON `wdns`.`trigger_id` = `wdt`.`_id`\n' \
+				'%(where)s' \
+				'ORDER BY `triggered` ASC' % {
+			"db": dStruct['db'],
+			"table": dStruct['table'],
+			"where": lWhere and 'WHERE %s\n' % 'AND\n'.join(lWhere) or ''
+		}
+
+		# Execute and return the select
+		return Record_MySQL.Commands.select(
+			dStruct['host'],
+			sSQL,
+			Record_MySQL.ESelect.ALL
+		)
+
 # Outbound class
 class Outbound(Record_MySQL.Record):
 	"""Outbound
 
-	Represents an outbound failure entry sent by Welldyne
+	Represents an outbound failure entry sent by WellDyne
 	"""
 
 	_conf = None
@@ -602,11 +692,11 @@ class Trigger(Record_MySQL.Record):
 		return cls._conf
 
 	@classmethod
-	def notOpened(cls, older_than, custom={}):
-		"""Not Opened
+	def noFeedback(cls, older_than, custom={}):
+		"""No Feedback
 
 		Looks for triggers of a certain age that have not been opened, shipped,
-		and have no outbound error
+		cancelled, and have no outbound error or record in the never started
 
 		Arguments:
 			older_than (uint): A timestamp representing the minimum age to check
@@ -625,10 +715,14 @@ class Trigger(Record_MySQL.Record):
 		sSQL = "SELECT `wdt`.`_created`, `wdt`.`crm_type`, `wdt`.`crm_id`, `wdt`.`crm_order`\n" \
 				"FROM `%(db)s`.`%(table)s` as `wdt`\n" \
 				"LEFT JOIN `%(db)s`.`welldyne_outbound` as `wdo` USING (`crm_type`, `crm_id`, `crm_order`)\n" \
+				"LEFT JOIN `%(db)s`.`welldyne_never_started` as `wdns` USING(`crm_type`, `crm_id`, `crm_order`)\n" \
 				"WHERE `wdt`.`_created` BETWEEN FROM_UNIXTIME(1596844800) AND FROM_UNIXTIME(%(ts)d)\n" \
+				"AND `wdt`.`type` != 'update'\n" \
 				"AND `wdt`.`opened` is NULL\n" \
 				"AND `wdt`.`shipped` is NULL\n" \
+				"AND `wdt`.`cancelled` is NULL\n" \
 				"AND `wdo`.`_id` is NULL\n" \
+				"AND `wdns`.`_id` is NULL\n" \
 				"ORDER BY `wdt`.`_created`" % {
 			"db": dStruct['db'],
 			"table": dStruct['table'],
@@ -680,11 +774,11 @@ class Trigger(Record_MySQL.Record):
 		)
 
 	@classmethod
-	def withOutreachEligibility(cls, crm_type, crm_id, custom={}):
-		"""With Outreach & Eligibility
+	def withErrorsEligibility(cls, crm_type, crm_id, custom={}):
+		"""With Errors & Eligibility
 
 		Fetches the latest trigger associated with the customer, including any
-		possible outreach and eligibility data
+		possible never started, outbound, and eligibility data
 
 		Arguments:
 			crm_type (str): The type of CRM the customer belongs to
@@ -711,14 +805,18 @@ class Trigger(Record_MySQL.Record):
 				"	`wdt`.`_created` as `triggered`,\n" \
 				"	`wdt`.`type` as `type`,\n" \
 				"	`wdt`.`opened` as `opened`,\n" \
+				"	`wdt`.`opened_state` as `opened_state`,\n" \
 				"	`wdt`.`shipped` as `shipped`,\n" \
+				"	`wdt`.`cancelled` as `cancelled`,\n" \
 				"	`wdt`.`raw` as `raw`,\n" \
 				"	`wdo`.`queue` as `outbound_queue`,\n" \
 				"	`wdo`.`reason` as `outbound_reason`,\n" \
-				"	`wda`.`type` as `adhoc_type`\n" \
+				"	`wda`.`type` as `adhoc_type`,\n" \
+				"	`wdns`.`reason` as `never_started`\n" \
 				"FROM `%(db)s`.`%(table)s` as `wdt`\n" \
 				"LEFT JOIN `%(db)s`.`welldyne_outbound` as `wdo` USING (`crm_type`, `crm_id`, `crm_order`)\n" \
 				"LEFT JOIN `%(db)s`.`welldyne_adhoc` as `wda` ON `wdt`.`_id` = `wda`.`trigger_id`\n" \
+				"LEFT JOIN `%(db)s`.`welldyne_never_started` as `wdns` ON `wdt`.`_id` = `wdns`.`trigger_id`\n" \
 				"WHERE `wdt`.`crm_type` = '%(crm_type)s'\n" \
 				"AND `wdt`.`crm_id` = '%(crm_id)s'\n" \
 				"ORDER BY `triggered` DESC" % {
