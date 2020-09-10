@@ -56,13 +56,11 @@ def run(hours):
 	# Convert the hours into a timestamp
 	iAge = arrow.get().shift(hours=-(int(hours))).timestamp
 
-	# Get all triggers with no error that haven't been opened/shipped
-	lTriggers = Trigger.notOpened(iAge)
+	# Get all triggers with no error that haven't been opened/shipped/cancelled
+	lTriggers = Trigger.noFeedback(iAge)
 
 	# Go through each trigger found
 	for d in lTriggers:
-
-		print('Customer %s:%s' % (d['crm_type'], d['crm_id']))
 
 		# Find the name of the customer in Konnektive via the order
 		lOrders = oKNK._request('order/query', {

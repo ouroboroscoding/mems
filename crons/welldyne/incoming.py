@@ -21,7 +21,7 @@ import pysftp
 from RestOC import Conf
 
 # Shared imports
-from shared import Excel, Memo
+from shared import Excel
 
 # Service imports
 from records.monolith import ShippingInfo
@@ -78,21 +78,56 @@ def opened_claims(tod):
 			return False
 
 	# Parse the data
-	"""
 	lData = Excel.parse(sGet, {
-		"crm_id": {"column": 10, "type": Excel.STRING},
-		"queue": {"column": 0, "type": Excel.STRING},
-		"reason": {"column": 14, "type": Excel.STRING},
-		"exception": {"column": 17, "type": Excel.STRING},
-		"wd_rx": {"column": 15, "type": Excel.INTEGER}
+		"member_id": {"column": 2, "type": Excel.STRING}
+		"opened": {"column": 6, "type": Excel.DATETIME},
+		"wd_rx": {"column": 7, "type": Excel.INTEGER},
+		"stage": {"column": 13, "type": Excel.STRING},
+		"queue": {"column": 15, "type": Excel.STRING}
 	}, start_row=1)
+
+	# Go through each one and keep only uniques
+	dData = {}
+	for d in lData:
+		d['customerId'] = d['member_id'].lstrip('0')
+		dData[d['customerId']] = d
+
+	# Store just the values
+	lData = list(dData.values())
 
 	# Go through each item
 	for d in lData:
 
-		# Get the CRM ID
-		sCrmID = d['crm_id'].lstrip('0')
-	"""
+		# Create the reason string
+		sReason = '%s %s' % (d['queue'] or '', d['stage'] or '')
+
+		# If it's empty
+		if len(sReason) == 0 or sReason == ' ':
+			sReason = '(empty)'
+
+		# Find the last trigger associated with the ID
+		oTrigger = Trigger.filter({
+			"crm_type": 'knk',
+			"crm_id": d['customerId'],
+			"type": {"neq": 'update'}
+		}, orderby=[('_created', 'DESC')], limit=1)
+
+		# If we found one
+		if oTrigger:
+
+			# Update the opened date and stage
+			oTrigger['shipped'] = d['opened']
+			oTrigger['opened_stage'] = sReason
+
+			# Save the updates
+			oTrigger.save()
+
+		# Create or replace the current RX number
+		oRx = RxNumber({
+			"member_id": d['member_id'],
+			"number": d['rx']
+		})
+		oRx.create(conflict=['number'])
 
 	# Delete the file
 	os.remove(sGet)
@@ -177,6 +212,7 @@ def outbound_failed_claims(tod):
 		dTrigger = Trigger.filter({
 			"crm_type": 'knk',
 			"crm_id": sCrmID,
+			"type": {"neq": 'update'}
 		}, raw=['crm_order'], orderby=[('_created', 'DESC')], limit=1)
 
 		# Create the reason string
@@ -276,13 +312,15 @@ def shipped_claims(tod):
 		oTrigger = Trigger.filter({
 			"crm_type": 'knk',
 			"crm_id": d['customerId'],
+			"type": {"neq": 'update'}
 		}, orderby=[('_created', 'DESC')], limit=1)
 
 		# If we found one
 		if oTrigger:
 
-			# Update the shipped date
+			# Update the shipped date and clear the opened stage
 			oTrigger['shipped'] = d['shipped']
+			oTrigger['opened_stage'] = ''
 
 			# If there's no opened date, update it too
 			if not oTrigger['opened']:

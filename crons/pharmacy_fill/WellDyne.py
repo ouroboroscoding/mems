@@ -51,13 +51,14 @@ class TriggerFile(object):
 		self.since = arrow.get().format('YYYY-MM-DD 00:00:00')
 		self.thru = arrow.get().shift(days=15).format('YYYY-MM-DD 00:00:00')
 
-	def add(self, data):
+	def add(self, data, existing=None):
 		"""Add
 
 		Adds a line to the report
 
 		Arguments:
 			data (dict): The data needed to make the line
+			existing (str): An existing trigger ID to update instead of creating
 
 		Returns:
 			None
@@ -136,19 +137,35 @@ class TriggerFile(object):
 			Allergies.fetch(data)
 		];
 
-		# Create a trigger instance
-		oTrigger = Trigger({
-			"crm_type": data['crm_type'],
-			"crm_id": data['crm_id'],
-			"crm_order": data['crm_order'],
-			"medication": data['medication'],
-			"rx_id": str(data['ds_id']),
-			"type": data['type'],
-			"raw": ','.join(lLine)
-		})
+		# If we have an existing trigger ID
+		if existing:
 
-		# Create the record in the DB
-		oTrigger.create(conflict='replace')
+			# Find the trigger
+			oTrigger = Trigger.get(existing)
+
+			# Update the medication, rx, type, and raw, then save
+			oTrigger['medication'] = data['medication']
+			oTrigger['rx_id'] = str(data['ds_id'])
+			oTrigger['type'] = data['type']
+			oTrigger['raw'] = ','.join(lLine)
+			oTrigger.save()
+
+		# Else create and store a new trigger
+		else:
+
+			# Create a trigger instance
+			oTrigger = Trigger({
+				"crm_type": data['crm_type'],
+				"crm_id": data['crm_id'],
+				"crm_order": data['crm_order'],
+				"medication": data['medication'],
+				"rx_id": str(data['ds_id']),
+				"type": data['type'],
+				"raw": ','.join(lLine)
+			})
+
+			# Create the record in the DB
+			oTrigger.create(conflict='replace')
 
 		# Add the line to the report
 		self.lines.append(lLine);

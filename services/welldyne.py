@@ -11,15 +11,21 @@ __maintainer__	= "Chris Nasr"
 __email__		= "chris@fuelforthefire.ca"
 __created__		= "2020-07-03"
 
+# Python imports
+import os
+
 # Pip imports
+import arrow
+import pysftp
 from RestOC import Conf, DictHelper, Record_MySQL, Services
 
 # Shared imports
-from shared import Rights
+from shared import Excel, Rights
 
 # Records imports
 from records.welldyne import \
-	AdHoc, AdHocManual, Eligibility, Outbound, OutboundSent, RxNumber, Trigger
+	AdHoc, AdHocManual, Eligibility, NeverStarted, Outbound, OutboundSent, \
+	RxNumber, Trigger
 
 class WellDyne(Services.Service):
 	"""WellDyne Service class
@@ -86,17 +92,12 @@ class WellDyne(Services.Service):
 		except ValueError as e: return Services.Response(error=(1001, [(f, 'missing') for f in e.args]))
 
 		# Find the trigger
-		dTrigger = Trigger.get(
-			data['trigger_id'],
-			raw=['crm_type', 'crm_id', 'crm_order', 'raw']
-		)
-
-		# If it doesn't exist
-		if not dTrigger:
+		oTrigger = Trigger.get(data['trigger_id'])
+		if not oTrigger:
 			return Services.Response(error=1104)
 
 		# If we got a trigger, but there's no raw
-		if not dTrigger['raw']:
+		if not oTrigger['raw']:
 
 			# Try to create a new instance of the adhoc in the manual table
 			try:
@@ -127,12 +128,12 @@ class WellDyne(Services.Service):
 			return Services.Response(warning=1801)
 
 		# If the CRM is Konnektive
-		if dTrigger['crm_type'] == 'knk':
+		if oTrigger['crm_type'] == 'knk':
 
 			# Check the customer exists
 			oResponse = Services.read('monolith', 'customer/name', {
 				"_internal_": Services.internalKey(),
-				"customerId": dTrigger['crm_id']
+				"customerId": oTrigger['crm_id']
 			}, sesh)
 			if oResponse.errorExists(): return oResponse
 			dCustomer = oResponse.data
@@ -156,12 +157,25 @@ class WellDyne(Services.Service):
 		except ValueError as e:
 			return Services.Response(error=(1001, e.args[0]))
 
+		# Create the AdHoc and store the ID
+		try:
+			sID = oAdHoc.create()
+		except Record_MySQL.DuplicateException:
+			return Services.Response(error=1101)
+
+		# If the request is to "Cancel Order", or it's "Remove Error" and
+		#	there's no shipped date, mark the trigger as cancelled
+		if oAdHoc['type'] == 'Cancel Order' or \
+			(oAdHoc['type'] == 'Remove Error' and oTrigger['shipped'] == None):
+			oTrigger['cancelled'] = arrow.get().format('YYYY-MM-DD HH:mm:ss')
+			oTrigger.save()
+
 		# Create the record and return the result
 		return Services.Response({
-			"_id": oAdHoc.create(),
-			"crm_type": dTrigger['crm_type'],
-			"crm_id": dTrigger['crm_id'],
-			"crm_order": dTrigger['crm_order'],
+			"_id": sID,
+			"crm_type": oTrigger['crm_type'],
+			"crm_id": oTrigger['crm_id'],
+			"crm_order": oTrigger['crm_order'],
 			"customer_name": '%s %s' % (dCustomer['firstName'], dCustomer['lastName']),
 			"user_name": '%s %s' % (dUser['firstName'], dUser['lastName'])
 		})
@@ -236,7 +250,13 @@ class WellDyne(Services.Service):
 		if not oAdHoc:
 			return Services.Response(error=(1104, 'trigger'))
 
-		# Update the trigger
+		# If the request is to "Cancel Order", or it's "Remove Error" and
+		#	there's no shipped date, mark the trigger as cancelled
+		if oAdHoc['type'] == 'Cancel Order' or \
+			(oAdHoc['type'] == 'Remove Error' and oTrigger['shipped'] == None):
+			oTrigger['cancelled'] = arrow.get().format('YYYY-MM-DD HH:mm:ss')
+
+		# Update the raw field and save the trigger
 		oTrigger['raw'] = data['raw']
 		oTrigger.save()
 
@@ -339,6 +359,250 @@ class WellDyne(Services.Service):
 		# Return all records
 		return Services.Response(lRecords)
 
+	def neverStarted_delete(self, data, sesh):
+		"""Neve Started Delete
+
+		Deletes an existing never started record
+
+		Arguments:
+			data (dict): Data sent with the request
+			sesh (Sesh._Session): The session associated with the request
+
+		Returns:
+			Services.Response
+		"""
+
+		# Make sure the user has the proper rights
+		oResponse = Services.read('auth', 'rights/verify', {
+			"name": "welldyne_never_started",
+			"right": Rights.DELETE
+		}, sesh)
+		if not oResponse.data:
+			return Services.Response(error=Rights.INVALID)
+
+		# Verify minimum fields
+		try: DictHelper.eval(data, ['_id'])
+		except ValueError as e: return Services.Response(error=(1001, [(f, 'missing') for f in e.args]))
+
+		# Find the record
+		oNeverStarted = NeverStarted.get(data['_id'])
+		if not oNeverStarted:
+			return Services.Response(error=(1104, 'never_started'))
+
+		# Find the trigger associated
+		oTrigger = Trigger.get(oNeverStarted['trigger_id'])
+		if not oTrigger:
+			return Services.Response(error=(1104, 'trigger'))
+
+		# Mark it as cancelled
+		oTrigger['cancelled'] = arrow.get().format('YYYY-MM-DD MM:hh:ss')
+		oTrigger.save()
+
+		# Delete the record and return the result
+		return Services.Response(
+			oNeverStarted.delete()
+		)
+
+	def neverStartedPoll_update(self, data, sesh):
+		"""Neve Started Poll
+
+		Attempts to get the latest data from the FTP and add it to the table
+
+		Arguments:
+			data (dict): Data sent with the request
+			sesh (Sesh._Session): The session associated with the request
+
+		Returns:
+			Services.Response
+		"""
+
+		# Make sure the user has the proper rights
+		oResponse = Services.read('auth', 'rights/verify', {
+			"name": "welldyne_never_started",
+			"right": Rights.UPDATE
+		}, sesh)
+		if not oResponse.data:
+			return Services.Response(error=Rights.INVALID)
+
+		# Verify minimum fields
+		try: DictHelper.eval(data, ['date'])
+		except ValueError as e: return Services.Response(error=(1001, [(f, 'missing') for f in e.args]))
+
+		# Get the sFTP and temp file conf
+		dSftpConf = Conf.get(('welldyne', 'sftp'))
+		sTemp = Conf.get(('temp_folder'))
+
+		# Generate the name of the file
+		sFilename = 'Never_Started_%s.xlsx' % data['date']
+
+		# Connect to the sFTP
+		with pysftp.Connection(dSftpConf['host'], username=dSftpConf['username'], password=dSftpConf['password']) as oCon:
+
+			# Get the outreach file
+			try:
+				sGet = '%s/%s' % (sTemp, sFilename)
+				oCon.get(sFilename, sGet)
+				#oCon.rename(sFilename, 'processed/%s' % sFilename)
+			except FileNotFoundError:
+				return Services.Response(error=(1803, sFilename))
+
+		# Parse the data
+		lData = Excel.parse(sGet, {
+			"medication": {"column": 1, "type": Excel.STRING},
+			"member_id": {"column": 11, "type": Excel.STRING},
+			"reason": {"column": 13, "type": Excel.STRING}
+		}, start_row=1)
+
+		print(lData)
+
+		# Keep track of any that failed
+		lFailed = []
+
+		# Go through each line in the file
+		for d in lData:
+
+			# Get the actual ID
+			sCrmID = d['member_id'].lstrip('0')
+
+			# Find the last trigger associated with the ID
+			dTrigger = Trigger.filter({
+				"crm_type": 'knk',
+				"crm_id": sCrmID,
+				"medication": d['medication'],
+				"opened": None,
+				"shipped": None,
+				"type": {"neq": 'update'}
+			}, raw=['_id'], orderby=[('_created', 'DESC')], limit=1)
+
+			# If there's no trigger
+			if not dTrigger:
+				lFailed.append('%s, %s, %s' % (
+					d['member_id'], d['medication'], d['reason']
+				))
+				continue
+
+			# Create the instance
+			oNeverStarted = NeverStarted({
+				"trigger": dTrigger['_id'],
+				"reason": d['reason'][:255],
+				"ready": False
+			})
+
+			# Create the record in the DB
+			oNeverStarted.create(conflict='replace')
+
+		# Delete the file
+		os.remove(sGet)
+
+		# If we have any failures
+		if lFailed:
+
+			# Get the list of recipients for the report
+			oResponse = Services.read('reports', 'recipients/internal', {
+				"_internal_": Services.internalKey(),
+				"name": 'WellDyne_NeverStartedError'
+			})
+			if oResponse.errorExists():
+				return oResponse
+
+			# Send the email
+			oResponse = Services.create('communications', 'email', {
+				"_internal_": Services.internalKey(),
+				"text_body": 'Could not find trigger to match the following\n\n' \
+								'Member ID, Medication, Reason\n%s' % '\n'.join(lFailed),
+				"subject": 'Never Started Issues',
+				"to": oResponse.data
+			})
+			if oResponse.errorExists():
+				return oResponse
+
+		# Return OK
+		return Services.Response(True)
+
+	def neverStartedReady_update(self, data, sesh):
+		"""Never Started Ready
+
+		Updates the ready state of an existing never started record
+
+		Arguments:
+			data (dict): Data sent with the request
+			sesh (Sesh._Session): The session associated with the request
+
+		Returns:
+			Services.Response
+		"""
+
+		# Make sure the user has the proper rights
+		oResponse = Services.read('auth', 'rights/verify', {
+			"name": "welldyne_never_started",
+			"right": Rights.UPDATE
+		}, sesh)
+		if not oResponse.data:
+			return Services.Response(error=Rights.INVALID)
+
+		# Verify minimum fields
+		try: DictHelper.eval(data, ['_id', 'ready'])
+		except ValueError as e: return Services.Response(error=(1001, [(f, 'missing') for f in e.args]))
+
+		# Find the record
+		oNeverStarted = NeverStarted.get(data['_id'])
+		if not oNeverStarted:
+			return Services.Response(error=1104)
+
+		# Update the ready state
+		oNeverStarted['ready'] = data['ready'] and True or False
+
+		# Save and return the result
+		return Services.Response(
+			oNeverStarted.save()
+		)
+
+	def neverStarteds_read(self, data, sesh):
+		"""Never Starteds
+
+		Returns all never started records
+
+		Arguments:
+			data (dict): Data sent with the request
+			sesh (Sesh._Session): The session associated with the request
+
+		Returns:
+			Services.Response
+		"""
+
+		# Make sure the user has the proper rights
+		oResponse = Services.read('auth', 'rights/verify', {
+			"name": "welldyne_never_started",
+			"right": Rights.READ
+		}, sesh)
+		if not oResponse.data:
+			return Services.Response(error=Rights.INVALID)
+
+		# Fetch all the records joined with the trigger table
+		lRecords = NeverStarted.withTrigger()
+
+		# If we have records
+		if lRecords:
+
+			# Find all the customer names
+			oResponse = Services.read('monolith', 'customer/name', {
+				"_internal_": Services.internalKey(),
+				"customerId": [d['crm_id'] for d in lRecords]
+			}, sesh)
+			if oResponse.errorExists(): return oResponse
+			dCustomers = {k:'%s %s' % (d['firstName'], d['lastName']) for k,d in oResponse.data.items()}
+
+			# Go through each record and add the customer names
+			for d in lRecords:
+				d['customer_name'] = d['crm_id'] in dCustomers and dCustomers[d['crm_id']] or 'Unknown'
+
+			# Return all records
+			return Services.Response(lRecords)
+
+		# Else return an empty array
+		else:
+			return Services.Response([])
+
 	def outboundAdhoc_update(self, data, sesh):
 		"""Outbound OldAdHoc
 
@@ -371,26 +635,26 @@ class WellDyne(Services.Service):
 			return Services.Response(error=1104)
 
 		# Look for a trigger with the same info
-		dTrigger = Trigger.filter({
+		oTrigger = Trigger.filter({
 			"crm_type": oOutbound['crm_type'],
 			"crm_id": oOutbound['crm_id'],
 			"crm_order": oOutbound['crm_order']
-		}, raw=['_id', 'crm_type', 'crm_id', 'crm_order', 'raw'], limit=1)
+		}, limit=1)
 
 		# If there's no tigger
-		if not dTrigger:
+		if not oTrigger:
 			return Services.Response(error=1802)
 
 		# Init warning
 		iWarning = None
 
 		# If there's no raw data
-		if not dTrigger['raw']:
+		if not oTrigger['raw']:
 
 			# Try to create a new instance of the adhoc in the manual table
 			try:
 				oAdHocManual = AdHocManual({
-					"trigger_id": dTrigger['_id'],
+					"trigger_id": oTrigger['_id'],
 					"type": "Remove Error",
 					"memo_user": sesh['memo_id']
 				})
@@ -462,6 +726,11 @@ class WellDyne(Services.Service):
 
 		# Delete the outbound record
 		oOutbound.delete()
+
+		# Mark the trigger has no shipped date, mark it as cancelled
+		if oTrigger['shipped'] == None:
+			oTrigger['cancelled'] = arrow.get().format('YYYY-MM-DD HH:mm:ss')
+			oTrigger.save()
 
 		# Turn the adhoc instance into a dict
 		dAdHoc = oAdHoc.record()
@@ -608,7 +877,7 @@ class WellDyne(Services.Service):
 		except ValueError as e: return Services.Response(error=(1001, [(f, "missing") for f in e.args]))
 
 		# Look for a trigger with any possible outbound and eligibility
-		lTrigger = Trigger.withOutreachEligibility(data['crm_type'], data['crm_id'])
+		lTrigger = Trigger.withErrorsEligibility(data['crm_type'], data['crm_id'])
 
 		# If there's nothing
 		if not lTrigger:
