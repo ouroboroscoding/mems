@@ -483,7 +483,7 @@ class WellDyne(Services.Service):
 
 			# Create the instance
 			oNeverStarted = NeverStarted({
-				"trigger": dTrigger['_id'],
+				"trigger_id": dTrigger['_id'],
 				"reason": d['reason'][:255],
 				"ready": False
 			})
