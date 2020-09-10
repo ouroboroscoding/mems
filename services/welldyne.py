@@ -549,10 +549,6 @@ class WellDyne(Services.Service):
 		if not oNeverStarted:
 			return Services.Response(error=1104)
 
-		# If there's no order
-		if not oNeverStarted['crm_order'] or oNeverStarted['crm_order'] == '':
-			return Services.Response(error=1800)
-
 		# Update the ready state
 		oNeverStarted['ready'] = data['ready'] and True or False
 
@@ -723,7 +719,10 @@ class WellDyne(Services.Service):
 			return Services.Response(error=(1001, e.args[0]))
 
 		# Create the adhoc record
-		oAdHoc.create()
+		try:
+			oAdHoc.create();
+		except Record_MySQL.DuplicateException:
+			return Services.Response(error=1101)
 
 		# Delete the outbound record
 		oOutbound.delete()
@@ -882,7 +881,7 @@ class WellDyne(Services.Service):
 
 		# If there's nothing
 		if not lTrigger:
-			return Services.Response(0)
+			return Services.Response([])
 
 		# Find the eligibility associated
 		dElig = Eligibility.filter({

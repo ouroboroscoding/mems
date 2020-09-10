@@ -34,6 +34,9 @@ REST.Server({
 	"/patient/prescriptions": {"methods": REST.READ},
 	"/patient/sso": {"methods": REST.READ, "session": True},
 
+	"/pharmacy/fill": {"methods": REST.CREATE | REST.DELETE, "session": True},
+	"/pharmacy/fill/byCustomer": {"methods": REST.READ, "session": True},
+
 	"/pharmacy/fill/error": {"methods": REST.CREATE | REST.UPDATE | REST.DELETE, "session": True},
 	"/pharmacy/fill/errors": {"methods": REST.READ, "session": True}
 

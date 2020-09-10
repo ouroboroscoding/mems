@@ -14,6 +14,7 @@ __created__		= "2020-05-10"
 # Python imports
 from base64 import b64encode
 from hashlib import sha512
+from time import time
 from urllib.parse import urlencode
 
 # Pip imports
@@ -24,7 +25,8 @@ from RestOC import Conf, DictHelper, Errors, Record_MySQL, Services, StrHelper
 from shared import Rights
 
 # Records imports
-from records.prescriptions import Medication, Pharmacy, PharmacyFillError
+from records.prescriptions import Medication, Pharmacy, PharmacyFill, \
+									PharmacyFillError
 
 _dPharmacies = {
 	6141: "Belmar Pharmacy",
@@ -113,7 +115,7 @@ class Prescriptions(Services.Service):
 	Service for Prescriptions access
 	"""
 
-	_install = [Medication, Pharmacy, PharmacyFillError]
+	_install = [Medication, Pharmacy, PharmacyFill, PharmacyFillError]
 	"""Record types called in install"""
 
 	def _generateIds(self, clinician_id):
@@ -669,6 +671,173 @@ class Prescriptions(Services.Service):
 		# Return the URL
 		return Services.Response(sURL)
 
+	def pharmacyFill_create(self, data, sesh):
+		"""Pharmacy Fill Create
+
+		Create a new manual pharmacy fill
+
+		Arguments:
+			data (dict): Data sent with the request
+			sesh (Sesh._Session): The session associated with the request
+
+		Returns:
+			Services.Response
+		"""
+
+		# Make sure the user has the proper rights
+		oResponse = Services.read('auth', 'rights/verify', {
+			"name": "pharmacy_fill",
+			"right": Rights.CREATE
+		}, sesh)
+		if not oResponse.data:
+			return Services.Response(error=Rights.INVALID)
+
+		# Verify minimum fields
+		try: DictHelper.eval(data, ['crm_type', 'crm_id', 'crm_order'])
+		except ValueError as e: return Services.Response(error=(1001, [(f, 'missing') for f in e.args]))
+
+		# If the CRM is Konnektive
+		if data['crm_type'] == 'knk':
+
+			# Check the customer exists
+			oResponse = Services.read('monolith', 'customer/name', {
+				"_internal_": Services.internalKey(),
+				"customerId": data['crm_id']
+			}, sesh)
+			if oResponse.errorExists(): return oResponse
+			dCustomer = oResponse.data
+
+		# Else, invalid CRM
+		else:
+			return Services.Response(error=1003)
+
+		# Get the user name
+		oResponse = Services.read('monolith', 'user/name', {
+			"_internal_": Services.internalKey(),
+			"id": sesh['memo_id']
+		}, sesh)
+		if oResponse.errorExists(): return oResponse
+		dUser = oResponse.data
+
+		# Try to create a new instance of the adhoc
+		try:
+			data['memo_user'] = sesh['memo_id']
+			oFill = PharmacyFill(data)
+		except ValueError as e:
+			return Services.Response(error=(1001, e.args[0]))
+
+		# Create the record and get the ID
+		try:
+			sID = oFill.create()
+		except Record_MySQL.DuplicateException:
+			return Services.Response(error=1101)
+
+		# Return the ID
+		return Services.Response({
+			"_id": sID,
+			"_created": int(time()),
+			"crm_type": oFill['crm_type'],
+			"crm_id": oFill['crm_id'],
+			"crm_order": oFill['crm_order'],
+			"customer_name": '%s %s' % (dCustomer['firstName'], dCustomer['lastName']),
+			"user_name": '%s %s' % (dUser['firstName'], dUser['lastName'])
+		})
+
+	def pharmacyFillByCustomer_read(self, data, sesh):
+		"""Pharmacy Fill By Customer
+
+		Fetch all pharmacy fills and errors for a specific customer
+
+		Arguments:
+			data (dict): Data sent with the request
+			sesh (Sesh._Session): The session associated with the request
+
+		Returns:
+			Services.Response
+		"""
+
+		# Make sure the user has the proper rights
+		oResponse = Services.read('auth', 'rights/verify', {
+			"name": "prescriptions",
+			"right": Rights.READ
+		}, sesh)
+		if not oResponse.data:
+			return Services.Response(error=Rights.INVALID)
+
+		# Verify minimum fields
+		try: DictHelper.eval(data, ['crm_type', 'crm_id'])
+		except ValueError as e: return Services.Response(error=(1001, [(f, 'missing') for f in e.args]))
+
+		# Find all fills associated with the customer
+		lFills = PharmacyFill.filter({
+			"crm_type": data['crm_type'],
+			"crm_id": data['crm_id']
+		}, raw=True)
+
+		# If we got any fills
+		if lFills:
+
+			# Find all the user names
+			oResponse = Services.read('monolith', 'user/name', {
+				"_internal_": Services.internalKey(),
+				"id": list(set([d['memo_user'] for d in lFills]))
+			}, sesh)
+			if oResponse.errorExists(): return oResponse
+			dUsers = {k:'%s %s' % (d['firstName'], d['lastName']) for k,d in oResponse.data.items()}
+
+			# Go through each record and add the user names
+			for d in lFills:
+				sUserId = str(d['memo_user'])
+				d['user_name'] = sUserId in dUsers and dUsers[sUserId] or 'Unknown'
+
+		# Find all the fill errors
+		lErrors = PharmacyFillError.filter({
+			"crm_type": data['crm_type'],
+			"crm_id": data['crm_id'],
+			"fail_count": {"neq": 0}
+		}, raw=True)
+
+		# Return the fills and errors found, if any
+		return Services.Response({
+			"fills": lFills,
+			"errors": lErrors
+		})
+
+	def pharmacyFill_delete(self, data, sesh):
+		"""Pharmacy Fill Delete
+
+		Delete an existing pharmacy fill record
+
+		Arguments:
+			data (dict): Data sent with the request
+			sesh (Sesh._Session): The session associated with the request
+
+		Returns:
+			Services.Response
+		"""
+
+		# Make sure the user has the proper rights
+		oResponse = Services.read('auth', 'rights/verify', {
+			"name": "pharmacy_fill",
+			"right": Rights.DELETE
+		}, sesh)
+		if not oResponse.data:
+			return Services.Response(error=Rights.INVALID)
+
+		# Verify minimum fields
+		try: DictHelper.eval(data, ['_id'])
+		except ValueError as e: return Services.Response(error=(1001, [(f, 'missing') for f in e.args]))
+
+		# Find the fill
+		oFill = PharmacyFill.get(data['_id'])
+		if not oFill:
+			return Services.Response(error=1104)
+
+		# Delete the record and return the result
+		return Services.Response(
+			oFill.delete()
+		)
+
 	def pharmacyFillError_create(self, data, sesh):
 		"""Pharmacy Fill Error Create
 
@@ -735,7 +904,7 @@ class Prescriptions(Services.Service):
 		except Record_MySQL.DuplicateException:
 			return Services.Response(error=1101)
 
-		# Create the record and return the result
+		# Return the ID and customer name
 		return Services.Response({
 			"_id": sID,
 			"customer_name": '%s %s' % (dCustomer['firstName'], dCustomer['lastName'])

@@ -354,12 +354,13 @@ class NeverStarted(Record_MySQL.Record):
 		return cls._conf
 
 	@classmethod
-	def withTrigger(cls, custom={}):
+	def withTrigger(cls, filter=None, custom={}):
 		"""With Trigger
 
 		Fetches outreach joined with trigger so it can be sorted by date
 
 		Arguments:
+			_id (str|str[]): Optional ID(s) to filter by
 			custom (dict): Custom Host and DB info
 				'host' the name of the host to get/set data on
 				'append' optional postfix for dynamic DBs
@@ -371,9 +372,24 @@ class NeverStarted(Record_MySQL.Record):
 		# Fetch the record structure
 		dStruct = cls.struct(custom)
 
+		# Init the where fields
+		lWhere = [];
+
+		# If there's an additional filter
+		if filter:
+
+			# Go through each value
+			for n,v in filter.items():
+
+				# Generate theSQL and append it to the list
+				lWhere.append(
+					'`%s` %s' % (n, cls.processValue(dStruct, n, v))
+				)
+
 		# Generate SQL
 		sSQL = 'SELECT\n' \
 				'	`wdns`.`_id`,\n' \
+				'	`wdns`.`trigger_id`,\n' \
 				'	`wdt`.`crm_type`,\n' \
 				'	`wdt`.`crm_id`,\n' \
 				'	`wdt`.`crm_order`,\n' \
@@ -383,9 +399,11 @@ class NeverStarted(Record_MySQL.Record):
 				'	CAST(`wdt`.`_created` as date) as `triggered`\n' \
 				'FROM `%(db)s`.`%(table)s` as `wdns`\n' \
 				'JOIN `%(db)s`.`welldyne_trigger` as `wdt` ON `wdns`.`trigger_id` = `wdt`.`_id`\n' \
+				'%(where)s' \
 				'ORDER BY `triggered` ASC' % {
 			"db": dStruct['db'],
-			"table": dStruct['table']
+			"table": dStruct['table'],
+			"where": lWhere and 'WHERE %s\n' % 'AND\n'.join(lWhere) or ''
 		}
 
 		# Execute and return the select
