@@ -715,7 +715,7 @@ class Trigger(Record_MySQL.Record):
 		sSQL = "SELECT `wdt`.`_created`, `wdt`.`crm_type`, `wdt`.`crm_id`, `wdt`.`crm_order`\n" \
 				"FROM `%(db)s`.`%(table)s` as `wdt`\n" \
 				"LEFT JOIN `%(db)s`.`welldyne_outbound` as `wdo` USING (`crm_type`, `crm_id`, `crm_order`)\n" \
-				"LEFT JOIN `%(db)s`.`welldyne_never_started` as `wdns` USING(`crm_type`, `crm_id`, `crm_order`)\n" \
+				"LEFT JOIN `%(db)s`.`welldyne_never_started` as `wdns` ON `wdt`.`_id` = `wdns`.`trigger_id`\n" \
 				"WHERE `wdt`.`_created` BETWEEN FROM_UNIXTIME(1596844800) AND FROM_UNIXTIME(%(ts)d)\n" \
 				"AND `wdt`.`type` != 'update'\n" \
 				"AND `wdt`.`opened` is NULL\n" \
