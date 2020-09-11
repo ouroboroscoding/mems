@@ -49,5 +49,6 @@ REST.Server({
 }, 'welldyne', "https?://(.*\\.)?%s" % Conf.get(("rest","allowed")).replace('.', '\\.')).run(
 	host=oRestConf['welldyne']['host'],
 	port=oRestConf['welldyne']['port'],
-	workers=oRestConf['welldyne']['workers']
+	workers=oRestConf['welldyne']['workers'],
+	timeout='timeout' in oRestConf['welldyne'] and oRestConf['welldyne']['timeout'] or 30
 )
