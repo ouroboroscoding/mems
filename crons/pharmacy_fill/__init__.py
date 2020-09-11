@@ -81,11 +81,11 @@ def _fill():
 					if dData['type'] == 'refill':
 
 						# If we don't have the pharmacy
-						if dData['pharmacy'] not in dReports:
-							dReports[dData['pharmacy']] = Generic.EmailFile(sEndTime)
+						if dData['pharmacy'] not in __mdReports:
+							__mdReports[dData['pharmacy']] = Generic.EmailFile()
 
 						# Add a line to the report
-						dReports[dData['pharmacy']].add(dData)
+						__mdReports[dData['pharmacy']].add(dData)
 
 		# Else, if it failed to process again
 		else:
@@ -160,7 +160,7 @@ def _fillErrors():
 
 							# If we don't have the pharmacy
 							if dData['pharmacy'] not in __mdReports:
-								__mdReports[dData['pharmacy']] = Generic.EmailFile(sEndTime)
+								__mdReports[dData['pharmacy']] = Generic.EmailFile()
 
 							# Add a line to the report
 							__mdReports[dData['pharmacy']].add(dData)
@@ -464,10 +464,12 @@ def run(period=None):
 		# If we're doing the early morning run
 		if period == 'morning':
 			sFileTime = '043000'
+			sEmailFile = '04:00:00'
 
 		# Else, if we're doing the mid day run
 		elif period == 'noon':
 			sFileTime = '130000'
+			sEmailFile = '12:30:00'
 
 		else:
 			print('Invalid time period: %s' % str(period))
@@ -504,7 +506,7 @@ def run(period=None):
 		for sPharmacy,oEmail in __mdReports.items():
 
 			# Send the email
-			oEmail.send(sPharmacy, sEndTime)
+			oEmail.send(sPharmacy, sEmailFile)
 
 		# Regenerate the eligibility
 		WellDyne.eligibilityUpload(sFileTime)
