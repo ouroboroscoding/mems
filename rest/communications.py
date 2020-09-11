@@ -49,5 +49,6 @@ REST.Server({
 }, 'communications').run(
 	host=oRestConf['communications']['host'],
 	port=oRestConf['communications']['port'],
-	workers=oRestConf['communications']['workers']
+	workers=oRestConf['communications']['workers'],
+	timeout='timeout' in oRestConf['communications'] and oRestConf['communications']['timeout'] or 30
 )

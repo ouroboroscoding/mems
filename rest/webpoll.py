@@ -36,5 +36,6 @@ REST.Server({
 }, 'webpoll', "https?://(.*\\.)?%s" % Conf.get(("rest","allowed")).replace('.', '\\.')).run(
 	host=oRestConf['webpoll']['host'],
 	port=oRestConf['webpoll']['port'],
-	workers=oRestConf['webpoll']['workers']
+	workers=oRestConf['webpoll']['workers'],
+	timeout='timeout' in oRestConf['webpoll'] and oRestConf['webpoll']['timeout'] or 30
 )

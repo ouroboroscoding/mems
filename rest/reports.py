@@ -35,5 +35,6 @@ REST.Server({
 }, 'reports', "https?://(.*\\.)?%s" % Conf.get(("rest","allowed")).replace('.', '\\.')).run(
 	host=oRestConf['reports']['host'],
 	port=oRestConf['reports']['port'],
-	workers=oRestConf['reports']['workers']
+	workers=oRestConf['reports']['workers'],
+	timeout='timeout' in oRestConf['reports'] and oRestConf['reports']['timeout'] or 30
 )
