@@ -78,5 +78,6 @@ REST.Server({
 }, 'monolith', "https?://(.*\\.)?%s" % Conf.get(("rest","allowed")).replace('.', '\\.')).run(
 	host=oRestConf['monolith']['host'],
 	port=oRestConf['monolith']['port'],
-	workers=oRestConf['monolith']['workers']
+	workers=oRestConf['monolith']['workers'],
+	timeout='timeout' in oRestConf['monolith'] and oRestConf['monolith']['timeout'] or 30
 )

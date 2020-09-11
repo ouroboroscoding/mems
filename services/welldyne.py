@@ -13,6 +13,7 @@ __created__		= "2020-07-03"
 
 # Python imports
 import os
+import re
 
 # Pip imports
 import arrow
@@ -35,6 +36,9 @@ class WellDyne(Services.Service):
 
 	_install = [AdHoc, AdHocManual, Outbound, OutboundSent, RxNumber, Trigger]
 	"""Record types called in install"""
+
+	__reMedication = re.compile(r'^(.+) x (\d{1,2})$')
+	"""Regex Old medication format"""
 
 	def initialise(self):
 		"""Initialise
@@ -453,8 +457,6 @@ class WellDyne(Services.Service):
 			"reason": {"column": 13, "type": Excel.STRING}
 		}, start_row=1)
 
-		print(lData)
-
 		# Keep track of any that failed
 		lFailed = []
 
@@ -463,6 +465,15 @@ class WellDyne(Services.Service):
 
 			# Get the actual ID
 			sCrmID = d['member_id'].lstrip('0')
+
+			# If the medication is the old format
+			if ' x ' in d['medication']:
+				oMatch = self.__reMedication.search(d['medication'])
+				if oMatch:
+					d['medication'] = '%s (%s)' % (
+						oMatch.group(1),
+						oMatch.group(2)
+					)
 
 			# Find the last trigger associated with the ID
 			dTrigger = Trigger.filter({
