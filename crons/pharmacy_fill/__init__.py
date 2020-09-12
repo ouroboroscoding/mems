@@ -515,7 +515,7 @@ def run(period=None):
 
 		# Go through each fill and fill error that can be deleted
 		if lFills:
-			PharmacyFill.deleteGet(
+			FillRecord.deleteGet(
 				[o['_id'] for o in lFills]
 			)
 		if lErrorsToDelete:
