@@ -24,7 +24,7 @@ from RestOC import Conf, DictHelper, Errors, Record_MySQL, Services, \
 					Sesh, StrHelper, Templates
 
 # Shared imports
-from shared import Rights
+from shared import Rights, Sync
 
 # Records imports
 from records.monolith import \
@@ -74,6 +74,9 @@ class Monolith(Services.Service):
 			"port": 6379,
 			"db": 0
 		}))
+
+		# Init the Sync module
+		Sync.init()
 
 		# Store conf
 		self._conf = Conf.get(('services', 'monolith'))
@@ -258,7 +261,7 @@ class Monolith(Services.Service):
 			return Services.Response(error=Rights.INVALID)
 
 		# Verify fields
-		try: DictHelper.eval(data, ['phoneNumber'])
+		try: DictHelper.eval(data, ['phoneNumber', 'user_id'])
 		except ValueError as e: return Services.Response(error=(1001, [(f, 'missing') for f in e.args]))
 
 		# Find the claim
@@ -288,6 +291,59 @@ class Monolith(Services.Service):
 
 		# Switch the user associated to the logged in user
 		oClaim['user'] = data['user_id']
+		oClaim['transferredBy'] = sesh['memo_id']
+		oClaim.save()
+
+		# Sync the transfer for anyone interested
+		Sync.push('monolith', 'user-%s' % str(data['user_id']), {
+			"type": 'transfer',
+			"phoneNumber": data['phoneNumber']
+		})
+
+		# Return OK
+		return Services.Response(True)
+
+	def customerClaimClear_update(self, data, sesh):
+		"""Customer Claim Clear
+
+		Clears the transferred by state
+
+		Arguments:
+			data (dict): Data sent with the request
+			sesh (Sesh._Session): The session associated with the request
+
+		Returns:
+			Services.Response
+		"""
+
+		# Make sure the user has the proper permission to do this
+		oResponse = Services.read('auth', 'rights/verify', {
+			"name": "csr_claims",
+			"right": Rights.UPDATE
+		}, sesh)
+		if not oResponse.data:
+			return Services.Response(error=Rights.INVALID)
+
+		# Verify fields
+		try: DictHelper.eval(data, ['phoneNumber', 'user_id'])
+		except ValueError as e: return Services.Response(error=(1001, [(f, 'missing') for f in e.args]))
+
+		# Find the claim
+		oClaim = CustomerClaimed.get(data['phoneNumber'])
+		if not oClaim:
+			return Services.Response(error=(1104, data['phoneNumber']))
+
+		# If it doesn't exist
+		if not oClaim:
+			return Services.Response(error=(1104, data['phoneNumber']))
+
+		# If the current owner of the claim is not the person clearing, return
+		#	an error
+		if oClaim['user'] != sesh['memo_id']:
+			return Services.Response(error=1000)
+
+		# Clear the transferred by
+		oClaim['transferrredBy'] = None
 		oClaim.save()
 
 		# Return OK
@@ -444,14 +500,14 @@ class Monolith(Services.Service):
 		return Services.Response(True)
 
 	def customerHrtLabs_read(self, data, sesh):
-		"""Customer HRT Lab Results 
-		
+		"""Customer HRT Lab Results
+
 		Fetches a customer's HRT lab test results
-		
+
 		Arguments:
 			data (dict): Data sent with request
 			sesh (Sesh._Session): THe session associated with the request
-			
+
 		Returns:
 			Services.Response
 		"""
@@ -471,7 +527,7 @@ class Monolith(Services.Service):
 		dRes = HrtLabResultTests.filter({
 			"customerId": data['customerId']},
 			 raw=True)
-			
+
 		return Services.Response(dRes)
 
 	def customerIdByPhone_read(self, data, sesh):

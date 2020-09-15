@@ -32,7 +32,7 @@ REST.Server({
 
 	"/customer/calendly": {"methods": REST.READ, "session": True},
 	"/customer/claim": {"methods": REST.CREATE | REST.UPDATE | REST.DELETE, "session": True},
-	"/customer/claim/escalate": {"methods": REST.UPDATE, "session": True},
+	"/customer/claim/clear": {"methods": REST.UPDATE, "session": True},
 	"/customer/dob": {"methods": REST.READ, "session": True},
 	"/customer/dsid": {"methods": REST.READ, "session": True},
 	"/customer/exists": {"methods": REST.READ, "session": True},
