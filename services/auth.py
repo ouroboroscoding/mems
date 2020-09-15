@@ -218,7 +218,7 @@ class Auth(Services.Service):
 
 		# Create the new permissions if there are any
 		if lRecords:
-			Permission.createMany(lRecords)
+			Permission.createMany(lRecords, conflict='replace')
 
 		# If this is a standard user
 		if User.exists(data['user']):
