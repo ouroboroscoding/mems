@@ -100,13 +100,16 @@ class CSR(Services.Service):
 			"_internal_": Services.internalKey(),
 			"user": sID,
 			"permissions": {
+				"calendly": 1,
 				"csr_claims": 14,
 				"csr_messaging": 5,
 				"csr_templates": 1,
 				"customers": 1,
 				"memo_mips": 3,
 				"memo_notes": 5,
+				"patient_account": 1,
 				"prescriptions": 3,
+				"pharmacy_fill": 1,
 				"welldyne_adhoc": 4
 			}
 		}, sesh)
