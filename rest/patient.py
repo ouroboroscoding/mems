@@ -42,7 +42,7 @@ REST.Server({
 	"/setup/start": { "methods": REST.CREATE, "session": True},
 	"/setup/validate": { "methods": REST.CREATE},
 
-	"/signin": {"methods": REST.POST},
+	"/signin": {"methods": REST.POST, "environ": True},
 	"/signout": {"methods": REST.POST, "session": True},
 
 	"/support_request": {"methods": REST.CREATE, "session": True}

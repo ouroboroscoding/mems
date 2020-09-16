@@ -263,6 +263,37 @@ class AccountSetup(Record_MySQL.Record):
 		# Return the config
 		return cls._conf
 
+# Activity class
+class Activity(Record_MySQL.Record):
+	"""Activity
+
+	Represents an action by a patient
+	"""
+
+	_conf = None
+	"""Configuration"""
+
+	@classmethod
+	def config(cls):
+		"""Config
+
+		Returns the configuration data associated with the record type
+
+		Returns:
+			dict
+		"""
+
+		# If we haven loaded the config yet
+		if not cls._conf:
+			cls._conf = Record_MySQL.Record.generateConfig(
+				Tree.fromFile('definitions/patient/activity.json'),
+				'mysql'
+			)
+
+		# Return the config
+		return cls._conf
+
+
 # Verify class
 class Verify(Record_MySQL.Record):
 	"""Verify
