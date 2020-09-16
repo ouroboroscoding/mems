@@ -46,5 +46,5 @@ def run(kind, report, arg1=None):
 
 	# Else, invalid type
 	else:
-		print('invalid welldyne type: %s' % type_)
+		print('invalid welldyne report: %s' % report)
 		return False
