@@ -29,6 +29,21 @@ class WebPoll(Services.Service):
 	Service for long polling between connected clients and the DB
 	"""
 
+	def initialise(self):
+		"""Initialise
+
+		Initialises the instance and returns itself for chaining
+
+		Returns:
+			WebPoll
+		"""
+
+		# Init the sync module
+		Sync.init()
+
+		# Return self for chaining
+		return self
+
 	def clear_update(self, data, sesh):
 		"""Clear
 
@@ -173,22 +188,3 @@ class WebPoll(Services.Service):
 
 		# Return the key
 		return Services.Response(sKey)
-
-	def initialise(self):
-		"""Initialise
-
-		Initialises the instance and returns itself for chaining
-
-		Returns:
-			WebPoll
-		"""
-
-		# Init the sync module
-		Sync.init(Conf.get(('redis', 'sync'), {
-			"host": "localhost",
-			"port": 6379,
-			"db": 1
-		}))
-
-		# Return self for chaining
-		return self

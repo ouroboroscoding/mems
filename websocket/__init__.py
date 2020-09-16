@@ -14,11 +14,9 @@ __created__		= "2017-06-26"
 # Python imports
 from http.cookies import SimpleCookie
 import json
-import time
+from urllib.parse import unquote
 
 # Pip imports
-from gevent import monkey; monkey.patch_all()
-import gevent
 from geventwebsocket import WebSocketApplication, WebSocketError
 from redis import StrictRedis
 from redis.exceptions import ConnectionError
@@ -153,7 +151,7 @@ class SyncApplication(WebSocketApplication):
 			None
 		"""
 
-		self.ws.send('{"error":{"code":%d,"msg":"%s"}}' % (code, msg))
+		self.ws.send(json.dumps({"error":{"code":code,"msg":msg}}))
 		self.ws.close()
 
 	# on close method
@@ -251,6 +249,9 @@ class SyncApplication(WebSocketApplication):
 
 					# Allow further messages
 					self.authorized = True
+
+					# Return OK
+					self.ws.send('authorized');
 
 				# Else if it's a message to ping
 				elif data['_type'] == 'ping':
@@ -363,6 +364,10 @@ class SyncApplication(WebSocketApplication):
 
 		if _verbose: print('on_open called')
 
+		# Init instance variables
+		self.authorized = False
+		self.tracking = []
+
 		# If there is no cookie
 		if 'HTTP_COOKIE' not in self.ws.environ:
 			if _verbose: print('HTTP_COOKIE missing')
@@ -377,9 +382,7 @@ class SyncApplication(WebSocketApplication):
 			return self._fail(12, '_session not in cookies')
 
 		# Store the session ID
-		self.token = dCookies['_session']
-		self.authorized = False
-		self.tracking = []
+		self.token = unquote(dCookies['_session'])
 
 	# on publish method
 	def on_publish(self, message):

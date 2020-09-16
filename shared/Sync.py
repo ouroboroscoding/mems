@@ -13,6 +13,7 @@ __created__		= "2018-09-09"
 
 # Include pip modules
 from redis import StrictRedis
+from RestOC import Conf
 
 # Include local modules
 from . import JSON
@@ -21,7 +22,7 @@ from . import JSON
 _moRedis = None
 
 # init function
-def init(conf):
+def init():
 	"""Initialise
 
 	Initializes the Redis connection so that sync can be fetched and saved
@@ -33,8 +34,11 @@ def init(conf):
 	# Import the redis instance
 	global _moRedis
 
+	# Get the config
+	dConf = Conf.get(('redis', 'sync'))
+
 	# Initialise the connection to Redis
-	_moRedis = StrictRedis(**conf)
+	_moRedis = StrictRedis(**dConf)
 
 # clear function
 def clear(auth, service, key, count):
