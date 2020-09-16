@@ -8,3 +8,5 @@ FROM
 		`cmp`.`customerPhone` = `cc`.`phoneNumber`
 WHERE
 	`cc`.`user` = %(user)d
+ORDER BY
+	`cc`.`transferredBy` DESC

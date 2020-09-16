@@ -29,7 +29,7 @@ from shared import Rights, Sync
 # Records imports
 from records.monolith import \
 	Calendly, CustomerClaimed, CustomerClaimedLast, CustomerCommunication, \
-	CustomerMsgPhone, DsPatient, Forgot, HrtLabResult, HrtLabResultTests, KtCustomer, KtOrder, ShippingInfo, \
+	CustomerMsgPhone, DsPatient, Forgot, HrtLabResultTests, KtCustomer, KtOrder, ShippingInfo, \
 	SmpNote, SmpOrderStatus, SMSStop, TfAnswer, TfLanding, TfQuestion, \
 	TfQuestionOption, User, \
 	init as recInit
@@ -297,7 +297,8 @@ class Monolith(Services.Service):
 		# Sync the transfer for anyone interested
 		Sync.push('monolith', 'user-%s' % str(data['user_id']), {
 			"type": 'transfer',
-			"phoneNumber": data['phoneNumber']
+			"phoneNumber": data['phoneNumber'],
+			"transferredBy": sesh['memo_id']
 		})
 
 		# Return OK
@@ -325,7 +326,7 @@ class Monolith(Services.Service):
 			return Services.Response(error=Rights.INVALID)
 
 		# Verify fields
-		try: DictHelper.eval(data, ['phoneNumber', 'user_id'])
+		try: DictHelper.eval(data, ['phoneNumber'])
 		except ValueError as e: return Services.Response(error=(1001, [(f, 'missing') for f in e.args]))
 
 		# Find the claim
@@ -343,7 +344,7 @@ class Monolith(Services.Service):
 			return Services.Response(error=1000)
 
 		# Clear the transferred by
-		oClaim['transferrredBy'] = None
+		oClaim['transferredBy'] = None
 		oClaim.save()
 
 		# Return OK
@@ -523,12 +524,12 @@ class Monolith(Services.Service):
 		try: DictHelper.eval(data, ['customerId'])
 		except ValueError as e: return Services.Response(error=(1001, [(f, 'missing') for f in e.args]))
 
-		# Find customers HRT lab test results
-		dRes = HrtLabResultTests.filter({
-			"customerId": data['customerId']},
-			 raw=True)
-
-		return Services.Response(dRes)
+		# Fetch and return the customer's HRT lab test results
+		return Services.Response(
+			HrtLabResultTests.filter({
+				"customerId": data['customerId']
+			}, raw=True)
+		)
 
 	def customerIdByPhone_read(self, data, sesh):
 		"""Customer ID By Phone
