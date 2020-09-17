@@ -1412,9 +1412,17 @@ class Monolith(Services.Service):
 		if not oResponse.data:
 			return Services.Response(error=Rights.INVALID)
 
+		# If the order wasn't passed
+		if 'order' not in data:
+			data['order'] = 'ASC'
+
+		# If the order is wrong
+		if data['order'] not in ['ASC', 'DESC']:
+			return Services.Response(error=(1001, [('order', 'invalid')]))
+
 		# Fetch and return the data
 		return Services.Response(
-			CustomerMsgPhone.unclaimed()
+			CustomerMsgPhone.unclaimed(data['order'])
 		)
 
 	def msgsUnclaimedCount_read(self, data, sesh):
