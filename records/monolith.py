@@ -628,7 +628,7 @@ class CustomerMsgPhone(Record_MySQL.Record):
 				"	FROM `%(db)s`.`customer_msg_phone` `cmp1`\n" \
 				"	JOIN `%(db)s`.`kt_order` AS `kto` ON (\n" \
 				"		`cmp1`.`customerPhone` = SUBSTR(`kto`.`phoneNumber`, -(10))\n" \
-				"		AND ((`kto`.`cardType` <> "TESTCARD")\n" \
+				"		AND ((`kto`.`cardType` <> 'TESTCARD')\n" \
 				"		OR ISNULL(`kto`.`cardType`))\n" \
 				"	)\n" \
 				"	GROUP BY `cmp1`.`id`\n" \
