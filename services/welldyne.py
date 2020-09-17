@@ -450,57 +450,63 @@ class WellDyne(Services.Service):
 			except FileNotFoundError:
 				return Services.Response(error=(1803, sFilename))
 
-		# Parse the data
-		lData = Excel.parse(sGet, {
-			"medication": {"column": 1, "type": Excel.STRING},
-			"member_id": {"column": 11, "type": Excel.STRING},
-			"reason": {"column": 13, "type": Excel.STRING}
-		}, start_row=1)
+		try:
 
-		# Keep track of any that failed
-		lFailed = []
+			# Parse the data
+			lData = Excel.parse(sGet, {
+				"medication": {"column": 1, "type": Excel.STRING},
+				"member_id": {"column": 11, "type": Excel.STRING},
+				"reason": {"column": 13, "type": Excel.STRING}
+			}, start_row=1)
 
-		# Go through each line in the file
-		for d in lData:
+			# Keep track of any that failed
+			lFailed = []
 
-			# Get the actual ID
-			sCrmID = d['member_id'].lstrip('0')
+			# Go through each line in the file
+			for d in lData:
 
-			# If the medication is the old format
-			if ' x ' in d['medication']:
-				oMatch = self.__reMedication.search(d['medication'])
-				if oMatch:
-					d['medication'] = '%s (%s)' % (
-						oMatch.group(1),
-						oMatch.group(2)
-					)
+				# Get the actual ID
+				sCrmID = d['member_id'].lstrip('0')
 
-			# Find the last trigger associated with the ID
-			dTrigger = Trigger.filter({
-				"crm_type": 'knk',
-				"crm_id": sCrmID,
-				"medication": d['medication'],
-				"opened": None,
-				"shipped": None,
-				"type": {"neq": 'update'}
-			}, raw=['_id'], orderby=[('_created', 'DESC')], limit=1)
+				# If the medication is the old format
+				if ' x ' in d['medication']:
+					oMatch = self.__reMedication.search(d['medication'])
+					if oMatch:
+						d['medication'] = '%s (%s)' % (
+							oMatch.group(1),
+							oMatch.group(2)
+						)
 
-			# If there's no trigger
-			if not dTrigger:
-				lFailed.append('%s, %s, %s' % (
-					d['member_id'], d['medication'], d['reason']
-				))
-				continue
+				# Find the last trigger associated with the ID
+				dTrigger = Trigger.filter({
+					"crm_type": 'knk',
+					"crm_id": sCrmID,
+					"medication": d['medication'],
+					"opened": None,
+					"shipped": None,
+					"type": {"neq": 'update'}
+				}, raw=['_id'], orderby=[('_created', 'DESC')], limit=1)
 
-			# Create the instance
-			oNeverStarted = NeverStarted({
-				"trigger_id": dTrigger['_id'],
-				"reason": d['reason'][:255],
-				"ready": False
-			})
+				# If there's no trigger
+				if not dTrigger:
+					lFailed.append('%s, %s, %s' % (
+						d['member_id'], d['medication'], d['reason']
+					))
+					continue
 
-			# Create the record in the DB
-			oNeverStarted.create(conflict='replace')
+				# Create the instance
+				oNeverStarted = NeverStarted({
+					"trigger_id": dTrigger['_id'],
+					"reason": d['reason'][:255],
+					"ready": False
+				})
+
+				# Create the record in the DB
+				oNeverStarted.create(conflict='replace')
+
+		# Welldyne sent invalid data
+		except Exception:
+			return Services.Response(error=1804)
 
 		# Delete the file
 		os.remove(sGet)
