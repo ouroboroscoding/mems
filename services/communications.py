@@ -71,7 +71,7 @@ class Service(Services.Service):
 			# Generate and return a key
 			return StrHelper.encrypt(self._queue_key, sMD5)
 
-	def create(self, path, data, sesh=None):
+	def create(self, path, data, sesh=None, environ=None):
 		"""Create
 
 		Overrides base create so we can manage direct requests vs queued
@@ -80,6 +80,7 @@ class Service(Services.Service):
 			path (str): The path/noun of the request
 			data (mixed): The data passed with the request
 			sesh (Sesh._Session): Not used
+			environ (dict): Info related to request
 
 		Returns:
 			Services.Response
