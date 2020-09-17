@@ -30,8 +30,6 @@ sMsgPhoneUpdateSQL = ''
 sSmpNotes = ''
 sNumOfOrdersSQL = ''
 sSearchSQL = ''
-sUnclaimedSQL = ''
-sUnclaimedCountSQL = ''
 
 def init():
 	"""Ugly Hack
@@ -61,10 +59,6 @@ def init():
 		sNumOfOrdersSQL = oF.read()
 	with open('records/sql/search.sql') as oF:
 		sSearchSQL = oF.read()
-	with open('records/sql/unclaimed.sql') as oF:
-		sUnclaimedSQL = oF.read()
-	with open('records/sql/unclaimed_count.sql') as oF:
-		sUnclaimedCountSQL = oF.read()
 
 # Calendly class
 class Calendly(Record_MySQL.Record):
@@ -597,12 +591,13 @@ class CustomerMsgPhone(Record_MySQL.Record):
 		)
 
 	@classmethod
-	def unclaimed(cls, custom={}):
+	def unclaimed(cls, order='ASC', custom={}):
 		"""Unclaimed
 
 		Fetches open conversations that have not been claimed by any agent
 
 		Arguments:
+			order (str): Order by ASC or DESC
 			custom (dict): Custom Host and DB info
 				'host' the name of the host to get/set data on
 				'append' optional postfix for dynamic DBs
@@ -614,12 +609,43 @@ class CustomerMsgPhone(Record_MySQL.Record):
 		# Fetch the record structure
 		dStruct = cls.struct(custom)
 
+		# Generate the SQL
+		sSQL = "SELECT\n" \
+				"	`cmp`.`id` AS `id`,\n" \
+				"	`cmp`.`customerPhone` AS `customerPhone`,\n" \
+				"	`cmp`.`customerName` AS `customerName`,\n" \
+				"	`ktot`.`customerId` as `customerId`,\n" \
+				"	`ktot`.`numberOfOrders` AS `numberOfOrders`,\n" \
+				"	`ktot`.`latest_kto_id` AS `latest_kto_id`,\n" \
+				"	`cmp`.`lastMsgAt` as `lastMsgAt`,\n" \
+				"	`cmp`.`lastMsg` AS `lastMsg`,\n" \
+				"	`cmp`.`totalIncoming` AS `totalIncoming`,\n" \
+				"	`cmp`.`totalOutGoing` AS `totalOutGoing`\n" \
+				"FROM `%(db)s`.`customer_msg_phone` AS `cmp`\n" \
+				"LEFT JOIN (\n" \
+				"	SELECT `cmp1`.`id` AS `id`, COUNT(0) AS `numberOfOrders`,\n" \
+				"			MAX(`kto`.`id`) AS `latest_kto_id`, `kto`.`customerId`\n" \
+				"	FROM `%(db)s`.`customer_msg_phone` `cmp1`\n" \
+				"	JOIN `%(db)s`.`kt_order` AS `kto` ON (\n" \
+				"		`cmp1`.`customerPhone` = SUBSTR(`kto`.`phoneNumber`, -(10))\n" \
+				"		AND ((`kto`.`cardType` <> "TESTCARD")\n" \
+				"		OR ISNULL(`kto`.`cardType`))\n" \
+				"	)\n" \
+				"	GROUP BY `cmp1`.`id`\n" \
+				") `ktot` ON `ktot`.`id` = `cmp`.`id`\n" \
+				"LEFT JOIN `%(db)s`.`customer_claimed` as `cc` ON `cc`.`phoneNumber` = `cmp`.`customerPhone`\n" \
+				"WHERE `hiddenFlag` = 'N'\n" \
+				"AND `lastMsgDir` = 'Incoming'\n" \
+				"AND `cc`.`user` IS NULL\n" \
+				"ORDER BY `cmp`.`lastMsgAt` %(order)s" % {
+			"db": dStruct['db'],
+			"order": order
+		}
+
 		# Fetch and return the data
 		return Record_MySQL.Commands.select(
 			dStruct['host'],
-			sUnclaimedSQL % {
-				"db": dStruct['db']
-			},
+			sSQL,
 			Record_MySQL.ESelect.ALL
 		)
 
@@ -642,12 +668,32 @@ class CustomerMsgPhone(Record_MySQL.Record):
 		# Fetch the record structure
 		dStruct = cls.struct(custom)
 
+		# Generate SQL
+		sSQL = "SELECT\n" \
+				"	COUNT(*) as `count`\n" \
+				"FROM `%(db)s`.`customer_msg_phone` AS `cmp`\n" \
+				"LEFT JOIN (\n" \
+				"	SELECT `cmp1`.`id` AS `id`, COUNT(0) AS `numberOfOrders`,\n" \
+				"			MAX(`kto`.`id`) AS `latest_kto_id`, `kto`.`customerId`\n" \
+				"	FROM `%(db)s`.`customer_msg_phone` `cmp1`\n" \
+				"	JOIN `%(db)s`.`kt_order` AS `kto` ON (\n" \
+				"		`cmp1`.`customerPhone` = SUBSTR(`kto`.`phoneNumber`, -(10))\n" \
+				"		AND ((`kto`.`cardType` <> 'TESTCARD')\n" \
+				"		OR ISNULL(`kto`.`cardType`))\n" \
+				"	)\n" \
+				"	GROUP BY `cmp1`.`id`\n" \
+				") `ktot` ON `ktot`.`id` = `cmp`.`id`\n" \
+				"LEFT JOIN `%(db)s`.`customer_claimed` as `cc` ON `cc`.`phoneNumber` = `cmp`.`customerPhone`\n" \
+				"WHERE `hiddenFlag` = 'N'\n" \
+				"AND `lastMsgDir` = 'Incoming'\n" \
+				"AND `cc`.`user` IS NULL\n" % {
+			"db": dStruct['db']
+		}
+
 		# Fetch and return the data
 		return Record_MySQL.Commands.select(
 			dStruct['host'],
-			sUnclaimedCountSQL % {
-				"db": dStruct['db']
-			},
+			sSQL,
 			Record_MySQL.ESelect.CELL
 		)
 
