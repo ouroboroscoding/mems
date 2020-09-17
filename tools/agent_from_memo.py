@@ -75,7 +75,11 @@ oCSR = CSR()
 oCSR.initialise()
 
 # Create the agent
-oResponse = oCSR._agent_create(dUser['id'], oSesh)
+oResponse = oCSR._agent_create({
+	"memo_id": dUser['id'],
+	"claims_max": 20,
+	"claims_timeout": 48
+}, oSesh)
 
 # Delete the session
 oSesh.close

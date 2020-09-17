@@ -164,7 +164,7 @@ class Monolith(Services.Service):
 		})
 
 		# If they're at or more than the maximum
-		if iCount >= self._conf['claims_max']:
+		if iCount >= sesh['claims_max']:
 			return Services.Response(error=1504)
 
 		# Attempt to create the record
@@ -285,6 +285,13 @@ class Monolith(Services.Service):
 			if not oResponse.data:
 				return Services.Response(error=Rights.INVALID)
 
+			# Store the old user
+			iOldUser = oClaim['user']
+
+		# Else, no old user
+		else:
+			iOldUser = None
+
 		# Find the user
 		if not User.exists(data['user_id']):
 			return Services.Response(error=(1104, data['user_id']))
@@ -294,12 +301,25 @@ class Monolith(Services.Service):
 		oClaim['transferredBy'] = sesh['memo_id']
 		oClaim.save()
 
-		# Sync the transfer for anyone interested
-		Sync.push('monolith', 'user-%s' % str(data['user_id']), {
-			"type": 'transfer',
-			"phoneNumber": data['phoneNumber'],
-			"transferredBy": sesh['memo_id']
-		})
+		# If the user transferred it to themselves, they don't need a
+		#	notification
+		if data['user_id'] != sesh['memo_id']:
+
+			# Sync the transfer for anyone interested
+			Sync.push('monolith', 'user-%s' % str(data['user_id']), {
+				"type": 'claim_transfered',
+				"phoneNumber": data['phoneNumber'],
+				"transferredBy": sesh['memo_id']
+			})
+
+		# If the claim was forceable removed
+		if iOldUser:
+
+			# Notify the user they lost the claim
+			Sync.push('monolith', 'user-%s' % str(iOldUser), {
+				"type": 'claim_removed',
+				"phoneNumber": oClaim['phoneNumber']
+			})
 
 		# Return OK
 		return Services.Response(True)
@@ -1617,8 +1637,10 @@ class Monolith(Services.Service):
 				return Services.Response(error=Rights.INVALID)
 			return oResponse
 
-		# Store the user ID in the session
+		# Store the user ID and claim vars in the session
 		oSesh['user_id'] = oResponse.data['_id']
+		oSesh['claims_max'] = oResponse.data['claims_max']
+		oSesh['claims_timeout'] = oResponse.data['claims_timeout']
 		oSesh.save()
 
 		# Return the session ID and primary user data
@@ -1772,7 +1794,7 @@ class Monolith(Services.Service):
 		"""
 
 		# If the user is not the one logged in
-		if 'id' in data and data['id'] != sesh['memo_id']:
+		if 'id' in data and (data['id'] != sesh['memo_id'] or '_internal_' in data):
 
 			# If there's no internal
 			if '_internal_' not in data:
