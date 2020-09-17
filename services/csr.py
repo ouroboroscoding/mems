@@ -67,14 +67,14 @@ class CSR(Services.Service):
 		# Return OK
 		return True
 
-	def _agent_create(self, memo_id, sesh):
+	def _agent_create(self, data, sesh):
 		"""Agent Create
 
 		Creates the actual agent record in the DB as well as necessary
 		permissions
 
 		Arguments:
-			memo_id (uint): The ID of the user in Memo
+			data (dict): The ID of the user in Memo as well as claim vars
 			sesh (Sesh._Session): The session associated with the request
 
 		Returns:
@@ -83,9 +83,7 @@ class CSR(Services.Service):
 
 		# Create a new agent instance using the memo ID
 		try:
-			oAgent = Agent({
-				"memo_id": memo_id
-			})
+			oAgent = Agent(data)
 		except ValueError:
 			return Services.Response(error=(1001, e.args[0]))
 
@@ -338,13 +336,21 @@ class CSR(Services.Service):
 		try: DictHelper.eval(data, ['userName', 'firstName', 'lastName', 'password'])
 		except ValueError as e: return Services.Response(error=(1001, [(f, 'missing') for f in e.args]))
 
+		# Pull out CSR only values
+		dAgent = {}
+		if 'claims_max' in data: dAgent['claims_max'] = data.pop('claims_max')
+		if 'claims_timeout' in data: dAgent['claims_timeout'] = data.pop('claims_timeout')
+
 		# Send the data to monolith to create the memo user
 		data['_internal_'] = Services.internalKey()
 		oResponse = Services.create('monolith', 'user', data, sesh)
 		if oResponse.errorExists(): return oResponse
 
+		# Add the memo ID
+		dAgent['memo_id'] = oResponse.data
+
 		# Create the agent record
-		return self._agent_create(oResponse.data, sesh)
+		return self._agent_create(dAgent, sesh)
 
 	def agent_delete(self, data, sesh):
 		"""Agent Delete
@@ -435,20 +441,42 @@ class CSR(Services.Service):
 			return Services.Response(error=Rights.INVALID)
 
 		# Find the agent
-		dAgent = Agent.get(data['_id'], raw=['memo_id'])
-		if not dAgent:
+		oAgent = Agent.get(data['_id'])
+		if not oAgent:
 			return Services.Response(error=1104)
 
-		# Remove the agent ID and add the memo one
+		# Try to update the claims vars
+		lErrors = []
+		for s in ['claims_max', 'claims_timeout']:
+			if s in data:
+				try: oAgent[s] = data.pop(s)
+				except ValueError as e: lErrors.append(e.args[0])
+		if lErrors:
+			return Services.Response(error=(1001, lErrors))
+
+		# If there's any changes
+		if oAgent.changes():
+			oAgent.save()
+
+		# Remove the agent ID
 		del data['_id']
-		data['id'] = dAgent['memo_id']
 
-		# Pass the info on to monolith service
-		data['_internal_'] = Services.internalKey()
-		oResponse = Services.update('monolith', 'user', data, sesh)
+		# If there's still stuff to change
+		if data:
 
-		# Return whatever monolith returned
-		return oResponse
+			# Add the memo ID
+			data['id'] = oAgent['memo_id']
+
+			# Pass the info on to monolith service
+			data['_internal_'] = Services.internalKey()
+			oResponse = Services.update('monolith', 'user', data, sesh)
+
+			# Return whatever monolith returned
+			return oResponse
+
+		# Else, return OK
+		else:
+			return Services.Response(True)
 
 	def agentInternal_read(self, data, sesh):
 		"""Agent Internal
@@ -474,18 +502,18 @@ class CSR(Services.Service):
 		del data['_internal_']
 
 		# Look up the record
-		dUser = Agent.filter(
+		dAgent = Agent.filter(
 			{"memo_id": data['id']},
 			raw=True,
 			limit=1
 		)
 
 		# If there's no such user
-		if not dUser:
+		if not dAgent:
 			return Services.Response(error=1104)
 
 		# Return the user
-		return Services.Response(dUser)
+		return Services.Response(dAgent)
 
 	def agentPasswd_update(self, data, sesh):
 		"""Agent Password Update

@@ -164,7 +164,7 @@ class Monolith(Services.Service):
 		})
 
 		# If they're at or more than the maximum
-		if iCount >= self._conf['claims_max']:
+		if iCount >= sesh['claims_max']:
 			return Services.Response(error=1504)
 
 		# Attempt to create the record
@@ -1617,8 +1617,10 @@ class Monolith(Services.Service):
 				return Services.Response(error=Rights.INVALID)
 			return oResponse
 
-		# Store the user ID in the session
+		# Store the user ID and claim vars in the session
 		oSesh['user_id'] = oResponse.data['_id']
+		oSesh['claims_max'] = oResponse.data['claims_max']
+		oSesh['claims_timeout'] = oResponse.data['claims_timeout']
 		oSesh.save()
 
 		# Return the session ID and primary user data
@@ -1772,7 +1774,7 @@ class Monolith(Services.Service):
 		"""
 
 		# If the user is not the one logged in
-		if 'id' in data and data['id'] != sesh['memo_id']:
+		if 'id' in data and (data['id'] != sesh['memo_id'] or '_internal_' in data):
 
 			# If there's no internal
 			if '_internal_' not in data:
