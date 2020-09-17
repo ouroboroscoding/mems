@@ -21,10 +21,14 @@ import arrow
 from RestOC import Conf, DictHelper
 
 # Record imports
+from records.csr import Agent
 from records.monolith import CustomerClaimed
 
 # Cron imports
 from crons import emailError, isRunning
+
+# Shared import
+from shared import Sync
 
 def run(period=None):
 	"""Run
@@ -43,23 +47,44 @@ def run(period=None):
 	if isRunning('monolith_claims_timeout'):
 		return True
 
+	# Init the sync module
+	Sync.init()
+
 	# Catch any exceptions
 	try:
 
-		# Get the timeout from the config
-		iTimeout = Conf.get(('services', 'monolith', 'claims_timeout'), 172800)
+		# Get all agents
+		lAgents = Agent.get(raw=['memo_id', 'claims_timeout'])
 
-		# Generate the date minus the timeout
-		sDT = arrow.get().shift(seconds=-iTimeout).format('YYYY-MM-DD HH:mm:ss')
+		# Create groups based on timeout length
+		dTimeouts = {}
+		for d in lAgents:
+			try: dTimeouts[d['claims_timeout']].append(d['memo_id'])
+			except: dTimeouts[d['claims_timeout']] = [d['memo_id']]
 
-		# Find any Claims older than this date
-		lClaims = CustomerClaimed.filter({
-			"updatedAt": {"lte": sDT}
-		})
+		# Go through each group
+		for iHours,lAgents in dTimeouts.items():
 
-		# Delete them all
-		for o in lClaims:
-			o.delete()
+			# Generate the date minus the timeout
+			sDT = arrow.get().shift(hours=-iHours).format('YYYY-MM-DD HH:mm:ss')
+
+			# Find any Claims older than this date
+			lClaims = CustomerClaimed.filter({
+				"user": lAgents,
+				"updatedAt": {"lte": sDT}
+			})
+
+			# Go through each one
+			for o in lClaims:
+
+				# Notify the user they lost the claim
+				Sync.push('monolith', 'user-%s' % str(o['user']), {
+					"type": 'claim_removed',
+					"phoneNumber": o['phoneNumber']
+				})
+
+				# Delete it
+				o.delete()
 
 		# Return OK
 		return True

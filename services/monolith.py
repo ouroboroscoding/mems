@@ -285,6 +285,13 @@ class Monolith(Services.Service):
 			if not oResponse.data:
 				return Services.Response(error=Rights.INVALID)
 
+			# Store the old user
+			iOldUser = oClaim['user']
+
+		# Else, no old user
+		else:
+			iOldUser = None
+
 		# Find the user
 		if not User.exists(data['user_id']):
 			return Services.Response(error=(1104, data['user_id']))
@@ -294,12 +301,25 @@ class Monolith(Services.Service):
 		oClaim['transferredBy'] = sesh['memo_id']
 		oClaim.save()
 
-		# Sync the transfer for anyone interested
-		Sync.push('monolith', 'user-%s' % str(data['user_id']), {
-			"type": 'transfer',
-			"phoneNumber": data['phoneNumber'],
-			"transferredBy": sesh['memo_id']
-		})
+		# If the user transferred it to themselves, they don't need a
+		#	notification
+		if data['user_id'] != sesh['memo_id']:
+
+			# Sync the transfer for anyone interested
+			Sync.push('monolith', 'user-%s' % str(data['user_id']), {
+				"type": 'claim_transfered',
+				"phoneNumber": data['phoneNumber'],
+				"transferredBy": sesh['memo_id']
+			})
+
+		# If the claim was forceable removed
+		if iOldUser:
+
+			# Notify the user they lost the claim
+			Sync.push('monolith', 'user-%s' % str(iOldUser), {
+				"type": 'claim_removed',
+				"phoneNumber": oClaim['phoneNumber']
+			})
 
 		# Return OK
 		return Services.Response(True)
