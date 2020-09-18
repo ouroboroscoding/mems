@@ -505,8 +505,8 @@ class WellDyne(Services.Service):
 				oNeverStarted.create(conflict='replace')
 
 		# Welldyne sent invalid data
-		except Exception:
-			return Services.Response(error=1804)
+		except Exception as e:
+			return Services.Response(error=(1804, str(e.args)))
 
 		# Delete the file
 		os.remove(sGet)
