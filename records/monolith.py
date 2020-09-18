@@ -1283,7 +1283,7 @@ class TfAnswer(Record_MySQL.Record):
 		# Look for answers for the specific questions
 		dAnswer = TfAnswer.filter({
 			"landing_id": landing_id,
-			"ref": ['BCs9AUWgBMvn', 'birthdate']
+			"ref": ['b63763bc7f3b71dc', 'birthdate']
 		}, raw=['value'], limit=1);
 
 		# If there's no answer
