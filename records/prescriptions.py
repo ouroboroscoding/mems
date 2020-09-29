@@ -15,6 +15,36 @@ __created__		= "2020-08-01"
 from FormatOC import Tree
 from RestOC import Record_MySQL
 
+# Expiring class
+class Expiring(Record_MySQL.Record):
+	"""Expiring
+
+	Represents a customer with an expiring prescription
+	"""
+
+	_conf = None
+	"""Configuration"""
+
+	@classmethod
+	def config(cls):
+		"""Config
+
+		Returns the configuration data associated with the record type
+
+		Returns:
+			dict
+		"""
+
+		# If we haven loaded the config yet
+		if not cls._conf:
+			cls._conf = Record_MySQL.Record.generateConfig(
+				Tree.fromFile('definitions/prescriptions/expiring.json'),
+				'mysql'
+			)
+
+		# Return the config
+		return cls._conf
+
 # Medication class
 class Medication(Record_MySQL.Record):
 	"""Medication

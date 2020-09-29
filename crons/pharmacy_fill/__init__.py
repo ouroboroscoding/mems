@@ -531,27 +531,6 @@ def run(period=None):
 				[o['_id'] for o in lErrorsToDelete]
 			)
 
-		# If we have any expiring soon
-		if PharmacyFill._mlExpiring:
-
-			# Generate the email body
-			sBody = '%s<br />%s' % (
-				'<strong>ID, Order, RX#</strong>',
-				'<br />'.join(['%s, %s, %d' % (
-					d['crm_id'], d['crm_order'], d['ds_id']
-				) for d in PharmacyFill._mlExpiring])
-			)
-
-			# Send the email
-			oResponse = Services.create('communications', 'email', {
-				"_internal_": Services.internalKey(),
-				"html_body": sBody,
-				"subject": 'Prescriptions expiring soon',
-				"to": "ew@maleexcel.com"
-			})
-			if oResponse.errorExists():
-				print(oResponse.error)
-
 		# Return OK
 		return True
 

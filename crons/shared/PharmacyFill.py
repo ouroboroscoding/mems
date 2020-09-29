@@ -19,15 +19,15 @@ from RestOC import DictHelper, Services
 # Service includes
 from services.konnektive import Konnektive
 from records.monolith import DsPatient
-from records.prescriptions import Medication, Pharmacy
+from records.prescriptions import Expiring, Medication, Pharmacy
 
 # Module variables
 _mdMedById = {}
 _mdMedByName = {}
 _mdPharmacies = {}
-_mlExpiring = []
 _moKonnektive = Konnektive()
 _moYearAgo = None
+_mo335Ago = None
 """Variables used by the module"""
 
 # Cron imports
@@ -42,7 +42,7 @@ def initialise():
 		None
 	"""
 
-	global _mdMedById, _mdMedByName, _mdPharmacies, _moKonnektive, _moYearAgo
+	global _mdMedById, _mdMedByName, _mdPharmacies, _moKonnektive, _moYearAgo, _mo335Ago
 
 	# Fetch all the valid pharmacies and store them by id => name
 	_mdPharmacies = {
@@ -57,14 +57,12 @@ def initialise():
 		for s in d['dsIds'].split(','):
 			_mdMedById[int(s)] = d['name']
 
-	# Init expiring soon
-	_mlExpiring = []
-
 	# Initialise service instances
 	_moKonnektive.initialise()
 
-	# Get 365 days ago
+	# Get 365 & 335 days ago
 	_moYearAgo = arrow.get().shift(years=-1)
+	_mo335Ago = arrow.get().shift(days=-335)
 
 def medication(descr):
 	"""Medication
@@ -182,7 +180,7 @@ def process(item, backfill=None):
 	"""
 
 	# Import global vars
-	global _moYearAgo
+	global _moYearAgo, _mo335Ago
 
 	# Init the possible return data
 	dRet = {
@@ -228,8 +226,9 @@ def process(item, backfill=None):
 		lItems = [];
 		if 'items' in dOrder and dOrder['items']:
 			lItems = [{
+				"canceled": d['purchaseStatus'] == 'CANCELLED',
 				"name": d['name'],
-				"canceled": d['purchaseStatus'] == 'CANCELLED'
+				"purchaseId": d['purchaseId']
 			} for d in dOrder['items'].values()]
 
 		# Store the relevant data
@@ -321,13 +320,15 @@ def process(item, backfill=None):
 			return {"status": False, "data": "EXPIRED PRESCRIPTION"}
 
 		# Check for expiring soon
-		if oEffective < arrow.get().shift(days=-(30 * dPrescription['refills'])):
-			_mlExpiring.append({
+		if oEffective < _mo335Ago:
+			oExpiring = Expiring({
 				"crm_type": item['crm_type'],
 				"crm_id": item['crm_id'],
-				"crm_order": item['crm_order'],
-				"ds_id": dPrescription['id']
+				"crm_purchase": lItems[0]['purchaseId'],
+				"rx_id": str(dPrescription['id']),
+				"step": 0
 			})
+			oExpiring.create(conflict='replace')
 
 		# Set the product and add the row to the pharmacy
 		dRet['medication'] = dPrescription['display']
@@ -371,13 +372,15 @@ def process(item, backfill=None):
 				return {"status": False, "data": "EXPIRED PRESCRIPTION"}
 
 			# Check for expiring soon
-			if oEffective < arrow.get().shift(days=-(30 * dPrescription['refills'])):
-				_mlExpiring.append({
+			if oEffective < _mo335Ago:
+				oExpiring = Expiring({
 					"crm_type": item['crm_type'],
 					"crm_id": item['crm_id'],
-					"crm_order": item['crm_order'],
-					"ds_id": dPrescription['id']
+					"crm_purchase": m['purchaseId'],
+					"rx_id": str(dPrescription['id']),
+					"step": 0
 				})
+				oExpiring.create(conflict='replace')
 
 			# Store the medication name
 			dRet['medication'] = dPrescription['display']

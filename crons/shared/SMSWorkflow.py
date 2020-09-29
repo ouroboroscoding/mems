@@ -198,6 +198,9 @@ def processTemplate(content, order, misc = {}):
 			elif sMatch == '{tracking_date}':
 				txt = misc['tracking_date'] or 'TRACKING DATE MISSING';
 
+			elif sMatch == '{mip_link}':
+				txt = misc['mip_link'] or 'MIP LINK MISSING';
+
 			# If we found something, replace it
 			if txt is not None:
 				content = content.replace(sMatch, txt)
