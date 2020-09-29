@@ -27,6 +27,9 @@ from shared import Rights
 # Records imports
 from records.patient import Account, AccountSetup, Activity, Verify
 
+# Service imports
+from . import emailError
+
 # Support request types
 _dSupportRequest = {
 	"cancel_order": "%(crm_type)s Patient %(crm_id)s would like to cancel their order.",
@@ -843,14 +846,21 @@ class Patient(Services.Service):
 		oDT = arrow.get()
 
 		# Log the activity
-		oActivity = Activity({
-			"account": oAccount['_id'],
-			"date": oDT.format('YYYY-MM-DD'),
-			"time": oDT.format('HH:mm:ss'),
-			"type": 'signin',
-			"ip": self.getClientIP(environ)
-		})
-		oActivity.create()
+		try:
+			dActivity = {
+				"account": oAccount['_id'],
+				"date": oDT.format('YYYY-MM-DD'),
+				"time": oDT.format('HH:mm:ss'),
+				"type": 'signin',
+				"ip": self.getClientIP(environ)
+			}
+			oActivity = Activity(dActivity)
+			oActivity.create()
+		except Exception as e:
+			emailError('Activity Log Failed', '%s\n\n%s' % (
+				str(e),
+				str(dActivity)
+			))
 
 		# Return the session ID and primary account data
 		return Services.Response({
