@@ -63,7 +63,8 @@ def _stepZero():
 
 			# Cancel the purchase
 			bRes = oKNK._post('purchase/cancel', {
-				"purchaseId": o['crm_purchase']
+				"purchaseId": o['crm_purchase'],
+				"cancelReason": 'Expiring Prescription'
 			})
 			bRes = True
 
