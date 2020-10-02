@@ -13,7 +13,7 @@ __created__		= "2020-08-18"
 
 # Pip imports
 import arrow
-from RestOC import Conf, DictHelper, Errors, Services
+from RestOC import Conf, DictHelper, Errors, Record_MySQL, Services
 
 # Shared imports
 from shared import Rights
@@ -108,7 +108,7 @@ class Customers(Services.Service):
 
 		# Create the record in the DB
 		try:
-			oAddress.create()
+			oAddress.create(changes={"user": sesh['user_id']})
 
 		# If it's a duplicate
 		except Record_MySQL.DuplicateException:
@@ -297,7 +297,7 @@ class Customers(Services.Service):
 
 		# Check for a user with the email, if it already exists, don't allow
 		#	and return the ID of the found customer
-		dCustomer = Customer.filter({"email": data['email']}, raw=['_id'])
+		dCustomer = Customer.filter({"email": data['email']}, raw=['_id'], limit=1)
 		if dCustomer:
 			return Services.Response(error=(2000, dCustomer['_id']))
 
@@ -309,7 +309,7 @@ class Customers(Services.Service):
 
 		# Create the customer in the DB
 		try:
-			oCustomer.create()
+			oCustomer.create(changes={"user": sesh['user_id']})
 		except Record_MySQL.DuplicateException:
 			return Services.Response(error=2000)
 
@@ -343,7 +343,7 @@ class Customers(Services.Service):
 			return Services.Response(error=Rights.INVALID)
 
 		# Find the customer
-		dCustomer = Customers.get(data['_id'])
+		dCustomer = Customer.get(data['_id'], raw=True)
 		if not dCustomer:
 			return Services.Response(error=1104)
 
@@ -413,7 +413,7 @@ class Customers(Services.Service):
 
 		# Update the record and return the result
 		return Services.Response(
-			oCustomer.save()
+			oCustomer.save(changes={"user": sesh['user_id']})
 		)
 
 	def customerAddresses_read(self, data, sesh):
@@ -442,11 +442,20 @@ class Customers(Services.Service):
 		if not oResponse.data:
 			return Services.Response(error=Rights.INVALID)
 
+		# If the deactivated flag wasn't passed
+		if 'deactivated' not in data:
+			data['deactivated'] = False
+
+		# Create the filter
+		dFilter = {"customer": data['customer']}
+
+		# If we only want the active
+		if not data['deactivated']:
+			dFilter['active'] = True
+
 		# Find and return all addresses associated with the given customer
 		return Services.Response(
-			Address.filter({
-				"customer": data['customer']
-			}, raw=True)
+			Address.filter(dFilter, raw=True)
 		)
 
 	def customerNotes_read(self, data, sesh):
