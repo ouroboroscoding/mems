@@ -610,6 +610,37 @@ class Auth(Services.Service):
 		# Return OK
 		return Services.Response(True)
 
+	def userNames_read(self, data, sesh):
+		"""User Names
+
+		Returns a dict of IDs to names of users
+
+		Arguments:
+			data (dict): Data sent with the request
+			sesh (Sesh._Session): The session associated with the user
+
+		Returns:
+			Services.Response
+		"""
+
+		# Verify fields
+		try: DictHelper.eval(data, ['_id'])
+		except ValueError as e: return Services.Response(error=(1001, [(f, 'missing') for f in e.args]))
+
+		# If we only got one ID
+		if isinstance(data['_id'], str):
+			data['_id'] = [data['_id']]
+
+		# If the list is empty
+		if not data['_id']:
+			return Services.Response(error=(1001, [('_id', 'empty')]))
+
+		# Fetch and return the names by ID
+		return Services.Response({
+			d['_id']: {"firstName":d['firstName'], "lastName":d['lastName']}
+			for d in User.get(data['_id'], raw=['_id', 'firstName', 'lastName'])
+		})
+
 	def userPasswd_update(self, data, sesh):
 		"""User Password
 

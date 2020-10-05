@@ -44,6 +44,7 @@ REST.Server({
 
 	"/user": {"methods": REST.CREATE | REST.READ | REST.UPDATE, "session": True},
 	"/user/email": {"methods": REST.UPDATE, "session": True},
+	"/user/names": {"methods": REST.READ, "session": True},
 	"/user/passwd": {"methods": REST.UPDATE, "session": True},
 	"/user/passwd/forgot": {"methods": REST.CREATE | REST.UPDATE}
 

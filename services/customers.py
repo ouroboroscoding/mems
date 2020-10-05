@@ -221,11 +221,11 @@ class Customers(Services.Service):
 			})
 			if oResponse.errorExists(): return oResponse
 			if oResponse.data:
-				iNewInstance = True
+				bNewInstance = True
 				break
 
 		# If we need a new instance
-		if iNewInstance:
+		if bNewInstance:
 
 			# Copy the raw record
 			dNewRecord = oAddress.record()
@@ -236,7 +236,7 @@ class Customers(Services.Service):
 
 			# Create the new instance and store it in the DB
 			oNewAddress = Address(dNewRecord)
-			oNewAddress.create()
+			oNewAddress.create(changes={"user": sesh['user_id']})
 
 			# Update the old addresses label and deactivate it
 			oOldAddress = Address(dOldRecord)
@@ -245,7 +245,7 @@ class Customers(Services.Service):
 				oOldAddress['label'],
 				arrow.get().format('YYYY-MM-DD HH:mm')
 			)
-			oOldAddress.save()
+			oOldAddress.save(changes={"user": sesh['user_id']})
 
 			# Does the instance exist in either billing or shipping? If it does
 			#	update one or both
@@ -254,7 +254,7 @@ class Customers(Services.Service):
 				oCustomer['billing'] = oNewAddress['_id']
 			if oCustomer['shipping'] == oAddress['_id']:
 				oCustomer['shipping'] = oNewAddress['_id']
-			oCustomer.save()
+			oCustomer.save(changes={"user": sesh['user_id']})
 
 			# Return both the new and old Address
 			return Services.Response({
@@ -264,7 +264,7 @@ class Customers(Services.Service):
 
 		# Else, just save the address and return OK
 		else:
-			oAddress.save()
+			oAddress.save(changes={"user": sesh['user_id']})
 			return Services.Response(True)
 
 	def customer_create(self, data, sesh):
@@ -484,12 +484,28 @@ class Customers(Services.Service):
 		if not oResponse.data:
 			return Services.Response(error=Rights.INVALID)
 
-		# Find and return all addresses associated with the given customer
-		return Services.Response(
-			Note.filter({
-				"customer": data['customer']
-			}, raw=True)
-		)
+		# Get all the notes
+		lNotes = Note.filter({
+			"customer": data['customer']
+		}, raw=True)
+
+		# If there's no notes
+		if not lNotes:
+			return Services.Response([])
+
+		# Get all the user's associated with the notes
+		oResponse = Services.read('auth', 'user/names', {
+			"_id": [d['user'] for d in lNotes]
+		}, sesh)
+		if oResponse.errorExists(): return oResponse
+		dUsers = oResponse.data
+
+		# Add the name to each note
+		for d in lNotes:
+			d['userName'] = d['user'] in dUsers and '%s %s' % (dUsers[d['user']]['firstName'], dUsers[d['user']]['lastName']) or 'N/A'
+
+		# Return all the notes
+		return Services.Response(lNotes)
 
 	def note_create(self, data, sesh):
 		"""Note Create
@@ -523,6 +539,7 @@ class Customers(Services.Service):
 
 		# Create a new instance of the Note to verify fields
 		try:
+			data['user'] = sesh['user_id']
 			oNote = Note(data)
 		except ValueError as e:
 			return Services.Response(error=(1001, e.args[0]))
