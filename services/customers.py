@@ -477,7 +477,7 @@ class Customers(Services.Service):
 
 		# Make sure the user has the proper permission to do this
 		oResponse = Services.read('auth', 'rights/verify', {
-			"name": "customers",
+			"name": "customers_notes",
 			"right": Rights.READ,
 			"ident": data['customer']
 		}, sesh)
@@ -526,8 +526,8 @@ class Customers(Services.Service):
 
 		# Make sure the user has the proper permission to do this
 		oResponse = Services.read('auth', 'rights/verify', {
-			"name": "customers",
-			"right": Rights.UPDATE,
+			"name": "customers_notes",
+			"right": Rights.CREATE,
 			"ident": data['customer']
 		}, sesh)
 		if not oResponse.data:
