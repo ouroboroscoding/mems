@@ -116,7 +116,7 @@ def opened_claims(tod):
 		if oTrigger:
 
 			# Update the opened date and stage
-			oTrigger['shipped'] = d['opened']
+			oTrigger['opened'] = d['opened']
 			oTrigger['opened_state'] = sReason
 
 			# Save the updates
