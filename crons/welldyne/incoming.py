@@ -60,9 +60,9 @@ def opened_claims(tod):
 	sTemp = Conf.get(('temp_folder'))
 
 	# Generate the name of the file
-	sFilename = 'MaleExcel_DailyOpenedClaims_%s%s.xlsx' % (
+	sFilename = 'Open_Orders_%s%s.xlsx' % (
 		sDay,
-		tod == 'afternoon' and '_3PM Report' or ''
+		tod == 'afternoon' and '_3PM_Report' or ''
 	)
 
 	# Connect to the sFTP
@@ -72,18 +72,18 @@ def opened_claims(tod):
 		try:
 			sGet = '%s/%s' % (sTemp, sFilename)
 			oCon.get(sFilename, sGet)
-			#oCon.rename(sFilename, 'processed/%s' % sFilename)
+			oCon.rename(sFilename, 'processed/%s' % sFilename)
 		except FileNotFoundError:
 			emailError('WellDyne Incoming Failed', '%s file not found on sFTP' % sFilename)
 			return False
 
 	# Parse the data
 	lData = Excel.parse(sGet, {
-		"member_id": {"column": 2, "type": Excel.STRING},
-		"opened": {"column": 6, "type": Excel.DATETIME},
+		"member_id": {"column": 0, "type": Excel.STRING},
+		"opened": {"column": 5, "type": Excel.DATETIME},
 		"wd_rx": {"column": 7, "type": Excel.INTEGER},
-		"stage": {"column": 13, "type": Excel.STRING},
-		"queue": {"column": 15, "type": Excel.STRING}
+		"stage": {"column": 12, "type": Excel.STRING},
+		"queue": {"column": 14, "type": Excel.STRING}
 	}, start_row=1)
 
 	# Go through each one and keep only uniques
@@ -117,7 +117,7 @@ def opened_claims(tod):
 
 			# Update the opened date and stage
 			oTrigger['shipped'] = d['opened']
-			oTrigger['opened_stage'] = sReason
+			oTrigger['opened_state'] = sReason
 
 			# Save the updates
 			oTrigger.save()
@@ -125,7 +125,7 @@ def opened_claims(tod):
 		# Create or replace the current RX number
 		oRx = RxNumber({
 			"member_id": d['member_id'],
-			"number": d['rx']
+			"number": d['wd_rx']
 		})
 		oRx.create(conflict=['number'])
 
