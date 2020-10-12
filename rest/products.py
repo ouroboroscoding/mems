@@ -1,7 +1,7 @@
 # coding=utf8
 """ Products Service
 
-Handles Customer related activities
+Handles Product related activities
 """
 
 __author__		= "Chris Nasr"
@@ -9,7 +9,7 @@ __copyright__	= "MaleExcelMedical"
 __version__		= "1.0.0"
 __maintainer__	= "Chris Nasr"
 __email__		= "bast@maleexcel.com"
-__created__		= "2020-10-18"
+__created__		= "2020-10-08"
 
 # Pip imports
 from RestOC import Conf, REST
@@ -34,7 +34,7 @@ REST.Server({
 	"/medication": {"methods": REST.CREATE | REST.UPDATE, "session": True},
 	"/medications": {"methods": REST.READ, "session": True},
 	"/product": {"methods": REST.CREATE | REST.READ | REST.UPDATE, "session": True},
-	"/product/search": {"methods": REST.READ, "session": True}
+	"/products": {"methods": REST.READ, "session": True}
 
 }, 'products', "https?://(.*\\.)?%s" % Conf.get(("rest","allowed")).replace('.', '\\.')).run(
 	host=oRestConf['products']['host'],

@@ -86,6 +86,45 @@ class Product(Record_MySQL.Record):
 	"""Configuration"""
 
 	@classmethod
+	def allByGroup(cls, custom={}):
+		"""All By Groun
+
+		Returns all products available by group and name
+
+		Arguments:
+			custom (dict): Custom Host and DB info
+				'host' the name of the host to get/set data on
+				'append' optional postfix for dynamic DBs
+
+		Returns:
+			dict
+		"""
+
+		# Fetch the record structure
+		dStruct = cls.struct(custom)
+
+		# Generate the SQL
+		sSQL = "SELECT `p`.`*`,\n" \
+				"	`g`.`name` as `group_name`,\n" \
+				"	`m`.`name` as `medication_name`\n" \
+				"FROM `%(db)s`.`%(table)s` as `p`\n" \
+				"JOIN `%(db)s`.`products_group` as `g` ON `g`.`_id` = `p`.`group`\n" \
+				"INNER JOIN `%(db)s`.`products_medication` as `m` ON `m`.`_id` = `p`.`medication`\n" \
+				"ORDER BY `group_name`, `name`" % {
+			"db": dStruct['db'],
+			"table": dStruct['table']
+		}
+
+		# Select all the records
+		lRows = Record_MySQL.Commands.select(
+			dStruct['host'],
+			sSQL
+		)
+
+		# Return the records
+		return lRows
+
+	@classmethod
 	def config(cls):
 		"""Config
 

@@ -18,8 +18,7 @@ import re
 
 # Pip imports
 from FormatOC import Tree
-from RestOC import Conf, Record_MySQL, StrHelper
-from shared import JSON
+from RestOC import Conf, JSON, Record_MySQL, StrHelper
 
 # Forgot class
 class Forgot(Record_MySQL.Record):

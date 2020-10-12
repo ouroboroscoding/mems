@@ -173,7 +173,7 @@ class Products(Services.Service):
 
 		# Return all the groups
 		return Services.Response(
-			Group.get(orderby=['name'], raw=True)
+			Group.get(orderby='name', raw=True)
 		)
 
 	def medication_create(self, data, sesh):
@@ -417,4 +417,30 @@ class Products(Services.Service):
 		# Update the record and return the result
 		return Services.Response(
 			oProduct.save(changes={"user": sesh['user_id']})
+		)
+
+	def products_read(self, data, sesh):
+		"""Products
+
+		Returns all products sorted by group and then name
+
+		Arguments:
+			data (mixed): Data sent with the request
+			sesh (Sesh._Session): The session associated with the request
+
+		Returns:
+			Services.Response
+		"""
+
+		# Make sure the user has the proper permission to do this
+		oResponse = Services.read('auth', 'rights/verify', {
+			"name": "products",
+			"right": Rights.READ
+		}, sesh)
+		if not oResponse.data:
+			return Services.Response(error=Rights.INVALID)
+
+		# Return all the groups
+		return Services.Response(
+			Product.allByGroup()
 		)
