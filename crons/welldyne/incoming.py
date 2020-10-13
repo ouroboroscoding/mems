@@ -74,8 +74,10 @@ def opened_claims(tod):
 			oCon.get(sFilename, sGet)
 			oCon.rename(sFilename, 'processed/%s' % sFilename)
 		except FileNotFoundError:
-			emailError('WellDyne Incoming Failed', '%s file not found on sFTP' % sFilename)
+			emailError('WellDyne Opened Failed', '%s file not found on sFTP' % sFilename)
 			return False
+		except IOError:
+			emailError('WellDyne Opened Error', '%s can\'t be renamed' % sFilename)
 
 	# Parse the data
 	lData = Excel.parse(sGet, {
@@ -89,8 +91,17 @@ def opened_claims(tod):
 	# Go through each one and keep only uniques
 	dData = {}
 	for d in lData:
-		d['customerId'] = d['member_id'].lstrip('0')
-		dData[d['customerId']] = d
+
+		# If all zeros, skip it
+		if d['crm_id'] == '000000':
+			continue
+
+		# If it's empty
+		try:
+			d['customerId'] = d['member_id'].lstrip('0')
+			dData[d['customerId']] = d
+		except AttributeError:
+			continue
 
 	# Store just the values
 	lData = list(dData.values())
@@ -178,8 +189,10 @@ def outbound_failed_claims(tod):
 			oCon.get(sFilename, sGet)
 			oCon.rename(sFilename, 'processed/%s' % sFilename)
 		except FileNotFoundError:
-			emailError('WellDyne Incoming Failed', '%s file not found on sFTP' % sFilename)
+			emailError('WellDyne Outbound Failed', '%s file not found on sFTP' % sFilename)
 			return False
+		except IOError:
+			emailError('WellDyne Outbound Error', '%s can\'t be renamed' % sFilename)
 
 	# Parse the data
 	lData = Excel.parse(sGet, {
@@ -285,8 +298,10 @@ def shipped_claims(tod):
 			oCon.get(sFilename, sGet)
 			oCon.rename(sFilename, 'processed/%s' % sFilename)
 		except FileNotFoundError:
-			emailError('WellDyne Incoming Failed', '%s file not found on sFTP' % sFilename)
+			emailError('WellDyne Shipped Failed', '%s file not found on sFTP' % sFilename)
 			return False
+		except IOError:
+			emailError('WellDyne Shipped Error', '%s can\'t be renamed' % sFilename)
 
 	# Parse the data
 	lData = Excel.parse(sGet, {
