@@ -24,7 +24,7 @@ from records.products import Group, Medication, Product
 class Products(Services.Service):
 	"""Products Service class
 
-	Service for Productsorization, sign in, sign up, etc.
+	Service for product groups and medications
 	"""
 
 	_install = [Group, Medication, Product]

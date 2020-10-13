@@ -2,5 +2,5 @@
 from . import create_tables, rename_permissions
 
 modules = [
-	rename_permissions
+	create_tables, rename_permissions
 ]

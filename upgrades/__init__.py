@@ -15,8 +15,8 @@ __created__		= "2020-03-29"
 from time import time
 import traceback
 
-# Project imports
-from shared import JSON
+# Pip imports
+from RestOC import JSON
 
 class UpgradeLog(object):
 	"""Upgrade Log

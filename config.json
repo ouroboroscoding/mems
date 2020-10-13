@@ -135,6 +135,7 @@
 			"payment": {"port": 5},
 			"prescriptions": {"port": 8},
 			"products": {"port": 14},
+			"qualmed": {"port": 15},
 			"reports": {"port": 13},
 			"webpoll": {"port": 2},
 			"welldyne": {"port": 10}

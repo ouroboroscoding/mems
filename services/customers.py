@@ -24,7 +24,7 @@ from records.customers import Address, Customer, Note
 class Customers(Services.Service):
 	"""Customers Service class
 
-	Service for Customersorization, sign in, sign up, etc.
+	Service for customer access
 	"""
 
 	_install = [Address, Customer, Note]

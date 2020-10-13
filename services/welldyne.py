@@ -31,7 +31,7 @@ from records.welldyne import \
 class WellDyne(Services.Service):
 	"""WellDyne Service class
 
-	Service for WellDyne, sign in, sign up, etc.
+	Service for WellDyne info and communication
 	"""
 
 	_install = [AdHoc, AdHocManual, Outbound, OutboundSent, RxNumber, Trigger]
