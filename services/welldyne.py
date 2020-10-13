@@ -466,7 +466,10 @@ class WellDyne(Services.Service):
 			for d in lData:
 
 				# Get the actual ID
-				sCrmID = d['member_id'].lstrip('0')
+				try:
+					sCrmID = d['member_id'].lstrip('0')
+				except Exception:
+					sCrmID = str(int(d['member_id']))
 
 				# If the medication is the old format
 				if ' x ' in d['medication']:
@@ -490,7 +493,7 @@ class WellDyne(Services.Service):
 				# If there's no trigger
 				if not dTrigger:
 					lFailed.append('%s, %s, %s' % (
-						d['member_id'], d['medication'], d['reason']
+						sCrmID, d['medication'], d['reason']
 					))
 					continue
 
