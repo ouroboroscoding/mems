@@ -92,16 +92,19 @@ def opened_claims(tod):
 	dData = {}
 	for d in lData:
 
-		# If all zeros, skip it
-		if d['crm_id'] == '000000':
+		# If it's null
+		if not d['member_id']:
+			continue;
+
+		# Strip 0s
+		d['customerId'] = d['member_id'].lstrip('0')
+
+		# If it's empty, skip it
+		if d['customerId'] == '':
 			continue
 
-		# If it's empty
-		try:
-			d['customerId'] = d['member_id'].lstrip('0')
-			dData[d['customerId']] = d
-		except AttributeError:
-			continue
+		# Copy the data
+		dData[d['customerId']] = d
 
 	# Store just the values
 	lData = list(dData.values())
