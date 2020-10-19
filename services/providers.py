@@ -1,7 +1,7 @@
 # coding=utf8
-""" CSR Service
+""" Providers Service
 
-Handles all CSR requests
+Handles all Providers requests
 """
 
 __author__		= "Chris Nasr"
@@ -9,7 +9,7 @@ __copyright__	= "MaleExcelMedical"
 __version__		= "1.0.0"
 __maintainer__	= "Chris Nasr"
 __email__		= "chris@fuelforthefire.ca"
-__created__		= "2020-05-17"
+__created__		= "2020-10-15"
 
 # Pip imports
 from FormatOC import Node
@@ -19,19 +19,15 @@ from RestOC import DictHelper, Errors, Record_MySQL, Services
 from shared import Rights
 
 # Records imports
-from records.csr import Agent, CustomList, CustomListItem, TemplateEmail, \
-						TemplateSMS
+from records.providers import Provider, TemplateEmail, TemplateSMS
 
-# Valid DOB
-_DOB = Node('date')
+class Providers(Services.Service):
+	"""Providers Service class
 
-class CSR(Services.Service):
-	"""CSR Service class
-
-	Service for CSR access
+	Service for Providers access
 	"""
 
-	_install = [Agent, CustomList, CustomListItem, TemplateEmail, TemplateSMS]
+	_install = [Provider, TemplateEmail, TemplateSMS]
 	"""Record types called in install"""
 
 	def initialise(self):
@@ -67,10 +63,10 @@ class CSR(Services.Service):
 		# Return OK
 		return True
 
-	def _agent_create(self, data, sesh):
-		"""Agent Create
+	def _provider_create(self, data, sesh):
+		"""Provider Create
 
-		Creates the actual agent record in the DB as well as necessary
+		Creates the actual provider record in the DB as well as necessary
 		permissions
 
 		Arguments:
@@ -81,15 +77,15 @@ class CSR(Services.Service):
 			Services.Response
 		"""
 
-		# Create a new agent instance using the memo ID
+		# Create a new provider instance using the memo ID
 		try:
-			oAgent = Agent(data)
+			oProvider = Provider(data)
 		except ValueError:
 			return Services.Response(error=(1001, e.args[0]))
 
-		# Create the agent and store the ID
+		# Create the provider and store the ID
 		try:
-			sID = oAgent.create()
+			sID = oProvider.create()
 		except Record_MySQL.DuplicateException as e:
 			return Services.Response(error=1101)
 
@@ -99,23 +95,19 @@ class CSR(Services.Service):
 			"user": sID,
 			"permissions": {
 				"calendly": 1,
-				"csr_claims": 14,
-				"csr_messaging": 5,
-				"csr_templates": 1,
+				"prov_claims": 14,
+				"prov_templates": 1,
 				"customers": 1,
 				"memo_mips": 3,
 				"memo_notes": 5,
-				"patient_account": 1,
-				"prescriptions": 3,
-				"pharmacy_fill": 1,
-				"welldyne_adhoc": 4
+				"prescriptions": 7
 			}
 		}, sesh)
 		if oResponse.errorExists():
 			print(oResponse)
-			return Services.Response(sID, warning='Failed to creater permissions for agent')
+			return Services.Response(sID, warning='Failed to creater permissions for provider')
 
-		# Create the agent and return the ID
+		# Create the provider and return the ID
 		return Services.Response(sID)
 
 	def _template_create(self, data, sesh, _class):
@@ -134,7 +126,7 @@ class CSR(Services.Service):
 
 		# Make sure the user has the proper permission to do this
 		oResponse = Services.read('auth', 'rights/verify', {
-			"name": "csr_templates",
+			"name": "prov_templates",
 			"right": Rights.CREATE
 		}, sesh)
 		if not oResponse.data:
@@ -175,7 +167,7 @@ class CSR(Services.Service):
 
 		# Make sure the user has the proper permission to do this
 		oResponse = Services.read('auth', 'rights/verify', {
-			"name": "csr_templates",
+			"name": "prov_templates",
 			"right": Rights.DELETE,
 			"ident": data['_id']
 		}, sesh)
@@ -213,7 +205,7 @@ class CSR(Services.Service):
 
 		# Make sure the user has the proper permission to do this
 		oResponse = Services.read('auth', 'rights/verify', {
-			"name": "csr_templates",
+			"name": "prov_templates",
 			"right": Rights.READ,
 			"ident": data['_id']
 		}, sesh)
@@ -250,7 +242,7 @@ class CSR(Services.Service):
 
 		# Make sure the user has the proper permission to do this
 		oResponse = Services.read('auth', 'rights/verify', {
-			"name": "csr_templates",
+			"name": "prov_templates",
 			"right": Rights.UPDATE,
 			"ident": data['_id']
 		}, sesh)
@@ -299,7 +291,7 @@ class CSR(Services.Service):
 
 		# Make sure the user has the proper permission to do this
 		oResponse = Services.read('auth', 'rights/verify', {
-			"name": "csr_templates",
+			"name": "prov_templates",
 			"right": Rights.READ
 		}, sesh)
 		if not oResponse.data:
@@ -310,8 +302,8 @@ class CSR(Services.Service):
 			_class.get(raw=True, orderby=['title'])
 		)
 
-	def agent_create(self, data, sesh):
-		"""Agent Create
+	def provider_create(self, data, sesh):
+		"""Provider Create
 
 		Creates a user record associated with the memo user in order to apply
 		permissions to it
@@ -326,7 +318,7 @@ class CSR(Services.Service):
 
 		# Make sure the user has the proper permission to do this
 		oResponse = Services.read('auth', 'rights/verify', {
-			"name": "csr_agents",
+			"name": "providers",
 			"right": Rights.CREATE
 		}, sesh)
 		if not oResponse.data:
@@ -336,24 +328,25 @@ class CSR(Services.Service):
 		try: DictHelper.eval(data, ['userName', 'firstName', 'lastName', 'password'])
 		except ValueError as e: return Services.Response(error=(1001, [(f, 'missing') for f in e.args]))
 
-		# Pull out CSR only values
-		dAgent = {}
-		if 'claims_max' in data: dAgent['claims_max'] = data.pop('claims_max')
-		if 'claims_timeout' in data: dAgent['claims_timeout'] = data.pop('claims_timeout')
+		# Pull out Providers only values
+		dProvider = {}
+		if 'claims_max' in data: dProvider['claims_max'] = data.pop('claims_max')
+		if 'claims_timeout' in data: dProvider['claims_timeout'] = data.pop('claims_timeout')
 
 		# Send the data to monolith to create the memo user
 		data['_internal_'] = Services.internalKey()
+		data['userRole'] = 'Doctor'
 		oResponse = Services.create('monolith', 'user', data, sesh)
 		if oResponse.errorExists(): return oResponse
 
 		# Add the memo ID
-		dAgent['memo_id'] = oResponse.data
+		dProvider['memo_id'] = oResponse.data
 
-		# Create the agent record
-		return self._agent_create(dAgent, sesh)
+		# Create the provider record
+		return self._provider_create(dProvider, sesh)
 
-	def agent_delete(self, data, sesh):
-		"""Agent Delete
+	def provider_delete(self, data, sesh):
+		"""Provider Delete
 
 		Deletes an existing memo user record associated
 
@@ -371,19 +364,19 @@ class CSR(Services.Service):
 
 		# Make sure the user has the proper permission to do this
 		oResponse = Services.read('auth', 'rights/verify', {
-			"name": "csr_agents",
+			"name": "providers",
 			"right": Rights.DELETE
 		}, sesh)
 		if not oResponse.data:
 			return Services.Response(error=Rights.INVALID)
 
-		# Find the Agent
-		oAgent = Agent.get(data['_id'])
+		# Find the Provider
+		oProvider = Provider.get(data['_id'])
 
 		# Use the memo ID to mark the memo user as inactive
 		oResponse = Services.update('monolith', 'user/active', {
 			"_internal_": Services.internalKey(),
-			"id": oAgent['memo_id'],
+			"id": oProvider['memo_id'],
 			"active": False
 		}, sesh)
 		if oResponse.errorExists(): return oResponse
@@ -398,11 +391,11 @@ class CSR(Services.Service):
 
 		# Delete the record and return the result
 		return Services.Response(
-			oAgent.delete()
+			oProvider.delete()
 		)
 
-	def agent_read(self, data, sesh):
-		"""Agent Read
+	def provider_read(self, data, sesh):
+		"""Provider Read
 
 		Fetches one, many, or all user records
 
@@ -415,10 +408,10 @@ class CSR(Services.Service):
 		"""
 		pass
 
-	def agent_update(self, data, sesh):
-		"""Agent Update
+	def provider_update(self, data, sesh):
+		"""Provider Update
 
-		Updates an existing agent (via memo user)
+		Updates an existing provider (via memo user)
 
 		Arguments:
 			data (mixed): Data sent with the request
@@ -434,38 +427,38 @@ class CSR(Services.Service):
 
 		# Make sure the user has the proper permission to do this
 		oResponse = Services.read('auth', 'rights/verify', {
-			"name": "csr_agents",
+			"name": "providers",
 			"right": Rights.UPDATE
 		}, sesh)
 		if not oResponse.data:
 			return Services.Response(error=Rights.INVALID)
 
-		# Find the agent
-		oAgent = Agent.get(data['_id'])
-		if not oAgent:
+		# Find the provider
+		oProvider = Provider.get(data['_id'])
+		if not oProvider:
 			return Services.Response(error=1104)
 
 		# Try to update the claims vars
 		lErrors = []
 		for s in ['claims_max', 'claims_timeout']:
 			if s in data:
-				try: oAgent[s] = data.pop(s)
+				try: oProvider[s] = data.pop(s)
 				except ValueError as e: lErrors.append(e.args[0])
 		if lErrors:
 			return Services.Response(error=(1001, lErrors))
 
 		# If there's any changes
-		if oAgent.changes():
-			oAgent.save()
+		if oProvider.changes():
+			oProvider.save()
 
-		# Remove the agent ID
+		# Remove the provider ID
 		del data['_id']
 
 		# If there's still stuff to change
 		if data:
 
 			# Add the memo ID
-			data['id'] = oAgent['memo_id']
+			data['id'] = oProvider['memo_id']
 
 			# Pass the info on to monolith service
 			data['_internal_'] = Services.internalKey()
@@ -478,10 +471,11 @@ class CSR(Services.Service):
 		else:
 			return Services.Response(True)
 
-	def agentPasswd_update(self, data, sesh):
-		"""Agent Password Update
+	def providerInternal_read(self, data, sesh):
+		"""Provider Internal
 
-		Updates an agent's password in monolith
+		Fetches a memo user by their Memo ID rather then their primary key.
+		Internal function, can not be used from outside
 
 		Arguments:
 			data (mixed): Data sent with the request
@@ -492,37 +486,73 @@ class CSR(Services.Service):
 		"""
 
 		# Verify minimum fields
-		try: DictHelper.eval(data, ['agent_id', 'passwd'])
+		try: DictHelper.eval(data, ['_internal_', 'id'])
+		except ValueError as e: return Services.Response(error=(1001, [(f, 'missing') for f in e.args]))
+
+		# Verify the key, remove it if it's ok
+		if not Services.internalKey(data['_internal_']):
+			return Services.Response(error=Errors.SERVICE_INTERNAL_KEY)
+		del data['_internal_']
+
+		# Look up the record
+		dProvider = Provider.filter(
+			{"memo_id": data['id']},
+			raw=True,
+			limit=1
+		)
+
+		# If there's no such user
+		if not dProvider:
+			return Services.Response(error=1104)
+
+		# Return the user
+		return Services.Response(dProvider)
+
+	def providerPasswd_update(self, data, sesh):
+		"""Provider Password Update
+
+		Updates an provider's password in monolith
+
+		Arguments:
+			data (mixed): Data sent with the request
+			sesh (Sesh._Session): The session associated with the request
+
+		Returns:
+			Services.Response
+		"""
+
+		# Verify minimum fields
+		try: DictHelper.eval(data, ['provider_id', 'passwd'])
 		except ValueError as e: return Services.Response(error=(1001, [(f, 'missing') for f in e.args]))
 
 		# Make sure the user has the proper permission to do this
 		oResponse = Services.read('auth', 'rights/verify', {
-			"name": "csr_agents",
+			"name": "providers",
 			"right": Rights.UPDATE,
-			"ident": data['agent_id']
+			"ident": data['provider_id']
 		}, sesh)
 		if not oResponse.data:
 			return Services.Response(error=Rights.INVALID)
 
-		# Find the Agent
-		dAgent = Agent.get(data['agent_id'], raw=['memo_id'])
-		if not dAgent:
+		# Find the Provider
+		dProvider = Provider.get(data['provider_id'], raw=['memo_id'])
+		if not dProvider:
 			return Services.Response(error=1104)
 
 		# Send the data to monolith to update the password
 		oResponse = Services.update('monolith', 'user/passwd', {
 			"_internal_": Services.internalKey(),
-			"user_id": dAgent['memo_id'],
+			"user_id": dProvider['memo_id'],
 			"passwd": data['passwd']
 		}, sesh)
 
 		# Return the result, regardless of what it is
 		return oResponse
 
-	def agentPermissions_read(self, data, sesh):
-		"""Agent Permissions Read
+	def providerPermissions_read(self, data, sesh):
+		"""Provider Permissions Read
 
-		Returns all permissions associated with an agent
+		Returns all permissions associated with an provider
 
 		Arguments:
 			data (mixed): Data sent with the request
@@ -533,14 +563,14 @@ class CSR(Services.Service):
 		"""
 
 		# Verify minimum fields
-		try: DictHelper.eval(data, ['agent_id'])
+		try: DictHelper.eval(data, ['provider_id'])
 		except ValueError as e: return Services.Response(error=(1001, [(f, 'missing') for f in e.args]))
 
 		# Make sure the user has the proper permission to do this
 		oResponse = Services.read('auth', 'rights/verify', {
-			"name": "csr_agents",
+			"name": "providers",
 			"right": Rights.READ,
-			"ident": data['agent_id']
+			"ident": data['provider_id']
 		}, sesh)
 		if not oResponse.data:
 			return Services.Response(error=Rights.INVALID)
@@ -548,16 +578,16 @@ class CSR(Services.Service):
 		# Fetch the permissions from the auth service
 		oResponse = Services.read('auth', 'permissions', {
 			"_internal_": Services.internalKey(),
-			"user": data['agent_id']
+			"user": data['provider_id']
 		}, sesh)
 
 		# Return whatever was found
 		return oResponse
 
-	def agentPermissions_update(self, data, sesh):
-		"""Agent Permissions Update
+	def providerPermissions_update(self, data, sesh):
+		"""Provider Permissions Update
 
-		Updates the permissions associated with an agent
+		Updates the permissions associated with an provider
 
 		Arguments:
 			data (mixed): Data sent with the request
@@ -568,14 +598,14 @@ class CSR(Services.Service):
 		"""
 
 		# Verify minimum fields
-		try: DictHelper.eval(data, ['agent_id', 'permissions'])
+		try: DictHelper.eval(data, ['provider_id', 'permissions'])
 		except ValueError as e: return Services.Response(error=(1001, [(f, 'missing') for f in e.args]))
 
 		# Make sure the user has the proper permission to do this
 		oResponse = Services.read('auth', 'rights/verify', {
-			"name": "csr_agents",
+			"name": "providers",
 			"right": Rights.READ,
-			"ident": data['agent_id']
+			"ident": data['provider_id']
 		}, sesh)
 		if not oResponse.data:
 			return Services.Response(error=Rights.INVALID)
@@ -583,17 +613,17 @@ class CSR(Services.Service):
 		# Fetch the permissions from the auth service
 		oResponse = Services.update('auth', 'permissions', {
 			"_internal_": Services.internalKey(),
-			"user": data['agent_id'],
+			"user": data['provider_id'],
 			"permissions": data['permissions']
 		}, sesh)
 
 		# Return whatever was found
 		return oResponse
 
-	def agentNames_read(self, data, sesh):
-		"""Agent Names
+	def providerNames_read(self, data, sesh):
+		"""Provider Names
 
-		Returns the list of agents who can have issues transfered / escalated to
+		Returns the list of providers who can have issues transfered / escalated to
 		them
 
 		Arguments:
@@ -604,22 +634,22 @@ class CSR(Services.Service):
 			Services.Response
 		"""
 
-		# Fetch all the agents
-		lAgents = Agent.get(raw=['memo_id'])
+		# Fetch all the providers
+		lProviders = Provider.get(raw=['memo_id'])
 
 		# Fetch their names
 		oResponse = Services.read('monolith', 'user/name', {
 			"_internal_": Services.internalKey(),
-			"id": [d['memo_id'] for d in lAgents]
+			"id": [d['memo_id'] for d in lProviders]
 		}, sesh)
 
 		# Regardless of what we got, retun the effect
 		return oResponse
 
-	def agents_read(self, data, sesh):
-		"""Agents
+	def providers_read(self, data, sesh):
+		"""Providers
 
-		Returns all agents in the system
+		Returns all providers in the system
 
 		Arguments:
 			data (mixed): Data sent with the request
@@ -631,24 +661,31 @@ class CSR(Services.Service):
 
 		# Make sure the user has the proper permission to do this
 		oResponse = Services.read('auth', 'rights/verify', {
-			"name": "csr_agents",
+			"name": "providers",
 			"right": Rights.READ
 		}, sesh)
 		if not oResponse.data:
 			return Services.Response(error=Rights.INVALID)
 
-		# Fetch all the agents
-		lAgents = Agent.get(raw=True)
+		# Fetch all the providers
+		lProviders = Provider.get(raw=True)
 
 		# If there's no agents
-		if not lAgents:
+		if not lProviders:
 			return Services.Response([])
+
+		# Memo user fields
+		lFields = ['id', 'userName', 'firstName', 'lastName', 'email',
+					'cellNumber', 'notificationPref', 'eDFlag', 'hormoneFlag',
+					'hairLossFlag', 'urgentCareFlag', 'practiceStates',
+					'hrtPracticeStates', 'providerScheduleLink', 'calendlyEmail',
+					'dsClinicId', 'dsClinicianId']
 
 		# Fetch all the Memo user's associated
 		oResponse = Services.read('monolith', 'users', {
 			"_internal_": Services.internalKey(),
-			"id": [d['memo_id'] for d in lAgents],
-			"fields": ['id', 'userName', 'firstName', 'lastName', 'email', 'dsClinicId', 'dsClinicianId']
+			"id": [d['memo_id'] for d in lProviders],
+			"fields": lFields
 		}, sesh)
 		if oResponse.errorExists(): return oResponse
 
@@ -656,340 +693,16 @@ class CSR(Services.Service):
 		dMemoUsers = {d['id']:d for d in oResponse.data}
 
 		# Go through each user and find the memo user
-		for d in lAgents:
+		for d in lProviders:
 			if d['memo_id'] in dMemoUsers:
-				d['userName'] = dMemoUsers[d['memo_id']]['userName']
-				d['firstName'] = dMemoUsers[d['memo_id']]['firstName']
-				d['lastName'] = dMemoUsers[d['memo_id']]['lastName']
-				d['email'] = dMemoUsers[d['memo_id']]['email']
-				d['dsClinicId'] = dMemoUsers[d['memo_id']]['dsClinicId']
-				d['dsClinicianId'] = dMemoUsers[d['memo_id']]['dsClinicianId']
+				for f in lFields:
+					d[f] = dMemoUsers[d['memo_id']][f]
 			else:
-				d['userName'] = 'n/a'
-				d['firstName'] = 'Not'
-				d['lastName'] = 'Found'
-				d['email'] = ''
-				d['dsClinicId'] = None
-				d['dsClinicianId'] = None
-
-		# Return the agents in order of userName
-		return Services.Response(sorted(lAgents, key=lambda o: o['userName']))
-
-	def list_create(self, data, sesh):
-		"""List Create
-
-		Create a new custom list
-
-		Arguments:
-			data (mixed): Data sent with the request
-			sesh (Sesh._Session): The session associated with the request
-
-		Returns:
-			Services.Response
-		"""
-
-		# Make sure the user has at least csr messaging permission
-		oResponse = Services.read('auth', 'rights/verify', {
-			"name": "csr_messaging",
-			"right": Rights.READ
-		}, sesh)
-		if not oResponse.data:
-			return Services.Response(error=Rights.INVALID)
-
-		# Verify minimum fields
-		try: DictHelper.eval(data, ['title'])
-		except ValueError as e: return Services.Response(error=(1001, [(f, 'missing') for f in e.args]))
-
-		# Try to make an instance
-		try:
-			oList = CustomList({
-				"agent": sesh['user_id'],
-				"title": data['title']
-			})
-		except ValueError as e:
-			return Services.Response(error=(1001, e.args[0]))
-
-		# Create the row and return the result
-		return Services.Response(
-			oList.create()
-		)
-
-	def list_delete(self, data, sesh):
-		"""List Delete
-
-		Deletes a list and all items
-
-		Arguments:
-			data (mixed): Data sent with the request
-			sesh (Sesh._Session): The session associated with the request
-
-		Returns:
-			Services.Response
-		"""
-
-		# Make sure the user has at least csr messaging permission
-		oResponse = Services.read('auth', 'rights/verify', {
-			"name": "csr_messaging",
-			"right": Rights.READ
-		}, sesh)
-		if not oResponse.data:
-			return Services.Response(error=Rights.INVALID)
-
-		# Verify minimum fields
-		try: DictHelper.eval(data, ['_id'])
-		except ValueError as e: return Services.Response(error=(1001, [(f, 'missing') for f in e.args]))
-
-		# Look for the list
-		oList = CustomList.get(data['_id'])
-		if not oList:
-			return Services.Response(error=1104)
-
-		# Make sure the agent owns the list
-		if oList['agent'] != sesh['user_id']:
-			return Services.Response(error=1105)
-
-		# Delete all the items in the list
-		CustomListItem.deleteByList(data['_id'])
-
-		# Delete the list and return the result
-		return Services.Response(
-			oList.delete()
-		)
-
-	def list_update(self, data, sesh):
-		"""List Update
-
-		Updates the title on an existing list
-
-		Arguments:
-			data (mixed): Data sent with the request
-			sesh (Sesh._Session): The session associated with the request
-
-		Returns:
-			Services.Response
-		"""
-
-		# Make sure the user has at least csr messaging permission
-		oResponse = Services.read('auth', 'rights/verify', {
-			"name": "csr_messaging",
-			"right": Rights.READ
-		}, sesh)
-		if not oResponse.data:
-			return Services.Response(error=Rights.INVALID)
-
-		# Verify minimum fields
-		try: DictHelper.eval(data, ['_id', 'title'])
-		except ValueError as e: return Services.Response(error=(1001, [(f, 'missing') for f in e.args]))
-
-		# Look for the list
-		oList = CustomList.get(data['_id'])
-		if not oList:
-			return Services.Response(error=1104)
-
-		# Make sure the agent owns the list
-		if oList['agent'] != sesh['user_id']:
-			return Services.Response(error=1105)
-
-		# Try to update the title
-		try: oList['title'] = data['title']
-		except ValueError as e: return Services.Response(error=(1001, [e.args[0]]))
-
-		# Update the record and return the result
-		return Services.Response(
-			oList.save()
-		)
-
-	def listItem_create(self, data, sesh):
-		"""List Item Create
-
-		Adds a new item to an exiting or a new list
-
-		Arguments:
-			data (mixed): Data sent with the request
-			sesh (Sesh._Session): The session associated with the request
-
-		Returns:
-			Services.Response
-		"""
-
-		# Make sure the user has at least csr messaging permission
-		oResponse = Services.read('auth', 'rights/verify', {
-			"name": "csr_messaging",
-			"right": Rights.READ
-		}, sesh)
-		if not oResponse.data:
-			return Services.Response(error=Rights.INVALID)
-
-		# Verify minimum fields
-		try: DictHelper.eval(data, ['list', 'customer', 'name', 'number'])
-		except ValueError as e: return Services.Response(error=(1001, [(f, 'missing') for f in e.args]))
-
-		# Look for the list
-		oList = CustomList.get(data['list'])
-		if not oList:
-			return Services.Response(error=1104)
-
-		# Make sure the agent owns the list
-		if oList['agent'] != sesh['user_id']:
-			return Services.Response(error=1105)
-
-		# Try to make an item instance
-		try:
-			oItem = CustomListItem(data)
-		except ValueError as e:
-			return Services.Response(error=(1001, e.args[0]))
-
-		# Create the item and return the ID
-		try:
-			return Services.Response(oItem.create())
-
-		# Data already in the given list, return error
-		except Record_MySQL.DuplicateException:
-			return Services.Response(error=1101)
-
-	def listItem_delete(self, data, sesh):
-		"""List Item Delete
-
-		Deletes a list item
-
-		Arguments:
-			data (mixed): Data sent with the request
-			sesh (Sesh._Session): The session associated with the request
-
-		Returns:
-			Services.Response
-		"""
-
-		# Make sure the user has at least csr messaging permission
-		oResponse = Services.read('auth', 'rights/verify', {
-			"name": "csr_messaging",
-			"right": Rights.READ
-		}, sesh)
-		if not oResponse.data:
-			return Services.Response(error=Rights.INVALID)
-
-		# Verify minimum fields
-		try: DictHelper.eval(data, ['_id'])
-		except ValueError as e: return Services.Response(error=(1001, [(f, 'missing') for f in e.args]))
-
-		# Look for the list item
-		oListItem = CustomListItem.get(data['_id'])
-		if not oListItem:
-			return Services.Response(error=(1104, 'item'))
-
-		# Find the list associated
-		oList = CustomList.get(oListItem['list'])
-		if not oList:
-			return Services.Response(error=(1104, 'list'))
-
-		# Make sure the agent owns the list
-		if oList['agent'] != sesh['user_id']:
-			return Services.Response(error=1105)
-
-		# Delete the list and return the result
-		return Services.Response(
-			oListItem.delete()
-		)
-
-	def lists_read(self, data, sesh):
-		"""Lists
-
-		Returns all lists and their items belonging to the current agent
-
-		Arguments:
-			data (mixed): Data sent with the request
-			sesh (Sesh._Session): The session associated with the request
-
-		Returns:
-			Services.Response
-		"""
-
-		# Make sure the user has at least csr messaging permission
-		oResponse = Services.read('auth', 'rights/verify', {
-			"name": "csr_messaging",
-			"right": Rights.READ
-		}, sesh)
-		if not oResponse.data:
-			return Services.Response(error=Rights.INVALID)
-
-		# Find all lists associated with the user
-		lLists = CustomList.filter({
-			"agent": sesh['user_id']
-		}, raw=['_id', 'title'])
-
-		# If there's none
-		if not lLists:
-			return Services.Response([])
-
-		# Turn the list into a dictionary
-		dLists = {
-			d['_id']:{
-				"_id": d['_id'],
-				"title": d['title'],
-				"items": []
-			} for d in lLists
-		}
-
-		# Find all items associated with the lists
-		lItems = CustomListItem.filter({
-			"list": [d['_id'] for d in lLists]
-		}, raw=True)
-
-		# Go through each item and add it to the appropriate list
-		for d in lItems:
-			dLists[d['list']]['items'].append({
-				"_id": d['_id'],
-				"number": d['number'],
-				"customer": d['customer'],
-				"name": d['name']
-			})
-
-		# Return everything found sorted by title
-		return Services.Response(
-			sorted(dLists.values(), key=lambda d: d['title'])
-		)
-
-	def patientAccount_create(self, data, sesh):
-		"""Patient Account Create
-
-		Gets the necessary data to create a patient account and sends it off
-		to the patient service
-
-		Arguments:
-			data (mixed): Data sent with the request
-			sesh (Sesh._Session): The session associated with the request
-
-		Returns:
-			Services.Response
-		"""
-
-		# Verify minimum fields
-		try: DictHelper.eval(data, ['crm_type', 'crm_id'])
-		except ValueError as e: return Services.Response(error=(1001, [(f, 'missing') for f in e.args]))
-
-		# If the type is KNK
-		if data['crm_type'] == 'knk':
-
-			# Try to get the DOB from monolith
-			oResponse = Services.read('monolith', 'customer/dob', {
-				"customerId": str(data['crm_id'])
-			}, sesh)
-			if oResponse.errorExists(): return oResponse
-
-			# If the DOB isn't valid
-			if not _DOB.valid(oResponse.data):
-				return Services.Response(error=1910)
-
-			# Add the DOB to the data
-			data['dob'] = oResponse.data
-
-		# Else, invalid crm type
-		else:
-			return Services.Response(error=1003)
-
-		# Pass along the details to the patient service and return the result
-		return  Services.create('patient', 'setup/start', data, sesh)
-
+				for f in lFields:
+					d[f] = None
+
+		# Return the providers in order of userName
+		return Services.Response(sorted(lProviders, key=lambda o: o['userName']))
 
 	def session_read(self, data, sesh):
 		"""Session
@@ -1030,7 +743,7 @@ class CSR(Services.Service):
 		if oResponse.errorExists(): return oResponse
 
 		# Create a new session
-		oSesh = Sesh.create("csr:" + uuid.uuid4().hex)
+		oSesh = Sesh.create("prov:" + uuid.uuid4().hex)
 
 		# Store the user ID and information in it
 		oSesh['memo_id'] = oResponse.data

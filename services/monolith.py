@@ -1572,38 +1572,23 @@ class Monolith(Services.Service):
 		# Return OK
 		return Services.Response(True)
 
-	def session_read(self, data, sesh):
-		"""Session
-
-		Returns the ID of the user logged into the current session
-
-		Arguments:
-			data (dict): Data sent with the request
-			sesh (Sesh._Session): The session associated with the request
-
-		Returns:
-			Services.Response
-		"""
-		return Services.Response({
-			"memo": {"id": sesh['memo_id']},
-			"user" : {"id": sesh['user_id']}
-		})
-
 	def signin_create(self, data):
 		"""Signin
 
-		Signs a user into the system
+		Used to verify a user sign in, but doesn't actually create the session.
+		Can only be called by other services
 
-		Arguments:
-			data (dict): The data passed to the request
-
-		Returns:
-			Result
+		Arguments
 		"""
 
 		# Verify fields
-		try: DictHelper.eval(data, ['userName', 'passwd'])
+		try: DictHelper.eval(data, ['_internal_', 'userName', 'passwd'])
 		except ValueError as e: return Services.Response(error=(1001, [(f, 'missing') for f in e.args]))
+
+		# Verify the key, remove it if it's ok
+		if not Services.internalKey(data['_internal_']):
+			return Services.Response(error=Errors.SERVICE_INTERNAL_KEY)
+		del data['_internal_']
 
 		# Look for the user by alias
 		oUser = User.filter({"userName": data['userName']}, limit=1)
@@ -1618,56 +1603,8 @@ class Monolith(Services.Service):
 		if not bcrypt.checkpw(data['passwd'].encode('utf8'), oUser['password'].encode('utf8')):
 			return Services.Response(error=1201)
 
-		# Create a new session
-		oSesh = Sesh.create("mono:" + uuid.uuid4().hex)
-
-		# Store the user ID and information in it
-		oSesh['memo_id'] = oUser['id']
-
-		# Save the session
-		oSesh.save()
-
-		# Check the CSR tool for the memo user / agent
-		oResponse = Services.read('csr', 'agent/internal', {
-			"_internal_": Services.internalKey(),
-			"id": oUser['id']
-		}, oSesh)
-		if oResponse.errorExists():
-			if oResponse.error['code'] == 1104:
-				return Services.Response(error=Rights.INVALID)
-			return oResponse
-
-		# Store the user ID and claim vars in the session
-		oSesh['user_id'] = oResponse.data['_id']
-		oSesh['claims_max'] = oResponse.data['claims_max']
-		oSesh['claims_timeout'] = oResponse.data['claims_timeout']
-		oSesh.save()
-
-		# Return the session ID and primary user data
-		return Services.Response({
-			"memo": {"id": oSesh['memo_id']},
-			"session": oSesh.id(),
-			"user": {"id": oResponse.data['_id']}
-		})
-
-	def signout_create(self, data, sesh):
-		"""Signout
-
-		Called to sign out a user and destroy their session
-
-		Arguments:
-			data (dict): Data sent with the request
-			sesh (Sesh._Session): The session associated with the user
-
-		Returns:
-			Services.Response
-		"""
-
-		# Close the session so it can no longer be found/used
-		sesh.close()
-
-		# Return OK
-		return Services.Response(True)
+		# Return the ID
+		return Services.Response(oUser['id'])
 
 	def statsClaimed_read(self, data, sesh):
 		"""Stats: Claimed
@@ -1794,7 +1731,7 @@ class Monolith(Services.Service):
 		"""
 
 		# If the user is not the one logged in
-		if 'id' in data and (data['id'] != sesh['memo_id'] or '_internal_' in data):
+		if 'id' in data and ('memo_id' not in data or data['id'] != sesh['memo_id'] or '_internal_' in data):
 
 			# If there's no internal
 			if '_internal_' not in data:
@@ -2000,6 +1937,10 @@ class Monolith(Services.Service):
 		if not Services.internalKey(data['_internal_']):
 			return Services.Response(error=Errors.SERVICE_INTERNAL_KEY)
 		del data['_internal_']
+
+		# If there's no IDs
+		if not data['id']:
+			return Services.Response(error=(1001, [('id', 'empty')]))
 
 		# If the fields aren't passed
 		if 'fields' not in data:
