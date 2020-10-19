@@ -15,6 +15,9 @@ __created__		= "2020-08-18"
 from FormatOC import Tree
 from RestOC import Conf, Record_MySQL
 
+# Shared imports
+from shared import Record_MySQLSearch
+
 # Address class
 class Address(Record_MySQL.Record):
 	"""Address
@@ -46,7 +49,7 @@ class Address(Record_MySQL.Record):
 		return cls._conf
 
 # Customer class
-class Customer(Record_MySQL.Record):
+class Customer(Record_MySQLSearch.Record):
 	"""Customer
 
 	Represents a single customer
@@ -67,31 +70,13 @@ class Customer(Record_MySQL.Record):
 
 		# If we haven loaded the config yet
 		if not cls._conf:
-			cls._conf = Record_MySQL.Record.generateConfig(
+			cls._conf = Record_MySQLSearch.Record.generateConfig(
 				Tree.fromFile('definitions/customers/customer.json'),
 				'mysql'
 			)
 
 		# Return the config
 		return cls._conf
-
-	@classmethod
-	def search(cls, filter, custom={}):
-		"""Search
-
-		Does a text based LIKE search for customers rather than checking if
-		values are exactly as sent
-
-		Arguments:
-			filter (dict): Lists of fields to search against
-			custom (dict): Custom Host and DB info
-				'host' the name of the host to get/set data on
-				'append' optional postfix for dynamic DBs
-
-		Returns:
-			dict[]
-		"""
-		pass
 
 # Note class
 class Note(Record_MySQL.Record):

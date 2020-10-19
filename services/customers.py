@@ -548,3 +548,34 @@ class Customers(Services.Service):
 		return Services.Response(
 			oNote.create()
 		)
+
+	def search_read(self, data, sesh):
+		"""Search
+
+		Search for customers
+
+		Arguments:
+			data (mixed): Data sent with the request
+			sesh (Sesh._Session): The session associated with the request
+
+		Returns:
+			Services.Response
+		"""
+
+		# Verify fields
+		try: DictHelper.eval(data, ['filter'])
+		except ValueError as e: return Services.Response(error=(1001, [(f, 'missing') for f in e.args]))
+
+		# If the filter isn't a dict
+		if not isinstance(data['filter'], dict):
+			return Services.Response(error=(1001, [('filter', "must be a key:value store")]))
+
+		# If fields is not a list
+		if 'fields' in data and not isinstance(data['fields'], list):
+			return Services.Response(error=(1001, [('fields', "must be a list")]))
+
+		# Search based on the data passed
+		lRecords = Customer.search(data['filter'], raw=('fields' in data and data['fields'] or True))
+
+		# Return the results
+		return Services.Response(lRecords)
