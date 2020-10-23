@@ -11,9 +11,12 @@ __maintainer__	= "Chris Nasr"
 __email__		= "chris@fuelforthefire.ca"
 __created__		= "2020-10-15"
 
+# Python imports
+import uuid
+
 # Pip imports
 from FormatOC import Node
-from RestOC import DictHelper, Errors, Record_MySQL, Services
+from RestOC import DictHelper, Errors, Record_MySQL, Services, Sesh
 
 # Shared imports
 from shared import Rights
@@ -734,7 +737,7 @@ class Providers(Services.Service):
 		"""
 
 		# Verify fields
-		try: DictHelper.eval(data, ['_internal_', 'userName', 'passwd'])
+		try: DictHelper.eval(data, ['userName', 'passwd'])
 		except ValueError as e: return Services.Response(error=(1001, [(f, 'missing') for f in e.args]))
 
 		# Check monolith for the user
@@ -746,33 +749,41 @@ class Providers(Services.Service):
 		oSesh = Sesh.create("prov:" + uuid.uuid4().hex)
 
 		# Store the user ID and information in it
-		oSesh['memo_id'] = oResponse.data
+		oSesh['memo_id'] = oResponse.data['id']
+		oSesh['states'] = {
+			"ed": oResponse.data['eDFlag'] == 'Y' \
+					and (oResponse.data['practiceStates'] and oResponse.data['practiceStates'].split(', ')) \
+					or None,
+			"hrt": oResponse.data['hormoneFlag'] == 'Y' \
+					and (oResponse.data['hrtPracticeStates'] and oResponse.data['hrtPracticeStates'].split(', ')) \
+					or None
+		}
 
 		# Save the session
 		oSesh.save()
 
 		# Check for the agent associated with the memo ID
-		dAgent = Agent.filter(
-			{"memo_id": data['id']},
+		dProvider = Provider.filter(
+			{"memo_id": oResponse.data['id']},
 			raw=True,
 			limit=1
 		)
 
 		# If there's no such user
-		if not dAgent:
+		if not dProvider:
 			return Services.Response(error=Rights.INVALID)
 
 		# Store the user ID and claim vars in the session
-		oSesh['user_id'] = dAgent['_id']
-		oSesh['claims_max'] = dAgent['claims_max']
-		oSesh['claims_timeout'] = dAgent['claims_timeout']
+		oSesh['user_id'] = dProvider['_id']
+		oSesh['claims_max'] = dProvider['claims_max']
+		oSesh['claims_timeout'] = dProvider['claims_timeout']
 		oSesh.save()
 
 		# Return the session ID and primary user data
 		return Services.Response({
 			"memo": {"id": oSesh['memo_id']},
 			"session": oSesh.id(),
-			"user": {"id": dAgent['_id']}
+			"user": {"id": dProvider['_id']}
 		})
 
 	def signout_create(self, data, sesh):

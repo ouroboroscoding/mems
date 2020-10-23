@@ -11,9 +11,12 @@ __maintainer__	= "Chris Nasr"
 __email__		= "chris@fuelforthefire.ca"
 __created__		= "2020-05-17"
 
+# Python imports
+import uuid
+
 # Pip imports
 from FormatOC import Node
-from RestOC import DictHelper, Errors, Record_MySQL, Services
+from RestOC import DictHelper, Errors, Record_MySQL, Services, Sesh
 
 # Shared imports
 from shared import Rights
@@ -1033,14 +1036,14 @@ class CSR(Services.Service):
 		oSesh = Sesh.create("csr:" + uuid.uuid4().hex)
 
 		# Store the user ID and information in it
-		oSesh['memo_id'] = oResponse.data
+		oSesh['memo_id'] = oResponse.data['id']
 
 		# Save the session
 		oSesh.save()
 
 		# Check for the agent associated with the memo ID
 		dAgent = Agent.filter(
-			{"memo_id": data['id']},
+			{"memo_id": oRespond.data['id']},
 			raw=True,
 			limit=1
 		)

@@ -36,9 +36,9 @@ REST.Server({
 	"/provider/passwd": {"methods": REST.UPDATE, "session": True},
 	"/provider/permissions": {"methods": REST.READ | REST.UPDATE, "session": True},
 
-	"session": {"methods": REST.READ, "session": True},
-	"signin": {"methods": REST.CREATE},
-	"signout": {"methods": REST.CREATE},
+	"/session": {"methods": REST.READ, "session": True},
+	"/signin": {"methods": REST.CREATE},
+	"/signout": {"methods": REST.CREATE},
 
 	"/template/email": {"methods": REST.ALL, "session": True},
 	"/template/emails": {"methods": REST.READ, "session": True},

@@ -18,6 +18,7 @@ from time import time
 from urllib.parse import urlencode
 
 # Pip imports
+import arrow
 import requests
 from RestOC import Conf, DictHelper, Errors, Record_MySQL, Services, StrHelper
 
@@ -313,6 +314,128 @@ class Prescriptions(Services.Service):
 		# Return the pharmacies
 		return Services.Response(dData['Item'])
 
+	def patientMedications_read(self, data, sesh):
+		"""Patient Medications
+
+		Returns the list of medication associated with the given patient
+
+		Arguments:
+			data (dict): Data sent with the request
+			sesh (Sesh._Session): The session associated with the request
+
+		Returns:
+			Services.Response
+		"""
+
+		# Verify fields
+		try: DictHelper.eval(data, ['clinician_id', 'patient_id'])
+		except ValueError as e: return Services.Response(error=(1001, [(f, 'missing') for f in e.args]))
+
+		# If it's internal
+		if '_internal_' in data:
+
+			# Verify the key, remove it if it's ok
+			if not Services.internalKey(data['_internal_']):
+				return Services.Response(error=Errors.SERVICE_INTERNAL_KEY)
+			del data['_internal_']
+
+		# Else
+		else:
+
+			# Make sure the user has the proper permission to do this
+			oResponse = Services.read('auth', 'rights/verify', {
+				"name": "medications",
+				"right": Rights.READ,
+				"ident": data['patient_id']
+			}, sesh)
+			if not oResponse.data:
+				return Services.Response(error=Rights.INVALID)
+
+		# Make sure we got ints
+		lErrors = []
+		for s in ['clinician_id', 'patient_id']:
+			if not isinstance(data[s], int):
+				lErrors.append((s, 'must be integer'))
+		if lErrors: return Services.Response(error=(1001, lErrors))
+
+		# Generate the URL
+		sURL = 'https://%s/webapi/api/patients/%d/medications/history?start=1900-01-01&end=%s' % (
+			self._host,
+			data['patient_id'],
+			arrow.get().format('YYYY-MM-DD')
+		)
+
+		# Loop for if we don't have consent
+		while True:
+
+			# Generate the headers
+			dHeaders = {
+				"Accept": "application/json",
+				"Authorization": "Bearer %s" % self._generateToken(data['clinician_id'])
+			}
+
+			# Make the request
+			oRes = requests.get(sURL, headers=dHeaders)
+
+			# If we didn't get a 200
+			if oRes.status_code != 200:
+				return Services.Response(error=(1601, oRes.text))
+
+			# Get the data
+			dData = oRes.json()
+
+			print('Medication return: %s' % dData)
+
+			# If we got an error
+			if dData['Result']['ResultCode'] == 'ERROR':
+
+				# If it's a 1602, no consent
+				if 'LogPatientMedicationHistoryConsent' in dData['Result']['ResultDescription']:
+
+					# Generate the headers
+					dHeaders = {
+						"Accept": "application/json",
+						"Authorization": "Bearer %s" % self._generateToken(data['clinician_id'])
+					}
+
+					# Generate the URL
+					sConsentURL = 'https://%s/webapi/api/patients/%d/logMedicationHistoryConsent' % (
+						self._host,
+						data['patient_id']
+					)
+
+					# Make the request
+					oRes = requests.post(sConsentURL, headers=dHeaders)
+
+					# If we didn't get a 200
+					if oRes.status_code != 200:
+						return Services.Response(error=(1601, oRes.text))
+
+					# Get the data
+					dData = oRes.json()
+
+					# Debugging
+					print('Consent return: %s' % dData)
+
+					# We got consent, loop back around
+					continue
+
+				# Unknown DoseSpot error
+				else:
+					return Services.Response(error=(1602, dData['Result']['ResultDescription']))
+
+			# We got a result, quit the consent loop
+			break
+
+
+
+		# If there's no items
+		if not dData['Items']:
+			return Services.Response([])
+
+		# Return the medications
+		return Services.Response(dData['Items'])
+
 	def patientPharmacies_read(self, data, sesh):
 		"""Patient Pharmacies
 
@@ -572,10 +695,11 @@ class Prescriptions(Services.Service):
 			data['clinician_id'] = Conf.get(('dosespot', 'clinician_id'))
 
 		# Make sure we got ints
+		lErrors = []
 		for s in ['clinician_id', 'patient_id']:
-			lErrors = []
-			if not isinstance(data[s], int): lErrors.append((s, 'must be integer'))
-			if lErrors: return Services.Response(error=(1001, lErrors))
+			if not isinstance(data[s], int):
+				lErrors.append((s, 'must be integer'))
+		if lErrors: return Services.Response(error=(1001, lErrors))
 
 		# Generate the token
 		sToken = self._generateToken(data['clinician_id'])

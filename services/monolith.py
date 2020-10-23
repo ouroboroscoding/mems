@@ -14,24 +14,23 @@ __created__		= "2020-04-26"
 # Python imports
 import re
 from time import time
-import uuid
 
 # Pip imports
 import arrow
 import bcrypt
 from redis import StrictRedis
 from RestOC import Conf, DictHelper, Errors, Record_MySQL, Services, \
-					Sesh, StrHelper, Templates
+					StrHelper, Templates
 
 # Shared imports
 from shared import Rights, Sync
 
 # Records imports
 from records.monolith import \
-	Calendly, CustomerClaimed, CustomerClaimedLast, CustomerCommunication, \
-	CustomerMsgPhone, DsPatient, Forgot, HrtLabResultTests, KtCustomer, KtOrder, ShippingInfo, \
-	SmpNote, SmpOrderStatus, SMSStop, TfAnswer, TfLanding, TfQuestion, \
-	TfQuestionOption, User, \
+	Calendly, Campaign, CustomerClaimed, CustomerClaimedLast, CustomerCommunication, \
+	CustomerMsgPhone, DsPatient, Forgot, HrtLabResultTests, KtCustomer, KtOrder, \
+	KtOrderClaim, ShippingInfo, SmpNote, SmpOrderStatus, SMSStop, TfAnswer, \
+	TfLanding, TfQuestion, TfQuestionOption, User, \
 	init as recInit
 
 # Regex for validating email
@@ -266,10 +265,6 @@ class Monolith(Services.Service):
 
 		# Find the claim
 		oClaim = CustomerClaimed.get(data['phoneNumber'])
-		if not oClaim:
-			return Services.Response(error=(1104, data['phoneNumber']))
-
-		# If it doesn't exist
 		if not oClaim:
 			return Services.Response(error=(1104, data['phoneNumber']))
 
@@ -1464,6 +1459,210 @@ class Monolith(Services.Service):
 			CustomerMsgPhone.unclaimedCount()
 		)
 
+	def orderClaim_create(self, data, sesh):
+		"""Order Claim Create
+
+		Stores a record to claim a customer conversation for a order
+
+		Arguments:
+			data (dict): Data sent with the request
+			sesh (Sesh._Session): The session associated with the request
+
+		Returns:
+			Services.Response
+		"""
+
+		# Make sure the user has the proper permission to do this
+		oResponse = Services.read('auth', 'rights/verify', {
+			"name": "order_claims",
+			"right": Rights.CREATE
+		}, sesh)
+		if not oResponse.data:
+			return Services.Response(error=Rights.INVALID)
+
+		# Verify fields
+		try: DictHelper.eval(data, ['customerId'])
+		except ValueError as e: return Services.Response(error=(1001, [(f, 'missing') for f in e.args]))
+
+		# Check how many claims this user already has
+		iCount = KtOrderClaim.count(filter={
+			"user": sesh['memo_id']
+		})
+
+		# If they're at or more than the maximum
+		if iCount >= sesh['claims_max']:
+			return Services.Response(error=1504)
+
+		# Attempt to create the record
+		try:
+			oKtOrderClaim = KtOrderClaim({
+				"customerId": data['customerId'],
+				"user": sesh['memo_id']
+			})
+		except ValueError as e:
+			return Services.Response(error=(1001, e.args[0]))
+
+		# Try to create the record
+		try:
+			oKtOrderClaim.create()
+
+			# Return OK
+			return Services.Response(True)
+
+		# If we got a duplicate exception
+		except Record_MySQL.DuplicateException:
+
+			# Fine the user who claimed it
+			dClaim = KtOrderClaim.get(data['customerId'], raw=['user']);
+
+			# Return the error with the user ID
+			return Services.Response(error=(1101, dClaim['user']))
+
+		# Else, we failed to create the record
+		return Services.Response(False)
+
+	def orderClaim_delete(self, data, sesh):
+		"""Order Claim Delete
+
+		Deletes a record to claim a customer conversation by a order
+
+		Arguments:
+			data (dict): Data sent with the request
+			sesh (Sesh._Session): The session associated with the request
+
+		Returns:
+			Services.Response
+		"""
+
+		# Make sure the user has the proper permission to do this
+		oResponse = Services.read('auth', 'rights/verify', {
+			"name": "order_claims",
+			"right": Rights.DELETE
+		}, sesh)
+		if not oResponse.data:
+			return Services.Response(error=Rights.INVALID)
+
+		# Verify fields
+		try: DictHelper.eval(data, ['customerId', 'reason'])
+		except ValueError as e: return Services.Response(error=(1001, [(f, 'missing') for f in e.args]))
+
+		# Fetch the claim
+		oClaim = KtOrderClaim.get(data['customerId'])
+
+		# Attempt to delete the record
+		KtOrderClaim.deleteGet(data['customerId'])
+
+		# Return OK
+		return Services.Response(True)
+
+	def orderClaim_update(self, data, sesh):
+		"""Order Claim Update
+
+		Switches a claim to another order
+
+		Arguments:
+			data (dict): Data sent with the request
+			sesh (Sesh._Session): The session associated with the request
+
+		Returns:
+			Services.Response
+		"""
+
+		# Make sure the user has the proper permission to do this
+		oResponse = Services.read('auth', 'rights/verify', {
+			"name": "order_claims",
+			"right": Rights.UPDATE
+		}, sesh)
+		if not oResponse.data:
+			return Services.Response(error=Rights.INVALID)
+
+		# Verify fields
+		try: DictHelper.eval(data, ['customerId', 'user_id'])
+		except ValueError as e: return Services.Response(error=(1001, [(f, 'missing') for f in e.args]))
+
+		# Find the claim
+		oClaim = KtOrderClaim.get(data['customerId'])
+		if not oClaim:
+			return Services.Response(error=(1104, data['customerId']))
+
+		# If the current owner of the claim is not the person transfering,
+		#	check permissions
+		if oClaim['user'] != sesh['memo_id']:
+
+			# Make sure the user has the proper rights
+			oResponse = Services.read('auth', 'rights/verify', {
+				"name": "order_overwrite",
+				"right": Rights.CREATE
+			}, sesh)
+			if not oResponse.data:
+				return Services.Response(error=Rights.INVALID)
+
+			# Store the old user
+			iOldUser = oClaim['user']
+
+		# Else, no old user
+		else:
+			iOldUser = None
+
+		# Find the user
+		if not User.exists(data['user_id']):
+			return Services.Response(error=(1104, data['user_id']))
+
+		# Switch the user associated to the logged in user
+		oClaim['user'] = data['user_id']
+		oClaim['transferredBy'] = sesh['memo_id']
+		oClaim.save()
+
+		# If the user transferred it to themselves, they don't need a
+		#	notification
+		if data['user_id'] != sesh['memo_id']:
+
+			# Sync the transfer for anyone interested
+			Sync.push('monolith', 'user-%s' % str(data['user_id']), {
+				"type": 'order_claim_transfered',
+				"customerId": data['customerId'],
+				"transferredBy": sesh['memo_id']
+			})
+
+		# If the claim was forceable removed
+		if iOldUser:
+
+			# Notify the user they lost the claim
+			Sync.push('monolith', 'user-%s' % str(iOldUser), {
+				"type": 'order_claim_removed',
+				"customerId": oClaim['customerId']
+			})
+
+		# Return OK
+		return Services.Response(True)
+
+	def orderClaimed_read(self, data, sesh):
+		"""Order Claimed
+
+		Fetches the list of customers and name associated that the user has
+		claimed
+
+		Arguments:
+			data (dict): Data sent with the request
+			sesh (Sesh._Session): The session associated with the request
+
+		Returns:
+			Services.Response
+		"""
+
+		# Make sure the user has the proper permission to do this
+		oResponse = Services.read('auth', 'rights/verify', {
+			"name": "order_claims",
+			"right": Rights.CREATE
+		}, sesh)
+		if not oResponse.data:
+			return Services.Response(error=Rights.INVALID)
+
+		# Get and return the claimed records
+		return Services.Response(
+			KtCustomer.claimed(sesh['memo_id'])
+		)
+
 	def passwdForgot_create(self, data):
 		"""Password Forgot (Generate)
 
@@ -1572,6 +1771,92 @@ class Monolith(Services.Service):
 		# Return OK
 		return Services.Response(True)
 
+	def providerCalendly_read(self, data, sesh):
+		"""Provider Calendly
+
+		Returns all upcoming appointments associated with the provider
+
+		Arguments:
+			data (dict): Data sent with the request
+			sesh (Sesh._Session): The session associated with the request
+
+		Returns:
+			Services.Response
+		"""
+
+		# Make sure the user has the proper permission to do this
+		oResponse = Services.read('auth', 'rights/verify', {
+			"name": "calendly",
+			"right": Rights.READ
+		}, sesh)
+		if not oResponse.data:
+			return Services.Response(error=Rights.INVALID)
+
+		# Check for meme_id in session
+		if 'memo_id' not in sesh:
+			return Services.Response(error=1507)
+
+		# Get the emails for the user
+		dUser = User.get(sesh['memo_id'], raw=['email', 'calendlyEmail'])
+		if not dUser:
+			return Services.Response(error=(1104, 'user'))
+
+		# Find all calendly appointments in progress or in the future associated
+		#	with the user
+		lAppts = Calendly.filter({
+			"order_emailAddress": [dUser['email'], dUser['calendlyEmail']],
+			"end": {"gte": Record_MySQL.Literal('CURRENT_TIMESTAMP')}
+		}, orderby='start', raw=True)
+
+		# Return anything found
+		return Services.Response(lAppts)
+
+	def queueEd_read(self, data, sesh):
+		"""Queue: ED
+
+		Returns the queue of orders that are pending or require attention from
+		providers
+
+		Arguments:
+			data (dict): Data sent with the request
+			sesh (Sesh._Session): The session associated with the request
+
+		Returns:
+			Services.Response
+		"""
+
+		# If the user has no ED states
+		if not sesh['states']['ed']:
+			return Services.Response(error=1506)
+
+		# Fetch and return the queue
+		return Services.Response(
+			KtOrder.queue('ed', sesh['states']['ed'])
+		)
+
+	def queueHrt_read(self, data, sesh):
+		"""Queue: HRT
+
+		Returns the queue of orders that are pending or require attention from
+		providers
+
+		Arguments:
+			data (dict): Data sent with the request
+			sesh (Sesh._Session): The session associated with the request
+
+		Returns:
+			Services.Response
+		"""
+
+		# If the user has no ED states
+		if not sesh['states']['hrt']:
+			return Services.Response(error=1506)
+
+		# Fetch and return the queue
+		return Services.Response(
+			KtOrder.queue('hrt', sesh['states']['hrt'])
+		)
+
 	def signin_create(self, data):
 		"""Signin
 
@@ -1603,8 +1888,8 @@ class Monolith(Services.Service):
 		if not bcrypt.checkpw(data['passwd'].encode('utf8'), oUser['password'].encode('utf8')):
 			return Services.Response(error=1201)
 
-		# Return the ID
-		return Services.Response(oUser['id'])
+		# Return the record data
+		return Services.Response(oUser.record())
 
 	def statsClaimed_read(self, data, sesh):
 		"""Stats: Claimed
@@ -1629,7 +1914,7 @@ class Monolith(Services.Service):
 
 		# Fetch and return claim stats
 		return Services.Response(
-			CustomerClaimed.stats()
+			CustomerClaim.stats()
 		)
 
 	def user_create(self, data, sesh):

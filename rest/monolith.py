@@ -57,10 +57,18 @@ REST.Server({
 	"/msgs/unclaimed": {"methods": REST.READ, "session": True},
 	"/msgs/unclaimed/count": {"methods": REST.READ, "session": True},
 
+	"/order/claim": {"methods": REST.CREATE | REST.UPDATE | REST.DELETE, "session": True},
+	"/order/claimed": {"methods": REST.READ, "session": True},
+
 	"/passwd/forgot": {"methods": REST.CREATE | REST.UPDATE},
 
 	"/pharmacy/fill/error": {"methods": REST.UPDATE | REST.DELETE, "session": True},
 	"/pharmacy/fill/errors": {"methods": REST.READ, "session": True},
+
+	"/provider/calendly": {"methods": REST.READ, "session": True},
+
+	"/queue/ed": {"methods": REST.READ, "session": True},
+	"/queue/hrt": {"methods": REST.READ, "session": True},
 
 	"/signin": {"methods": REST.POST},
 
