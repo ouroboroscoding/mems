@@ -11,12 +11,9 @@ __maintainer__	= "Chris Nasr"
 __email__		= "bast@maleexcel.com"
 __created__		= "2020-05-04"
 
-# Python imports
-import json
-
 # Pip imports
 import requests
-from RestOC import Conf
+from RestOC import Conf, JSON
 
 __funcToRequest = {
 	'create': [requests.post, 'POST'],
@@ -55,7 +52,7 @@ def __request(action, path, data):
 	)
 
 	# Convert the data to JSON
-	sData = json.dumps(data)
+	sData = JSON.encode(data)
 
 	# Create the headers
 	dHeaders = {
@@ -71,7 +68,7 @@ def __request(action, path, data):
 		return None;
 
 	# Convert the result from JSON and return
-	return json.loads(oRes.text)
+	return JSON.decode(oRes.text)
 
 def create(path, data):
 	"""Create

@@ -18,11 +18,11 @@ import urllib.parse
 
 # Pip imports
 import requests
-from RestOC import Conf, DictHelper, Services
+from RestOC import Conf, DictHelper, JSON, Services
 import xmltodict
 
 # Shared imports
-from shared import JSON, Rights, USPS
+from shared import Rights, USPS
 
 class Konnektive(Services.Service):
 	"""Konnektive Service class

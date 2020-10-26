@@ -18,8 +18,10 @@ import re
 
 # Pip imports
 from FormatOC import Tree
-from RestOC import Conf, Record_MySQL, StrHelper
-from shared import JSON
+from RestOC import Conf, JSON, Record_MySQL, StrHelper
+
+# Shared imports
+from shared import Record_MySQLSearch
 
 # Forgot class
 class Forgot(Record_MySQL.Record):
@@ -177,7 +179,7 @@ class Permission(Record_MySQL.Record):
 		cls._redis = redis
 
 # User class
-class User(Record_MySQL.Record):
+class User(Record_MySQLSearch.Record):
 	"""User
 
 	Represents a single user in the micro services system
@@ -298,7 +300,7 @@ class User(Record_MySQL.Record):
 
 		# If we haven loaded the config yet
 		if not cls._conf:
-			cls._conf = Record_MySQL.Record.generateConfig(
+			cls._conf = Record_MySQLSearch.Record.generateConfig(
 				Tree.fromFile('definitions/auth/user.json'),
 				'mysql'
 			)
@@ -388,34 +390,3 @@ class User(Record_MySQL.Record):
 			None
 		"""
 		cls._redis = redis
-
-	@classmethod
-	def search(cls, q):
-		"""Search
-
-		Searches for throwers based on alias
-
-		Arguments:
-			q string -- The query to search
-
-		Returns:
-			list
-		"""
-
-		# Get the structure
-		dStruct = cls.struct()
-
-		# Generate the SELECT statement
-		sSQL = 'SELECT `%(id)s` FROM `%(db)s`.`%(table)s` ' \
-				'WHERE `email` LIKE \'%%%(q)s%%\' ' \
-				'OR `phoneNumber` LIKE \'%%%(q)s%%\' ' \
-				'OR CONCAT(`firstName`, \' \', `lastName`) LIKE \'%%%(q)s%%\' ' \
-				'ORDER BY `firstName`, `lastName`' % {
-			"id": dStruct['primary'],
-			"db": dStruct['db'],
-			"table": dStruct['table'],
-			"q": q
-		}
-
-		# Fetch any records
-		return Record_MySQL.Commands.select(dStruct['host'], sSQL, Record_MySQL.ESelect.COLUMN)

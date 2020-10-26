@@ -308,10 +308,10 @@ class Auth(Services.Service):
 
 		# If fields is not a list
 		if 'fields' in data and not isinstance(data['fields'], list):
-			return Services.Response(error=(1001, [('fields', "must be an list")]))
+			return Services.Response(error=(1001, [('fields', "must be a list")]))
 
 		# Search based on the data passed
-		lRecords = [d['_id'] for d in User.filter(data['filter'], raw=['_id'])]
+		lRecords = [d['_id'] for d in User.search(data['filter'], raw=['_id'])]
 
 		# If we got something, fetch the records from the cache
 		if lRecords:
@@ -610,6 +610,37 @@ class Auth(Services.Service):
 		# Return OK
 		return Services.Response(True)
 
+	def userNames_read(self, data, sesh):
+		"""User Names
+
+		Returns a dict of IDs to names of users
+
+		Arguments:
+			data (dict): Data sent with the request
+			sesh (Sesh._Session): The session associated with the user
+
+		Returns:
+			Services.Response
+		"""
+
+		# Verify fields
+		try: DictHelper.eval(data, ['_id'])
+		except ValueError as e: return Services.Response(error=(1001, [(f, 'missing') for f in e.args]))
+
+		# If we only got one ID
+		if isinstance(data['_id'], str):
+			data['_id'] = [data['_id']]
+
+		# If the list is empty
+		if not data['_id']:
+			return Services.Response(error=(1001, [('_id', 'empty')]))
+
+		# Fetch and return the names by ID
+		return Services.Response({
+			d['_id']: {"firstName":d['firstName'], "lastName":d['lastName']}
+			for d in User.get(data['_id'], raw=['_id', 'firstName', 'lastName'])
+		})
+
 	def userPasswd_update(self, data, sesh):
 		"""User Password
 
@@ -623,18 +654,46 @@ class Auth(Services.Service):
 			Services.Response
 		"""
 
-		# Verify fields
-		try: DictHelper.eval(data, ['passwd', 'new_passwd'])
+		# Verify minimum fields
+		try: DictHelper.eval(data, ['new_passwd'])
 		except ValueError as e: return Services.Response(error=(1001, [(f, 'missing') for f in e.args]))
 
+		# If the id is passed
+		if '_id' in data:
+
+			# If it doesn't match the logged in user
+			if data['_id'] != sesh['user_id']:
+
+				# Make sure the user has the proper permission to do this
+				oResponse = Services.read('auth', 'rights/verify', {
+					"name": "user",
+					"right": Rights.UPDATE,
+					"ident": data['_id']
+				}, sesh)
+				if not oResponse.data:
+					return Services.Response(error=Rights.INVALID)
+
+		# Else, use the user from the session
+		else:
+
+			# If the old password is missing
+			if 'passwd' not in data:
+				return Services.Response(error=(1001, [('passwd', 'missing')]))
+
+			# Store the session as the user ID
+			data['_id'] = sesh['user_id']
+
 		# Find the user
-		oUser = User.get(sesh['user']['_id'])
+		oUser = User.get(data['_id'])
 		if not oUser:
 			return Services.Response(error=1104)
 
-		# Validate the password
-		if not oUser.passwordValidate(data['passwd']):
-			return Services.Response(error=(1001, [('passwd', 'invalid')]))
+		# If we have an old password
+		if 'passwd' in data:
+
+			# Validate it
+			if not oUser.passwordValidate(data['passwd']):
+				return Services.Response(error=(1001, [('passwd', 'invalid')]))
 
 		# Make sure the new password is strong enough
 		if not User.passwordStrength(data['new_passwd']):
@@ -642,7 +701,7 @@ class Auth(Services.Service):
 
 		# Set the new password and save
 		oUser['passwd'] = User.passwordHash(data['new_passwd'])
-		oUser.save(changes={"user":sesh['user']['_id']})
+		oUser.save(changes={"user":sesh['user_id']})
 
 		# Return OK
 		return Services.Response(True)

@@ -33,7 +33,8 @@ REST.Server({
 	"/customer": {"methods": REST.CREATE | REST.READ | REST.UPDATE, "session": True},
 	"/customer/addresses": {"methods": REST.READ, "session": True},
 	"/customer/notes": {"methods": REST.READ, "session": True},
-	"/note": {"methods": REST.CREATE, "session": True}
+	"/note": {"methods": REST.CREATE, "session": True},
+	"/search": {"methods": REST.READ, "session": True}
 
 }, 'customers', "https?://(.*\\.)?%s" % Conf.get(("rest","allowed")).replace('.', '\\.')).run(
 	host=oRestConf['customers']['host'],

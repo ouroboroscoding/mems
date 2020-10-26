@@ -18,10 +18,10 @@ import traceback
 
 # Pip imports
 import arrow
-from RestOC import Conf, Services
+from RestOC import Conf, JSON, Services
 
 # Shared imports
-from shared import JSON, Shipping
+from shared import Shipping
 
 # Service imports
 from records.monolith import KtOrder, SMSPatientWorkflow, SMSTemplate

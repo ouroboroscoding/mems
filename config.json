@@ -116,7 +116,7 @@
 	},
 
 	"rest": {
-		"allowed": "(?:admin|crm|cs|pp).mems.local",
+		"allowed": "(?:admin|crm|cs|mp|pp).mems.local",
 		"default": {
 			"domain": "localhost",
 			"host": "0.0.0.0",
@@ -134,6 +134,9 @@
 			"patient": {"port": 11},
 			"payment": {"port": 5},
 			"prescriptions": {"port": 8},
+			"products": {"port": 14},
+			"provider": {"port": 16},
+			"qualmed": {"port": 15},
 			"reports": {"port": 13},
 			"webpoll": {"port": 2},
 			"welldyne": {"port": 10}

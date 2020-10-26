@@ -16,10 +16,9 @@ import re
 
 # Pip imports
 from FormatOC import Node
-from RestOC import Conf, DictHelper, Errors, Services
+from RestOC import Conf, DictHelper, Errors, JSON, Services
 
 # Shared imports
-from shared import JSON
 from shared.RocketGate import *
 
 # Records imports

@@ -13,10 +13,7 @@ __created__		= "2018-09-09"
 
 # Include pip modules
 from redis import StrictRedis
-from RestOC import Conf
-
-# Include local modules
-from . import JSON
+from RestOC import Conf, JSON
 
 # The redis instance
 _moRedis = None

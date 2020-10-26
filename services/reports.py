@@ -24,7 +24,7 @@ from records.reports import Recipients
 class Reports(Services.Service):
 	"""Reports Service class
 
-	Service for Reportsorization, sign in, sign up, etc.
+	Service for reports
 	"""
 
 	_install = [Recipients]
