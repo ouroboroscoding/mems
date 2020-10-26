@@ -22,7 +22,6 @@ from FormatOC import Tree
 from RestOC import Conf, Record_MySQL
 
 # Custome SQL
-sClaimedSQL = ''
 sClaimedNewSQL = ''
 sConversationSQL = ''
 sLatestStatusSQL = ''
@@ -37,14 +36,12 @@ def init():
 	Need to find a better way to do this
 	"""
 
-	global sClaimedSQL, sClaimedNewSQL, sConversationSQL, \
+	global sClaimedNewSQL, sConversationSQL, \
 			sLandingSQL, sLatestStatusSQL, sMsgPhoneUpdateSQL, \
 			sSmpNotes, sNumOfOrdersSQL, sSearchSQL, \
 			sUnclaimedSQL, sUnclaimedCountSQL
 
 	# SQL files
-	with open('records/sql/claimed.sql') as oF:
-		sClaimedSQL = oF.read()
 	with open('records/sql/claimed_new.sql') as oF:
 		sClaimedNewSQL = oF.read()
 	with open('records/sql/conversation.sql') as oF:
@@ -539,13 +536,30 @@ class CustomerMsgPhone(Record_MySQL.Record):
 		# Fetch the record structure
 		dStruct = cls.struct(custom)
 
+		# Generate SQL
+		sSQL = "SELECT\n" \
+				"	`cmp`.`customerPhone`,\n" \
+				"	`cmp`.`customerName`,\n" \
+				"	`cc`.`transferredBy`,\n" \
+				"	`cc`.`provider`\n," \
+				"	`cc`.`orderId`\n" \
+				"FROM\n" \
+				"	`%(db)s`.`%(table)s` AS `cmp` JOIN\n" \
+				"	`%(db)s`.`customer_claimed` as `cc` ON\n" \
+				"		`cmp`.`customerPhone` = `cc`.`phoneNumber`\n" \
+				"WHERE\n" \
+				"	`cc`.`user` = %(user)d\n" \
+				"ORDER BY\n" \
+				"	`cc`.`provider` DESC, `cc`.`transferredBy` DESC, `cc`.`createdAt`" % {
+			"db": dStruct['db'],
+			"table": dStruct['table'],
+			"user": user
+		}
+
 		# Fetch and return the data
 		return Record_MySQL.Commands.select(
 			dStruct['host'],
-			sClaimedSQL % {
-				"db": dStruct['db'],
-				"user": user
-			},
+			sSQL,
 			Record_MySQL.ESelect.ALL
 		)
 
@@ -613,8 +627,8 @@ class CustomerMsgPhone(Record_MySQL.Record):
 		sSQL = "SELECT\n" \
 				"	`cmp`.`id` AS `id`,\n" \
 				"	`cmp`.`customerPhone` AS `customerPhone`,\n" \
-				"	`cmp`.`customerName` AS `customerName`,\n" \
-				"	`ktot`.`customerId` as `customerId`,\n" \
+				"	IFNULL(`cmp`.`customerName`, 'N/A') AS `customerName`,\n" \
+				"	CONVERT(`ktot`.`customerId`, UNSIGNED) as `customerId`,\n" \
 				"	`ktot`.`numberOfOrders` AS `numberOfOrders`,\n" \
 				"	`ktot`.`latest_kto_id` AS `latest_kto_id`,\n" \
 				"	`cmp`.`lastMsgAt` as `lastMsgAt`,\n" \
@@ -957,6 +971,96 @@ class KtOrder(Record_MySQL.Record):
 				"phone": Record_MySQL.Commands.escape(dStruct['host'], phone)
 			},
 			Record_MySQL.ESelect.COLUMN
+		)
+
+	@classmethod
+	def queueCsr(cls, custom={}):
+		"""Queue CSR
+
+		Returns all pending, unclaimed, orders with a role of CSR
+
+		Arguments:
+			custom (dict): Custom Host and DB info
+				'host' the name of the host to get/set data on
+				'append' optional postfix for dynamic DBs
+
+		Returns:
+			list
+		"""
+
+		# Fetch the record structure
+		dStruct = cls.struct(custom)
+
+		# Generate the SQL
+		sSQL = "SELECT\n" \
+				"	`kto`.`orderId`,\n" \
+				"	CONCAT(`kto`.`shipFirstName`, ' ', `kto`.`shipLastName`) as `customerName`,\n" \
+				"	`kto`.`phoneNumber` as `customerPhone`,\n" \
+				"	`kto`.`shipCity`,\n" \
+				"	IFNULL(`ss`.`name`, '[state missing]') as `shipState`,\n" \
+				"	IFNULL(`ss`.`legalEncounterType`, '') as `type`,\n" \
+				"	CONVERT(`kto`.`customerId`, UNSIGNED) as `customerId`,\n" \
+				"	`kto`.`dateCreated`,\n" \
+				"	`kto`.`dateUpdated`,\n" \
+				"	IFNULL(`os`.`attentionRole`, 'Not Assigned') AS `attentionRole`,\n" \
+				"	IFNULL(`os`.`orderLabel`, 'Not Labeled') AS `orderLabel`\n" \
+				"FROM `%(db)s`.`%(table)s` AS `kto`\n" \
+				"LEFT JOIN `%(db)s`.`smp_state` as `ss` ON `ss`.`abbreviation` = `kto`.`shipState`\n" \
+				"LEFT JOIN `%(db)s`.`smp_order_status` as `os` ON `os`.`orderId` = `kto`.`orderId`\n" \
+				"LEFT JOIN `%(db)s`.`customer_claimed` as `cc` ON `cc`.`phoneNumber` = `kto`.`phoneNumber`\n" \
+				"WHERE `kto`.`orderStatus` = 'PENDING'\n" \
+				"AND IFNULL(`kto`.`cardType`, '') <> 'TESTCARD'\n" \
+				"AND `cc`.`user` IS NULL\n" \
+				"AND `attentionRole` = 'CSR'\n" \
+				"ORDER BY `kto`.`dateCreated` ASC" % {
+			"db": dStruct['db'],
+			"table": dStruct['table']
+		}
+
+		# Fetch and return the data
+		return Record_MySQL.Commands.select(
+			dStruct['host'],
+			sSQL,
+			Record_MySQL.ESelect.ALL
+		)
+
+	@classmethod
+	def queueCsrCount(cls, custom={}):
+		"""Queue CSR Count
+
+		Returns just the count of pending, unclaimed, orders with a role of CSR
+
+		Arguments:
+			custom (dict): Custom Host and DB info
+				'host' the name of the host to get/set data on
+				'append' optional postfix for dynamic DBs
+
+		Returns:
+			list
+		"""
+
+		# Fetch the record structure
+		dStruct = cls.struct(custom)
+
+		# Generate the SQL
+		sSQL = "SELECT\n" \
+				"	COUNT(*) as `count`\n" \
+				"FROM `%(db)s`.`%(table)s` AS `kto`\n" \
+				"LEFT JOIN `%(db)s`.`smp_order_status` as `os` ON `os`.`orderId` = `kto`.`orderId`\n" \
+				"LEFT JOIN `%(db)s`.`customer_claimed` as `cc` ON `cc`.`phoneNumber` = `kto`.`phoneNumber`\n" \
+				"WHERE `kto`.`orderStatus` = 'PENDING'\n" \
+				"AND IFNULL(`kto`.`cardType`, '') <> 'TESTCARD'\n" \
+				"AND `cc`.`user` IS NULL\n" \
+				"AND `attentionRole` = 'CSR'\n" % {
+			"db": dStruct['db'],
+			"table": dStruct['table']
+		}
+
+		# Fetch and return the data
+		return Record_MySQL.Commands.select(
+			dStruct['host'],
+			sSQL,
+			Record_MySQL.ESelect.CELL
 		)
 
 # ShippingInfo class

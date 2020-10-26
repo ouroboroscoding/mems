@@ -57,6 +57,9 @@ REST.Server({
 	"/msgs/unclaimed": {"methods": REST.READ, "session": True},
 	"/msgs/unclaimed/count": {"methods": REST.READ, "session": True},
 
+	"/orders/pending/csr": {"methods": REST.READ, "session": True},
+	"/orders/pending/csr/count": {"methods": REST.READ, "session": True},
+
 	"/passwd/forgot": {"methods": REST.CREATE | REST.UPDATE},
 
 	"/pharmacy/fill/error": {"methods": REST.UPDATE | REST.DELETE, "session": True},
