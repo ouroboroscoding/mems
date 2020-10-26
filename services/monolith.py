@@ -1710,7 +1710,6 @@ class Monolith(Services.Service):
 		oSesh['user_id'] = oResponse.data['_id']
 		oSesh['claims_max'] = oResponse.data['claims_max']
 		oSesh['claims_timeout'] = oResponse.data['claims_timeout']
-		oSesh['order_claims_max'] = oResponse.data['order_claims_max']
 		oSesh.save()
 
 		# Return the session ID and primary user data
