@@ -869,7 +869,7 @@ class Monolith(Services.Service):
 				oSmpNote = SmpNote({
 					"parentTable": 'kt_customer',
 					"parentColumn": 'customerId',
-					"columnValue": data['customer_id'],
+					"columnValue": str(data['customer_id']),
 					"action": data['action'],
 					"createdBy": sesh['memo_id'],
 					"note": data['content'],
