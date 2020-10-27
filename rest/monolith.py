@@ -46,6 +46,8 @@ REST.Server({
 	"/customer/note": {"methods": REST.CREATE, "session": True},
 	"/customer/notes": {"methods": REST.READ, "session": True},
 	"/customer/shipping": {"methods": REST.READ, "session": True},
+	"/customer/stop": {"methods": REST.CREATE | REST.DELETE, "session": True},
+	"/customer/stops": {"methods": REST.READ, "session": True},
 
 	"/message/incoming": {"methods": REST.CREATE},
 	"/message/outgoing": {"methods": REST.CREATE},
