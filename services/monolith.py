@@ -1055,6 +1055,124 @@ class Monolith(Services.Service):
 		# Return the records
 		return Services.Response(lCodes)
 
+	def customerStop_create(self, data, sesh):
+		"""Customer Stop Create
+
+		Adds a STOP flag on the specific phone number and service
+
+		Arguments:
+			data (dict): Data sent with the request
+			sesh (Sesh._Session): The session associated with the request
+
+		Returns:
+			Services.Response
+		"""
+
+		# Make sure the user has the proper permission to do this
+		oResponse = Services.read('auth', 'rights/verify', {
+			"name": "csr_messaging",
+			"right": Rights.CREATE
+		}, sesh)
+		if not oResponse.data:
+			return Services.Response(error=Rights.INVALID)
+
+		# Verify fields
+		try: DictHelper.eval(data, ['phoneNumber', 'service'])
+		except ValueError as e: return Services.Response(error=(1001, [(f, 'missing') for f in e.args]))
+
+		# Try to create an instance with the given data
+		try:
+			data['agent'] = sesh['memo_id']
+			oStop = SMSStop(data)
+		except ValueError as e:
+			return Services.Response(error=(1001, e.args[0]))
+
+		# Try to add it to the DB
+		try:
+			return Services.Response(
+				oStop.create()
+			)
+		except Record_MySQL.DuplicateException as e:
+			return Services.Response(error=1101)
+
+	def customerStop_delete(self, data, sesh):
+		"""Customer Stop Create
+
+		Removes a STOP flag on the specific phone number and service
+
+		Arguments:
+			data (dict): Data sent with the request
+			sesh (Sesh._Session): The session associated with the request
+
+		Returns:
+			Services.Response
+		"""
+
+		# Make sure the user has the proper permission to do this
+		oResponse = Services.read('auth', 'rights/verify', {
+			"name": "csr_messaging",
+			"right": Rights.CREATE
+		}, sesh)
+		if not oResponse.data:
+			return Services.Response(error=Rights.INVALID)
+
+		# Verify fields
+		try: DictHelper.eval(data, ['phoneNumber', 'service'])
+		except ValueError as e: return Services.Response(error=(1001, [(f, 'missing') for f in e.args]))
+
+		# Find the flag
+		oStop = SMSStop.filter({
+			"phoneNumber": data['phoneNumber'],
+			"service": data['service']
+		}, limit=1)
+
+		# If it doesn't exist
+		if not oStop:
+			return Services.Response(False)
+
+		# If it exists but there's no agent
+		if oStop['agent'] is None:
+			return Services.Response(error=1509)
+
+		# Else, delete it and return the response
+		return Services.Response(
+			oStop.delete()
+		)
+
+	def customerStops_read(self, data, sesh):
+		"""Customer Stops
+
+		Returns the list of STOP flags for all services associated with the
+		phone number
+
+		Arguments:
+			data (dict): Data sent with the request
+			sesh (Sesh._Session): The session associated with the request
+
+		Returns:
+			Services.Response
+		"""
+
+		# Make sure the user has the proper permission to do this
+		oResponse = Services.read('auth', 'rights/verify', {
+			"name": "csr_messaging",
+			"right": Rights.CREATE
+		}, sesh)
+		if not oResponse.data:
+			return Services.Response(error=Rights.INVALID)
+
+		# Verify fields
+		try: DictHelper.eval(data, ['phoneNumber'])
+		except ValueError as e: return Services.Response(error=(1001, [(f, 'missing') for f in e.args]))
+
+		# Fetch all flags for the number and return them
+		return Services.Response({
+			d['service']: d['agent'] for d in
+			SMSStop.filter({
+				"phoneNumber": data['phoneNumber']
+			}, raw=['service', 'agent'])
+		})
+
 	def messageIncoming_create(self, data):
 		"""Message Incoming
 
