@@ -720,6 +720,13 @@ class Patient(Services.Service):
 		# Look for the record
 		oSetup = AccountSetup.get(data['key'])
 		if not oSetup:
+
+			# Check for a patient account
+			oAccount = Account.get(data['key'])
+			if oAccount:
+				return Services.Response(error=1911)
+
+			# No patient account, the key just doesn't exist
 			return Services.Response(error=1905)
 
 		# Check if we already have an account with that email
