@@ -730,18 +730,23 @@ class Patient(Services.Service):
 		if data['dob'] != oSetup['dob'] or \
 			data['lname'].lower() != oSetup['lname'].lower():
 
+			emailError('Patient Setup Validation Failed', 'Sent: %s\n\n DB: %s' % (
+				str(data),
+				str(oSetup.record())
+			))
+
 			# Increment the attempts
 			oSetup['attempts'] += 1
 
 			# If we've hit the limit, delete the record and return
-			if oSetup['attempts'] == self._conf['max_attempts']:
-				oSetup.delete()
-				return Services.Response(error=1906)
+			#if oSetup['attempts'] == self._conf['max_attempts']:
+			#	oSetup.delete()
+			#	return Services.Response(error=1906)
 
 			# Else, save and return
-			else:
-				oSetup.save()
-				return Services.Response(error=1907)
+			#else:
+			oSetup.save()
+			return Services.Response(error=1907)
 
 		# Validate the password strength
 		if not Account.passwordStrength(data['passwd']):
