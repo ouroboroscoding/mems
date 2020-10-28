@@ -264,6 +264,10 @@ class Monolith(Services.Service):
 		if not oClaim:
 			return Services.Response(error=1104)
 
+		# If the user is not the one who made the claim
+		if oClaim['user'] != sesh['memo_id']:
+			return Services.Response(error=1000)
+
 		# Delete the claim and return the response
 		return Services.Response(
 			oClaim.delete()
@@ -1628,7 +1632,7 @@ class Monolith(Services.Service):
 			return Services.Response(error=Rights.INVALID)
 
 		# Verify fields
-		try: DictHelper.eval(data, ['customerId'])
+		try: DictHelper.eval(data, ['customerId', 'orderId'])
 		except ValueError as e: return Services.Response(error=(1001, [(f, 'missing') for f in e.args]))
 
 		# Check how many claims this user already has
@@ -1638,12 +1642,13 @@ class Monolith(Services.Service):
 
 		# If they're at or more than the maximum
 		if iCount >= sesh['claims_max']:
-			return Services.Response(error=1504)
+			return Services.Response(error=1505)
 
 		# Attempt to create the record
 		try:
 			oKtOrderClaim = KtOrderClaim({
 				"customerId": data['customerId'],
+				"orderId": data['orderId'],
 				"user": sesh['memo_id']
 			})
 		except ValueError as e:
@@ -1695,93 +1700,33 @@ class Monolith(Services.Service):
 
 		# Fetch the claim
 		oClaim = KtOrderClaim.get(data['customerId'])
-
-		# Attempt to delete the record
-		KtOrderClaim.deleteGet(data['customerId'])
-
-		# Return OK
-		return Services.Response(True)
-
-	def orderClaim_update(self, data, sesh):
-		"""Order Claim Update
-
-		Switches a claim to another order
-
-		Arguments:
-			data (dict): Data sent with the request
-			sesh (Sesh._Session): The session associated with the request
-
-		Returns:
-			Services.Response
-		"""
-
-		# Make sure the user has the proper permission to do this
-		oResponse = Services.read('auth', 'rights/verify', {
-			"name": "order_claims",
-			"right": Rights.UPDATE
-		}, sesh)
-		if not oResponse.data:
-			return Services.Response(error=Rights.INVALID)
-
-		# Verify fields
-		try: DictHelper.eval(data, ['customerId', 'user_id'])
-		except ValueError as e: return Services.Response(error=(1001, [(f, 'missing') for f in e.args]))
-
-		# Find the claim
-		oClaim = KtOrderClaim.get(data['customerId'])
 		if not oClaim:
-			return Services.Response(error=(1104, data['customerId']))
+			return Services.Response(error=1104)
 
-		# If the current owner of the claim is not the person transfering,
-		#	check permissions
+		# If the user is not the one who made the claim
 		if oClaim['user'] != sesh['memo_id']:
+			return Services.Response(error=1000)
 
-			# Make sure the user has the proper rights
-			oResponse = Services.read('auth', 'rights/verify', {
-				"name": "order_overwrite",
-				"right": Rights.CREATE
-			}, sesh)
-			if not oResponse.data:
-				return Services.Response(error=Rights.INVALID)
+		# If the order was approved
+		if data['reason'] == 'approve':
+			pass
 
-			# Store the old user
-			iOldUser = oClaim['user']
+		# If the order was rejected
+		elif data['reason'] == 'rejected':
+			pass
 
-		# Else, no old user
+		# If the order was transfered
+		elif data['reason'] == 'to_csr':
+			pass
+
+		# Else, invalid reason
 		else:
-			iOldUser = None
+			return Services.Response(error=(1001, [('reason', 'invalid')]))
 
-		# Find the user
-		if not User.exists(data['user_id']):
-			return Services.Response(error=(1104, data['user_id']))
-
-		# Switch the user associated to the logged in user
-		oClaim['user'] = data['user_id']
-		oClaim['transferredBy'] = sesh['memo_id']
-		oClaim.save()
-
-		# If the user transferred it to themselves, they don't need a
-		#	notification
-		if data['user_id'] != sesh['memo_id']:
-
-			# Sync the transfer for anyone interested
-			Sync.push('monolith', 'user-%s' % str(data['user_id']), {
-				"type": 'order_claim_transfered',
-				"customerId": data['customerId'],
-				"transferredBy": sesh['memo_id']
-			})
-
-		# If the claim was forceable removed
-		if iOldUser:
-
-			# Notify the user they lost the claim
-			Sync.push('monolith', 'user-%s' % str(iOldUser), {
-				"type": 'order_claim_removed',
-				"customerId": oClaim['customerId']
-			})
-
-		# Return OK
-		return Services.Response(True)
+		# Attempt to delete the record and return the result
+		return Services.Response(
+			oClaim.delete()
+		)
 
 	def orderClaimed_read(self, data, sesh):
 		"""Order Claimed
@@ -1809,7 +1754,7 @@ class Monolith(Services.Service):
 		return Services.Response(
 			KtCustomer.claimed(sesh['memo_id'])
 		)
-		
+
 	def ordersPendingCsr_read(self, data, sesh):
 		"""Order Pending CSR
 

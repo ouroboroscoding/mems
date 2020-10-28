@@ -956,6 +956,48 @@ class KtCustomer(Record_MySQL.Record):
 		)
 
 	@classmethod
+	def claimed(cls, user, custom={}):
+		"""Claimed
+
+		Returns all the customers the user has claimed
+
+		Arguments:
+			user (int): The ID of the user
+			custom (dict): Custom Host and DB info
+				'host' the name of the host to get/set data on
+				'append' optional postfix for dynamic DBs
+
+		Returns:
+			list
+		"""
+
+		# Fetch the record structure
+		dStruct = cls.struct(custom)
+
+		# Generate the SQL
+		sSQL = "SELECT\n" \
+				"	`ktoc`.`customerId`,\n" \
+				"	`ktoc`.`orderId`,\n" \
+				"	CONCAT(`ktc`.`firstName`, ' ', `ktc`.`lastName`) as `customerName`\n" \
+				"FROM\n" \
+				"	`%(db)s`.`%(table)s` as `ktc`,\n" \
+				"	`%(db)s`.`kt_order_claim` as `ktoc`\n" \
+				"WHERE\n" \
+				"	CONVERT(`ktc`.`customerId`, UNSIGNED) = `ktoc`.`customerId` AND\n" \
+				"	`ktoc`.`user` = %(user)d" % {
+			"db": dStruct['db'],
+			"table": dStruct['table'],
+			"user": user
+		}
+
+		# Fetch and return the data
+		return Record_MySQL.Commands.select(
+			dStruct['host'],
+			sSQL,
+			Record_MySQL.ESelect.ALL
+		)
+
+	@classmethod
 	def config(cls):
 		"""Config
 
@@ -1182,10 +1224,11 @@ class KtOrder(Record_MySQL.Record):
 		# Generate the SQL
 		sSQL = "SELECT\n" \
 				"	`kto`.`orderId`,\n" \
-				"	`kto`.`shipFirstName`,\n" \
-				"	`kto`.`shipLastName`,\n" \
+				"	CONCAT(`kto`.`shipFirstName`, ' ', `kto`.`shipLastName`) as `customerName`,\n" \
+				"	`kto`.`phoneNumber` as `customerPhone`,\n" \
 				"	`kto`.`shipCity`,\n" \
-				"	`ss`.`name` as `shipState`,\n" \
+				"	IFNULL(`ss`.`name`, '[state missing]') as `shipState`,\n" \
+				"	IFNULL(`ss`.`legalEncounterType`, '') as `type`,\n" \
 				"	CONVERT(`kto`.`customerId`, UNSIGNED) as `customerId`,\n" \
 				"	`kto`.`dateCreated`,\n" \
 				"	`kto`.`dateUpdated`,\n" \
@@ -1193,9 +1236,9 @@ class KtOrder(Record_MySQL.Record):
 				"	IFNULL(`os`.`orderLabel`, 'Not Labeled') AS `orderLabel`\n" \
 				"FROM `%(db)s`.`%(table)s` AS `kto`\n" \
 				"JOIN `%(db)s`.`campaign` as `cmp` ON `cmp`.`id` = CONVERT(`kto`.`campaignId`, UNSIGNED)\n" \
-				"JOIN `%(db)s`.`smp_state` as `ss` ON `ss`.`abbreviation` = `kto`.`shipState`\n" \
+				"LEFT JOIN `%(db)s`.`smp_state` as `ss` ON `ss`.`abbreviation` = `kto`.`shipState`\n" \
 				"LEFT JOIN `%(db)s`.`smp_order_status` as `os` ON `os`.`orderId` = `kto`.`orderId`\n" \
-				"LEFT JOIN `%(db)s`.`kt_order_clain` as `ktoc` ON `ktoc`.`customerId` = CONVERT(`kto`.`customerId`, UNSIGNED)\n" \
+				"LEFT JOIN `%(db)s`.`kt_order_claim` as `ktoc` ON `ktoc`.`customerId` = CONVERT(`kto`.`customerId`, UNSIGNED)\n" \
 				"WHERE `kto`.`orderStatus` = 'PENDING'\n" \
 				"AND IFNULL(`kto`.`cardType`, '') <> 'TESTCARD'\n" \
 				"AND `kto`.`shipState` IN (%(states)s)\n" \
@@ -1239,7 +1282,7 @@ class KtOrderClaim(Record_MySQL.Record):
 		# If we haven loaded the config yet
 		if not cls._conf:
 			cls._conf = Record_MySQL.Record.generateConfig(
-				Tree.fromFile('definitions/monolith/kt_order_clain.json'),
+				Tree.fromFile('definitions/monolith/kt_order_claim.json'),
 				'mysql'
 			)
 

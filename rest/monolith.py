@@ -59,7 +59,7 @@ REST.Server({
 	"/msgs/unclaimed": {"methods": REST.READ, "session": True},
 	"/msgs/unclaimed/count": {"methods": REST.READ, "session": True},
 
-	"/order/claim": {"methods": REST.CREATE | REST.UPDATE | REST.DELETE, "session": True},
+	"/order/claim": {"methods": REST.CREATE | REST.DELETE, "session": True},
 	"/order/claimed": {"methods": REST.READ, "session": True},
 
 	"/orders/pending/csr": {"methods": REST.READ, "session": True},
