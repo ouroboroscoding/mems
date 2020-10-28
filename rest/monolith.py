@@ -46,6 +46,8 @@ REST.Server({
 	"/customer/note": {"methods": REST.CREATE, "session": True},
 	"/customer/notes": {"methods": REST.READ, "session": True},
 	"/customer/shipping": {"methods": REST.READ, "session": True},
+	"/customer/stop": {"methods": REST.CREATE | REST.DELETE, "session": True},
+	"/customer/stops": {"methods": REST.READ, "session": True},
 
 	"/message/incoming": {"methods": REST.CREATE},
 	"/message/outgoing": {"methods": REST.CREATE},
@@ -60,15 +62,17 @@ REST.Server({
 	"/order/claim": {"methods": REST.CREATE | REST.UPDATE | REST.DELETE, "session": True},
 	"/order/claimed": {"methods": REST.READ, "session": True},
 
+	"/orders/pending/csr": {"methods": REST.READ, "session": True},
+	"/orders/pending/csr/count": {"methods": REST.READ, "session": True},
+	"/orders/pending/provider/ed": {"methods": REST.READ, "session": True},
+	"/orders/pending/provider/hrt": {"methods": REST.READ, "session": True},
+
 	"/passwd/forgot": {"methods": REST.CREATE | REST.UPDATE},
 
 	"/pharmacy/fill/error": {"methods": REST.UPDATE | REST.DELETE, "session": True},
 	"/pharmacy/fill/errors": {"methods": REST.READ, "session": True},
 
 	"/provider/calendly": {"methods": REST.READ, "session": True},
-
-	"/queue/ed": {"methods": REST.READ, "session": True},
-	"/queue/hrt": {"methods": REST.READ, "session": True},
 
 	"/signin": {"methods": REST.POST},
 

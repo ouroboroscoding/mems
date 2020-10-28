@@ -157,6 +157,14 @@ class Monolith(Services.Service):
 		try: DictHelper.eval(data, ['phoneNumber'])
 		except ValueError as e: return Services.Response(error=(1001, [(f, 'missing') for f in e.args]))
 
+		# If not order ID was passed
+		if 'orderId' not in data:
+			data['orderId'] = None
+
+		# If no provider was passed
+		if 'provider' not in data:
+			data['provider'] = None
+
 		# Check how many claims this user already has
 		iCount = CustomerClaimed.count(filter={
 			"user": sesh['memo_id']
@@ -166,34 +174,56 @@ class Monolith(Services.Service):
 		if iCount >= sesh['claims_max']:
 			return Services.Response(error=1504)
 
+		# Make sure we have a customer conversation
+		dConvo = CustomerMsgPhone.filter({
+			"customerPhone": [data['phoneNumber'], '1%s' % data['phoneNumber']]
+		}, raw=['id'])
+		if not dConvo:
+
+			# Find the customer by phone number
+			dCustomer = KtCustomer.filter(
+				{"phoneNumber": [data['phoneNumber'], '1%s' % data['phoneNumber']]},
+				raw=['firstName', 'lastName'],
+				orderby=[['updatedAt', 'DESC']],
+				limit=1
+			)
+
+			# If we can't find one
+			if not dCustomer:
+				return Services.Response(error=1508)
+
+			# Get current time
+			sDT = arrow.get().format('YYYY-MM-DD HH:mm:ss')
+
+			# Create a new convo
+			oConvo = CustomerMsgPhone({
+				"customerPhone": data['phoneNumber'],
+				"customerName": '%s %s' % (dCustomer['firstName'], dCustomer['lastName']),
+				"lastMsgAt": sDT,
+				"hiddenFlag": 'N',
+				"totalIncoming": 0,
+				"totalOutgoing": 0,
+				"createdAt": sDT,
+				"updatedAt": sDT
+			})
+			oConvo.create()
+
 		# Attempt to create the record
 		try:
 			oCustomerClaimed = CustomerClaimed({
 				"phoneNumber": data['phoneNumber'],
-				"user": sesh['memo_id']
+				"user": sesh['memo_id'],
+				"orderId": data['orderId'],
+				"provider": data['provider']
 			})
 		except ValueError as e:
 			return Services.Response(error=(1001, e.args[0]))
 
-		# Try to create the record
+		# Try to create the record and return the result
 		try:
-
-			# Create the record
-			if oCustomerClaimed.create():
-
-				# Find the customer associated
-				dCustomer = KtCustomer.filter(
-					{"phoneNumber": [data['phoneNumber'], '1%s' % data['phoneNumber']]},
-					raw=['customerId'],
-					orderby=[('updatedAt', 'DESC')],
-					limit=1
-				)
-
-				# Return the ID and phone
-				return Services.Response({
-					"customerId": dCustomer and dCustomer['customerId'] or '0',
-					"customerPhone": data['phoneNumber']
-				})
+			return Services.Response(
+				oCustomerClaimed.create()
+			)
 
 		# If we got a duplicate exception
 		except Record_MySQL.DuplicateException:
@@ -203,9 +233,6 @@ class Monolith(Services.Service):
 
 			# Return the error with the user ID
 			return Services.Response(error=(1101, dClaim['user']))
-
-		# Else, we failed to create the record
-		return Services.Response(False)
 
 	def customerClaim_delete(self, data, sesh):
 		"""Customer Claim Delete
@@ -232,11 +259,15 @@ class Monolith(Services.Service):
 		try: DictHelper.eval(data, ['phoneNumber'])
 		except ValueError as e: return Services.Response(error=(1001, [(f, 'missing') for f in e.args]))
 
-		# Attempt to delete the record
-		CustomerClaimed.deleteGet(data['phoneNumber'])
+		# Find the claim
+		oClaim = CustomerClaimed.get(data['phoneNumber'])
+		if not oClaim:
+			return Services.Response(error=1104)
 
-		# Return OK
-		return Services.Response(True)
+		# Delete the claim and return the response
+		return Services.Response(
+			oClaim.delete()
+		)
 
 	def customerClaim_update(self, data, sesh):
 		"""Customer Claim Update
@@ -304,6 +335,8 @@ class Monolith(Services.Service):
 			Sync.push('monolith', 'user-%s' % str(data['user_id']), {
 				"type": 'claim_transfered',
 				"phoneNumber": data['phoneNumber'],
+				"orderId": oClaim['orderId'],
+				"provider": oClaim['provider'],
 				"transferredBy": sesh['memo_id']
 			})
 
@@ -346,10 +379,6 @@ class Monolith(Services.Service):
 
 		# Find the claim
 		oClaim = CustomerClaimed.get(data['phoneNumber'])
-		if not oClaim:
-			return Services.Response(error=(1104, data['phoneNumber']))
-
-		# If it doesn't exist
 		if not oClaim:
 			return Services.Response(error=(1104, data['phoneNumber']))
 
@@ -839,7 +868,7 @@ class Monolith(Services.Service):
 				oSmpNote = SmpNote({
 					"parentTable": 'kt_customer',
 					"parentColumn": 'customerId',
-					"columnValue": data['customer_id'],
+					"columnValue": str(data['customer_id']),
 					"action": data['action'],
 					"createdBy": sesh['memo_id'],
 					"note": data['content'],
@@ -884,7 +913,7 @@ class Monolith(Services.Service):
 					"orderStatus": '',
 					"reviewStatus": '',
 					"attentionRole": lLabel[0] != '' and lLabel[0] or None,
-					"orderLabel": data['label'],
+					"orderLabel": len(lLabel) == 2 and data['label'] or '',
 					"declineReason": None,
 					"smpNoteId": None,
 					"currentFlag": 'Y',
@@ -908,7 +937,7 @@ class Monolith(Services.Service):
 
 				# Update the existing status
 				oStatus['attentionRole'] = lLabel[0] != '' and lLabel[0] or None
-				oStatus['orderLabel'] = data['label']
+				oStatus['orderLabel'] = len(lLabel) == 2 and data['label'] or ''
 				oStatus['updatedAt']: sDT
 				oStatus.save()
 
@@ -1024,6 +1053,124 @@ class Monolith(Services.Service):
 
 		# Return the records
 		return Services.Response(lCodes)
+
+	def customerStop_create(self, data, sesh):
+		"""Customer Stop Create
+
+		Adds a STOP flag on the specific phone number and service
+
+		Arguments:
+			data (dict): Data sent with the request
+			sesh (Sesh._Session): The session associated with the request
+
+		Returns:
+			Services.Response
+		"""
+
+		# Make sure the user has the proper permission to do this
+		oResponse = Services.read('auth', 'rights/verify', {
+			"name": "csr_messaging",
+			"right": Rights.CREATE
+		}, sesh)
+		if not oResponse.data:
+			return Services.Response(error=Rights.INVALID)
+
+		# Verify fields
+		try: DictHelper.eval(data, ['phoneNumber', 'service'])
+		except ValueError as e: return Services.Response(error=(1001, [(f, 'missing') for f in e.args]))
+
+		# Try to create an instance with the given data
+		try:
+			data['agent'] = sesh['memo_id']
+			oStop = SMSStop(data)
+		except ValueError as e:
+			return Services.Response(error=(1001, e.args[0]))
+
+		# Try to add it to the DB
+		try:
+			return Services.Response(
+				oStop.create()
+			)
+		except Record_MySQL.DuplicateException as e:
+			return Services.Response(error=1101)
+
+	def customerStop_delete(self, data, sesh):
+		"""Customer Stop Create
+
+		Removes a STOP flag on the specific phone number and service
+
+		Arguments:
+			data (dict): Data sent with the request
+			sesh (Sesh._Session): The session associated with the request
+
+		Returns:
+			Services.Response
+		"""
+
+		# Make sure the user has the proper permission to do this
+		oResponse = Services.read('auth', 'rights/verify', {
+			"name": "csr_messaging",
+			"right": Rights.CREATE
+		}, sesh)
+		if not oResponse.data:
+			return Services.Response(error=Rights.INVALID)
+
+		# Verify fields
+		try: DictHelper.eval(data, ['phoneNumber', 'service'])
+		except ValueError as e: return Services.Response(error=(1001, [(f, 'missing') for f in e.args]))
+
+		# Find the flag
+		oStop = SMSStop.filter({
+			"phoneNumber": data['phoneNumber'],
+			"service": data['service']
+		}, limit=1)
+
+		# If it doesn't exist
+		if not oStop:
+			return Services.Response(False)
+
+		# If it exists but there's no agent
+		if oStop['agent'] is None:
+			return Services.Response(error=1509)
+
+		# Else, delete it and return the response
+		return Services.Response(
+			oStop.delete()
+		)
+
+	def customerStops_read(self, data, sesh):
+		"""Customer Stops
+
+		Returns the list of STOP flags for all services associated with the
+		phone number
+
+		Arguments:
+			data (dict): Data sent with the request
+			sesh (Sesh._Session): The session associated with the request
+
+		Returns:
+			Services.Response
+		"""
+
+		# Make sure the user has the proper permission to do this
+		oResponse = Services.read('auth', 'rights/verify', {
+			"name": "csr_messaging",
+			"right": Rights.CREATE
+		}, sesh)
+		if not oResponse.data:
+			return Services.Response(error=Rights.INVALID)
+
+		# Verify fields
+		try: DictHelper.eval(data, ['phoneNumber'])
+		except ValueError as e: return Services.Response(error=(1001, [(f, 'missing') for f in e.args]))
+
+		# Fetch all flags for the number and return them
+		return Services.Response({
+			d['service']: d['agent'] for d in
+			SMSStop.filter({
+				"phoneNumber": data['phoneNumber']
+			}, raw=['service', 'agent'])
+		})
 
 	def messageIncoming_create(self, data):
 		"""Message Incoming
@@ -1462,7 +1609,7 @@ class Monolith(Services.Service):
 	def orderClaim_create(self, data, sesh):
 		"""Order Claim Create
 
-		Stores a record to claim a customer conversation for a order
+		Stores a record to claim a PENDING order
 
 		Arguments:
 			data (dict): Data sent with the request
@@ -1662,6 +1809,94 @@ class Monolith(Services.Service):
 		return Services.Response(
 			KtCustomer.claimed(sesh['memo_id'])
 		)
+		
+	def ordersPendingCsr_read(self, data, sesh):
+		"""Order Pending CSR
+
+		Returns the unclaimed orders set to the CSR role
+
+		Arguments:
+			data (dict): Data sent with the request
+			sesh (Sesh._Session): The session associated with the request
+
+		Returns:
+			Services.Response
+		"""
+
+		# Make sure the user has the proper permission to do this
+		oResponse = Services.read('auth', 'rights/verify', {
+			"name": "csr_messaging",
+			"right": Rights.READ
+		}, sesh)
+		if not oResponse.data:
+			return Services.Response(error=Rights.INVALID)
+
+		# Fetch and return the unclaimed CSR orders
+		return Services.Response(
+			KtOrder.queueCsr()
+		)
+
+	def ordersPendingCsrCount_read(self, data, sesh):
+		"""Orders Pending CSR Count
+
+		Returns the count of unclaimed orders to to the CSR role
+
+		Arguments:
+			data (dict): Data sent with the request
+			sesh (Sesh._Session): The session associated with the request
+
+		Returns:
+			Services.Response
+		"""
+
+		# Fetch and return the data
+		return Services.Response(
+			KtOrder.queueCsrCount()
+		)
+
+	def ordersPendingProviderEd_read(self, data, sesh):
+		"""Order Pending Provider ED
+
+		Returns the unclaimed pending ED orders
+
+		Arguments:
+			data (dict): Data sent with the request
+			sesh (Sesh._Session): The session associated with the request
+
+		Returns:
+			Services.Response
+		"""
+
+		# If the user has no ED states
+		if not sesh['states']['ed']:
+			return Services.Response(error=1506)
+
+		# Fetch and return the queue
+		return Services.Response(
+			KtOrder.queue('ed', sesh['states']['ed'])
+		)
+
+	def ordersPendingProviderHrt_read(self, data, sesh):
+		"""Order Pending Provider HRT
+
+		Returns the unclaimed pending HRT orders
+
+		Arguments:
+			data (dict): Data sent with the request
+			sesh (Sesh._Session): The session associated with the request
+
+		Returns:
+			Services.Response
+		"""
+
+		# If the user has no HRT states
+		if not sesh['states']['hrt']:
+			return Services.Response(error=1506)
+
+		# Fetch and return the queue
+		return Services.Response(
+			KtOrder.queue('hrt', sesh['states']['hrt'])
+		)
 
 	def passwdForgot_create(self, data):
 		"""Password Forgot (Generate)
@@ -1810,52 +2045,6 @@ class Monolith(Services.Service):
 
 		# Return anything found
 		return Services.Response(lAppts)
-
-	def queueEd_read(self, data, sesh):
-		"""Queue: ED
-
-		Returns the queue of orders that are pending or require attention from
-		providers
-
-		Arguments:
-			data (dict): Data sent with the request
-			sesh (Sesh._Session): The session associated with the request
-
-		Returns:
-			Services.Response
-		"""
-
-		# If the user has no ED states
-		if not sesh['states']['ed']:
-			return Services.Response(error=1506)
-
-		# Fetch and return the queue
-		return Services.Response(
-			KtOrder.queue('ed', sesh['states']['ed'])
-		)
-
-	def queueHrt_read(self, data, sesh):
-		"""Queue: HRT
-
-		Returns the queue of orders that are pending or require attention from
-		providers
-
-		Arguments:
-			data (dict): Data sent with the request
-			sesh (Sesh._Session): The session associated with the request
-
-		Returns:
-			Services.Response
-		"""
-
-		# If the user has no ED states
-		if not sesh['states']['hrt']:
-			return Services.Response(error=1506)
-
-		# Fetch and return the queue
-		return Services.Response(
-			KtOrder.queue('hrt', sesh['states']['hrt'])
-		)
 
 	def signin_create(self, data):
 		"""Signin

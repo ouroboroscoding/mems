@@ -28,3 +28,44 @@ UAT:
 - Customer
 	- SMS
 		- DOB in header
+
+
+
+{
+      "PatientMedicationHistoryId": 174061548,
+      "PharmacyNotes": null,
+      "NoSubstitutions": false,
+      "EffectiveDate": null,
+      "LastFillDate": "2020-09-21T00:00:00",
+      "Payer": "CVS|CAREMARK",
+      "DaysSupply": 30,
+      "Directions": null,
+      "DispenseUnitDescription": "Unspecified",
+      "DispenseUnitId": 19,
+      "Quantity": "30.00",
+      "Refills": "0",
+      "WrittenDate": null,
+      "DoseForm": null,
+      "Route": null,
+      "Strength": null,
+      "GenericProductName": null,
+      "GenericDrugName": null,
+      "LexiGenProductId": 0,
+      "LexiDrugSynId": 0,
+      "LexiSynonymTypeId": 0,
+      "LexiGenDrugId": null,
+      "RxCUI": "0",
+      "OTC": false,
+      "NDC": "51672403501",
+      "Schedule": "0",
+      "DisplayName": "WARFARIN     TAB 10MG",
+      "MonographPath": null,
+      "DrugClassification": null,
+      "StateSchedules": null
+}
+
+Display name?
+
+Last Fill Date
+
+Days Supply
