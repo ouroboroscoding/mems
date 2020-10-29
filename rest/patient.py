@@ -40,6 +40,7 @@ REST.Server({
 	"/session": {"methods": REST.READ, "session": True},
 
 	"/setup/attempts": {"methods": REST.READ, "session": True},
+	"/setup/reset": {"methods": REST.UPDATE, "session": True},
 	"/setup/start": { "methods": REST.CREATE, "session": True},
 	"/setup/validate": { "methods": REST.CREATE},
 
