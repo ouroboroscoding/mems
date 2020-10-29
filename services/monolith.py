@@ -1984,7 +1984,7 @@ class Monolith(Services.Service):
 		# Find all calendly appointments in progress or in the future associated
 		#	with the user
 		lAppts = Calendly.filter({
-			"order_emailAddress": [dUser['email'], dUser['calendlyEmail']],
+			"prov_emailAddress": [dUser['email'], dUser['calendlyEmail']],
 			"end": {"gte": Record_MySQL.Literal('CURRENT_TIMESTAMP')}
 		}, orderby='start', raw=True)
 
