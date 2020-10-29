@@ -615,7 +615,50 @@ class Patient(Services.Service):
 
 		# Fetch and return any records found
 		return Services.Response(
-			AccountSetupAttempt.filter({"_setup": data['key']}, raw=['_created', 'dob', 'lname'])
+			AccountSetupAttempt.filter(
+				{"_setup": data['key']},
+				raw=['_created', 'dob', 'lname'],
+				orderby=[['_created', 'DESC']]
+			)
+		)
+
+	def setupReset_update(self, data, sesh):
+		"""Setup Reset
+
+		Resets the attempt count on the setup account so the patient can
+		try again
+
+		Arguments:
+			data (dict): Data sent with the request
+			sesh (Sesh._Session): The session associated with the request
+
+		Returns:
+			Services.Response
+		"""
+
+		# Make sure the user has the proper permission to do this
+		oResponse = Services.read('auth', 'rights/verify', {
+			"name": "patient_account",
+			"right": Rights.CREATE
+		}, sesh)
+		if not oResponse.data:
+			return Services.Response(error=Rights.INVALID)
+
+		# Verify fields
+		try: DictHelper.eval(data, ['key'])
+		except ValueError as e: return Services.Response(error=(1001, [(f, 'missing') for f in e.args]))
+
+		# Find the account
+		oSetup = AccountSetup.get(data['key'])
+		if not oSetup:
+			return Services.Response(error=1104)
+
+		# Reset the count
+		oSetup['attempts'] = 0
+
+		# Save and return the result
+		return Services.Response(
+			oSetup.save()
 		)
 
 	def setupStart_create(self, data, sesh):
