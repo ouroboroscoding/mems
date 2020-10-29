@@ -262,6 +262,36 @@ class AccountSetup(Record_MySQL.Record):
 		# Return the config
 		return cls._conf
 
+# AccountSetupAttempt class
+class AccountSetupAttempt(Record_MySQL.Record):
+	"""AccountSetupAttempt
+
+	Represents a failed attempt to setup a patient account
+	"""
+
+	_conf = None
+	"""Configuration"""
+
+	@classmethod
+	def config(cls):
+		"""Config
+
+		Returns the configuration data associated with the record type
+
+		Returns:
+			dict
+		"""
+
+		# If we haven loaded the config yet
+		if not cls._conf:
+			cls._conf = Record_MySQL.Record.generateConfig(
+				Tree.fromFile('definitions/patient/account_setup_attempt.json'),
+				'mysql'
+			)
+
+		# Return the config
+		return cls._conf
+
 # Activity class
 class Activity(Record_MySQL.Record):
 	"""Activity

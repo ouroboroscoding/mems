@@ -25,7 +25,8 @@ from RestOC import Conf, DictHelper, Errors, Services, \
 from shared import Rights
 
 # Records imports
-from records.patient import Account, AccountSetup, Activity, Verify
+from records.patient import Account, AccountSetup, AccountSetupAttempt, \
+							Activity, Verify
 
 # Service imports
 from . import emailError
@@ -206,10 +207,7 @@ class Patient(Services.Service):
 		}
 
 		# Returned fields
-		lFields = ['_id', 'email', 'crm_type', 'crm_id', 'rx_type', 'rx_id']
-
-		# Account not activated
-		bActivated = False
+		lFields = ['_id', 'email', 'crm_type', 'crm_id', 'rx_type', 'rx_id', 'attempts']
 
 		# Try to find the record in the setup table
 		dAccount = AccountSetup.filter(dFilter, raw=lFields, limit=1)
@@ -218,17 +216,20 @@ class Patient(Services.Service):
 		if not dAccount:
 
 			# Try to find the record in the account table
+			lFields.remove('attempts')
 			dAccount = Account.filter(dFilter, raw=lFields, limit=1)
 
 			# If there's no such account
 			if not dAccount:
 				return Services.Response(False)
 
-			# Account activated
-			bActivated = True
+			# Add attempts and activate state
+			dAccount['attempts'] = None
+			dAccount['activated'] = True
 
-		# Add the activated flag
-		dAccount['activated'] = bActivated
+		# Else, we found setup
+		else:
+			dAccount['activated'] = False
 
 		# Return the ID
 		return Services.Response(dAccount)
@@ -587,6 +588,36 @@ class Patient(Services.Service):
 			}
 		})
 
+	def setupAttempts_read(self, data, sesh):
+		"""Setup Attempts
+
+		Returns the list of failed setup attempts on a specific key
+
+		Arguments:
+			data (dict): Data sent with the request
+			sesh (Sesh._Session): The session associated with the request
+
+		Returns:
+			Services.Response
+		"""
+
+		# Make sure the user has the proper permission to do this
+		oResponse = Services.read('auth', 'rights/verify', {
+			"name": "patient_account",
+			"right": Rights.READ
+		}, sesh)
+		if not oResponse.data:
+			return Services.Response(error=Rights.INVALID)
+
+		# Verify fields
+		try: DictHelper.eval(data, ['key'])
+		except ValueError as e: return Services.Response(error=(1001, [(f, 'missing') for f in e.args]))
+
+		# Fetch and return any records found
+		return Services.Response(
+			AccountSetupAttempt.filter({"_setup": data['key']}, raw=['_created', 'dob', 'lname'])
+		)
+
 	def setupStart_create(self, data, sesh):
 		"""Setup Start
 
@@ -729,6 +760,10 @@ class Patient(Services.Service):
 			# No patient account, the key just doesn't exist
 			return Services.Response(error=1905)
 
+		# If the attempts has hit the limit
+		if oSetup['attempts'] >= self._conf['max_attempts']:
+			return Services.Response(error=1906)
+
 		# Check if we already have an account with that email
 		if Account.exists(oSetup['email'], 'email'):
 			return Services.Response(error=1900)
@@ -737,22 +772,32 @@ class Patient(Services.Service):
 		if data['dob'] != oSetup['dob'] or \
 			data['lname'].lower() != oSetup['lname'].lower():
 
-			emailError('Patient Setup Validation Failed', 'Sent: %s\n\n DB: %s' % (
-				str(data),
-				str(oSetup.record())
-			))
+			# Store the attempt
+			try:
+				oAttempt = AccountSetupAttempt({
+					"_setup": data['key'],
+					"dob": str(data['dob']),
+					"lname": str(data['lname'])
+				})
+				oAttempt.create()
 
-			# Increment the attempts
+			# If it fails for any reason, email the developer and just move on
+			except Exception as e:
+				emailError('Patient Setup Validation Failed', 'Sent: %s\n\n DB: %s\n\nException: %s' % (
+					str(data),
+					str(oSetup.record()),
+					str(e)
+				))
+
+			# Increment the attempts and save
 			oSetup['attempts'] += 1
-
-			# If we've hit the limit, delete the record and return
-			#if oSetup['attempts'] == self._conf['max_attempts']:
-			#	oSetup.delete()
-			#	return Services.Response(error=1906)
-
-			# Else, save and return
-			#else:
 			oSetup.save()
+
+			# If we've hit the limit return an error limit error
+			if oSetup['attempts'] == self._conf['max_attempts']:
+				return Services.Response(error=1906)
+
+			# Else return failure error
 			return Services.Response(error=1907)
 
 		# Validate the password strength
