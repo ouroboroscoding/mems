@@ -338,10 +338,12 @@ class Monolith(Services.Service):
 			# Sync the transfer for anyone interested
 			Sync.push('monolith', 'user-%s' % str(data['user_id']), {
 				"type": 'claim_transfered',
-				"phoneNumber": data['phoneNumber'],
-				"orderId": oClaim['orderId'],
-				"provider": oClaim['provider'],
-				"transferredBy": sesh['memo_id']
+				"claim": {
+					"phoneNumber": data['phoneNumber'],
+					"orderId": oClaim['orderId'],
+					"provider": oClaim['provider'],
+					"transferredBy": sesh['memo_id']
+				}
 			})
 
 		# If the claim was forceable removed
@@ -1847,7 +1849,7 @@ class Monolith(Services.Service):
 
 		# Get and return the claimed records
 		return Services.Response(
-			KtCustomer.claimed(sesh['memo_id'])
+			KtOrder.claimed(sesh['memo_id'])
 		)
 
 	def ordersPendingCsr_read(self, data, sesh):
