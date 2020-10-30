@@ -40,6 +40,7 @@ REST.Server({
 	"/customer/hrtLabs": {"methods": REST.READ, "session": True},
 	"/customer/id/byPhone": {"methods": REST.READ, "session": True},
 	"/customer/messages": {"methods": REST.READ, "session": True},
+	"/customer/mip": {"methods": REST.READ, "session": True},
 	"/customer/mips": {"methods": REST.READ, "session": True},
 	"/customer/mip/answer": {"methods": REST.UPDATE, "session": True},
 	"/customer/name": {"methods": REST.READ, "session": True},

@@ -647,6 +647,102 @@ class Monolith(Services.Service):
 			"type": sType
 		})
 
+	def customerMip_read(self, data, sesh):
+		"""Customer MIP
+
+		Gets the latest MIP by a form type or types
+
+		Arguments:
+			data (dict): Data sent with the request
+			sesh (Sesh._Session): The session associated with the request
+
+		Returns:
+			Services.Response
+		"""
+
+		# Make sure the user has the proper permission to do this
+		oResponse = Services.read('auth', 'rights/verify', {
+			"name": "memo_mips",
+			"right": Rights.READ
+		}, sesh)
+		if not oResponse.data:
+			return Services.Response(error=Rights.INVALID)
+
+		# Verify fields
+		try: DictHelper.eval(data, ['customerId', 'form'])
+		except ValueError as e: return Services.Response(error=(1001, [(f, 'missing') for f in e.args]))
+
+		# If we want any form
+		if data['form'] == 'any':
+			data['form'] = None
+
+		# Find the customer by ID
+		dCustomer = KtCustomer.filter(
+			{"customerId": data['customerId']},
+			raw=['lastName', 'emailAddress', 'phoneNumber'],
+			limit=1
+		)
+
+		# Get the latest landing by type
+		dLanding = TfLanding.latest(
+			dCustomer['lastName'],
+			dCustomer['emailAddress'] or '',
+			dCustomer['phoneNumber'],
+			data['form']
+		)
+
+		# If there's no mip
+		if not lLandings:
+			return Services.Response(0)
+
+		# Init the data
+		dData = {
+			"id": dLanding['landing_id'],
+			"form": dLanding['formId'],
+			"date": dLanding['submitted_at'],
+			"completed": dLanding['complete'] == 'Y'
+		}
+
+		# Get the questions associated with the landing form
+		dData['questions'] = TfQuestion.filter(
+			{"formId": dLanding['formId'], "activeFlag": 'Y'},
+			raw=['ref', 'title', 'type'],
+			orderby='questionNumber'
+		)
+
+		# Get the options for the questions
+		lOptions = TfQuestionOption.filter(
+			{"questionRef": [d['ref'] for d in dData['questions']], "activeFlag": 'Y'},
+			raw=['questionRef', 'displayOrder', 'option'],
+			orderby=['questionRef', 'displayOrder']
+		)
+
+		# Create lists of options by question
+		dData['options'] = {}
+		for d in lOptions:
+			try: dData['options'][d['questionRef']].append(d['option'])
+			except KeyError: dData['options'][d['questionRef']] = [d['option']]
+
+		# Fetch the answers
+		dAnswers = {
+			d['ref']: d['value']
+			for d in TfAnswer.filter(
+				{"landing_id": dLanding['landing_id']},
+				raw=['ref', 'value']
+			)
+		}
+
+		# Match the answer to the questions
+		for d in dData['questions']:
+			d['answer'] = d['ref'] in dAnswers and \
+							dAnswers[d['ref']] or \
+							''
+			if d['type'] == 'yes_no' and d['answer'] in ['0', '1']:
+				d['answer'] = d['answer'] == '1' and 'Yes' or 'No'
+
+		# Return the MIP
+		return Services.Response(dData)
+
 	def customerMips_read(self, data, sesh):
 		"""Customer MIPs
 
@@ -661,10 +757,6 @@ class Monolith(Services.Service):
 			Services.Response
 		"""
 
-		# Verify fields
-		try: DictHelper.eval(data, ['customerId'])
-		except ValueError as e: return Services.Response(error=(1001, [(f, 'missing') for f in e.args]))
-
 		# Make sure the user has the proper permission to do this
 		oResponse = Services.read('auth', 'rights/verify', {
 			"name": "memo_mips",
@@ -673,11 +765,14 @@ class Monolith(Services.Service):
 		if not oResponse.data:
 			return Services.Response(error=Rights.INVALID)
 
+		# Verify fields
+		try: DictHelper.eval(data, ['customerId'])
+		except ValueError as e: return Services.Response(error=(1001, [(f, 'missing') for f in e.args]))
+
 		# Find the customer by ID
 		dCustomer = KtCustomer.filter(
 			{"customerId": data['customerId']},
 			raw=['lastName', 'emailAddress', 'phoneNumber'],
-			orderby=[('dateUpdated', 'DESC')],
 			limit=1
 		)
 

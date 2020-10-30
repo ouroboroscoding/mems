@@ -1663,6 +1663,7 @@ class TfLanding(Record_MySQL.Record):
 			last_name (str): The last name of the customer
 			email (str): The email of the customer
 			phone (str): The phone number of the customer
+			types (list):
 			custom (dict): Custom Host and DB info
 				'host' the name of the host to get/set data on
 				'append' optional postfix for dynamic DBs
@@ -1698,6 +1699,72 @@ class TfLanding(Record_MySQL.Record):
 			sSQL,
 			Record_MySQL.ESelect.ALL
 		)
+
+	@classmethod
+	def latest(cls, last_name, email, phone, form, custom={}):
+		"""Find
+
+		Attempts to find a landing using customer info
+
+		Arguments:
+			last_name (str): The last name of the customer
+			email (str): The email of the customer
+			phone (str): The phone number of the customer
+			form (str[str[]): A form type of types to filter by
+			custom (dict): Custom Host and DB info
+				'host' the name of the host to get/set data on
+				'append' optional postfix for dynamic DBs
+
+		Returns:
+			dict
+		"""
+
+		# Fetch the record structure
+		dStruct = cls.struct(custom)
+
+		# Where clauses
+		lWhere = [
+			"`lastName` = '%s'" % Record_MySQL.Commands.escape(dStruct['host'], last_name),
+			"`birthDay` IS NOT NULL",
+			"`birthDay` != ''",
+			"(`email` = '%(email)s' OR `phone` IN ('1%(phone)s', '%(phone)s'))\n" % {
+				"email": Record_MySQL.Commands.escape(dStruct['host'], email),
+				"phone": Record_MySQL.Commands.escape(dStruct['host'], phone)
+			}
+		]
+
+		# If we have a form type or types
+		if form:
+			if isinstance(form, str):
+				lWhere.push(
+					"`formId` = '%s'" % Record_MySQL.Commands.escape(dStruct['host'], form)
+				)
+			elif isinstance(form, list):
+				form = [Record_MySQL.Commands.escape(dStruct['host'], s) for s in form]
+				lWhere.push(
+					"`formId` IN ('%s')" % "','".join(form)
+				)
+			else:
+				raise ValueError('form must be str|str[]')
+
+		# Generate SQL
+		sSQL = "SELECT `landing_id`, `formId`, `submitted_at`, `complete`\n" \
+				"FROM `%(db)s`.`%(table)s`\n" \
+				"WHERE %(where)s\n" \
+				"ORDER BY `submitted_at` DESC\n" \
+				"LIMIT 1" % {
+			"db": dStruct['db'],
+			"table": dStruct['table'],
+			"where": '\nAND'.join(lWhere)
+		}
+
+		# Execute and return the select
+		return Record_MySQL.Commands.select(
+			dStruct['host'],
+			sSQL,
+			Record_MySQL.ESelect.ALL
+		)
+
 
 # TfQuestion class
 class TfQuestion(Record_MySQL.Record):
