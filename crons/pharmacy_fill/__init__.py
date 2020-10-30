@@ -299,7 +299,7 @@ def _transactions(period):
 					"crm_id": str(d['customerId']),
 					"crm_order": d['orderId'],
 					"list": 'fill',
-					"reason": dRes['data'],
+					"reason": dRes['data'][:255],
 					"fail_count": 1
 				})
 				oFillError.create(conflict='replace')
@@ -360,7 +360,7 @@ def _welldyneNeverStarted():
 				"crm_id": o['crm_id'],
 				"crm_order": o['crm_order'],
 				"list": 'fill',
-				"reason": dRes['data'],
+				"reason": dRes['data'][:255],
 				"fail_count": 1
 			})
 			oFillError.create(conflict='replace')
@@ -429,7 +429,7 @@ def _welldyneOutbound():
 				"crm_id": str(d['customerId']),
 				"crm_order": d['orderId'],
 				"list": 'outbound',
-				"reason": dRes['data'],
+				"reason": dRes['data'][:255],
 				"fail_count": 1
 			})
 			oFillError.create(conflict='replace')
