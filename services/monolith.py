@@ -694,7 +694,7 @@ class Monolith(Services.Service):
 		)
 
 		# If there's no mip
-		if not lLandings:
+		if not dLanding:
 			return Services.Response(0)
 
 		# Init the data

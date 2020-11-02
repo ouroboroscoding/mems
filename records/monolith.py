@@ -1233,7 +1233,7 @@ class KtOrder(Record_MySQL.Record):
 				"	`kto`.`phoneNumber` as `customerPhone`,\n" \
 				"	`kto`.`shipCity`,\n" \
 				"	IFNULL(`ss`.`name`, '[state missing]') as `shipState`,\n" \
-				"	IFNULL(`ss`.`legalEncounterType`, '') as `type`,\n" \
+				"	IFNULL(`ss`.`legalEncounterType`, '') as `encounter`,\n" \
 				"	CONVERT(`kto`.`customerId`, UNSIGNED) as `customerId`,\n" \
 				"	`kto`.`dateCreated`,\n" \
 				"	`kto`.`dateUpdated`,\n" \
@@ -1732,7 +1732,7 @@ class TfLanding(Record_MySQL.Record):
 			"`lastName` = '%s'" % Record_MySQL.Commands.escape(dStruct['host'], last_name),
 			"`birthDay` IS NOT NULL",
 			"`birthDay` != ''",
-			"(`email` = '%(email)s' OR `phone` IN ('1%(phone)s', '%(phone)s'))\n" % {
+			"(`email` = '%(email)s' OR `phone` IN ('1%(phone)s', '%(phone)s'))" % {
 				"email": Record_MySQL.Commands.escape(dStruct['host'], email),
 				"phone": Record_MySQL.Commands.escape(dStruct['host'], phone)
 			}
@@ -1741,12 +1741,12 @@ class TfLanding(Record_MySQL.Record):
 		# If we have a form type or types
 		if form:
 			if isinstance(form, str):
-				lWhere.push(
+				lWhere.append(
 					"`formId` = '%s'" % Record_MySQL.Commands.escape(dStruct['host'], form)
 				)
 			elif isinstance(form, list):
 				form = [Record_MySQL.Commands.escape(dStruct['host'], s) for s in form]
-				lWhere.push(
+				lWhere.append(
 					"`formId` IN ('%s')" % "','".join(form)
 				)
 			else:
@@ -1763,13 +1763,14 @@ class TfLanding(Record_MySQL.Record):
 			"where": '\nAND'.join(lWhere)
 		}
 
+		print(sSQL)
+
 		# Execute and return the select
 		return Record_MySQL.Commands.select(
 			dStruct['host'],
 			sSQL,
-			Record_MySQL.ESelect.ALL
+			Record_MySQL.ESelect.ROW
 		)
-
 
 # TfQuestion class
 class TfQuestion(Record_MySQL.Record):

@@ -44,3 +44,33 @@ class Item(Record_MySQL.Record):
 
 		# Return the config
 		return cls._conf
+
+# KnkOrder class
+class KnkOrder(Record_MySQL.Record):
+	"""KnkOrder
+
+	Represents a single qualified medication for a customer
+	"""
+
+	_conf = None
+	"""Configuration"""
+
+	@classmethod
+	def config(cls):
+		"""Config
+
+		Returns the configuration data associated with the record type
+
+		Returns:
+			dict
+		"""
+
+		# If we haven loaded the config yet
+		if not cls._conf:
+			cls._conf = Record_MySQL.Record.generateConfig(
+				Tree.fromFile('definitions/qualmed/knk_order.json'),
+				'mysql'
+			)
+
+		# Return the config
+		return cls._conf

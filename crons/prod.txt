@@ -1,0 +1,33 @@
+# certbot
+0 0,12 * * * python -c 'import random; import time; time.sleep(random.random() * 3600)' && /root/venvs/c$
+
+# MeMS
+# Zrt Shipping
+*/5 * * * * cd /me/mems; /root/venvs/mems/bin/python -m crons zrt_shipping &> /dev/null
+
+# Missed Calls (ED/HRT)
+*/5 * * * * cd /me/mems; /root/venvs/mems/bin/python -m crons missed_calls &> /dev/null
+
+# Pharmacy Fill
+30 4 * * * cd /me/mems; /root/venvs/mems/bin/python -m crons pharmacy_fill morning &> /dev/null
+0 13 * * * cd /me/mems; /root/venvs/mems/bin/python -m crons pharmacy_fill noon &> /dev/null
+3 11 * * * cd /me/mems; /root/venvs/mems/bin/python -m crons expiring &> /dev/null
+
+# Monolith Claims
+15,45 * * * * cd /me/mems; /root/venvs/mems/bin/python -m crons monolith claims_timeout &> /dev/null
+
+# WellDyne Incoming
+10 8 * * * cd /me/mems; /root/venvs/mems/bin/python -m crons welldyne incoming outbound morning &> /dev/$
+12 8 * * * cd /me/mems; /root/venvs/mems/bin/python -m crons welldyne incoming shipped morning &> /dev/n$
+14 8 * * * cd /me/mems; /root/venvs/mems/bin/python -m crons welldyne incoming opened morning &> /dev/nu$
+#10 15 * * * cd /me/mems; /root/venvs/mems/bin/python -m crons welldyne incoming outbound afternoon &> /$
+12 15 * * * cd /me/mems; /root/venvs/mems/bin/python -m crons welldyne incoming shipped afternoon &> /de$
+14 15 * * * cd /me/mems; /root/venvs/mems/bin/python -m crons welldyne incoming opened afternoon &> /dev$
+
+# WellDyne Outgoing
+0 12 * * * cd /me/mems; /root/venvs/mems/bin/python -m crons welldyne adhoc noon &> /dev/null
+0 16 * * * cd /me/mems; /root/venvs/mems/bin/python -m crons welldyne adhoc afternoon &> /dev/null
+30 8 * * * cd /me/mems; /root/venvs/mems/bin/python -m reports welldyne.not_opened 72 &> /dev/null
+
+# Anazao Incoming
+*/5 * * * * cd /me/mems; /root/venvs/mems/bin/python -m crons anazao shipped &> /dev/null
