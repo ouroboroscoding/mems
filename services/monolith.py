@@ -453,6 +453,45 @@ class Monolith(Services.Service):
 		# Return the DOB
 		return Services.Response(sDOB)
 
+	def customerDsid_create(self, data, sesh):
+		"""Customer DoseSpot ID Create
+
+		Creates a new patient in DoseSpot and returns the ID generated
+
+		Arguments:
+			data (dict): Data sent with the request
+			sesh (Sesh._Session): The session associated with the request
+
+		Returns:
+			Services.Response
+		"""
+
+		# Make sure the user has the proper permission to do this
+		oResponse = Services.read('auth', 'rights/verify', {
+			"name": "prescriptions",
+			"right": Rights.CREATE
+		}, sesh)
+		if not oResponse.data:
+			return Services.Response(error=Rights.INVALID)
+
+		# Verify fields
+		try: DictHelper.eval(data, ['customerId'])
+		except ValueError as e: return Services.Response(error=(1001, [(f, 'missing') for f in e.args]))
+
+		# Find the customer
+		dCustomer = KtCustomer.get(data['customerId'], raw=True)
+		if not dCustomer:
+			return Services.Response(error=(1104, 'customer'))
+
+		# Get the latest landing
+		dLanding = TfLanding.find(
+			dCustomer['lastName'],
+			dCustomer['emailAddress'] or '',
+			dCustomer['phoneNumber']
+		)
+		if not dLanding:
+			return Services.Response(error=(1104, 'mip'))
+
 	def customerDsid_read(self, data, sesh):
 		"""Customer DoseSpot ID
 
