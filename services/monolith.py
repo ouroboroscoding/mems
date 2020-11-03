@@ -475,22 +475,79 @@ class Monolith(Services.Service):
 			return Services.Response(error=Rights.INVALID)
 
 		# Verify fields
-		try: DictHelper.eval(data, ['customerId'])
+		try: DictHelper.eval(data, ['customerId', 'clinician_id'])
 		except ValueError as e: return Services.Response(error=(1001, [(f, 'missing') for f in e.args]))
 
 		# Find the customer
-		dCustomer = KtCustomer.get(data['customerId'], raw=True)
+		dCustomer = KtCustomer.filter({
+			"customerId": str(data['customerId'])
+		}, raw=True, limit=1)
 		if not dCustomer:
 			return Services.Response(error=(1104, 'customer'))
 
+		# Make sure we don't already have the patient record
+		dDsPatient = DsPatient.filter({
+			"customerId": str(data['customerId'])
+		}, raw=['id'], limit=1)
+		if dDsPatient:
+			return Services.Response(error=1101)
+
 		# Get the latest landing
-		dLanding = TfLanding.find(
+		lLandings = TfLanding.find(
 			dCustomer['lastName'],
 			dCustomer['emailAddress'] or '',
 			dCustomer['phoneNumber']
 		)
-		if not dLanding:
+		if not lLandings:
 			return Services.Response(error=(1104, 'mip'))
+
+		# Get the DOB
+		sDOB = TfAnswer.dob(lLandings[0]['landing_id'])
+		if not sDOB:
+			return Services.Response(error=1910)
+
+		# Try to create the DsInstance to check field values
+		try:
+			sDT = arrow.get().format('YYYY-MM-DD HH:mm:ss')
+			dData = {
+				"customerId": dCustomer['customerId'],
+				"firstName": dCustomer['firstName'],
+				"lastName": dCustomer['lastName'],
+				"dateOfBirth": sDOB,
+				"gender": '1',
+				"email": dCustomer['emailAddress'],
+				"address1": dCustomer['shipAddress1'],
+				"address2": dCustomer['shipAddress2'],
+				"city": dCustomer['shipCity'],
+				"state": dCustomer['shipState'],
+				"zipCode": dCustomer['shipPostalCode'],
+				"primaryPhone": dCustomer['phoneNumber'],
+				"primaryPhoneType": '4',
+				"active": 'Y',
+				"createdAt": sDT,
+				"updatedAt": sDT
+			}
+			oDsPatient = DsPatient(dData)
+		except ValueError as e:
+			return Services.Response(error=(1001, e.args[0]))
+
+		# Send the data to the prescriptions service to get the patient ID
+		oResponse = Services.create('prescriptions', 'patient', {
+				"patient": dData,
+				"clinician_id": data['clinician_id']
+		}, sesh)
+		if oResponse.errorExists():
+			return oResponse
+
+		# Add the patient ID and save the record
+		try:
+			oDsPatient['patientId'] = str(oResponse.data)
+			oDsPatient.create()
+		except Record_MySQL.DuplicateException:
+			return Services.Response(error=1101)
+
+		# Return the ID
+		return oResponse
 
 	def customerDsid_read(self, data, sesh):
 		"""Customer DoseSpot ID

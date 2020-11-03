@@ -274,7 +274,7 @@ class Prescriptions(Services.Service):
 		try:
 			dData = {
 				"FirstName": StrHelper.normalize(data['patient']['firstName']),
-				"LastName": StrHelper.normalize(data['patient']['lastName'])
+				"LastName": StrHelper.normalize(data['patient']['lastName']),
 				"DateOfBirth": data['patient']['dateOfBirth'][0:10],
 				"Gender": data['patient']['gender'],
 				"Email": data['patient']['email'],
@@ -287,11 +287,6 @@ class Prescriptions(Services.Service):
 				"PrimaryPhoneType": data['patient']['primaryPhoneType'],
 				"Active": 'true'
 			}
-
-			# If the ID was passed as well
-			if 'patientId' in data['patient']:
-				dData['PatientId'] =  data['patient']['patientId']
-
 		except Exception as e:
 			return Services.Response(error=(1001, str(e)))
 
@@ -310,12 +305,18 @@ class Prescriptions(Services.Service):
 		# Make the request
 		oRes = requests.post(sURL, data=dData, headers=dHeaders)
 
+		print(oRes)
+
 		# If we didn't get a 200
 		if oRes.status_code != 200:
 			return Services.Response(error=(1601, oRes.text))
 
+		print(oRes.text)
+
 		# Get the response
 		dRes = oRes.json()
+
+		print(dRes)
 
 		# If we got an error
 		if dRes['Result']['ResultCode'] == 'ERROR':
