@@ -872,7 +872,7 @@ class KtCustomer(Record_MySQL.Record):
 
 		# Generate SQL
 		sSQL = "SELECT " \
-				"`ktc`.`customerId` as `customerId`, " \
+				"CONVERT(`ktc`.`customerId`, UNSIGNED) as `customerId`, " \
 				"CONCAT(`ktc`.`firstName`, ' ', `ktc`.`lastName`) as `customerName`, " \
 				"`cc`.`user` as `claimedUser` " \
 				"FROM `%(db)s`.`%(table)s` as `ktc` " \
