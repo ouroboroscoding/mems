@@ -2,7 +2,7 @@ SELECT
 	`cmp`.`id` AS `id`,
 	`cmp`.`customerPhone` AS `customerPhone`,
 	`cmp`.`customerName` AS `customerName`,
-	`ktot`.`customerId` as `customerId`,
+	CONVERT(`ktot`.`customerId`, UNSIGNED) as `customerId`,
 	`ktot`.`numberOfOrders` AS `numberOfOrders`,
 	`ktot`.`latest_kto_id` AS `latest_kto_id`,
 	`cmp`.`lastMsg` AS `lastMsg`,
