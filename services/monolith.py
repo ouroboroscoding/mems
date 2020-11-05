@@ -29,7 +29,7 @@ from shared import Rights, Sync
 from records.monolith import \
 	Calendly, Campaign, CustomerClaimed, CustomerClaimedLast, CustomerCommunication, \
 	CustomerMsgPhone, DsPatient, Forgot, HrtLabResultTests, KtCustomer, KtOrder, \
-	KtOrderClaim, ShippingInfo, SmpNote, SmpOrderStatus, SMSStop, TfAnswer, \
+	KtOrderClaim, ShippingInfo, SmpNote, SmpOrderStatus, SmpState, SMSStop, TfAnswer, \
 	TfLanding, TfQuestion, TfQuestionOption, User, \
 	init as recInit
 
@@ -1368,6 +1368,32 @@ class Monolith(Services.Service):
 				"phoneNumber": data['phoneNumber']
 			}, raw=['service', 'agent'])
 		})
+
+	def encounter_read(self, data):
+		"""Encounter
+
+		Returns encounter type based on state
+
+		Arguments:
+			data (dict): Data sent with the request
+
+		Returns:
+			Services.Response
+		"""
+
+		# Verify fields
+		try: DictHelper.eval(data, ['state'])
+		except ValueError as e: return Services.Response(error=(1001, [(f, 'missing') for f in e.args]))
+
+		# Look up the state
+		dState = SmpState.filter({
+			"abbreviation": data['state']
+		}, raw=['legalEncounterType'], limit=1)
+		if not dState:
+			return Services.Response(error=1104)
+
+		# Return the encounter
+		return Services.Response(dState['legalEncounterType'])
 
 	def messageIncoming_create(self, data):
 		"""Message Incoming

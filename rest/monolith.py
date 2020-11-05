@@ -50,6 +50,8 @@ REST.Server({
 	"/customer/stop": {"methods": REST.CREATE | REST.DELETE, "session": True},
 	"/customer/stops": {"methods": REST.READ, "session": True},
 
+	"/encounter": {"methods": REST.READ},
+
 	"/message/incoming": {"methods": REST.CREATE},
 	"/message/outgoing": {"methods": REST.CREATE},
 	"/msgs/claimed": {"methods": REST.READ, "session": True},

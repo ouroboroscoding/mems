@@ -37,9 +37,8 @@ def init():
 	"""
 
 	global sClaimedNewSQL, sConversationSQL, \
-			sLandingSQL, sLatestStatusSQL, sMsgPhoneUpdateSQL, \
-			sSmpNotes, sNumOfOrdersSQL, sSearchSQL, \
-			sUnclaimedSQL, sUnclaimedCountSQL
+			sLatestStatusSQL, sMsgPhoneUpdateSQL, \
+			sSmpNotes, sNumOfOrdersSQL, sSearchSQL
 
 	# SQL files
 	with open('records/sql/claimed_new.sql') as oF:
@@ -1449,6 +1448,36 @@ class SmpOrderStatus(Record_MySQL.Record):
 			sSQL,
 			Record_MySQL.ESelect.ROW
 		)
+
+# SmpState class
+class SmpState(Record_MySQL.Record):
+	"""SmpState
+
+	Represents states and their encounter types
+	"""
+
+	_conf = None
+	"""Configuration"""
+
+	@classmethod
+	def config(cls):
+		"""Config
+
+		Returns the configuration data associated with the record type
+
+		Returns:
+			dict
+		"""
+
+		# If we haven loaded the config yet
+		if not cls._conf:
+			cls._conf = Record_MySQL.Record.generateConfig(
+				Tree.fromFile('definitions/monolith/smp_state.json'),
+				'mysql'
+			)
+
+		# Return the config
+		return cls._conf
 
 # SMSPatientWorkflow class
 class SMSPatientWorkflow(Record_MySQL.Record):
