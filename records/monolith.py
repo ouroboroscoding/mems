@@ -832,7 +832,7 @@ class KtCustomer(Record_MySQL.Record):
 		dStruct = cls.struct(custom)
 
 		# Generate SQL
-		sSQL = "SELECT `customerId`, `phoneNumber`, `firstName`, `lastName` " \
+		sSQL = "SELECT `customerId`, `emailAddress`, `phoneNumber`, `firstName`, `lastName` " \
 				"FROM `%(db)s`.`%(table)s` " \
 				"WHERE CONCAT(`shipFirstName`, ' ', `shipLastName`) = '%(name)s' " \
 				"AND `shipPostalCode` = '%(zip)s' " \

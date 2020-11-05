@@ -148,17 +148,16 @@ def run():
 			}
 
 			# Send the Email to the patient
-			#! change "to" in PROD to "noreply@m.maleexcelmail.com"
 			oResponse = Services.create('communications', 'email', {
 				"_internal_": Services.internalKey(),
 				"from": 'noreply@m.maleexcelmail.com',
 				"html_body": Templates.generate('email/crons/zrt_test_kit_shipped.html', dTpl, 'en-US'),
 				"subject": Templates.generate('email/crons/zrt_test_kit_shipped.txt', {}, 'en-US'),
-				"to": 'keith@secondmainphase.com'
+				"to": dKtCustomer['emailAddress']
 			})
 			if oResponse.errorExists():
 				emailError('ZRT Shipping Error', 'Couldn\'t send email:\n\n%s\n\n%s\n\n%s' % (
-					dKtCustomer['customerId'],
+					str(dKtCustomer),
 					str(lMatches),
 					str(oResponse)
 				))
@@ -196,7 +195,7 @@ def run():
 		})
 		if oResponse.errorExists():
 			emailError('ZRT Shipping Error', 'Couldn\'t send sms:\n\n%s\n\n%s\n\n%s' % (
-				dKtCustomer['customerId'],
+				str(dKtCustomer),
 				str(lMatches),
 				str(oResponse)
 			))
