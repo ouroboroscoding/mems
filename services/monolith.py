@@ -591,7 +591,7 @@ class Monolith(Services.Service):
 			return Services.Response(0)
 
 		# Return the ID
-		return Services.Response(dPatient['patientId'])
+		return Services.Response(int(dPatient['patientId']))
 
 	def customerExists_read(self, data, sesh):
 		"""Customer Exists
@@ -1039,12 +1039,8 @@ class Monolith(Services.Service):
 		"""
 
 		# Verify fields
-		try: DictHelper.eval(data, ['content', 'action'])
+		try: DictHelper.eval(data, ['action', 'content', 'customerId'])
 		except ValueError as e: return Services.Response(error=(1001, [(f, 'missing') for f in e.args]))
-
-		# We must have either a customer ID or order ID
-		if 'customer_id' not in data and 'order_id' not in data:
-			return Services.Response(error=(1001, [('customer_id', 'missing'), ('order_id', 'missing')]))
 
 		# Make sure the user has the proper permission to do this
 		oResponse = Services.read('auth', 'rights/verify', {
@@ -1057,26 +1053,54 @@ class Monolith(Services.Service):
 		# Get current date/time
 		sDT = arrow.get().format('YYYY-MM-DD HH:mm:ss')
 
-		# If we got a customer ID
-		if 'customer_id' in data:
+		# If the note is an SMS
+		if data['action'] == 'Send Communication':
 
-			# Attempt to create the record
-			try:
-				oSmpNote = SmpNote({
-					"parentTable": 'kt_customer',
-					"parentColumn": 'customerId',
-					"columnValue": str(data['customer_id']),
-					"action": data['action'],
-					"createdBy": sesh['memo_id'],
-					"note": data['content'],
-					"createdAt": sDT,
-					"updatedAt": sDT
-				})
-			except ValueError as e:
-				return Services.Response(error=(1001, e.args[0]))
+			# If the content is too long
+			if len(data['content']) >= 1600:
+				return Services.Response(error=1510)
 
-		# Else we got an order ID
-		else:
+			# Find the name of the creator
+			dUser = User.get(sesh['memo_id'], raw=['firstName', 'lastName'])
+			if not dUser:
+				return Services.Response(error=(1104, 'user'))
+
+			# Find the name and phone number of the customer
+			dKtCustomer = KtCustomer.filter({
+				"customerId": str(data['customerId'])
+			}, raw=['shipFirstName', 'shipLastName', 'phoneNumber'], limit=1)
+			if not dKtCustomer:
+				return Services.Response(error=(1104, 'customer'))
+
+			# Check the number isn't blocked
+			if SMSStop.filter({"phoneNumber": dKtCustomer['phoneNumber'], "service": 'doctor'}):
+				return Services.Response(error=1500)
+
+			# Send the SMS
+			oResponse = Services.create('communications', 'sms', {
+				"_internal_": Services.internalKey(),
+				"to": dKtCustomer['phoneNumber'][-10:],
+				"content": data['content'],
+				"service": 'doctor'
+			})
+
+			# If we got an error
+			if oResponse.errorExists():
+				return oResponse
+
+			# Monolith is stupid af and saving SMS messages in the same table as
+			#	notes is a special level of laziness and/or incompetence
+			data['content'] = '\n[Sender] %s %s\n[Receiver] %s %s - %s\n[Content] %s' % (
+				dUser['firstName'],
+				dUser['lastName'],
+				dKtCustomer['shipFirstName'],
+				dKtCustomer['shipLastName'],
+				dKtCustomer['phoneNumber'],
+				data['content']
+			)
+
+		# If we got an order iD
+		if 'orderId' in data:
 
 			# If we have no label
 			if 'label' not in data:
@@ -1089,7 +1113,7 @@ class Monolith(Services.Service):
 
 			# Find the latest status for this order
 			oStatus = SmpOrderStatus.filter(
-				{"orderId": data['order_id']},
+				{"orderId": data['orderId']},
 				limit=1
 			)
 
@@ -1106,7 +1130,7 @@ class Monolith(Services.Service):
 
 				# Create a new status
 				oStatus = SmpOrderStatus({
-					"orderId": data['order_id'],
+					"orderId": data['orderId'],
 					"orderStatus": '',
 					"reviewStatus": '',
 					"attentionRole": lLabel[0] != '' and lLabel[0] or None,
@@ -1143,8 +1167,26 @@ class Monolith(Services.Service):
 				oSmpNote = SmpNote({
 					"parentTable": 'kt_order',
 					"parentColumn": 'orderId',
-					"columnValue": data['order_id'],
+					"columnValue": data['orderId'],
 					"action": sAction,
+					"createdBy": sesh['memo_id'],
+					"note": data['content'],
+					"createdAt": sDT,
+					"updatedAt": sDT
+				})
+			except ValueError as e:
+				return Services.Response(error=(1001, e.args[0]))
+
+		# Else, use the customerId
+		else:
+
+			# Attempt to create the record
+			try:
+				oSmpNote = SmpNote({
+					"parentTable": 'kt_customer',
+					"parentColumn": 'customerId',
+					"columnValue": str(data['customerId']),
+					"action": data['action'],
 					"createdBy": sesh['memo_id'],
 					"note": data['content'],
 					"createdAt": sDT,
@@ -1486,6 +1528,10 @@ class Monolith(Services.Service):
 		# Check the number isn't blocked
 		if SMSStop.filter({"phoneNumber": data['customerPhone'], "service": data['type']}):
 			return Services.Response(error=1500)
+
+		# If the content is too long
+		if len(data['content']) >= 1600:
+			return Services.Response(error=1510)
 
 		# If it's internal
 		if '_internal_' in data:

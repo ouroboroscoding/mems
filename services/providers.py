@@ -22,7 +22,7 @@ from RestOC import DictHelper, Errors, Record_MySQL, Services, Sesh
 from shared import Rights
 
 # Records imports
-from records.providers import Provider, TemplateEmail, TemplateSMS
+from records.providers import Provider, Template
 
 class Providers(Services.Service):
 	"""Providers Service class
@@ -30,7 +30,7 @@ class Providers(Services.Service):
 	Service for Providers access
 	"""
 
-	_install = [Provider, TemplateEmail, TemplateSMS]
+	_install = [Provider, Template]
 	"""Record types called in install"""
 
 	def initialise(self):
@@ -112,198 +112,6 @@ class Providers(Services.Service):
 
 		# Create the provider and return the ID
 		return Services.Response(sID)
-
-	def _template_create(self, data, sesh, _class):
-		"""Template Create
-
-		Create a new template of the passed type
-
-		Arguments:
-			data (mixed): Data sent with the request
-			sesh (Sesh._Session): The session associated with the request
-			_class (class): The class to use
-
-		Returns:
-			Services.Response
-		"""
-
-		# Make sure the user has the proper permission to do this
-		oResponse = Services.read('auth', 'rights/verify', {
-			"name": "prov_templates",
-			"right": Rights.CREATE
-		}, sesh)
-		if not oResponse.data:
-			return Services.Response(error=Rights.INVALID)
-
-		# Verify minimum fields
-		try: DictHelper.eval(data, ['title', 'content'])
-		except ValueError as e: return Services.Response(error=(1001, [(f, 'missing') for f in e.args]))
-
-		# Validate by creating a Record instance
-		try:
-			oTemplate = _class(data)
-		except ValueError as e:
-			return Services.Response(error=(1001, e.args[0]))
-
-		# Create the row and return the result
-		return Services.Response(
-			oTemplate.create()
-		)
-
-	def _template_delete(self, data, sesh, _class):
-		"""Template Delete
-
-		Delete an existing template for the passed type
-
-		Arguments:
-			data (mixed): Data sent with the request
-			sesh (Sesh._Session): The session associated with the request
-			_class (class): The class to use
-
-		Returns:
-			Services.Response
-		"""
-
-		# Verify minimum fields
-		try: DictHelper.eval(data, ['_id'])
-		except ValueError as e: return Services.Response(error=(1001, [(f, 'missing') for f in e.args]))
-
-		# Make sure the user has the proper permission to do this
-		oResponse = Services.read('auth', 'rights/verify', {
-			"name": "prov_templates",
-			"right": Rights.DELETE,
-			"ident": data['_id']
-		}, sesh)
-		if not oResponse.data:
-			return Services.Response(error=Rights.INVALID)
-
-		# If the record does not exist
-		if not _class.exists(data['_id']):
-			return Services.Response(error=1104)
-
-		# Delete the record
-		if not _class.deleteGet(data['_id']):
-			return Services.Response(error=1102)
-
-		# Return OK
-		return Services.Response(True)
-
-	def _template_read(self, data, sesh, _class):
-		"""Template Read
-
-		Fetches an existing template of the passed type
-
-		Arguments:
-			data (mixed): Data sent with the request
-			sesh (Sesh._Session): The session associated with the request
-			_class (class): The class to use
-
-		Returns:
-			Services.Response
-		"""
-
-		# Verify minimum fields
-		try: DictHelper.eval(data, ['_id'])
-		except ValueError as e: return Services.Response(error=(1001, [(f, 'missing') for f in e.args]))
-
-		# Make sure the user has the proper permission to do this
-		oResponse = Services.read('auth', 'rights/verify', {
-			"name": "prov_templates",
-			"right": Rights.READ,
-			"ident": data['_id']
-		}, sesh)
-		if not oResponse.data:
-			return Services.Response(error=Rights.INVALID)
-
-		# Look for the template
-		dTemplate = _class.get(data['_id'], raw=True)
-
-		# If it doesn't exist
-		if not dTemplate:
-			return Services.Response(error=1104)
-
-		# Return the template
-		return Services.Response(dTemplate)
-
-	def _template_update(self, data, sesh, _class):
-		"""Template Update
-
-		Updated an existing template of the passed type
-
-		Arguments:
-			data (mixed): Data sent with the request
-			sesh (Sesh._Session): The session associated with the request
-			_class (class): The class to use
-
-		Returns:
-			Services.Response
-		"""
-
-		# Verify minimum fields
-		try: DictHelper.eval(data, ['_id'])
-		except ValueError as e: return Services.Response(error=(1001, [(f, 'missing') for f in e.args]))
-
-		# Make sure the user has the proper permission to do this
-		oResponse = Services.read('auth', 'rights/verify', {
-			"name": "prov_templates",
-			"right": Rights.UPDATE,
-			"ident": data['_id']
-		}, sesh)
-		if not oResponse.data:
-			return Services.Response(error=Rights.INVALID)
-
-		# Fetch the template
-		oTemplate = _class.get(data['_id'])
-
-		# If it doesn't exist
-		if not oTemplate:
-			return Services.Response(error=1104)
-
-		# Remove fields that can't be changed
-		del data['_id']
-		if '_created' in data: del data['_created']
-
-		# Step through each field passed and update/validate it
-		lErrors = []
-		for f in data:
-			try: oTemplate[f] = data[f]
-			except ValueError as e: lErrors.append(e.args[0])
-
-		# If there was any errors
-		if lErrors:
-			return Services.Response(error=(1001, lErrors))
-
-		# Update the record and return the result
-		return Services.Response(
-			oTemplate.save()
-		)
-
-	def _templates_read(self, data, sesh, _class):
-		"""Templates Read
-
-		Fetches all existing templates of the passed type
-
-		Arguments:
-			data (mixed): Data sent with the request
-			sesh (Sesh._Session): The session associated with the request
-			_class (class): The class to use
-
-		Returns:
-			Services.Response
-		"""
-
-		# Make sure the user has the proper permission to do this
-		oResponse = Services.read('auth', 'rights/verify', {
-			"name": "prov_templates",
-			"right": Rights.READ
-		}, sesh)
-		if not oResponse.data:
-			return Services.Response(error=Rights.INVALID)
-
-		# Fetch and return the templates
-		return Services.Response(
-			_class.get(raw=True, orderby=['title'])
-		)
 
 	def provider_create(self, data, sesh):
 		"""Provider Create
@@ -805,7 +613,7 @@ class Providers(Services.Service):
 		# Return OK
 		return Services.Response(True)
 
-	def templateEmail_create(self, data, sesh):
+	def template_create(self, data, sesh):
 		"""Template Email Create
 
 		Create a new email template
@@ -817,9 +625,31 @@ class Providers(Services.Service):
 		Returns:
 			Services.Response
 		"""
-		return self._template_create(data, sesh, TemplateEmail)
 
-	def templateEmail_delete(self, data, sesh):
+		# Make sure the user has the proper permission to do this
+		oResponse = Services.read('auth', 'rights/verify', {
+			"name": "prov_templates",
+			"right": Rights.CREATE
+		}, sesh)
+		if not oResponse.data:
+			return Services.Response(error=Rights.INVALID)
+
+		# Verify minimum fields
+		try: DictHelper.eval(data, ['title', 'type', 'content'])
+		except ValueError as e: return Services.Response(error=(1001, [(f, 'missing') for f in e.args]))
+
+		# Validate by creating a Record instance
+		try:
+			oTemplate = Template(data)
+		except ValueError as e:
+			return Services.Response(error=(1001, e.args[0]))
+
+		# Create the row and return the result
+		return Services.Response(
+			oTemplate.create()
+		)
+
+	def template_delete(self, data, sesh):
 		"""Template Email Delete
 
 		Delete an existing email template
@@ -831,9 +661,32 @@ class Providers(Services.Service):
 		Returns:
 			Services.Response
 		"""
-		return self._template_delete(data, sesh, TemplateEmail)
 
-	def templateEmail_read(self, data, sesh):
+		# Verify minimum fields
+		try: DictHelper.eval(data, ['_id'])
+		except ValueError as e: return Services.Response(error=(1001, [(f, 'missing') for f in e.args]))
+
+		# Make sure the user has the proper permission to do this
+		oResponse = Services.read('auth', 'rights/verify', {
+			"name": "prov_templates",
+			"right": Rights.DELETE,
+			"ident": data['_id']
+		}, sesh)
+		if not oResponse.data:
+			return Services.Response(error=Rights.INVALID)
+
+		# If the record does not exist
+		if not Template.exists(data['_id']):
+			return Services.Response(error=1104)
+
+		# Delete the record
+		if not Template.deleteGet(data['_id']):
+			return Services.Response(error=1102)
+
+		# Return OK
+		return Services.Response(True)
+
+	def template_read(self, data, sesh):
 		"""Template Email Read
 
 		Fetches an existing email template
@@ -845,9 +698,31 @@ class Providers(Services.Service):
 		Returns:
 			Services.Response
 		"""
-		return self._template_read(data, sesh, TemplateEmail)
 
-	def templateEmail_update(self, data, sesh):
+		# Verify minimum fields
+		try: DictHelper.eval(data, ['_id'])
+		except ValueError as e: return Services.Response(error=(1001, [(f, 'missing') for f in e.args]))
+
+		# Make sure the user has the proper permission to do this
+		oResponse = Services.read('auth', 'rights/verify', {
+			"name": "prov_templates",
+			"right": Rights.READ,
+			"ident": data['_id']
+		}, sesh)
+		if not oResponse.data:
+			return Services.Response(error=Rights.INVALID)
+
+		# Look for the template
+		dTemplate = Template.get(data['_id'], raw=True)
+
+		# If it doesn't exist
+		if not dTemplate:
+			return Services.Response(error=1104)
+
+		# Return the template
+		return Services.Response(dTemplate)
+
+	def template_update(self, data, sesh):
 		"""Template Email Update
 
 		Updated an existing email template
@@ -859,9 +734,47 @@ class Providers(Services.Service):
 		Returns:
 			Services.Response
 		"""
-		return self._template_update(data, sesh, TemplateEmail)
 
-	def templateEmails_read(self, data, sesh):
+		# Verify minimum fields
+		try: DictHelper.eval(data, ['_id'])
+		except ValueError as e: return Services.Response(error=(1001, [(f, 'missing') for f in e.args]))
+
+		# Make sure the user has the proper permission to do this
+		oResponse = Services.read('auth', 'rights/verify', {
+			"name": "prov_templates",
+			"right": Rights.UPDATE,
+			"ident": data['_id']
+		}, sesh)
+		if not oResponse.data:
+			return Services.Response(error=Rights.INVALID)
+
+		# Fetch the template
+		oTemplate = Template.get(data['_id'])
+
+		# If it doesn't exist
+		if not oTemplate:
+			return Services.Response(error=1104)
+
+		# Remove fields that can't be changed
+		del data['_id']
+		if '_created' in data: del data['_created']
+
+		# Step through each field passed and update/validate it
+		lErrors = []
+		for f in data:
+			try: oTemplate[f] = data[f]
+			except ValueError as e: lErrors.append(e.args[0])
+
+		# If there was any errors
+		if lErrors:
+			return Services.Response(error=(1001, lErrors))
+
+		# Update the record and return the result
+		return Services.Response(
+			oTemplate.save()
+		)
+
+	def templates_read(self, data, sesh):
 		"""Template Emails
 
 		Fetches all existing email templates
@@ -873,74 +786,16 @@ class Providers(Services.Service):
 		Returns:
 			Services.Response
 		"""
-		return self._templates_read(data, sesh, TemplateEmail)
 
-	def templateSms_create(self, data, sesh):
-		"""Template Sms Create
+		# Make sure the user has the proper permission to do this
+		oResponse = Services.read('auth', 'rights/verify', {
+			"name": "prov_templates",
+			"right": Rights.READ
+		}, sesh)
+		if not oResponse.data:
+			return Services.Response(error=Rights.INVALID)
 
-		Create a new sms template
-
-		Arguments:
-			data (mixed): Data sent with the request
-			sesh (Sesh._Session): The session associated with the request
-
-		Returns:
-			Services.Response
-		"""
-		return self._template_create(data, sesh, TemplateSMS)
-
-	def templateSms_delete(self, data, sesh):
-		"""Template Sms Delete
-
-		Delete an existing sms template
-
-		Arguments:
-			data (mixed): Data sent with the request
-			sesh (Sesh._Session): The session associated with the request
-
-		Returns:
-			Services.Response
-		"""
-		return self._template_delete(data, sesh, TemplateSMS)
-
-	def templateSms_read(self, data, sesh):
-		"""Template Sms Read
-
-		Fetches an existing sms template
-
-		Arguments:
-			data (mixed): Data sent with the request
-			sesh (Sesh._Session): The session associated with the request
-
-		Returns:
-			Services.Response
-		"""
-		return self._template_read(data, sesh, TemplateSMS)
-
-	def templateSms_update(self, data, sesh):
-		"""Template Sms Update
-
-		Updated an existing sms template
-
-		Arguments:
-			data (mixed): Data sent with the request
-			sesh (Sesh._Session): The session associated with the request
-
-		Returns:
-			Services.Response
-		"""
-		return self._template_update(data, sesh, TemplateSMS)
-
-	def templateSmss_read(self, data, sesh):
-		"""Template SMSs
-
-		Fetches all existing sms templates
-
-		Arguments:
-			data (mixed): Data sent with the request
-			sesh (Sesh._Session): The session associated with the request
-
-		Returns:
-			Services.Response
-		"""
-		return self._templates_read(data, sesh, TemplateSMS)
+		# Fetch and return the templates
+		return Services.Response(
+			Template.get(raw=True, orderby=['title'])
+		)

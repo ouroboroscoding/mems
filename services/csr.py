@@ -993,7 +993,6 @@ class CSR(Services.Service):
 		# Pass along the details to the patient service and return the result
 		return  Services.create('patient', 'setup/start', data, sesh)
 
-
 	def session_read(self, data, sesh):
 		"""Session
 
@@ -1024,7 +1023,7 @@ class CSR(Services.Service):
 		"""
 
 		# Verify fields
-		try: DictHelper.eval(data, ['_internal_', 'userName', 'passwd'])
+		try: DictHelper.eval(data, ['userName', 'passwd'])
 		except ValueError as e: return Services.Response(error=(1001, [(f, 'missing') for f in e.args]))
 
 		# Check monolith for the user
@@ -1043,7 +1042,7 @@ class CSR(Services.Service):
 
 		# Check for the agent associated with the memo ID
 		dAgent = Agent.filter(
-			{"memo_id": oRespond.data['id']},
+			{"memo_id": oResponse.data['id']},
 			raw=True,
 			limit=1
 		)

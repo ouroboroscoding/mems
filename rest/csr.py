@@ -39,9 +39,9 @@ REST.Server({
 	"/list/item": {"methods": REST.CREATE | REST.DELETE, "session": True},
 	"/lists": {"methods": REST.READ, "session": True},
 
-	"session": {"methods": REST.READ, "session": True},
-	"signin": {"methods": REST.CREATE},
-	"signout": {"methods": REST.CREATE},
+	"/session": {"methods": REST.READ, "session": True},
+	"/signin": {"methods": REST.CREATE},
+	"/signout": {"methods": REST.CREATE},
 
 	"/patient/account": {"methods": REST.CREATE, "session": True},
 

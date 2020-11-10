@@ -40,10 +40,8 @@ REST.Server({
 	"/signin": {"methods": REST.CREATE},
 	"/signout": {"methods": REST.CREATE},
 
-	"/template/email": {"methods": REST.ALL, "session": True},
-	"/template/emails": {"methods": REST.READ, "session": True},
-	"/template/sms": {"methods": REST.ALL, "session": True},
-	"/template/smss": {"methods": REST.READ, "session": True}
+	"/template": {"methods": REST.ALL, "session": True},
+	"/templates": {"methods": REST.READ, "session": True}
 
 }, 'providers', "https?://(.*\\.)?%s" % Conf.get(("rest","allowed")).replace('.', '\\.')).run(
 	host=oRestConf['providers']['host'],

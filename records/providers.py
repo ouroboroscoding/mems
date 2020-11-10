@@ -45,11 +45,11 @@ class Provider(Record_MySQL.Record):
 		# Return the config
 		return cls._conf
 
-# TemplateEmail class
-class TemplateEmail(Record_MySQL.Record):
-	"""TemplateEmail
+# Template class
+class Template(Record_MySQL.Record):
+	"""Template
 
-	Represents an email template
+	Represents an note/sms template
 	"""
 
 	_conf = None
@@ -68,7 +68,7 @@ class TemplateEmail(Record_MySQL.Record):
 		# If we haven loaded the config yet
 		if not cls._conf:
 			cls._conf = Record_MySQL.Record.generateConfig(
-				Tree.fromFile('definitions/providers/tpl_email.json'),
+				Tree.fromFile('definitions/providers/template.json'),
 				'mysql'
 			)
 

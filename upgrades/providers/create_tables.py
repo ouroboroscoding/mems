@@ -2,7 +2,7 @@
 """ Create the Products tables"""
 
 # Services
-from records.providers import Provider, TemplateEmail, TemplateSMS
+from records.providers import Provider, Template
 from records.qualmed import KnkOrder
 
 def run():
@@ -10,8 +10,7 @@ def run():
 	# Create the tables
 	KnkOrder.tableCreate()
 	Provider.tableCreate()
-	TemplateEmail.tableCreate()
-	TemplateSMS.tableCreate()
+	Template.tableCreate()
 
 	# Return OK
 	return True
