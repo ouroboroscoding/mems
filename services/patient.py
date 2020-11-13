@@ -33,9 +33,9 @@ from . import emailError
 
 # Support request types
 _dSupportRequest = {
-	"cancel_order": "%(crm_type)s Patient %(crm_id)s would like to cancel their order.",
-	"payment": "%(crm_type)s Patient %(crm_id)s would like to change their payment information.",
-	"urgent_address": "%(crm_type)s Patient %(crm_id)s changed shipping address and needs an urgent update to the pharmacy"
+	"cancel_order": "to cancel their order",
+	"payment": "to change their payment info",
+	"urgent_address": "an urgent change to their shipping address (address already changed in the CRM)"
 }
 
 # Regex for validating email
@@ -1015,21 +1015,36 @@ class Patient(Services.Service):
 		if not oAccount:
 			return Services.Response(error=1104)
 
-		# Email content
-		sBody = _dSupportRequest[data['type']] % {
-			"crm_type": "Konnektive",
-			"crm_id": oAccount['crm_id']
-		}
+		# Get the phone number of the customer
+		if oAccount['crm_type'] == 'knk':
 
-		# Email the patient the key
-		oResponse = Services.create('communications', 'email', {
+			# Contact Konnektive
+			oResponse = Services.read('konnektive', 'customer', {
+				"customerId": oAccount['crm_id']
+			}, sesh)
+			if oResponse.errorExists(): return oResponse
+
+			# Store the phone number
+			sNumber = oResponse.data['phone']
+
+		else:
+			emailError('Support Request Failed', 'Invalid CRM Type\n\n%s' % (
+				str(oAccount)
+			))
+
+		# Add the request as an incoming SMS
+		oResponse = Services.create('monolith', 'message/incoming', {
 			"_internal_": Services.internalKey(),
-			"text_body": sBody,
-			"subject": 'Patient Portal Support Request',
-			"to": self._conf['support_email']
+			"customerPhone": sNumber,
+			"recvPhone": "0000000000",
+			"content": "PP: Customer has requested %s" % _dSupportRequest[data['type']]
 		})
 		if oResponse.errorExists():
-			return oResponse
+			emailError('Support Request Failed', 'Failed to add SMS\n\n%s\n\n%s\n\n%s' % (
+				str(data),
+				str(oAccount),
+				str(oResponse)
+			))
 
 		# Return OK
 		return Services.Response(True)
