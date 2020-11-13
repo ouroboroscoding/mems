@@ -199,7 +199,22 @@ def run():
 				str(lMatches),
 				str(oResponse)
 			))
-			continue
+
+		# Send the Email to the patient
+		"""
+		oResponse = Services.create('communications', 'email', {
+			"_internal_": Services.internalKey(),
+			"html_body": 'body'
+			"subject": 'subject',
+			"to": dKtCustomer['emailAddress']
+		})
+		if oResponse.errorExists():
+			emailError('ZRT Shipping Error', 'Couldn\'t send email:\n\n%s\n\n%s\n\n%s' % (
+				dKtCustomer['customerId'],
+				str(lMatches),
+				str(oResponse)
+			))
+		"""
 
 	# Return OK
 	return True

@@ -453,6 +453,102 @@ class Monolith(Services.Service):
 		# Return the DOB
 		return Services.Response(sDOB)
 
+	def customerDsid_create(self, data, sesh):
+		"""Customer DoseSpot ID Create
+
+		Creates a new patient in DoseSpot and returns the ID generated
+
+		Arguments:
+			data (dict): Data sent with the request
+			sesh (Sesh._Session): The session associated with the request
+
+		Returns:
+			Services.Response
+		"""
+
+		# Make sure the user has the proper permission to do this
+		oResponse = Services.read('auth', 'rights/verify', {
+			"name": "prescriptions",
+			"right": Rights.CREATE
+		}, sesh)
+		if not oResponse.data:
+			return Services.Response(error=Rights.INVALID)
+
+		# Verify fields
+		try: DictHelper.eval(data, ['customerId', 'clinician_id'])
+		except ValueError as e: return Services.Response(error=(1001, [(f, 'missing') for f in e.args]))
+
+		# Find the customer
+		dCustomer = KtCustomer.filter({
+			"customerId": str(data['customerId'])
+		}, raw=True, limit=1)
+		if not dCustomer:
+			return Services.Response(error=(1104, 'customer'))
+
+		# Make sure we don't already have the patient record
+		dDsPatient = DsPatient.filter({
+			"customerId": str(data['customerId'])
+		}, raw=['id'], limit=1)
+		if dDsPatient:
+			return Services.Response(error=1101)
+
+		# Get the latest landing
+		lLandings = TfLanding.find(
+			dCustomer['lastName'],
+			dCustomer['emailAddress'] or '',
+			dCustomer['phoneNumber']
+		)
+		if not lLandings:
+			return Services.Response(error=(1104, 'mip'))
+
+		# Get the DOB
+		sDOB = TfAnswer.dob(lLandings[0]['landing_id'])
+		if not sDOB:
+			return Services.Response(error=1910)
+
+		# Try to create the DsInstance to check field values
+		try:
+			sDT = arrow.get().format('YYYY-MM-DD HH:mm:ss')
+			dData = {
+				"customerId": dCustomer['customerId'],
+				"firstName": dCustomer['firstName'],
+				"lastName": dCustomer['lastName'],
+				"dateOfBirth": sDOB,
+				"gender": '1',
+				"email": dCustomer['emailAddress'],
+				"address1": dCustomer['shipAddress1'],
+				"address2": dCustomer['shipAddress2'],
+				"city": dCustomer['shipCity'],
+				"state": dCustomer['shipState'],
+				"zipCode": dCustomer['shipPostalCode'],
+				"primaryPhone": dCustomer['phoneNumber'],
+				"primaryPhoneType": '4',
+				"active": 'Y',
+				"createdAt": sDT,
+				"updatedAt": sDT
+			}
+			oDsPatient = DsPatient(dData)
+		except ValueError as e:
+			return Services.Response(error=(1001, e.args[0]))
+
+		# Send the data to the prescriptions service to get the patient ID
+		oResponse = Services.create('prescriptions', 'patient', {
+				"patient": dData,
+				"clinician_id": data['clinician_id']
+		}, sesh)
+		if oResponse.errorExists():
+			return oResponse
+
+		# Add the patient ID and save the record
+		try:
+			oDsPatient['patientId'] = str(oResponse.data)
+			oDsPatient.create()
+		except Record_MySQL.DuplicateException:
+			return Services.Response(error=1101)
+
+		# Return the ID
+		return oResponse
+
 	def customerDsid_read(self, data, sesh):
 		"""Customer DoseSpot ID
 
@@ -1186,7 +1282,7 @@ class Monolith(Services.Service):
 		"""
 
 		# Verify fields
-		try: DictHelper.eval(data, ['_internal_', 'customerPhone', 'recvPhone', 'content', 'type'])
+		try: DictHelper.eval(data, ['_internal_', 'customerPhone', 'recvPhone', 'content'])
 		except ValueError as e: return Services.Response(error=(1001, [(f, 'missing') for f in e.args]))
 
 		# Verify the key, remove it if it's ok
@@ -1228,7 +1324,8 @@ class Monolith(Services.Service):
 		oCustomerCommunication.create()
 
 		# Update the conversations
-		CustomerMsgPhone.addIncoming(
+		iCount = CustomerMsgPhone.add(
+			CustomerMsgPhone.INCOMING,
 			data['customerPhone'],
 			sDT,
 			'\n--------\nReceived at %s\n%s\n' % (
@@ -1236,6 +1333,26 @@ class Monolith(Services.Service):
 				data['content']
 			)
 		)
+
+		# If no conversation was updated
+		if not iCount:
+
+			oMsgPhone = CustomerMsgPhone({
+				"customerPhone": data['customerPhone'],
+				"customerName": mName,
+				"lastMsg": '\n--------\nReceived at %s\n%s\n' % (
+					sDT,
+					data['content']
+				),
+				"lastMsgDir": 'Incoming',
+				"lastMsgAt": sDT,
+				"hiddenFlag": 'N',
+				"totalIncoming": 1,
+				"totalOutgoing": 0,
+				"createdAt": sDT,
+				"updatedAt": sDT
+			})
+			oMsgPhone.create()
 
 		# Return OK
 		return Services.Response(True)
@@ -1277,7 +1394,7 @@ class Monolith(Services.Service):
 			if 'name' not in data:
 				return Services.Response(error=(1001, [('name', 'missing')]))
 
-		# Else, verify the user and user their name
+		# Else, verify the user and use their name
 		else:
 
 			# Make sure the user has the proper permission to do this
@@ -1327,7 +1444,8 @@ class Monolith(Services.Service):
 		try:
 
 			# Update the conversations
-			CustomerMsgPhone.addOutgoing(
+			CustomerMsgPhone.add(
+				CustomerMsgPhone.OUTGOING,
 				data['customerPhone'],
 				sDT,
 				'\n--------\nSent by %s at %s\n%s\n' % (

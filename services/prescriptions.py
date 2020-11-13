@@ -245,8 +245,88 @@ class Prescriptions(Services.Service):
 			if not o.tableCreate():
 				print("Failed to create `%s` table" % o.tableName())
 
+	def patient_create(self, data, sesh):
+		"""Patient Create
+
+		Creates a new patient and returns the ID
+
+		Arguments:
+			data (dict): Data sent with the request
+			sesh (Sesh._Session): The session associated with the request
+
+		Returns:
+			Services.Response
+		"""
+
+		# Make sure the user has the proper permission to do this
+		oResponse = Services.read('auth', 'rights/verify', {
+			"name": "prescriptions",
+			"right": Rights.CREATE
+		}, sesh)
+		if not oResponse.data:
+			return Services.Response(error=Rights.INVALID)
+
+		# Verify fields
+		try: DictHelper.eval(data, ['clinician_id', 'patient'])
+		except ValueError as e: return Services.Response(error=(1001, [(f, 'missing') for f in e.args]))
+
+		# Convert the keys
+		try:
+			dData = {
+				"FirstName": StrHelper.normalize(data['patient']['firstName']),
+				"LastName": StrHelper.normalize(data['patient']['lastName']),
+				"DateOfBirth": data['patient']['dateOfBirth'][0:10],
+				"Gender": data['patient']['gender'],
+				"Email": data['patient']['email'],
+				"Address1": (data['patient']['address1'] or '')[0:35],
+				"Address2": (data['patient']['address2'] or '')[0:35],
+				"City": data['patient']['city'],
+				"State": data['patient']['state'],
+				"ZipCode": data['patient']['zipCode'],
+				"PrimaryPhone": data['patient']['primaryPhone'],
+				"PrimaryPhoneType": data['patient']['primaryPhoneType'],
+				"Active": 'true'
+			}
+		except Exception as e:
+			return Services.Response(error=(1001, str(e)))
+
+		# Generate the token
+		sToken = self._generateToken(data['clinician_id'])
+
+		# Generate the URL
+		sURL = 'https://%s/webapi/api/patients' % self._host
+
+		# Generate the headers
+		dHeaders = {
+			"Accept": "application/json",
+			"Authorization": "Bearer %s" % sToken
+		}
+
+		# Make the request
+		oRes = requests.post(sURL, data=dData, headers=dHeaders)
+
+		print(oRes)
+
+		# If we didn't get a 200
+		if oRes.status_code != 200:
+			return Services.Response(error=(1601, oRes.text))
+
+		print(oRes.text)
+
+		# Get the response
+		dRes = oRes.json()
+
+		print(dRes)
+
+		# If we got an error
+		if dRes['Result']['ResultCode'] == 'ERROR':
+			return Services.Response(error=(1602, dData['Result']['ResultDescription']))
+
+		# Return the ID
+		return Services.Response(dRes['Id'])
+
 	def patient_read(self, data, sesh):
-		"""Patient
+		"""Patient Read
 
 		Fetches patient info
 
@@ -265,7 +345,7 @@ class Prescriptions(Services.Service):
 		# Make sure the user has the proper permission to do this
 		oResponse = Services.read('auth', 'rights/verify', {
 			"name": "prescriptions",
-			"right": Rights.CREATE,
+			"right": Rights.READ,
 			"ident": data['patient_id']
 		}, sesh)
 		if not oResponse.data:

@@ -40,6 +40,5 @@ if __name__ == "__main__":
 		"_internal_": Services.internalKey(),
 		"customerPhone": sys.argv[1],
 		"recvPhone": sys.argv[2],
-		"content": sys.argv[3],
-		"type": sys.argv[4]
+		"content": sys.argv[3]
 	})
