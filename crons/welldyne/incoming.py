@@ -21,7 +21,7 @@ import pysftp
 from RestOC import Conf
 
 # Shared imports
-from shared import Excel
+from shared import Excel, SMSWorkflow
 
 # Service imports
 from records.monolith import ShippingInfo
@@ -29,7 +29,6 @@ from records.welldyne import Outbound, RxNumber, Trigger
 
 # Cron imports
 from crons import isRunning, emailError
-from crons.shared import SMSWorkflow
 
 def opened_claims(tod):
 	"""Opened Claims

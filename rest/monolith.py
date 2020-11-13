@@ -65,6 +65,8 @@ REST.Server({
 	"/order/claim": {"methods": REST.CREATE | REST.DELETE, "session": True},
 	"/order/claimed": {"methods": REST.READ, "session": True},
 
+	"/order/label": {"methods": REST.UPDATE, "session": True},
+
 	"/orders/pending/csr": {"methods": REST.READ, "session": True},
 	"/orders/pending/csr/count": {"methods": REST.READ, "session": True},
 	"/orders/pending/provider/ed": {"methods": REST.READ, "session": True},
@@ -76,6 +78,7 @@ REST.Server({
 	"/pharmacy/fill/errors": {"methods": REST.READ, "session": True},
 
 	"/provider/calendly": {"methods": REST.READ, "session": True},
+	"/provider/sms": {"methods": REST.CREATE, "session": True},
 
 	"/signin": {"methods": REST.POST},
 

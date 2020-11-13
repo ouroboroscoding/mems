@@ -49,6 +49,10 @@
 		"sheets": {}
 	},
 
+	"hubspot": {
+		"api_key": ""
+	},
+
 	"konnektive": {
 		"host": "api.konnektive.com",
 		"user": "",
@@ -129,6 +133,7 @@
 			"communications": {"port": 4},
 			"csr": {"port": 9},
 			"customers": {"port": 12},
+			"hubspot": {"port": 17},
 			"konnektive": {"port": 7},
 			"monolith": {"port": 6},
 			"patient": {"port": 11},
