@@ -707,6 +707,7 @@ class Konnektive(Services.Service):
 			"items": 'items' in dOrder and [{
 				"campaign": dI['name'],
 				"description": dI['productDescription'],
+				"itemId": dI['orderItemId'],
 				"price": dI['price'],
 				"shipping": dI['shipping']
 			} for dI in dOrder['items'].values()] or [],
