@@ -14,9 +14,11 @@ __created__		= "2020-08-02"
 # Python imports
 import csv
 import io
+import time
 
 # Pip imports
 import arrow
+import paramiko
 import pysftp
 from RestOC import Conf, DictHelper
 
@@ -217,9 +219,20 @@ class TriggerFile(object):
 		if sFolder:
 			sFilename = '%s/%s' % (sFolder, sFilename)
 
-		# Upload the file to the sFTP
-		with pysftp.Connection(**dSFTP) as oCon:
-			oCon.putfo(oFile, sFilename, confirm=False)
+		# Attempt several times before quitting
+		iCount = 0
+		while True:
+
+			# Upload the file to the sFTP
+			try:
+				with pysftp.Connection(**dSFTP) as oCon:
+					oCon.putfo(oFile, sFilename, confirm=False)
+				break
+			except paramiko.ssh_exception.SSHException as e:
+				iCount += 1
+				if iCount == 3:
+					raise e
+				time.sleep(5)
 
 def dateDigits(date):
 	"""Date Digits
@@ -321,8 +334,17 @@ def eligibilityUpload(file_time):
 	if sFolder:
 		sFilename = '%s/%s' % (sFolder, sFilename)
 
-	# Upload the file to the sFTP
-	print('Connecting to sFTP')
-	with pysftp.Connection(**dSFTP) as oCon:
-		print('Uploading file: %s' % sFilename)
-		oCon.putfo(io.StringIO('\n'.join(lLines)), sFilename, confirm=False)
+	# Attempt several times before quitting
+	iCount = 0
+	while True:
+
+		# Upload the file to the sFTP
+		try:
+			with pysftp.Connection(**dSFTP) as oCon:
+				oCon.putfo(io.StringIO('\n'.join(lLines)), sFilename, confirm=False)
+			break
+		except paramiko.ssh_exception.SSHException as e:
+			iCount += 1
+			if iCount == 3:
+				raise e
+			time.sleep(5)
