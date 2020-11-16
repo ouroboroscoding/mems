@@ -30,7 +30,7 @@ oRestConf = init(
 # Create the HTTP server and map requests to service
 REST.Server({
 
-	"/account": {"methods": REST.CREATE | REST.READ | REST.UPDATE, "session": True},
+	"/account": {"methods": REST.CREATE | REST.READ, "session": True},
 	"/account/byCRM": {"methods": REST.READ, "session": True},
 	"/account/email": {"methods": REST.UPDATE, "session": True},
 	"/account/forgot": {"methods": REST.CREATE | REST.UPDATE},
@@ -41,8 +41,9 @@ REST.Server({
 
 	"/setup/attempts": {"methods": REST.READ, "session": True},
 	"/setup/reset": {"methods": REST.UPDATE, "session": True},
-	"/setup/start": { "methods": REST.CREATE, "session": True},
-	"/setup/validate": { "methods": REST.CREATE},
+	"/setup/start": {"methods": REST.CREATE, "session": True},
+	"/setup/update": {"methods": REST.UPDATE, "session": True},
+	"/setup/validate": {"methods": REST.CREATE},
 
 	"/signin": {"methods": REST.POST, "environ": True},
 	"/signout": {"methods": REST.POST, "session": True},
