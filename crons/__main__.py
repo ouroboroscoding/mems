@@ -19,7 +19,7 @@ import sys
 import traceback
 
 # Pip imports
-from RestOC import Conf, Record_Base, Record_MySQL, REST, Services
+from RestOC import Conf, Record_Base, Record_MySQL, REST, Services, Templates
 
 # Cron imports
 from . import emailError
@@ -46,6 +46,9 @@ Services.register(
 	REST.Config(Conf.get("rest")),
 	Conf.get(('services', 'salt'))
 )
+
+# Init Templates
+Templates.init('templates')
 
 # Store the cron
 sCron = sys.argv[1]

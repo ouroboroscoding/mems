@@ -25,7 +25,6 @@ from RestOC import Conf, Record_MySQL
 sClaimedNewSQL = ''
 sConversationSQL = ''
 sLatestStatusSQL = ''
-sMsgPhoneUpdateSQL = ''
 sSmpNotes = ''
 sNumOfOrdersSQL = ''
 sSearchSQL = ''
@@ -37,8 +36,9 @@ def init():
 	"""
 
 	global sClaimedNewSQL, sConversationSQL, \
-			sLatestStatusSQL, sMsgPhoneUpdateSQL, \
-			sSmpNotes, sNumOfOrdersSQL, sSearchSQL
+			sLandingSQL, sLatestStatusSQL, \
+			sSmpNotes, sNumOfOrdersSQL, sSearchSQL, \
+			sUnclaimedSQL, sUnclaimedCountSQL
 
 	# SQL files
 	with open('records/sql/claimed_new.sql') as oF:
@@ -47,8 +47,6 @@ def init():
 		sConversationSQL = oF.read()
 	with open('records/sql/latest_status.sql') as oF:
 		sLatestStatusSQL = oF.read()
-	with open('records/sql/msg_phone_update.sql') as oF:
-		sMsgPhoneUpdateSQL = oF.read()
 	with open('records/sql/smp_notes.sql') as oF:
 		sSmpNotes = oF.read()
 	with open('records/sql/number_of_orders.sql') as oF:
@@ -489,6 +487,10 @@ class CustomerMsgPhone(Record_MySQL.Record):
 	_conf = None
 	"""Configuration"""
 
+	INCOMING = 0
+	OUTGOING = 1
+	"""Direction"""
+
 	@classmethod
 	def config(cls):
 		"""Config
@@ -510,12 +512,13 @@ class CustomerMsgPhone(Record_MySQL.Record):
 		return cls._conf
 
 	@classmethod
-	def addIncoming(cls, customerPhone, date, message, custom={}):
-		"""Add Incoming
+	def add(cls, direction, customerPhone, date, message, custom={}):
+		"""Add
 
-		Adds an incoming message to the conversation summary
+		Adds an incoming or outgoing message to the conversation summary
 
 		Arguments:
+			direction (uint): The direction INCOMING/OUTGOING of the message
 			customerPhone (str): The number associated with the conversation
 			message (str): The message to prepend to the conversation
 			custom (dict): Custom Host and DB info
@@ -529,55 +532,38 @@ class CustomerMsgPhone(Record_MySQL.Record):
 		# Fetch the record structure
 		dStruct = cls.struct(custom)
 
+		# If the message is incoming
+		if direction is cls.INCOMING:
+			sDirection = 'Incoming'
+			sHidden = 'N'
+			sIncrement = 'totalIncoming'
+		elif direction is cls.OUTGOING:
+			sDirection = 'Outgoing'
+			sHidden = 'Y'
+			sIncrement = 'totalOutGoing'
+		else:
+			raise ValueError('Direction must be one of INCOMING or OUTGOING')
+
 		# Generate SQL
-		sSQL = sMsgPhoneUpdateSQL % {
+		sSQL = "UPDATE `%(db)s`.`%(table)s` SET\n" \
+				"	`lastMsgDir` = '%(direction)s',\n" \
+				"	`lastMsgAt` = '%(date)s',\n" \
+				"	`hiddenFlag` = '%(hidden)s',\n" \
+				"	`%(increment)s` = `%(increment)s` + 1,\n" \
+				"	`lastMsg` = CONCAT('%(message)s', IFNULL(`lastMsg`, ''))\n" \
+				"WHERE `customerPhone` = '%(customerPhone)s'" % {
 			"db": dStruct['db'],
 			"table": dStruct['table'],
 			"date": date,
-			"direction": 'Incoming',
+			"direction": sDirection,
 			"message": Record_MySQL.Commands.escape(dStruct['host'], message),
 			"customerPhone": Record_MySQL.Commands.escape(dStruct['host'], customerPhone),
-			"hidden": 'N',
-			"increment": 'totalIncoming'
+			"hidden": sHidden,
+			"increment": sIncrement
 		}
 
 		# Execute the update
-		Record_MySQL.Commands.execute(dStruct['host'], sSQL)
-
-	@classmethod
-	def addOutgoing(cls, customerPhone, date, message, custom={}):
-		"""Add Outgoing
-
-		Adds an outgoing message to the conversation summary
-
-		Arguments:
-			customerPhone (str): The number associated with the conversation
-			message (str): The message to prepend to the conversation
-			custom (dict): Custom Host and DB info
-				'host' the name of the host to get/set data on
-				'append' optional postfix for dynamic DBs
-
-		Returns:
-			None
-		"""
-
-		# Fetch the record structure
-		dStruct = cls.struct(custom)
-
-		# Generate SQL
-		sSQL = sMsgPhoneUpdateSQL % {
-			"db": dStruct['db'],
-			"table": dStruct['table'],
-			"date": date,
-			"direction": 'Outgoing',
-			"message": Record_MySQL.Commands.escape(dStruct['host'], message),
-			"customerPhone": Record_MySQL.Commands.escape(dStruct['host'], customerPhone),
-			"hidden": 'Y',
-			"increment": 'totalOutGoing'
-		}
-
-		# Execute the update
-		Record_MySQL.Commands.execute(dStruct['host'], sSQL)
+		return Record_MySQL.Commands.execute(dStruct['host'], sSQL)
 
 	@classmethod
 	def claimed(cls, user, custom={}):
@@ -894,7 +880,7 @@ class KtCustomer(Record_MySQL.Record):
 		dStruct = cls.struct(custom)
 
 		# Generate SQL
-		sSQL = "SELECT `customerId`, `phoneNumber`, `firstName`, `lastName` " \
+		sSQL = "SELECT `customerId`, `emailAddress`, `phoneNumber`, `firstName`, `lastName` " \
 				"FROM `%(db)s`.`%(table)s` " \
 				"WHERE CONCAT(`shipFirstName`, ' ', `shipLastName`) = '%(name)s' " \
 				"AND `shipPostalCode` = '%(zip)s' " \

@@ -1401,7 +1401,7 @@ class Monolith(Services.Service):
 		"""
 
 		# Verify fields
-		try: DictHelper.eval(data, ['_internal_', 'customerPhone', 'recvPhone', 'content', 'type'])
+		try: DictHelper.eval(data, ['_internal_', 'customerPhone', 'recvPhone', 'content'])
 		except ValueError as e: return Services.Response(error=(1001, [(f, 'missing') for f in e.args]))
 
 		# Verify the key, remove it if it's ok
@@ -1443,7 +1443,8 @@ class Monolith(Services.Service):
 		oCustomerCommunication.create()
 
 		# Update the conversations
-		CustomerMsgPhone.addIncoming(
+		iCount = CustomerMsgPhone.add(
+			CustomerMsgPhone.INCOMING,
 			data['customerPhone'],
 			sDT,
 			'\n--------\nReceived at %s\n%s\n' % (
@@ -1451,6 +1452,26 @@ class Monolith(Services.Service):
 				data['content']
 			)
 		)
+
+		# If no conversation was updated
+		if not iCount:
+
+			oMsgPhone = CustomerMsgPhone({
+				"customerPhone": data['customerPhone'],
+				"customerName": mName,
+				"lastMsg": '\n--------\nReceived at %s\n%s\n' % (
+					sDT,
+					data['content']
+				),
+				"lastMsgDir": 'Incoming',
+				"lastMsgAt": sDT,
+				"hiddenFlag": 'N',
+				"totalIncoming": 1,
+				"totalOutgoing": 0,
+				"createdAt": sDT,
+				"updatedAt": sDT
+			})
+			oMsgPhone.create()
 
 		# Return OK
 		return Services.Response(True)
@@ -1496,7 +1517,7 @@ class Monolith(Services.Service):
 			if 'name' not in data:
 				return Services.Response(error=(1001, [('name', 'missing')]))
 
-		# Else, verify the user and user their name
+		# Else, verify the user and use their name
 		else:
 
 			# Make sure the user has the proper permission to do this
@@ -1546,7 +1567,8 @@ class Monolith(Services.Service):
 		try:
 
 			# Update the conversations
-			CustomerMsgPhone.addOutgoing(
+			CustomerMsgPhone.add(
+				CustomerMsgPhone.OUTGOING,
 				data['customerPhone'],
 				sDT,
 				'\n--------\nSent by %s at %s\n%s\n' % (

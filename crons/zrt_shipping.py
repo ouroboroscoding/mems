@@ -16,7 +16,7 @@ import re
 
 # Pip imports
 import arrow
-from RestOC import Conf, Record_MySQL, Services, Sesh
+from RestOC import Conf, Record_MySQL, Services, Sesh, Templates
 
 # Shared imports
 from shared import Email
@@ -138,6 +138,30 @@ def run():
 			# Step
 			iStep = ZRT_KIT_SHIPPED
 
+			# Send kit shipped email
+			dTpl = {
+				"name": "%s %s" % (
+					dKtCustomer['firstName'],
+					dKtCustomer['lastName']
+				),
+				"link": lMatches[1]
+			}
+
+			# Send the Email to the patient
+			oResponse = Services.create('communications', 'email', {
+				"_internal_": Services.internalKey(),
+				"from": 'noreply@m.maleexcelmail.com',
+				"html_body": Templates.generate('email/crons/zrt_test_kit_shipped.html', dTpl, 'en-US'),
+				"subject": Templates.generate('email/crons/zrt_test_kit_shipped.txt', {}, 'en-US'),
+				"to": dKtCustomer['emailAddress']
+			})
+			if oResponse.errorExists():
+				emailError('ZRT Shipping Error', 'Couldn\'t send email:\n\n%s\n\n%s\n\n%s' % (
+					str(dKtCustomer),
+					str(lMatches),
+					str(oResponse)
+				))
+
 		# Unknown email
 		else:
 			emailError('ZRT Shipping Error', 'Unknown email type:\n\n%s\n\n%s' % (
@@ -171,11 +195,26 @@ def run():
 		})
 		if oResponse.errorExists():
 			emailError('ZRT Shipping Error', 'Couldn\'t send sms:\n\n%s\n\n%s\n\n%s' % (
+				str(dKtCustomer),
+				str(lMatches),
+				str(oResponse)
+			))
+
+		# Send the Email to the patient
+		"""
+		oResponse = Services.create('communications', 'email', {
+			"_internal_": Services.internalKey(),
+			"html_body": 'body'
+			"subject": 'subject',
+			"to": dKtCustomer['emailAddress']
+		})
+		if oResponse.errorExists():
+			emailError('ZRT Shipping Error', 'Couldn\'t send email:\n\n%s\n\n%s\n\n%s' % (
 				dKtCustomer['customerId'],
 				str(lMatches),
 				str(oResponse)
 			))
-			continue
+		"""
 
 	# Return OK
 	return True
