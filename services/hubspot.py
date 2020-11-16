@@ -12,7 +12,6 @@ __email__		= "chris@fuelforthefire.ca"
 __created__		= "2020-11-12"
 
 # Pip imports
-from hubspot import HubSpot as API
 from RestOC import Conf, DictHelper, Services
 
 class HubSpot(Services.Service):
@@ -32,9 +31,6 @@ class HubSpot(Services.Service):
 
 		# Store config data
 		self._key = Conf.get(('hubspot', 'api_key'))
-
-		# Init api
-		self._api = API(api_key=self._key)
 
 		# Return self for chaining
 		return self
