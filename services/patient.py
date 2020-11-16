@@ -134,7 +134,7 @@ class Patient(Services.Service):
 		return sIP
 
 	def account_read(self, data, sesh):
-		"""Account
+		"""Account Read
 
 		Returns the account data associated with the signed in user
 
@@ -207,7 +207,7 @@ class Patient(Services.Service):
 		}
 
 		# Returned fields
-		lFields = ['_id', 'email', 'crm_type', 'crm_id', 'rx_type', 'rx_id', 'attempts']
+		lFields = ['_id', 'email', 'dob', 'lname', 'crm_type', 'crm_id', 'rx_type', 'rx_id', 'attempts']
 
 		# Try to find the record in the setup table
 		dAccount = AccountSetup.filter(dFilter, raw=lFields, limit=1)
@@ -217,6 +217,8 @@ class Patient(Services.Service):
 
 			# Try to find the record in the account table
 			lFields.remove('attempts')
+			lFields.remove('dob')
+			lFields.remove('lname')
 			dAccount = Account.filter(dFilter, raw=lFields, limit=1)
 
 			# If there's no such account
@@ -226,6 +228,8 @@ class Patient(Services.Service):
 			# Add attempts and activate state
 			dAccount['attempts'] = None
 			dAccount['activated'] = True
+			dAccount['dob'] = None
+			dAccount['lname'] = None
 
 		# Else, we found setup
 		else:
@@ -772,6 +776,55 @@ class Patient(Services.Service):
 
 		# Return the ID of the account
 		return Services.Response(oSetup['_id'])
+
+	def setupUpdate_update(self, data, sesh):
+		"""Account Setup Update
+
+		Updates the setup data in an existing record
+
+		Arguments:
+			data (dict): Data sent with the request
+			sesh (Sesh._Session): The session associated with the request
+
+		Returns:
+			Services.Response
+		"""
+
+		# Verify fields
+		try: DictHelper.eval(data, ['_id'])
+		except ValueError as e: return Services.Response(error=(1001, [(f, 'missing') for f in e.args]))
+
+		# Make sure the user has the proper permission to do this
+		oResponse = Services.read('auth', 'rights/verify', {
+			"name": "patient_account",
+			"right": Rights.UPDATE
+		}, sesh)
+		if not oResponse.data:
+			return Services.Response(error=Rights.INVALID)
+
+		# Try to find the record in the account setup table
+		oSetup = AccountSetup.get(data['_id'])
+		if not oSetup:
+			return Services.Response(error=1104)
+
+		# Remove fields that can't be changed
+		for k in ['_id', '_created', 'crm_type', 'crm_id', 'user']:
+			if k in data: del data[k]
+
+		# Step through each field passed and update/validate it
+		lErrors = []
+		for f in data:
+			try: oSetup[f] = data[f]
+			except ValueError as e: lErrors.append(e.args[0])
+
+		# If there was any errors
+		if lErrors:
+			return Services.Response(error=(1001, lErrors))
+
+		# Update the record and return the result
+		return Services.Response(
+			oSetup.save()
+		)
 
 	def setupValidate_create(self, data):
 		"""Setup Update
