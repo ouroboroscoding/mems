@@ -27,6 +27,8 @@ oRestConf = init(
 
 # Create the HTTP server and map requests to service
 REST.Server({
+	"/customer/decline": {"methods": REST.UPDATE},
+	"/customer/label": {"methods": REST.UPDATE}
 
 }, 'hubspot', "https?://(.*\\.)?%s" % Conf.get(("rest","allowed")).replace('.', '\\.')).run(
 	host=oRestConf['hubspot']['host'],

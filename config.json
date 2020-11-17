@@ -50,7 +50,13 @@
 	},
 
 	"hubspot": {
-		"api_key": ""
+		"api": {
+			"domain": "api.hubapi.com",
+			"key": ""
+		},
+		"lists": {
+			"_": 545
+		}
 	},
 
 	"konnektive": {
