@@ -15,6 +15,36 @@ __created__		= "2020-10-15"
 from FormatOC import Tree
 from RestOC import Conf, Record_MySQL
 
+# ItemToRX class
+class ItemToRX(Record_MySQL.Record):
+	"""ItemToRX
+
+	Represents a single order item and its prescription in DoseSpot
+	"""
+
+	_conf = None
+	"""Configuration"""
+
+	@classmethod
+	def config(cls):
+		"""Config
+
+		Returns the configuration data associated with the record type
+
+		Returns:
+			dict
+		"""
+
+		# If we haven loaded the config yet
+		if not cls._conf:
+			cls._conf = Record_MySQL.Record.generateConfig(
+				Tree.fromFile('definitions/providers/item_to_rx.json'),
+				'mysql'
+			)
+
+		# Return the config
+		return cls._conf
+
 # Provider class
 class Provider(Record_MySQL.Record):
 	"""Provider

@@ -22,7 +22,7 @@ from RestOC import DictHelper, Errors, Record_MySQL, Services, Sesh
 from shared import Rights
 
 # Records imports
-from records.providers import Provider, Template
+from records.providers import ItemToRX, Provider, Template
 
 class Providers(Services.Service):
 	"""Providers Service class
@@ -30,7 +30,7 @@ class Providers(Services.Service):
 	Service for Providers access
 	"""
 
-	_install = [Provider, Template]
+	_install = [ItemToRX, Provider, Template]
 	"""Record types called in install"""
 
 	def initialise(self):
@@ -112,6 +112,98 @@ class Providers(Services.Service):
 
 		# Create the provider and return the ID
 		return Services.Response(sID)
+
+	def orderToRx_create(self, data, sesh):
+		"""Order To RX Create
+
+		Sets the prescription IDs associated with the order items
+
+		Arguments:
+			data (mixed): Data sent with the request
+			sesh (Sesh._Session): The session associated with the request
+
+		Returns:
+			Services.Response
+		"""
+
+		# Make sure the user has the proper permission to do this
+		oResponse = Services.read('auth', 'rights/verify', {
+			"name": "prescriptions",
+			"right": Rights.CREATE
+		}, sesh)
+		if not oResponse.data:
+			return Services.Response(error=Rights.INVALID)
+
+		# Verify minimum fields
+		try: DictHelper.eval(data, ['order_id', 'items'])
+		except ValueError as e: return Services.Response(error=(1001, [(f, 'missing') for f in e.args]))
+
+		# Make sure items is a list
+		if not isinstance(data['items'], list):
+			return Services.Response(error=(1001, [('items', 'invalid')]))
+
+		# Init the list of records that will be created
+		lItems = []
+
+		# Go through each item
+		dErrors = {}
+		for d in data['items']:
+
+			# Create the instance to validate
+			try:
+				lItems.append(ItemToRX({
+					"order_id": data['order_id'],
+					"item_id": d['item_id'],
+					"ds_id": d['ds_id'],
+					"user": sesh['memo_id']
+				}))
+			except ValueError as e:
+				dErrors[d['item_id']] = e.args[0]
+
+		# If there's any errors
+		if dErrors:
+			return Services.Response(error=(1001, dErrors))
+
+		# Try to create the records
+		try:
+			ItemToRX.createMany(lItems)
+		except Record_MySQL.DuplicateException as e:
+			return Services.Response(error=(1101, d['item_id']))
+
+		# Return OK
+		return Services.Response(True)
+
+	def orderToRx_read(self, data, sesh):
+		"""Order To RX Read
+
+		Returns all items and their prescriptions for an order
+
+		Arguments:
+			data (mixed): Data sent with the request
+			sesh (Sesh._Session): The session associated with the request
+
+		Returns:
+			Services.Response
+		"""
+
+		# Make sure the user has the proper permission to do this
+		oResponse = Services.read('auth', 'rights/verify', {
+			"name": "prescriptions",
+			"right": Rights.READ
+		}, sesh)
+		if not oResponse.data:
+			return Services.Response(error=Rights.INVALID)
+
+		# Verify minimum fields
+		try: DictHelper.eval(data, ['order_id'])
+		except ValueError as e: return Services.Response(error=(1001, [(f, 'missing') for f in e.args]))
+
+		# Find all the records and return them
+		return Services.Response(
+			ItemToRX.filter({
+				"order_id": data['order_id']
+			}, raw=['item_id', 'ds_id', 'user'])
+		)
 
 	def provider_create(self, data, sesh):
 		"""Provider Create

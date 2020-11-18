@@ -2,13 +2,12 @@
 """ Create the Products tables"""
 
 # Services
-from records.providers import Provider, Template
-from records.qualmed import KnkOrder
+from records.providers import KnkOrderItem, Provider, Template
 
 def run():
 
 	# Create the tables
-	KnkOrder.tableCreate()
+	KnkOrderItem.tableCreate()
 	Provider.tableCreate()
 	Template.tableCreate()
 

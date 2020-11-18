@@ -29,6 +29,8 @@ oRestConf = init(
 
 # Create the HTTP server and map requests to service
 REST.Server({
+	"/order/to/rx": {"methods": REST.CREATE | REST.READ, "session": True},
+
 	"/provider": {"methods": REST.ALL, "session": True},
 	"/providers": {"methods": REST.READ, "session": True},
 	"/provider/internal": {"methods": REST.READ, "session": True},
