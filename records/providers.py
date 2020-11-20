@@ -75,6 +75,36 @@ class Provider(Record_MySQL.Record):
 		# Return the config
 		return cls._conf
 
+# RoundRobinAgent class
+class RoundRobinAgent(Record_MySQL.Record):
+	"""RoundRobinAgent
+
+	Represents a single order item and its prescription in DoseSpot
+	"""
+
+	_conf = None
+	"""Configuration"""
+
+	@classmethod
+	def config(cls):
+		"""Config
+
+		Returns the configuration data associated with the record type
+
+		Returns:
+			dict
+		"""
+
+		# If we haven loaded the config yet
+		if not cls._conf:
+			cls._conf = Record_MySQL.Record.generateConfig(
+				Tree.fromFile('definitions/providers/round_robin_agent.json'),
+				'mysql'
+			)
+
+		# Return the config
+		return cls._conf
+
 # Template class
 class Template(Record_MySQL.Record):
 	"""Template
@@ -99,36 +129,6 @@ class Template(Record_MySQL.Record):
 		if not cls._conf:
 			cls._conf = Record_MySQL.Record.generateConfig(
 				Tree.fromFile('definitions/providers/template.json'),
-				'mysql'
-			)
-
-		# Return the config
-		return cls._conf
-
-# TemplateSMS class
-class TemplateSMS(Record_MySQL.Record):
-	"""TemplateSMS
-
-	Represents an SMS template
-	"""
-
-	_conf = None
-	"""Configuration"""
-
-	@classmethod
-	def config(cls):
-		"""Config
-
-		Returns the configuration data associated with the record type
-
-		Returns:
-			dict
-		"""
-
-		# If we haven loaded the config yet
-		if not cls._conf:
-			cls._conf = Record_MySQL.Record.generateConfig(
-				Tree.fromFile('definitions/providers/tpl_sms.json'),
 				'mysql'
 			)
 

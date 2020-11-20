@@ -62,10 +62,12 @@ REST.Server({
 	"/msgs/unclaimed": {"methods": REST.READ, "session": True},
 	"/msgs/unclaimed/count": {"methods": REST.READ, "session": True},
 
+	"/order/approve": {"methods": REST.UPDATE, "session": True},
+	"/order/decline": {"methods": REST.UPDATE, "session": True},
 	"/order/claim": {"methods": REST.CREATE | REST.DELETE, "session": True},
 	"/order/claimed": {"methods": REST.READ, "session": True},
-
 	"/order/label": {"methods": REST.UPDATE, "session": True},
+	"/order/transfer": {"methods": REST.UPDATE, "session": True},
 
 	"/orders/pending/csr": {"methods": REST.READ, "session": True},
 	"/orders/pending/csr/count": {"methods": REST.READ, "session": True},
@@ -88,7 +90,9 @@ REST.Server({
 	"/users": {"methods": REST.READ, "session": True},
 	"/user/active": {"methods": REST.UPDATE, "session": True},
 	"/user/name": {"methods": REST.READ, "session": True},
-	"/user/passwd": {"methods": REST.UPDATE, "session": True}
+	"/user/passwd": {"methods": REST.UPDATE, "session": True},
+
+	"/workflow": {"methods": REST.POST}
 
 }, 'monolith', "https?://(.*\\.)?%s" % Conf.get(("rest","allowed")).replace('.', '\\.')).run(
 	host=oRestConf['monolith']['host'],

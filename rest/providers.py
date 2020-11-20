@@ -38,6 +38,8 @@ REST.Server({
 	"/provider/passwd": {"methods": REST.UPDATE, "session": True},
 	"/provider/permissions": {"methods": REST.READ | REST.UPDATE, "session": True},
 
+	"/roundrobin": {"methods": REST.READ, "session": True},
+
 	"/session": {"methods": REST.READ, "session": True},
 	"/signin": {"methods": REST.CREATE},
 	"/signout": {"methods": REST.CREATE},

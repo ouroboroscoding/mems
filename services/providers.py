@@ -19,10 +19,10 @@ from FormatOC import Node
 from RestOC import DictHelper, Errors, Record_MySQL, Services, Sesh
 
 # Shared imports
-from shared import Rights
+from shared import Rights, SMSWorkflow
 
 # Records imports
-from records.providers import ItemToRX, Provider, Template
+from records.providers import ItemToRX, Provider, RoundRobinAgent, Template
 
 class Providers(Services.Service):
 	"""Providers Service class
@@ -97,13 +97,14 @@ class Providers(Services.Service):
 			"_internal_": Services.internalKey(),
 			"user": sID,
 			"permissions": {
-				"calendly": 1,
-				"prov_claims": 14,
-				"prov_templates": 1,
-				"customers": 1,
-				"memo_mips": 3,
-				"memo_notes": 5,
-				"prescriptions": 7
+				"calendly": 1,			# Read
+				"prov_claims": 14,		# Update, Create, Delete
+				"prov_templates": 1,	# Read
+				"customers": 1,			# Read
+				"memo_mips": 3,			# Read, Update
+				"memo_notes": 5,		# Read, Update, Create
+				"orders": 2,			# Update
+				"prescriptions": 7		# Read, Update, Create
 			}
 		}, sesh)
 		if oResponse.errorExists():
@@ -607,6 +608,22 @@ class Providers(Services.Service):
 		# Return the providers in order of userName
 		return Services.Response(sorted(lProviders, key=lambda o: o['userName']))
 
+	def roundrobin_read(self, data, sesh):
+		"""Round Robin
+
+		Returns all the agent IDs in the round robin table
+
+		Arguments:
+			data (dict): Data sent with the request
+			sesh (Sesh._Session): The session associated with the request
+
+		Returns:
+			Services.Response
+		"""
+		return Services.Response([
+			d['agent'] for d in RoundRobinAgent.get(raw=True)
+		])
+
 	def session_read(self, data, sesh):
 		"""Session
 
@@ -621,7 +638,10 @@ class Providers(Services.Service):
 		"""
 		return Services.Response({
 			"memo": {"id": sesh['memo_id']},
-			"user" : {"id": sesh['user_id']}
+			"user" : {
+				"agent": sesh['agent'],
+				"id": sesh['user_id']
+			}
 		})
 
 	def signin_create(self, data):
@@ -674,6 +694,7 @@ class Providers(Services.Service):
 			return Services.Response(error=Rights.INVALID)
 
 		# Store the user ID and claim vars in the session
+		oSesh['agent'] = dProvider['agent']
 		oSesh['user_id'] = dProvider['_id']
 		oSesh['claims_max'] = dProvider['claims_max']
 		oSesh['claims_timeout'] = dProvider['claims_timeout']
@@ -683,7 +704,10 @@ class Providers(Services.Service):
 		return Services.Response({
 			"memo": {"id": oSesh['memo_id']},
 			"session": oSesh.id(),
-			"user": {"id": dProvider['_id']}
+			"user": {
+				"agent": dProvider['agent'],
+				"id": dProvider['_id']
+			}
 		})
 
 	def signout_create(self, data, sesh):

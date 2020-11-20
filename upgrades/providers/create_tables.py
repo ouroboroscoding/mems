@@ -2,13 +2,14 @@
 """ Create the Products tables"""
 
 # Services
-from records.providers import KnkOrderItem, Provider, Template
+from records.providers import ItemToRX, Provider, RoundRobinAgent, Template
 
 def run():
 
 	# Create the tables
-	KnkOrderItem.tableCreate()
+	ItemToRX.tableCreate()
 	Provider.tableCreate()
+	RoundRobinAgent.tableCreate()
 	Template.tableCreate()
 
 	# Return OK

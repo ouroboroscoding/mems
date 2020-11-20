@@ -732,6 +732,51 @@ class Konnektive(Services.Service):
 			"currency": dOrder['currencySymbol']
 		})
 
+	def orderQa_update(self, data, sesh):
+		"""Order QA
+
+		Marks an order as approved or declined in Konnektive
+
+		Arguments:
+			data (dict): Data sent with the request
+			sesh (Sesh._Session): The session associated with the request
+
+		Returns:
+			Services.Response
+		"""
+
+		# Validate rights
+		oResponse = Services.read('auth', 'rights/verify', {
+			"name": "orders",
+			"right": Rights.UPDATE
+		}, sesh)
+		if not oResponse.data:
+			return Services.Response(error=Rights.INVALID)
+
+		# Verify fields
+		try: DictHelper.eval(data, ['orderId', 'action'])
+		except ValueError as e: return Services.Response(error=(1001, [(f, 'missing') for f in e.args]))
+
+		# Uppercase the action
+		data['action'] = data['action'].upper()
+
+		# Action must be one of APPROVE or DECLINE
+		if data['action'] not in ['APPROVE', 'DECLINE']:
+			return Services.Response(error=(1001, [('action', 'invalid')]))
+
+		# Send the update to Konnektive
+		#bRes = self._post('customer/update', {
+		#	"orderId": data['orderId']
+		#})
+		bRes = True
+
+		# If we failed
+		if not bRes:
+			return Services.Response(error=1103)
+
+		# Return OK
+		return Services.Response(True)
+
 	def orderTransactions_read(self, data, sesh, verify=True):
 		"""Order Transactions
 

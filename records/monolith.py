@@ -220,6 +220,42 @@ class CustomerClaimed(Record_MySQL.Record):
 		return cls._conf
 
 	@classmethod
+	def counts(cls, ids=None, custom={}):
+		"""Counts
+
+		Returns the count of claims per user
+
+		Arguments:
+			ids (int[]): List of IDs to look for
+			custom (dict): Custom Host and DB info
+				'host' the name of the host to get/set data on
+				'append' optional postfix for dynamic DBs
+
+		Returns:
+			list
+		"""
+
+		# Fetch the record structure
+		dStruct = cls.struct(custom)
+
+		# If we have IDs
+		sWhere = ids and ('WHERE `user` in (%s)\n' % ','.join(ids)) or ''
+
+		# Generate SQL
+		sSQL = "SELECT `user`, COUNT(*) as `count`\n" \
+				"FROM `%(db)s`.`%(table)s`\n" \
+				"%(where)s" \
+				"GROUP BY `user`\n" \
+				"ORDER BY `count` ASC" % {
+					"db": dStruct['db'],
+					"table": dStruct['table'],
+					"where": sWhere
+				}
+
+		# Fetch the data and return the records
+		return Record_MySQL.Commands.select(dStruct['host'], sSQL)
+
+	@classmethod
 	def stats(cls, custom={}):
 		"""Stats
 

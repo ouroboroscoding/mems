@@ -1848,6 +1848,120 @@ class Monolith(Services.Service):
 			CustomerMsgPhone.unclaimedCount()
 		)
 
+	def orderApprove_update(self, data, sesh):
+		"""Order Approve
+
+		Handles requests related to approving an order
+
+		Arguments:
+			data (mixed): Data sent with the request
+			sesh (Sesh._Session): The session associated with the request
+
+		Returns:
+			Services.Response
+		"""
+
+		# Verify minimum fields
+		try: DictHelper.eval(data, ['orderId'])
+		except ValueError as e: return Services.Response(error=(1001, [(f, 'missing') for f in e.args]))
+
+		# Send the request to Konnektive
+		oResponse = Services.update('konnektive', 'order/qa', {
+			"action": 'APPROVE',
+			"orderId": data['orderId']
+		}, sesh)
+		if oResponse.errorExists(): return oResponse
+
+		# Get current date/time
+		sDT = arrow.get().format('YYYY-MM-DD HH:mm:ss')
+
+		# Store SOAP notes
+		oSmpNote = SmpNote({
+			"action": 'Approve Order',
+			"createdBy": sesh['memo_id'],
+			"note": data['soap'],
+			"createdAt": sDT,
+			"updatedAt": sDT
+		})
+		oSmpNote.create()
+
+		# Find the order status (fuck this is fucking stupid as fuck, fuck memo)
+		oStatus = SmpOrderStatus.filter({
+			"orderId": data['orderId']
+		}, limit=1)
+		if oStatus:
+			oStatus['approvalProviderId'] = sesh['memo_id']
+			oStatus['modifiedBy'] = sesh['memo_id']
+			oStatus['attentionRole'] = None
+			oStatus['orderLabel'] = None
+			oStatus['orderStatus'] = 'COMPLETE'
+			oStatus['reviewStatus'] = 'APPROVED'
+			oStatus['updateAt'] = sDT
+			oStatus.save()
+
+		# Notify the patient of the approval
+		SMSWorkflow.providerApproves(data['orderId'], sesh['memo_id'], self)
+
+		# Return OK
+		return Services.Response(True)
+
+	def orderDecline_update(self, data, sesh):
+		"""Order Decline
+
+		Handles requests related to declining an order
+
+		Arguments:
+			data (mixed): Data sent with the request
+			sesh (Sesh._Session): The session associated with the request
+
+		Returns:
+			Services.Response
+		"""
+
+		# Verify minimum fields
+		try: DictHelper.eval(data, ['orderId'])
+		except ValueError as e: return Services.Response(error=(1001, [(f, 'missing') for f in e.args]))
+
+		# Send the request to Konnektive
+		oResponse = Services.update('konnektive', 'order/qa', {
+			"action": 'DECLINE',
+			"orderId": data['orderId']
+		}, sesh)
+		if oResponse.errorExists(): return oResponse
+
+		# Get current date/time
+		sDT = arrow.get().format('YYYY-MM-DD HH:mm:ss')
+
+		# Store Decline note
+		oSmpNote = SmpNote({
+			"action": 'Decline Order',
+			"createdBy": sesh['memo_id'],
+			"note": 'Order declined for medical reasons',
+			"createdAt": sDT,
+			"updatedAt": sDT
+		})
+		oSmpNote.create()
+
+		# Find the order status (fuck this is fucking stupid as fuck, fuck memo)
+		oStatus = SmpOrderStatus.filter({
+			"orderId": data['orderId']
+		}, limit=1)
+		if oStatus:
+			oStatus['modifiedBy'] = sesh['memo_id']
+			oStatus['attentionRole'] = None
+			oStatus['orderLabel'] = None
+			oStatus['orderStatus'] = 'DECLINED'
+			oStatus['reviewStatus'] = 'DECLINED'
+			oStatus['declineReason'] = 'Medical Decline'
+			oStatus['updateAt'] = sDT
+			oStatus.save()
+
+		# Notify the patient of the approval
+		SMSWorkflow.providerDeclines(data['orderId'], sesh['memo_id'], self)
+
+		# Return OK
+		return Services.Response(True)
+
 	def orderClaim_create(self, data, sesh):
 		"""Order Claim Create
 
@@ -1950,7 +2064,7 @@ class Monolith(Services.Service):
 			pass
 
 		# If the order was rejected
-		elif data['reason'] == 'rejected':
+		elif data['reason'] == 'decline':
 			pass
 
 		# If the order was transfered
@@ -2081,6 +2195,109 @@ class Monolith(Services.Service):
 				oStatus['updatedAt']: sDT
 				oStatus.save()
 
+	def orderTransfer_update(self, data, sesh):
+		"""Order Transfer
+
+		Sends an order to an agent
+
+		Arguments:
+			data (dict): Data sent with the request
+			sesh (Sesh._Session): The session associated with the request
+
+		Returns:
+			Services.Response
+		"""
+
+		# Make sure the user has the proper permission to do this
+		oResponse = Services.read('auth', 'rights/verify', {
+			"name": "order_claims",
+			"right": Rights.CREATE
+		}, sesh)
+		if not oResponse.data:
+			return Services.Response(error=Rights.INVALID)
+
+		# Verify fields
+		try: DictHelper.eval(data, ['customerId', 'agent', 'note'])
+		except ValueError as e: return Services.Response(error=(1001, [(f, 'missing') for f in e.args]))
+
+		# Find the claim
+		oOrderClaim = KtOrderClaim.get(data['customerId'])
+		if not oOrderClaim:
+			return Services.Response(error=1104)
+
+		# If the owner of the claim isn't the one transferring
+		if oOrderClaim['user'] != sesh['memo_id']:
+			return Services.Response(error=1513)
+
+		# If we don't have an agent
+		if data['agent'] == 0:
+
+			# Find the round robin
+			oResponse = Services.read('providers', 'roundrobin', {}, sesh);
+			if oResponse.errorExists(): return oResponse
+
+			# If there's only one
+			if len(oResponse.data) == 1:
+				data['agnet'] = oResponse.data[0]
+
+			# Else, get the counts and use the one with the least
+			else:
+				lCounts = CustomerClaimed.counts(oResponse.data)
+				data['agent'] = lCounts[0]['user']
+
+		# Find the order associated with the claim
+		dKtOrder = KtOrder.filter({
+			"orderId": oOrderClaim['orderId']
+		}, raw=['phoneNumber'], limit=1)
+		if not dKtOrder:
+			return Services.Response(error=1104)
+
+		# Generate the data for the record and the WS message
+		dData = {
+			"phoneNumber": dKtOrder['phoneNumber'],
+			"user": data['agent'],
+			"transferredBy": sesh['memo_id'],
+			"provider": sesh['memo_id'],
+			"orderId": oOrderClaim['orderId'],
+		}
+
+		# Create a new claim instance for the agent and store in the DB
+		oCustClaim = CustomerClaimed(dData)
+		try:
+			if not oCustClaim.create():
+				return Services.Response(error=1100)
+		except Record_MySQL.DuplicateException as e:
+
+
+		# Find the order status (fuck this is fucking stupid as fuck, fuck memo)
+		oStatus = SmpOrderStatus.filter({
+			"orderId": oOrderClaim['orderId']
+		}, limit=1)
+		if oStatus:
+			oStatus['modifiedBy'] = sesh['memo_id']
+			oStatus['attentionRole'] = 'CSR'
+			oStatus['orderLabel'] = 'CSR - Provider Transfer'
+			oStatus['updateAt'] = sDT
+			oStatus.save()
+
+		# Store Decline note
+		oSmpNote = SmpNote({
+			"action": 'Provider Transfer',
+			"createdBy": sesh['memo_id'],
+			"note": data['note'],
+			"createdAt": sDT,
+			"updatedAt": sDT
+		})
+		oSmpNote.create()
+
+		# Sync the transfer for anyone interested
+		Sync.push('monolith', 'user-%s' % str(data['agent']), {
+			"type": 'claim_transfered',
+			"claim": dData
+		})
+
+		# Return OK
+		return Services.Response(True)
 
 	def ordersPendingCsr_read(self, data, sesh):
 		"""Order Pending CSR
@@ -2791,3 +3008,40 @@ class Monolith(Services.Service):
 		return Services.Response(
 			User.get(data['id'], raw=data['fields'])
 		)
+
+	def workflow_create(self, data):
+		"""Workflow
+
+		Works as a passthrough for SMS Workflow requests
+
+		Arguments:
+			data (dict): Data sent with the request
+
+		Returns:
+			Services.Response
+		"""
+
+		# Verify fields
+		try: DictHelper.eval(data, ['_internal_', 'call', 'args'])
+		except ValueError as e: return Services.Response(error=(1001, [(f, "missing") for f in e.args]))
+
+		# Verify the key, remove it if it's ok
+		if not Services.internalKey(data['_internal_']):
+			return Services.Response(error=Errors.SERVICE_INTERNAL_KEY)
+		del data['_internal_']
+
+		# Try to find the module method or else return an error
+		try:
+			fMethod = getattr(SMSWorkflow, data['call'])
+		except Exception as e:
+			return Services.Response(error=(1511, str(e)))
+
+		# Try to call the method with the passed arguments
+		try:
+			data['monolith'] = self
+			bRes = fMethod(**data['args'])
+		except Exception as e:
+			return Services.Response(error=(1512, str(e)))
+
+		# Return the response
+		return Services.Response(bRes)
