@@ -29,6 +29,11 @@ def run(kind):
 		from . import claims_timeout
 		return claims_timeout.run()
 
+	# If the type is adhoc
+	if kind == 'invalid_campaigns':
+		from . import invalid_campaigns
+		return invalid_campaigns.run()
+
 	# Else, invalid type
 	else:
 		print('invalid monolith type: %s' % type_)

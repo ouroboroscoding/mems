@@ -49,6 +49,16 @@
 		"sheets": {}
 	},
 
+	"hubspot": {
+		"api": {
+			"domain": "api.hubapi.com",
+			"key": ""
+		},
+		"lists": {
+			"_": 545
+		}
+	},
+
 	"konnektive": {
 		"host": "api.konnektive.com",
 		"user": "",
@@ -129,13 +139,14 @@
 			"communications": {"port": 4},
 			"csr": {"port": 9},
 			"customers": {"port": 12},
+			"hubspot": {"port": 17},
 			"konnektive": {"port": 7},
 			"monolith": {"port": 6},
 			"patient": {"port": 11},
 			"payment": {"port": 5},
 			"prescriptions": {"port": 8},
 			"products": {"port": 14},
-			"provider": {"port": 16},
+			"providers": {"port": 16},
 			"qualmed": {"port": 15},
 			"reports": {"port": 13},
 			"webpoll": {"port": 2},

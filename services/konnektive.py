@@ -617,10 +617,10 @@ class Konnektive(Services.Service):
 			"currency": d['currencySymbol']
 		} for d in lTransactions])
 
-	def orderTransactions_read(self, data, sesh):
-		"""Order Transactions
+	def order_read(self, data, sesh):
+		"""Order
 
-		Fetches the transactions associated with a specific customer
+		Fetches an order by ID
 
 		Arguments:
 			data (dict): Data sent with the request
@@ -631,24 +631,190 @@ class Konnektive(Services.Service):
 		"""
 
 		# Verify fields
-		try: DictHelper.eval(data, ['customerId'])
+		try: DictHelper.eval(data, ['orderId'])
 		except ValueError as e: return Services.Response(error=(1001, [(f, 'missing') for f in e.args]))
+
+		# If transactions flag not passed, assume false
+		if 'transactions' not in data:
+			data['transactions'] = False
+
+		# Make the request to Konnektive
+		dOrder = self._request('order/query', {
+			"orderId": data['orderId']
+		});
+
+		# If the request is empty
+		if not dOrder:
+			return Services.Response(error=1104)
+
+		# Set the order to the first item
+		dOrder = dOrder[0]
 
 		# Make sure the user has the proper permission to do this
 		oResponse = Services.read('auth', 'rights/verify', {
 			"name": "customers",
 			"right": Rights.READ,
-			"ident": data['customerId']
+			"ident": dOrder['customerId']
 		}, sesh)
 		if not oResponse.data:
 			return Services.Response(error=Rights.INVALID)
 
+		# If we also want the associated transactions
+		if data['transactions']:
+
+			# Get them from this service
+			oResponse = self.orderTransactions_read({
+				"orderId": data['orderId']
+			}, sesh, False)
+
+			# If there's an error
+			if oResponse.errorExists():
+				return oResponse
+
+			# Combine transactions into one record
+			dTransaction = {}
+			for d in oResponse.data[::-1]:
+
+				# If it's an authorize, capture, or sale, store as is
+				if d['type'] in ['AUTHORIZE', 'CAPTURE', 'SALE']:
+					dTransaction = d
+
+				# Else if it's a refund
+				elif d['type'] == 'REFUND':
+					dTransaction['refund'] = '-%s' % d['total']
+
+				elif d['type'] == 'VOID':
+					dTransaction['voided'] = True
+
+		# Return the order
+		return Services.Response({
+			"billing": {
+				"address1": dOrder['address1'],
+				"address2": dOrder['address2'],
+				"city": dOrder['city'],
+				"company": dOrder['companyName'],
+				"country": dOrder['country'],
+				"firstName": dOrder['firstName'],
+				"lastName": dOrder['lastName'],
+				"postalCode": dOrder['postalCode'],
+				"state": dOrder['state']
+			},
+			"campaign": dOrder['campaignName'],
+			"couponCode": dOrder['couponCode'],
+			"date": dOrder['dateUpdated'],
+			"email": dOrder['emailAddress'],
+			"encounter": dOrder['state'] and self._encounters[dOrder['state']] or '',
+			"items": 'items' in dOrder and [{
+				"campaign": dI['name'],
+				"description": dI['productDescription'],
+				"itemId": dI['orderItemId'],
+				"price": dI['price'],
+				"shipping": dI['shipping']
+			} for dI in dOrder['items'].values()] or [],
+			"orderId": dOrder['orderId'],
+			"phone": dOrder['phoneNumber'],
+			"price": dOrder['price'],
+			"shipping": {
+				"address1": dOrder['shipAddress1'],
+				"address2": dOrder['shipAddress2'],
+				"city": dOrder['shipCity'],
+				"company": dOrder['shipCompanyName'],
+				"country": dOrder['shipCountry'],
+				"firstName": dOrder['shipFirstName'],
+				"lastName": dOrder['shipLastName'],
+				"postalCode": dOrder['shipPostalCode'],
+				"state": dOrder['shipState']
+			},
+			"status": dOrder['orderStatus'],
+			"type": dOrder['orderType'],
+			"totalAmount": dOrder['totalAmount'],
+			"transactions": data['transactions'] and dTransaction or None,
+			"currency": dOrder['currencySymbol']
+		})
+
+	def orderQa_update(self, data, sesh):
+		"""Order QA
+
+		Marks an order as approved or declined in Konnektive
+
+		Arguments:
+			data (dict): Data sent with the request
+			sesh (Sesh._Session): The session associated with the request
+
+		Returns:
+			Services.Response
+		"""
+
+		# Validate rights
+		oResponse = Services.read('auth', 'rights/verify', {
+			"name": "orders",
+			"right": Rights.UPDATE
+		}, sesh)
+		if not oResponse.data:
+			return Services.Response(error=Rights.INVALID)
+
+		# Verify fields
+		try: DictHelper.eval(data, ['orderId', 'action'])
+		except ValueError as e: return Services.Response(error=(1001, [(f, 'missing') for f in e.args]))
+
+		# Uppercase the action
+		data['action'] = data['action'].upper()
+
+		# Action must be one of APPROVE or DECLINE
+		if data['action'] not in ['APPROVE', 'DECLINE']:
+			return Services.Response(error=(1001, [('action', 'invalid')]))
+
+		# Send the update to Konnektive
+		#bRes = self._post('customer/update', {
+		#	"orderId": data['orderId']
+		#})
+		bRes = True
+
+		# If we failed
+		if not bRes:
+			return Services.Response(error=1103)
+
+		# Return OK
+		return Services.Response(True)
+
+	def orderTransactions_read(self, data, sesh, verify=True):
+		"""Order Transactions
+
+		Fetches the transactions associated with a specific order
+
+		Arguments:
+			data (dict): Data sent with the request
+			sesh (Sesh._Session): The session associated with the request
+			verify (bool): Allow bypassing verification for internal calls
+
+		Returns:
+			Services.Response
+		"""
+
+		# Verify fields
+		try: DictHelper.eval(data, ['orderId'])
+		except ValueError as e: return Services.Response(error=(1001, [(f, 'missing') for f in e.args]))
+
 		# Make the request to Konnektive
 		lTransactions = self._request('transactions/query', {
 			"dateRangeType": "dateUpdated",
-			"customerId": data['customerId'],
+			"orderId": data['orderId'],
 			"sortDir": 0
 		});
+
+		# If there's no transactions
+		if not lTransactions:
+			return Services.Response([])
+
+		# Make sure the user has the proper permission to do this
+		if verify:
+			oResponse = Services.read('auth', 'rights/verify', {
+				"name": "customers",
+				"right": Rights.READ,
+				"ident": lTransactions[0]['customerId']
+			}, sesh)
+			if not oResponse.data:
+				return Services.Response(error=Rights.INVALID)
 
 		# Return what ever's found after removing unnecessary data
 		return Services.Response([{

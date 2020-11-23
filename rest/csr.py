@@ -31,7 +31,6 @@ oRestConf = init(
 REST.Server({
 	"/agent": {"methods": REST.ALL, "session": True},
 	"/agents": {"methods": REST.READ, "session": True},
-	"/agent/internal": {"methods": REST.READ, "session": True},
 	"/agent/names": {"methods": REST.READ, "session": True},
 	"/agent/passwd": {"methods": REST.UPDATE, "session": True},
 	"/agent/permissions": {"methods": REST.READ | REST.UPDATE, "session": True},
@@ -39,6 +38,10 @@ REST.Server({
 	"/list": {"methods": REST.CREATE | REST.UPDATE | REST.DELETE, "session": True},
 	"/list/item": {"methods": REST.CREATE | REST.DELETE, "session": True},
 	"/lists": {"methods": REST.READ, "session": True},
+
+	"/session": {"methods": REST.READ, "session": True},
+	"/signin": {"methods": REST.CREATE},
+	"/signout": {"methods": REST.CREATE},
 
 	"/patient/account": {"methods": REST.CREATE, "session": True},
 

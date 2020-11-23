@@ -1,4 +1,5 @@
 SELECT
+	`smp`.`id`,
 	`smp`.`action`,
 	`smp`.`note`,
 	`smp`.`createdAt`,
@@ -18,6 +19,7 @@ WHERE
 UNION
 
 SELECT
+	`smp`.`id`,
 	`smp`.`action`,
 	`smp`.`note`,
 	`smp`.`createdAt`,
