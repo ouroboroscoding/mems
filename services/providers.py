@@ -98,9 +98,10 @@ class Providers(Services.Service):
 			"user": sID,
 			"permissions": {
 				"calendly": 1,			# Read
-				"prov_claims": 14,		# Update, Create, Delete
+				"order_claims": 12,		# Create, Delete
 				"prov_templates": 1,	# Read
 				"customers": 1,			# Read
+				"medications": 1,		# Read
 				"memo_mips": 3,			# Read, Update
 				"memo_notes": 5,		# Read, Update, Create
 				"orders": 2,			# Update
