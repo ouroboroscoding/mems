@@ -1710,57 +1710,10 @@ class TfLanding(Record_MySQL.Record):
 		return cls._conf
 
 	@classmethod
-	def find(cls, last_name, email, phone, custom={}):
+	def find(cls, last_name, email, phone, form, custom={}):
 		"""Find
 
-		Attempts to find a landing using customer info
-
-		Arguments:
-			last_name (str): The last name of the customer
-			email (str): The email of the customer
-			phone (str): The phone number of the customer
-			types (list):
-			custom (dict): Custom Host and DB info
-				'host' the name of the host to get/set data on
-				'append' optional postfix for dynamic DBs
-
-		Returns:
-			dict
-		"""
-
-		# Fetch the record structure
-		dStruct = cls.struct(custom)
-
-		# Generate SQL
-		sSQL = "SELECT `landing_id`, `formId`, `submitted_at`, `complete`\n" \
-				"FROM `%(db)s`.`%(table)s`\n" \
-				"WHERE `lastName` = '%(lastName)s'\n" \
-				"AND `birthDay` IS NOT NULL\n" \
-				"AND `birthDay` != ''\n" \
-				"AND (\n" \
-				"	`email` = '%(email)s' OR\n" \
-				"	`phone` IN ('1%(phone)s', '%(phone)s')\n" \
-				")\n" \
-				"ORDER BY `submitted_at` DESC\n" % {
-			"db": dStruct['db'],
-			"table": dStruct['table'],
-			"lastName": Record_MySQL.Commands.escape(dStruct['host'], last_name),
-			"email": Record_MySQL.Commands.escape(dStruct['host'], email),
-			"phone": Record_MySQL.Commands.escape(dStruct['host'], phone)
-		}
-
-		# Execute and return the select
-		return Record_MySQL.Commands.select(
-			dStruct['host'],
-			sSQL,
-			Record_MySQL.ESelect.ALL
-		)
-
-	@classmethod
-	def latest(cls, last_name, email, phone, form, custom={}):
-		"""Find
-
-		Attempts to find a landing using customer info
+		Attempts to find landings using customer info
 
 		Arguments:
 			last_name (str): The last name of the customer
@@ -1807,8 +1760,7 @@ class TfLanding(Record_MySQL.Record):
 		sSQL = "SELECT `landing_id`, `formId`, `submitted_at`, `complete`\n" \
 				"FROM `%(db)s`.`%(table)s`\n" \
 				"WHERE %(where)s\n" \
-				"ORDER BY `submitted_at` DESC\n" \
-				"LIMIT 1" % {
+				"ORDER BY `submitted_at` DESC\n" % {
 			"db": dStruct['db'],
 			"table": dStruct['table'],
 			"where": '\nAND'.join(lWhere)
@@ -1820,7 +1772,7 @@ class TfLanding(Record_MySQL.Record):
 		return Record_MySQL.Commands.select(
 			dStruct['host'],
 			sSQL,
-			Record_MySQL.ESelect.ROW
+			Record_MySQL.ESelect.ALL
 		)
 
 # TfQuestion class

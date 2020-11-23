@@ -745,102 +745,6 @@ class Monolith(Services.Service):
 			"type": sType
 		})
 
-	def customerMip_read(self, data, sesh):
-		"""Customer MIP
-
-		Gets the latest MIP by a form type or types
-
-		Arguments:
-			data (dict): Data sent with the request
-			sesh (Sesh._Session): The session associated with the request
-
-		Returns:
-			Services.Response
-		"""
-
-		# Make sure the user has the proper permission to do this
-		oResponse = Services.read('auth', 'rights/verify', {
-			"name": "memo_mips",
-			"right": Rights.READ
-		}, sesh)
-		if not oResponse.data:
-			return Services.Response(error=Rights.INVALID)
-
-		# Verify fields
-		try: DictHelper.eval(data, ['customerId', 'form'])
-		except ValueError as e: return Services.Response(error=(1001, [(f, 'missing') for f in e.args]))
-
-		# If we want any form
-		if data['form'] == 'any':
-			data['form'] = None
-
-		# Find the customer by ID
-		dCustomer = KtCustomer.filter(
-			{"customerId": data['customerId']},
-			raw=['lastName', 'emailAddress', 'phoneNumber'],
-			limit=1
-		)
-
-		# Get the latest landing by type
-		dLanding = TfLanding.latest(
-			dCustomer['lastName'],
-			dCustomer['emailAddress'] or '',
-			dCustomer['phoneNumber'],
-			data['form']
-		)
-
-		# If there's no mip
-		if not dLanding:
-			return Services.Response(0)
-
-		# Init the data
-		dData = {
-			"id": dLanding['landing_id'],
-			"form": dLanding['formId'],
-			"date": dLanding['submitted_at'],
-			"completed": dLanding['complete'] == 'Y'
-		}
-
-		# Get the questions associated with the landing form
-		dData['questions'] = TfQuestion.filter(
-			{"formId": dLanding['formId'], "activeFlag": 'Y'},
-			raw=['ref', 'title', 'type'],
-			orderby='questionNumber'
-		)
-
-		# Get the options for the questions
-		lOptions = TfQuestionOption.filter(
-			{"questionRef": [d['ref'] for d in dData['questions']], "activeFlag": 'Y'},
-			raw=['questionRef', 'displayOrder', 'option'],
-			orderby=['questionRef', 'displayOrder']
-		)
-
-		# Create lists of options by question
-		dData['options'] = {}
-		for d in lOptions:
-			try: dData['options'][d['questionRef']].append(d['option'])
-			except KeyError: dData['options'][d['questionRef']] = [d['option']]
-
-		# Fetch the answers
-		dAnswers = {
-			d['ref']: d['value']
-			for d in TfAnswer.filter(
-				{"landing_id": dLanding['landing_id']},
-				raw=['ref', 'value']
-			)
-		}
-
-		# Match the answer to the questions
-		for d in dData['questions']:
-			d['answer'] = d['ref'] in dAnswers and \
-							dAnswers[d['ref']] or \
-							''
-			if d['type'] == 'yes_no' and d['answer'] in ['0', '1']:
-				d['answer'] = d['answer'] == '1' and 'Yes' or 'No'
-
-		# Return the MIP
-		return Services.Response(dData)
-
 	def customerMips_read(self, data, sesh):
 		"""Customer MIPs
 
@@ -867,6 +771,10 @@ class Monolith(Services.Service):
 		try: DictHelper.eval(data, ['customerId'])
 		except ValueError as e: return Services.Response(error=(1001, [(f, 'missing') for f in e.args]))
 
+		# If we want any form
+		if data['form'] == 'any':
+			data['form'] = None
+
 		# Find the customer by ID
 		dCustomer = KtCustomer.filter(
 			{"customerId": data['customerId']},
@@ -878,7 +786,8 @@ class Monolith(Services.Service):
 		lLandings = TfLanding.find(
 			dCustomer['lastName'],
 			dCustomer['emailAddress'] or '',
-			dCustomer['phoneNumber']
+			dCustomer['phoneNumber'],
+			data['form']
 		)
 
 		# If there's no mip
@@ -2230,7 +2139,11 @@ class Monolith(Services.Service):
 			return Services.Response(error=1513)
 
 		# If we don't have an agent
+		bAgent = True
 		if data['agent'] == 0:
+
+			# We had no specific agent
+			bAgent = False
 
 			# Find the round robin
 			oResponse = Services.read('providers', 'roundrobin', {}, sesh);
@@ -2238,7 +2151,7 @@ class Monolith(Services.Service):
 
 			# If there's only one
 			if len(oResponse.data) == 1:
-				data['agnet'] = oResponse.data[0]
+				data['agent'] = oResponse.data[0]
 
 			# Else, get the counts and use the one with the least
 			else:
@@ -2266,8 +2179,49 @@ class Monolith(Services.Service):
 		try:
 			if not oCustClaim.create():
 				return Services.Response(error=1100)
+
+			# Sync the transfer for anyone interested
+			Sync.push('monolith', 'user-%s' % str(data['agent']), {
+				"type": 'claim_transfered',
+				"claim": dData
+			})
+
 		except Record_MySQL.DuplicateException as e:
 
+			# Find the existing claim
+			dOldClaim = CustomerClaimed.get(dKtOrder['phoneNumber'], raw=['user'])
+
+			# If we had a specific agent requested
+			if bAgent:
+
+				# Save instead of create
+				oCustClaim.save()
+
+				# Notify the old agent they lost the claim
+				Sync.push('monolith', 'user-%s' % str(dOldClaim['user']), {
+					"type": 'claim_removed',
+					"phoneNumber": oClaim['phoneNumber']
+				})
+
+				# Notify the new agent they gained a claim
+				Sync.push('monolith', 'user-%s' % str(data['agent']), {
+					"type": 'claim_transfered',
+					"claim": dData
+				})
+
+			# Else, we don't care who the agent is
+			else:
+
+				# Keep the existing agent and save
+				oCustClaim['agent'] = dOldClaim['user']
+				oCustClaim.save()
+
+				# Notify the agent the claim has been update
+				dData['agent'] = dOldClaim['user']
+				Sync.push('monolith', 'user-%s' % str(dOldClaim['user']), {
+					"type": 'claim_updated',
+					"claim": dData
+				})
 
 		# Find the order status (fuck this is fucking stupid as fuck, fuck memo)
 		oStatus = SmpOrderStatus.filter({
@@ -2289,12 +2243,6 @@ class Monolith(Services.Service):
 			"updatedAt": sDT
 		})
 		oSmpNote.create()
-
-		# Sync the transfer for anyone interested
-		Sync.push('monolith', 'user-%s' % str(data['agent']), {
-			"type": 'claim_transfered',
-			"claim": dData
-		})
 
 		# Return OK
 		return Services.Response(True)
