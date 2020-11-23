@@ -89,6 +89,7 @@ REST.Server({
 	"/user": {"methods": REST.CREATE | REST.READ | REST.UPDATE, "session": True},
 	"/users": {"methods": REST.READ, "session": True},
 	"/user/active": {"methods": REST.UPDATE, "session": True},
+	"/user/id": {"methods": REST.READ},
 	"/user/name": {"methods": REST.READ, "session": True},
 	"/user/passwd": {"methods": REST.UPDATE, "session": True},
 

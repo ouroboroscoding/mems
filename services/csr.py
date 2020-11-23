@@ -481,6 +481,73 @@ class CSR(Services.Service):
 		else:
 			return Services.Response(True)
 
+	def agentMemo_create(self, data, sesh):
+		"""Agent from Memo
+
+		Creates an agent record from an existing Memo user instead of creating
+		a new one
+
+		Arguments:
+			data (mixed): Data sent with the request
+			sesh (Sesh._Session): The session associated with the request
+
+		Returns:
+			Services.Response
+		"""
+
+		# Make sure the user has the proper permission to do this
+		oResponse = Services.read('auth', 'rights/verify', {
+			"name": "csr_agents",
+			"right": Rights.CREATE
+		}, sesh)
+		if not oResponse.data:
+			return Services.Response(error=Rights.INVALID)
+
+		# Verify minimum fields
+		try: DictHelper.eval(data, ['userName'])
+		except ValueError as e: return Services.Response(error=(1001, [(f, 'missing') for f in e.args]))
+
+		# Look for the user
+		oResponse = Services.read('monolith', 'user/id', {
+			"_internal_": Services.internalKey(),
+			"userName": data['userName']
+		})
+		if oResponse.errorExists() or oResponse.data is False:
+			return oResponse
+
+		# Create the agent and return the response
+		return self._agent_create({
+			"memo_id": oResponse.data,
+			"claims_max": 20,
+			"claims_timeout": 48
+		}, sesh)
+
+	def agentNames_read(self, data, sesh):
+		"""Agent Names
+
+		Returns the list of agents who can have issues transfered / escalated to
+		them
+
+		Arguments:
+			data (mixed): Data sent with the request
+			sesh (Sesh._Session): The session associated with the request
+
+		Returns:
+			Services.Response
+		"""
+
+		# Fetch all the agents
+		lAgents = Agent.get(raw=['memo_id'])
+
+		# Fetch their names
+		oResponse = Services.read('monolith', 'user/name', {
+			"_internal_": Services.internalKey(),
+			"id": [d['memo_id'] for d in lAgents]
+		}, sesh)
+
+		# Regardless of what we got, retun the effect
+		return oResponse
+
 	def agentPasswd_update(self, data, sesh):
 		"""Agent Password Update
 
@@ -591,32 +658,6 @@ class CSR(Services.Service):
 		}, sesh)
 
 		# Return whatever was found
-		return oResponse
-
-	def agentNames_read(self, data, sesh):
-		"""Agent Names
-
-		Returns the list of agents who can have issues transfered / escalated to
-		them
-
-		Arguments:
-			data (mixed): Data sent with the request
-			sesh (Sesh._Session): The session associated with the request
-
-		Returns:
-			Services.Response
-		"""
-
-		# Fetch all the agents
-		lAgents = Agent.get(raw=['memo_id'])
-
-		# Fetch their names
-		oResponse = Services.read('monolith', 'user/name', {
-			"_internal_": Services.internalKey(),
-			"id": [d['memo_id'] for d in lAgents]
-		}, sesh)
-
-		# Regardless of what we got, retun the effect
 		return oResponse
 
 	def agents_read(self, data, sesh):

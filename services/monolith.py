@@ -2828,6 +2828,38 @@ class Monolith(Services.Service):
 			oUser.save()
 		)
 
+	def userId_read(self, data):
+		"""User ID
+
+		Fetches the ID of a user based on one or multiple fields in the User
+		table
+
+		Arguments:
+			data (dict): Data sent with the request
+
+		Returns:
+			Services.Response
+		"""
+
+		# Verify fields
+		try: DictHelper.eval(data, ['_internal_'])
+		except ValueError as e: return Services.Response(error=(1001, [(f, 'missing') for f in e.args]))
+
+		# Verify the key, remove it if it's ok
+		if not Services.internalKey(data['_internal_']):
+			return Services.Response(error=Errors.SERVICE_INTERNAL_KEY)
+		del data['_internal_']
+
+		# Get the user
+		dUser = User.filter(data, raw=['id'], limit=1)
+
+		# If there's no user
+		if not dUser:
+			return Services.Response(False)
+
+		# Return the user's ID
+		return Services.Response(dUser['id'])
+
 	def userName_read(self, data, sesh):
 		"""User Name
 

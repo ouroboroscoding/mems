@@ -34,6 +34,7 @@ REST.Server({
 	"/provider": {"methods": REST.ALL, "session": True},
 	"/providers": {"methods": REST.READ, "session": True},
 	"/provider/internal": {"methods": REST.READ, "session": True},
+	"/provider/memo": {"methods": REST.CREATE, "session": True},
 	"/provider/names": {"methods": REST.READ, "session": True},
 	"/provider/passwd": {"methods": REST.UPDATE, "session": True},
 	"/provider/permissions": {"methods": REST.READ | REST.UPDATE, "session": True},

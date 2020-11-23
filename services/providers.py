@@ -524,6 +524,47 @@ class Providers(Services.Service):
 		# Return whatever was found
 		return oResponse
 
+	def providerMemo_create(self, data, sesh):
+		"""Provider from Memo
+
+		Creates an provider record from an existing Memo user instead of
+		creating a new one
+
+		Arguments:
+			data (mixed): Data sent with the request
+			sesh (Sesh._Session): The session associated with the request
+
+		Returns:
+			Services.Response
+		"""
+
+		# Make sure the user has the proper permission to do this
+		oResponse = Services.read('auth', 'rights/verify', {
+			"name": "providers",
+			"right": Rights.CREATE
+		}, sesh)
+		if not oResponse.data:
+			return Services.Response(error=Rights.INVALID)
+
+		# Verify minimum fields
+		try: DictHelper.eval(data, ['userName'])
+		except ValueError as e: return Services.Response(error=(1001, [(f, 'missing') for f in e.args]))
+
+		# Look for the user
+		oResponse = Services.read('monolith', 'user/id', {
+			"_internal_": Services.internalKey(),
+			"userName": data['userName']
+		})
+		if oResponse.errorExists() or oResponse.data is False:
+			return oResponse
+
+		# Create the agent and return the response
+		return self._provider_create({
+			"memo_id": oResponse.data,
+			"claims_max": 20,
+			"claims_timeout": 48
+		}, sesh)
+
 	def providerNames_read(self, data, sesh):
 		"""Provider Names
 

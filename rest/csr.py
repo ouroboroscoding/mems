@@ -31,6 +31,7 @@ oRestConf = init(
 REST.Server({
 	"/agent": {"methods": REST.ALL, "session": True},
 	"/agents": {"methods": REST.READ, "session": True},
+	"/agent/memo": {"methods": REST.CREATE, "session": True},
 	"/agent/names": {"methods": REST.READ, "session": True},
 	"/agent/passwd": {"methods": REST.UPDATE, "session": True},
 	"/agent/permissions": {"methods": REST.READ | REST.UPDATE, "session": True},
