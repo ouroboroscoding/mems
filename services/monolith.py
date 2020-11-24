@@ -772,7 +772,7 @@ class Monolith(Services.Service):
 		except ValueError as e: return Services.Response(error=(1001, [(f, 'missing') for f in e.args]))
 
 		# If we want any form
-		if 'form' in data and data['form'] == 'any':
+		if 'form' not in data or data['form'] == 'any':
 			data['form'] = None
 
 		# Find the customer by ID
