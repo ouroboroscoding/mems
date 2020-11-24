@@ -23,7 +23,7 @@ from RestOC import Conf, DictHelper, Errors, Record_MySQL, Services, \
 					StrHelper, Templates
 
 # Shared imports
-from shared import Rights, SMSWorkflow, Sync
+from shared import Memo, Rights, SMSWorkflow, Sync
 
 # Records imports
 from records.monolith import \
@@ -2103,6 +2103,35 @@ class Monolith(Services.Service):
 				oStatus['orderLabel'] = len(lLabel) == 2 and data['label'] or ''
 				oStatus['updatedAt']: sDT
 				oStatus.save()
+
+	def orderRefresh_update(self, data, sesh):
+		"""Order Refresh
+
+		Welcome to the stupidity that is Memo
+
+		Arguments:
+			data (dict): Data sent with the request
+			sesh (Sesh._Session): The session associated with the request
+
+		Returns:
+			Services.Response
+		"""
+
+		# Verify fields
+		try: DictHelper.eval(data, ['orderId'])
+		except ValueError as e: return Services.Response(error=(1001, [(f, 'missing') for f in e.args]))
+
+		# Make the request of Memo to refresh it's shitty data from KNK
+		oRes = Memo.update('rest/order/refresh', {
+			"orderId": data['orderId']
+		})
+
+		# If there's no error
+		if 'error' in oRes and oRes['error'] is False:
+			del oRes['error']
+
+		# Return the response
+		return Services.Response.fromDict(oRes)
 
 	def orderTransfer_update(self, data, sesh):
 		"""Order Transfer

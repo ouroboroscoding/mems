@@ -67,6 +67,7 @@ REST.Server({
 	"/order/claim": {"methods": REST.CREATE | REST.DELETE, "session": True},
 	"/order/claimed": {"methods": REST.READ, "session": True},
 	"/order/label": {"methods": REST.UPDATE, "session": True},
+	"/order/refresh": {"methods": REST.UPDATE, "session": True},
 	"/order/transfer": {"methods": REST.UPDATE, "session": True},
 
 	"/orders/pending/csr": {"methods": REST.READ, "session": True},
