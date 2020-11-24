@@ -1046,6 +1046,12 @@ class CSR(Services.Service):
 		Returns:
 			Services.Response
 		"""
+
+		# If the session doesn't start with "csr:" it's not valid
+		if sesh.id()[0:4] != 'csr:':
+			return Services.Response(error=102)
+
+		# Return the session info
 		return Services.Response({
 			"memo": {"id": sesh['memo_id']},
 			"user" : {"id": sesh['user_id']}
