@@ -59,6 +59,8 @@ REST.Server({
 	"/msgs/unclaimed": {"methods": REST.READ, "session": True},
 	"/msgs/unclaimed/count": {"methods": REST.READ, "session": True},
 
+	"/order/refresh": {"methods": REST.UPDATE, "session": True},
+
 	"/orders/pending/csr": {"methods": REST.READ, "session": True},
 	"/orders/pending/csr/count": {"methods": REST.READ, "session": True},
 
