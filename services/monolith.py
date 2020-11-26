@@ -2128,7 +2128,7 @@ class Monolith(Services.Service):
 		# Make sure the user has the proper permission to do this
 		oResponse = Services.read('auth', 'rights/verify', {
 			"name": "order_claims",
-			"right": Rights.UPDATE
+			"right": Rights.CREATE
 		}, sesh)
 		if not oResponse.data:
 			return Services.Response(error=Rights.INVALID)
