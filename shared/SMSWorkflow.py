@@ -214,7 +214,7 @@ def processTemplate(content, order, misc = {}):
 	# Return the new content
 	return content
 
-def providerApproves(order_id, user_id, monolith=False):
+def providerApproves(order_id, user_id, monolith):
 	"""Provider Approves
 
 	Called when the provider who claimed the order approves that order
@@ -249,7 +249,7 @@ def providerApproves(order_id, user_id, monolith=False):
 		raw=['firstName', 'lastName', 'emailAddress', 'phoneNumber', 'state'],
 		limit=1
 	)
-	if not oOrder:
+	if not dOrder:
 		return False
 
 	# Find the user
@@ -278,15 +278,8 @@ def providerApproves(order_id, user_id, monolith=False):
 		"type": 'support'
 	}
 
-	# If we have a monolith instance
-	if monolith:
-
-		# Send the SMS to the patient directly
-		oResponse = monolith.messageOutgoing_create(dMsg)
-	else:
-
-		# Send the SMS to the patient via REST
-		oResponse = Services.create('monolith', 'message/outgoing', dMsg)
+	# Send the SMS to the patient
+	oResponse = monolith.messageOutgoing_create(dMsg)
 
 	# If there's an error sending the SMS
 	if oResponse.errorExists():
@@ -307,7 +300,7 @@ def providerApproves(order_id, user_id, monolith=False):
 	# Return OK
 	return True
 
-def providerDeclines(order_id, user_id, monolith=False):
+def providerDeclines(order_id, user_id, monolith):
 	"""Provider Declines
 
 	Called when the provider who claimed the order declines that order
@@ -342,7 +335,7 @@ def providerDeclines(order_id, user_id, monolith=False):
 		raw=['firstName', 'lastName', 'emailAddress', 'phoneNumber', 'state'],
 		limit=1
 	)
-	if not oOrder:
+	if not dOrder:
 		return False
 
 	# Find the user
@@ -371,15 +364,8 @@ def providerDeclines(order_id, user_id, monolith=False):
 		"type": 'support'
 	}
 
-	# If we have a monolith instance
-	if monolith:
-
-		# Send the SMS to the patient directly
-		oResponse = monolith.messageOutgoing_create(dMsg)
-	else:
-
-		# Send the SMS to the patient via REST
-		oResponse = Services.create('monolith', 'message/outgoing', dMsg)
+	# Send the SMS to the patient
+	oResponse = monolith.messageOutgoing_create(dMsg)
 
 	# If there's an error sending the SMS
 	if oResponse.errorExists():
@@ -439,7 +425,7 @@ def providerMessaged(order_id, note_id):
 	# Return OK
 	return True
 
-def providerOpens(order_id, user_id, monolith=False):
+def providerOpens(order_id, user_id, monolith):
 	"""Provider Opens
 
 	Called when the provider opens the order record
@@ -476,7 +462,7 @@ def providerOpens(order_id, user_id, monolith=False):
 		raw=['firstName', 'lastName', 'emailAddress', 'phoneNumber', 'state'],
 		limit=1
 	)
-	if not oOrder:
+	if not dOrder:
 		return False
 
 	# Find the user
@@ -505,15 +491,8 @@ def providerOpens(order_id, user_id, monolith=False):
 		"type": 'support'
 	}
 
-	# If we have a monolith instance
-	if monolith:
-
-		# Send the SMS to the patient directly
-		oResponse = monolith.messageOutgoing_create(dMsg)
-	else:
-
-		# Send the SMS to the patient via REST
-		oResponse = Services.create('monolith', 'message/outgoing', dMsg)
+	# Send the SMS to the patient
+	oResponse = monolith.messageOutgoing_create(dMsg)
 
 	# If there's an error sending the SMS
 	if oResponse.errorExists():
