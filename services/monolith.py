@@ -968,7 +968,7 @@ class Monolith(Services.Service):
 
 		# Create base note data
 		dNote = {
-			"action": sAction,
+			"action": data['action'],
 			"createdBy": sesh['memo_id'],
 			"note": data['content'],
 			"createdAt": sDT,
@@ -1039,6 +1039,7 @@ class Monolith(Services.Service):
 				oStatus.save()
 
 			# Set the note to an order
+			dNote['action'] = sAction
 			dNote['parentTable'] = 'kt_order'
 			dNote['parentColumn'] = 'orderId'
 			dNote['columnValue'] = data['orderId']
@@ -1270,6 +1271,128 @@ class Monolith(Services.Service):
 				"phoneNumber": data['phoneNumber']
 			}, raw=['service', 'agent'])
 		})
+
+	def customerTransfer_update(self, data, sesh):
+		"""Customer Transfer
+
+		Transfers a customer from an agent to a provider
+
+		Arguments:
+			data (dict): Data sent with the request
+			sesh (Sesh._Session): The session associated with the request
+
+		Returns:
+			Services.Response
+		"""
+
+		# Make sure the user has the proper permission to do this
+		oResponse = Services.read('auth', 'rights/verify', {
+			"name": "csr_claims",
+			"right": Rights.CREATE
+		}, sesh)
+		if not oResponse.data:
+			return Services.Response(error=Rights.INVALID)
+
+		# Verify fields
+		try: DictHelper.eval(data, ['phoneNumber', 'customerId', 'orderId', 'provider', 'note'])
+		except ValueError as e: return Services.Response(error=(1001, [(f, 'missing') for f in e.args]))
+
+		# Find the claim
+		oClaim = CustomerClaimed.get(data['phoneNumber'])
+		if not oClaim:
+			return Services.Response(error=(1104, 'claim'))
+
+		# If the owner of the claim isn't the one transferring
+		if oClaim['user'] != sesh['memo_id']:
+			return Services.Response(error=1513)
+
+		# If there's no provider or order ID
+		if not oClaim['provider'] or not oClaim['orderId']:
+			return Services.Response(error=1514)
+
+		# Get the extra claim details
+		dDetails = KtOrder.claimDetails(data['orderId'])
+		if not dDetails:
+			return Services.Response(error=(1104, 'order'))
+
+		print(dDetails)
+
+		# Generate the data for the record and the WS message
+		dData = {
+			"customerId": data['customerId'],
+			"orderId": data['orderId'],
+			"user": data['provider'],
+			"transferredBy": sesh['memo_id']
+		}
+
+		# Create a new claim instance for the agent and store in the DB
+		oOrderClaim = KtOrderClaim(dData)
+
+		# Add the extra details
+		dData['customerName'] = dDetails['customerName']
+		dData['type'] = dDetails['type']
+
+		# Create the record in the DB
+		try:
+			if not oOrderClaim.create():
+				return Services.Response(error=1100)
+
+			# Sync the transfer for anyone interested
+			Sync.push('monolith', 'user-%s' % str(data['provider']), {
+				"type": 'claim_transfered',
+				"claim": dData
+			})
+
+		# If there's somehow a claim already
+		except Record_MySQL.DuplicateException as e:
+
+			# Find the existing claim
+			oOldClaim = KtOrderClaim.get(data['customerId'])
+
+			# Save instead of create
+			oOrderClaim.save()
+
+			# Notify the old provider they lost the claim
+			Sync.push('monolith', 'user-%s' % str(dOldClaim['user']), {
+				"type": 'claim_removed',
+				"customerId": data['customerId']
+			})
+
+			# Notify the new provider they gained a claim
+			Sync.push('monolith', 'user-%s' % str(data['provider']), {
+				"type": 'claim_transfered',
+				"claim": dData
+			})
+
+		# Get current date/time
+		sDT = arrow.get().format('YYYY-MM-DD HH:mm:ss')
+
+		# Find the order status (fuck this is fucking stupid as fuck, fuck memo)
+		oStatus = SmpOrderStatus.filter({
+			"orderId": oOrderClaim['orderId']
+		}, limit=1)
+		if oStatus:
+			oStatus['modifiedBy'] = sesh['memo_id']
+			oStatus['attentionRole'] = 'Provider'
+			oStatus['orderLabel'] = 'Provider - Agent Transfer'
+			oStatus['updatedAt'] = sDT
+			oStatus.save()
+
+		# Store transfer note
+		oSmpNote = SmpNote({
+			"action": 'Agent Transfer',
+			"createdBy": sesh['memo_id'],
+			"note": data['note'],
+			"parentTable": 'kt_order',
+			"parentColumn": 'orderId',
+			"columnValue": data['orderId'],
+			"createdAt": sDT,
+			"updatedAt": sDT
+		})
+		oSmpNote.create()
+
+		# Return OK
+		return Services.Response(True)
 
 	def encounter_read(self, data):
 		"""Encounter
@@ -1977,7 +2100,7 @@ class Monolith(Services.Service):
 			pass
 
 		# If the order was transfered
-		elif data['reason'] == 'to_csr':
+		elif data['reason'] == 'transfer':
 			pass
 
 		# Else, invalid reason
@@ -1988,6 +2111,48 @@ class Monolith(Services.Service):
 		return Services.Response(
 			oClaim.delete()
 		)
+
+	def orderClaimClear_update(self, data, sesh):
+		"""Order Claim Clear
+
+		Clears the transferred by state
+
+		Arguments:
+			data (dict): Data sent with the request
+			sesh (Sesh._Session): The session associated with the request
+
+		Returns:
+			Services.Response
+		"""
+
+		# Make sure the user has the proper permission to do this
+		oResponse = Services.read('auth', 'rights/verify', {
+			"name": "order_claims",
+			"right": Rights.UPDATE
+		}, sesh)
+		if not oResponse.data:
+			return Services.Response(error=Rights.INVALID)
+
+		# Verify fields
+		try: DictHelper.eval(data, ['customerId'])
+		except ValueError as e: return Services.Response(error=(1001, [(f, 'missing') for f in e.args]))
+
+		# Find the claim
+		oClaim = KtOrderClaim.get(data['customerId'])
+		if not oClaim:
+			return Services.Response(error=(1104, data['customerId']))
+
+		# If the current owner of the claim is not the person clearing, return
+		#	an error
+		if oClaim['user'] != sesh['memo_id']:
+			return Services.Response(error=1000)
+
+		# Clear the transferred by
+		oClaim['transferredBy'] = None
+		oClaim.save()
+
+		# Return OK
+		return Services.Response(True)
 
 	def orderClaimed_read(self, data, sesh):
 		"""Order Claimed
@@ -2040,6 +2205,9 @@ class Monolith(Services.Service):
 		# Verify fields
 		try: DictHelper.eval(data, ['orderId', 'label'])
 		except ValueError as e: return Services.Response(error=(1001, [(f, 'missing') for f in e.args]))
+
+		# Get current date/time
+		sDT = arrow.get().format('YYYY-MM-DD HH:mm:ss')
 
 		# If we got a label
 		if 'label' in data:
@@ -2221,7 +2389,7 @@ class Monolith(Services.Service):
 			dOldClaim = CustomerClaimed.get(dKtOrder['phoneNumber'], raw=['user'])
 
 			# If we had a specific agent requested
-			if bAgent:
+			if bAgent or dOldClaim['user'] == data['agent']:
 
 				# Save instead of create
 				oCustClaim.save()
@@ -2229,7 +2397,7 @@ class Monolith(Services.Service):
 				# Notify the old agent they lost the claim
 				Sync.push('monolith', 'user-%s' % str(dOldClaim['user']), {
 					"type": 'claim_removed',
-					"phoneNumber": oClaim['phoneNumber']
+					"phoneNumber": dKtOrder['phoneNumber']
 				})
 
 				# Notify the new agent they gained a claim
@@ -2238,7 +2406,7 @@ class Monolith(Services.Service):
 					"claim": dData
 				})
 
-			# Else, we don't care who the agent is
+			# Else, we dont' care who the agent is
 			else:
 
 				# Keep the existing agent and save
@@ -2252,6 +2420,9 @@ class Monolith(Services.Service):
 					"claim": dData
 				})
 
+		# Get current date/time
+		sDT = arrow.get().format('YYYY-MM-DD HH:mm:ss')
+
 		# Find the order status (fuck this is fucking stupid as fuck, fuck memo)
 		oStatus = SmpOrderStatus.filter({
 			"orderId": oOrderClaim['orderId']
@@ -2260,14 +2431,17 @@ class Monolith(Services.Service):
 			oStatus['modifiedBy'] = sesh['memo_id']
 			oStatus['attentionRole'] = 'CSR'
 			oStatus['orderLabel'] = 'CSR - Provider Transfer'
-			oStatus['updateAt'] = sDT
+			oStatus['updatedAt'] = sDT
 			oStatus.save()
 
-		# Store Decline note
+		# Store transfer note
 		oSmpNote = SmpNote({
 			"action": 'Provider Transfer',
 			"createdBy": sesh['memo_id'],
 			"note": data['note'],
+			"parentTable": 'kt_order',
+			"parentColumn": 'orderId',
+			"columnValue": oOrderClaim['orderId'],
 			"createdAt": sDT,
 			"updatedAt": sDT
 		})

@@ -1029,6 +1029,7 @@ class KtOrder(Record_MySQL.Record):
 		sSQL = "SELECT\n" \
 				"	`ktoc`.`customerId`,\n" \
 				"	`ktoc`.`orderId`,\n" \
+				"	`ktoc`.`transferredBy`,\n" \
 				"	CONCAT(`ktc`.`firstName`, ' ', `ktc`.`lastName`) as `customerName`,\n" \
 				"	`c`.`type`\n" \
 				"FROM\n" \
@@ -1072,6 +1073,50 @@ class KtOrder(Record_MySQL.Record):
 
 		# Return the config
 		return cls._conf
+
+	@classmethod
+	def claimDetails(cls, order_id, custom={}):
+		"""Claim Details
+
+		Gets the campaign and customer name associated with the order, details
+		useful for claims
+
+		Arguments:
+			order_id (str): The ID of the order
+			custom (dict): Custom Host and DB info
+				'host' the name of the host to get/set data on
+				'append' optional postfix for dynamic DBs
+
+		Returns:
+			list
+		"""
+
+		# Fetch the record structure
+		dStruct = cls.struct(custom)
+
+		# Generate the SQL
+		sSQL = "SELECT\n" \
+				"	CONCAT(`ktc`.`firstName`, ' ', `ktc`.`lastName`) as `customerName`,\n" \
+				"	`c`.`type`\n" \
+				"FROM\n" \
+				"	`%(db)s`.`%(table)s` as `kto`,\n" \
+				"	`%(db)s`.`kt_customer` as `ktc`,\n" \
+				"	`%(db)s`.`campaign` as `c`\n" \
+				"WHERE\n" \
+				"	`kto`.`orderId` = '%(order)s' AND\n" \
+				"	`kto`.`customerId` = `ktc`.`customerId` AND\n" \
+				"	`kto`.`campaignId` = `c`.`id`" % {
+			"db": dStruct['db'],
+			"table": dStruct['table'],
+			"order": Record_MySQL.Commands.escape(dStruct['host'], order_id)
+		}
+
+		# Fetch and return the data
+		return Record_MySQL.Commands.select(
+			dStruct['host'],
+			sSQL,
+			Record_MySQL.ESelect.ROW
+		)
 
 	@classmethod
 	def distinctCampaigns(cls, custom={}):

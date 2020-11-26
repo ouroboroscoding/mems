@@ -49,6 +49,7 @@ REST.Server({
 	"/customer/shipping": {"methods": REST.READ, "session": True},
 	"/customer/stop": {"methods": REST.CREATE | REST.DELETE, "session": True},
 	"/customer/stops": {"methods": REST.READ, "session": True},
+	"/customer/transfer": {"methods": REST.UPDATE, "session": True},
 
 	"/encounter": {"methods": REST.READ},
 
@@ -65,6 +66,7 @@ REST.Server({
 	"/order/approve": {"methods": REST.UPDATE, "session": True},
 	"/order/decline": {"methods": REST.UPDATE, "session": True},
 	"/order/claim": {"methods": REST.CREATE | REST.DELETE, "session": True},
+	"/order/claim/clear": {"methods": REST.UPDATE, "session": True},
 	"/order/claimed": {"methods": REST.READ, "session": True},
 	"/order/label": {"methods": REST.UPDATE, "session": True},
 	"/order/refresh": {"methods": REST.UPDATE, "session": True},
