@@ -1353,7 +1353,7 @@ class Monolith(Services.Service):
 			oOrderClaim.save()
 
 			# Notify the old provider they lost the claim
-			Sync.push('monolith', 'user-%s' % str(dOldClaim['user']), {
+			Sync.push('monolith', 'user-%s' % str(oOldClaim['user']), {
 				"type": 'claim_removed',
 				"customerId": data['customerId']
 			})
