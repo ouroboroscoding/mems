@@ -11,9 +11,12 @@ __maintainer__	= "Chris Nasr"
 __email__		= "chris@fuelforthefire.ca"
 __created__		= "2020-05-17"
 
+# Python imports
+import uuid
+
 # Pip imports
 from FormatOC import Node
-from RestOC import DictHelper, Errors, Record_MySQL, Services
+from RestOC import DictHelper, Errors, Record_MySQL, Services, Sesh
 
 # Shared imports
 from shared import Rights
@@ -31,7 +34,7 @@ class CSR(Services.Service):
 	Service for CSR access
 	"""
 
-	_install = [Agent, TemplateEmail, TemplateSMS]
+	_install = [Agent, CustomList, CustomListItem, TemplateEmail, TemplateSMS]
 	"""Record types called in install"""
 
 	def initialise(self):
@@ -478,11 +481,11 @@ class CSR(Services.Service):
 		else:
 			return Services.Response(True)
 
-	def agentInternal_read(self, data, sesh):
-		"""Agent Internal
+	def agentMemo_create(self, data, sesh):
+		"""Agent from Memo
 
-		Fetches a memo user by their Memo ID rather then their primary key.
-		Internal function, can not be used from outside
+		Creates an agent record from an existing Memo user instead of creating
+		a new one
 
 		Arguments:
 			data (mixed): Data sent with the request
@@ -492,28 +495,58 @@ class CSR(Services.Service):
 			Services.Response
 		"""
 
+		# Make sure the user has the proper permission to do this
+		oResponse = Services.read('auth', 'rights/verify', {
+			"name": "csr_agents",
+			"right": Rights.CREATE
+		}, sesh)
+		if not oResponse.data:
+			return Services.Response(error=Rights.INVALID)
+
 		# Verify minimum fields
-		try: DictHelper.eval(data, ['_internal_', 'id'])
+		try: DictHelper.eval(data, ['userName'])
 		except ValueError as e: return Services.Response(error=(1001, [(f, 'missing') for f in e.args]))
 
-		# Verify the key, remove it if it's ok
-		if not Services.internalKey(data['_internal_']):
-			return Services.Response(error=Errors.SERVICE_INTERNAL_KEY)
-		del data['_internal_']
+		# Look for the user
+		oResponse = Services.read('monolith', 'user/id', {
+			"_internal_": Services.internalKey(),
+			"userName": data['userName']
+		})
+		if oResponse.errorExists() or oResponse.data is False:
+			return oResponse
 
-		# Look up the record
-		dAgent = Agent.filter(
-			{"memo_id": data['id']},
-			raw=True,
-			limit=1
-		)
+		# Create the agent and return the response
+		return self._agent_create({
+			"memo_id": oResponse.data,
+			"claims_max": 20,
+			"claims_timeout": 48
+		}, sesh)
 
-		# If there's no such user
-		if not dAgent:
-			return Services.Response(error=1104)
+	def agentNames_read(self, data, sesh):
+		"""Agent Names
 
-		# Return the user
-		return Services.Response(dAgent)
+		Returns the list of agents who can have issues transfered / escalated to
+		them
+
+		Arguments:
+			data (mixed): Data sent with the request
+			sesh (Sesh._Session): The session associated with the request
+
+		Returns:
+			Services.Response
+		"""
+
+		# Fetch all the agents
+		lAgents = Agent.get(raw=['memo_id'])
+
+		# Fetch their names
+		oResponse = Services.read('monolith', 'user/name', {
+			"_internal_": Services.internalKey(),
+			"id": [d['memo_id'] for d in lAgents]
+		}, sesh)
+
+		# Regardless of what we got, retun the effect
+		return oResponse
 
 	def agentPasswd_update(self, data, sesh):
 		"""Agent Password Update
@@ -627,32 +660,6 @@ class CSR(Services.Service):
 		# Return whatever was found
 		return oResponse
 
-	def agentNames_read(self, data, sesh):
-		"""Agent Names
-
-		Returns the list of agents who can have issues transfered / escalated to
-		them
-
-		Arguments:
-			data (mixed): Data sent with the request
-			sesh (Sesh._Session): The session associated with the request
-
-		Returns:
-			Services.Response
-		"""
-
-		# Fetch all the agents
-		lAgents = Agent.get(raw=['memo_id'])
-
-		# Fetch their names
-		oResponse = Services.read('monolith', 'user/name', {
-			"_internal_": Services.internalKey(),
-			"id": [d['memo_id'] for d in lAgents]
-		}, sesh)
-
-		# Regardless of what we got, retun the effect
-		return oResponse
-
 	def agents_read(self, data, sesh):
 		"""Agents
 
@@ -676,6 +683,10 @@ class CSR(Services.Service):
 
 		# Fetch all the agents
 		lAgents = Agent.get(raw=True)
+
+		# If there's no agents
+		if not lAgents:
+			return Services.Response([])
 
 		# Fetch all the Memo user's associated
 		oResponse = Services.read('monolith', 'users', {
@@ -1022,6 +1033,102 @@ class CSR(Services.Service):
 
 		# Pass along the details to the patient service and return the result
 		return  Services.create('patient', 'setup/start', data, sesh)
+
+	def session_read(self, data, sesh):
+		"""Session
+
+		Returns the ID of the user logged into the current session
+
+		Arguments:
+			data (dict): Data sent with the request
+			sesh (Sesh._Session): The session associated with the request
+
+		Returns:
+			Services.Response
+		"""
+
+		# If the session doesn't start with "csr:" it's not valid
+		if sesh.id()[0:4] != 'csr:':
+			return Services.Response(error=102)
+
+		# Return the session info
+		return Services.Response({
+			"memo": {"id": sesh['memo_id']},
+			"user" : {"id": sesh['user_id']}
+		})
+
+	def signin_create(self, data):
+		"""Signin
+
+		Signs a user into the system
+
+		Arguments:
+			data (dict): The data passed to the request
+
+		Returns:
+			Result
+		"""
+
+		# Verify fields
+		try: DictHelper.eval(data, ['userName', 'passwd'])
+		except ValueError as e: return Services.Response(error=(1001, [(f, 'missing') for f in e.args]))
+
+		# Check monolith for the user
+		data['_internal_'] = Services.internalKey()
+		oResponse = Services.create('monolith', 'signin', data)
+		if oResponse.errorExists(): return oResponse
+
+		# Create a new session
+		oSesh = Sesh.create("csr:" + uuid.uuid4().hex)
+
+		# Store the user ID and information in it
+		oSesh['memo_id'] = oResponse.data['id']
+
+		# Save the session
+		oSesh.save()
+
+		# Check for the agent associated with the memo ID
+		dAgent = Agent.filter(
+			{"memo_id": oResponse.data['id']},
+			raw=True,
+			limit=1
+		)
+
+		# If there's no such user
+		if not dAgent:
+			return Services.Response(error=Rights.INVALID)
+
+		# Store the user ID and claim vars in the session
+		oSesh['user_id'] = dAgent['_id']
+		oSesh['claims_max'] = dAgent['claims_max']
+		oSesh['claims_timeout'] = dAgent['claims_timeout']
+		oSesh.save()
+
+		# Return the session ID and primary user data
+		return Services.Response({
+			"memo": {"id": oSesh['memo_id']},
+			"session": oSesh.id(),
+			"user": {"id": dAgent['_id']}
+		})
+
+	def signout_create(self, data, sesh):
+		"""Signout
+
+		Called to sign out a user and destroy their session
+
+		Arguments:
+			data (dict): Data sent with the request
+			sesh (Sesh._Session): The session associated with the user
+
+		Returns:
+			Services.Response
+		"""
+
+		# Close the session so it can no longer be found/used
+		sesh.close()
+
+		# Return OK
+		return Services.Response(True)
 
 	def templateEmail_create(self, data, sesh):
 		"""Template Email Create

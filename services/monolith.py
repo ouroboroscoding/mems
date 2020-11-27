@@ -14,24 +14,23 @@ __created__		= "2020-04-26"
 # Python imports
 import re
 from time import time
-import uuid
 
 # Pip imports
 import arrow
 import bcrypt
 from redis import StrictRedis
 from RestOC import Conf, DictHelper, Errors, Record_MySQL, Services, \
-					Sesh, StrHelper, Templates
+					StrHelper, Templates
 
 # Shared imports
-from shared import Memo, Rights, Sync
+from shared import Memo, Rights, SMSWorkflow, Sync
 
 # Records imports
 from records.monolith import \
-	Calendly, CustomerClaimed, CustomerClaimedLast, CustomerCommunication, \
+	Calendly, Campaign, CustomerClaimed, CustomerClaimedLast, CustomerCommunication, \
 	CustomerMsgPhone, DsPatient, Forgot, HrtLabResultTests, KtCustomer, KtOrder, \
-	ShippingInfo, SmpNote, SmpOrderStatus, SMSStop, TfAnswer, TfLanding, \
-	TfQuestion, TfQuestionOption, User, \
+	KtOrderClaim, ShippingInfo, SmpNote, SmpOrderStatus, SmpState, SMSStop, TfAnswer, \
+	TfLanding, TfQuestion, TfQuestionOption, User, \
 	init as recInit
 
 # Regex for validating email
@@ -265,6 +264,10 @@ class Monolith(Services.Service):
 		if not oClaim:
 			return Services.Response(error=1104)
 
+		# If the user is not the one who made the claim
+		if oClaim['user'] != sesh['memo_id']:
+			return Services.Response(error=1000)
+
 		# Delete the claim and return the response
 		return Services.Response(
 			oClaim.delete()
@@ -335,10 +338,12 @@ class Monolith(Services.Service):
 			# Sync the transfer for anyone interested
 			Sync.push('monolith', 'user-%s' % str(data['user_id']), {
 				"type": 'claim_transfered',
-				"phoneNumber": data['phoneNumber'],
-				"orderId": oClaim['orderId'],
-				"provider": oClaim['provider'],
-				"transferredBy": sesh['memo_id']
+				"claim": {
+					"phoneNumber": data['phoneNumber'],
+					"orderId": oClaim['orderId'],
+					"provider": oClaim['provider'],
+					"transferredBy": sesh['memo_id']
+				}
 			})
 
 		# If the claim was forceable removed
@@ -586,7 +591,7 @@ class Monolith(Services.Service):
 			return Services.Response(0)
 
 		# Return the ID
-		return Services.Response(dPatient['patientId'])
+		return Services.Response(int(dPatient['patientId']))
 
 	def customerExists_read(self, data, sesh):
 		"""Customer Exists
@@ -754,10 +759,6 @@ class Monolith(Services.Service):
 			Services.Response
 		"""
 
-		# Verify fields
-		try: DictHelper.eval(data, ['customerId'])
-		except ValueError as e: return Services.Response(error=(1001, [(f, 'missing') for f in e.args]))
-
 		# Make sure the user has the proper permission to do this
 		oResponse = Services.read('auth', 'rights/verify', {
 			"name": "memo_mips",
@@ -766,11 +767,18 @@ class Monolith(Services.Service):
 		if not oResponse.data:
 			return Services.Response(error=Rights.INVALID)
 
+		# Verify fields
+		try: DictHelper.eval(data, ['customerId'])
+		except ValueError as e: return Services.Response(error=(1001, [(f, 'missing') for f in e.args]))
+
+		# If we want any form
+		if 'form' not in data or data['form'] == 'any':
+			data['form'] = None
+
 		# Find the customer by ID
 		dCustomer = KtCustomer.filter(
 			{"customerId": data['customerId']},
 			raw=['lastName', 'emailAddress', 'phoneNumber'],
-			orderby=[('dateUpdated', 'DESC')],
 			limit=1
 		)
 
@@ -778,7 +786,8 @@ class Monolith(Services.Service):
 		lLandings = TfLanding.find(
 			dCustomer['lastName'],
 			dCustomer['emailAddress'] or '',
-			dCustomer['phoneNumber']
+			dCustomer['phoneNumber'],
+			data['form']
 		)
 
 		# If there's no mip
@@ -939,12 +948,8 @@ class Monolith(Services.Service):
 		"""
 
 		# Verify fields
-		try: DictHelper.eval(data, ['content', 'action'])
+		try: DictHelper.eval(data, ['action', 'content', 'customerId'])
 		except ValueError as e: return Services.Response(error=(1001, [(f, 'missing') for f in e.args]))
-
-		# We must have either a customer ID or order ID
-		if 'customer_id' not in data and 'order_id' not in data:
-			return Services.Response(error=(1001, [('customer_id', 'missing'), ('order_id', 'missing')]))
 
 		# Make sure the user has the proper permission to do this
 		oResponse = Services.read('auth', 'rights/verify', {
@@ -957,30 +962,25 @@ class Monolith(Services.Service):
 		# Get current date/time
 		sDT = arrow.get().format('YYYY-MM-DD HH:mm:ss')
 
-		# If we got a customer ID
-		if 'customer_id' in data:
+		# If the note is an SMS
+		if data['action'] == 'Send Communication':
+			return Services.Response(error=(1001, [('action', 'invalid')]))
 
-			# Attempt to create the record
-			try:
-				oSmpNote = SmpNote({
-					"parentTable": 'kt_customer',
-					"parentColumn": 'customerId',
-					"columnValue": str(data['customer_id']),
-					"action": data['action'],
-					"createdBy": sesh['memo_id'],
-					"note": data['content'],
-					"createdAt": sDT,
-					"updatedAt": sDT
-				})
-			except ValueError as e:
-				return Services.Response(error=(1001, e.args[0]))
+		# Create base note data
+		dNote = {
+			"action": data['action'],
+			"createdBy": sesh['memo_id'],
+			"note": data['content'],
+			"createdAt": sDT,
+			"updatedAt": sDT
+		}
 
-		# Else we got an order ID
-		else:
+		# If we got a label
+		if 'label' in data:
 
-			# If we have no label
-			if 'label' not in data:
-				return Services.Response(error=(1001, [('label', 'missing')]))
+			# If we have no order
+			if 'orderId' not in data:
+				return Services.Response(error=(1001, [('orderId', 'missing')]))
 
 			# Figure out the role based on the label
 			lLabel = data['label'].split(' - ')
@@ -989,7 +989,7 @@ class Monolith(Services.Service):
 
 			# Find the latest status for this order
 			oStatus = SmpOrderStatus.filter(
-				{"orderId": data['order_id']},
+				{"orderId": data['orderId']},
 				limit=1
 			)
 
@@ -1006,7 +1006,7 @@ class Monolith(Services.Service):
 
 				# Create a new status
 				oStatus = SmpOrderStatus({
-					"orderId": data['order_id'],
+					"orderId": data['orderId'],
 					"orderStatus": '',
 					"reviewStatus": '',
 					"attentionRole": lLabel[0] != '' and lLabel[0] or None,
@@ -1038,20 +1038,23 @@ class Monolith(Services.Service):
 				oStatus['updatedAt']: sDT
 				oStatus.save()
 
-			# Attempt to create the record
-			try:
-				oSmpNote = SmpNote({
-					"parentTable": 'kt_order',
-					"parentColumn": 'orderId',
-					"columnValue": data['order_id'],
-					"action": sAction,
-					"createdBy": sesh['memo_id'],
-					"note": data['content'],
-					"createdAt": sDT,
-					"updatedAt": sDT
-				})
-			except ValueError as e:
-				return Services.Response(error=(1001, e.args[0]))
+			# Set the note to an order
+			dNote['action'] = sAction
+			dNote['parentTable'] = 'kt_order'
+			dNote['parentColumn'] = 'orderId'
+			dNote['columnValue'] = data['orderId']
+
+		# Else, use the customerId
+		else:
+			dNote['parentTable'] = 'kt_customer'
+			dNote['parentColumn'] = 'customerId'
+			dNote['columnValue'] = data['customerId']
+
+		# Attempt to create an instance to verify the fields
+		try:
+			oSmpNote = SmpNote(dNote)
+		except ValueError as e:
+			return Services.Response(error=(1001, e.args[0]))
 
 		# Create the record and return the result
 		return Services.Response(
@@ -1269,6 +1272,154 @@ class Monolith(Services.Service):
 			}, raw=['service', 'agent'])
 		})
 
+	def customerTransfer_update(self, data, sesh):
+		"""Customer Transfer
+
+		Transfers a customer from an agent to a provider
+
+		Arguments:
+			data (dict): Data sent with the request
+			sesh (Sesh._Session): The session associated with the request
+
+		Returns:
+			Services.Response
+		"""
+
+		# Make sure the user has the proper permission to do this
+		oResponse = Services.read('auth', 'rights/verify', {
+			"name": "csr_claims",
+			"right": Rights.CREATE
+		}, sesh)
+		if not oResponse.data:
+			return Services.Response(error=Rights.INVALID)
+
+		# Verify fields
+		try: DictHelper.eval(data, ['phoneNumber', 'customerId', 'orderId', 'provider', 'note'])
+		except ValueError as e: return Services.Response(error=(1001, [(f, 'missing') for f in e.args]))
+
+		# Find the claim
+		oClaim = CustomerClaimed.get(data['phoneNumber'])
+		if not oClaim:
+			return Services.Response(error=(1104, 'claim'))
+
+		# If the owner of the claim isn't the one transferring
+		if oClaim['user'] != sesh['memo_id']:
+			return Services.Response(error=1513)
+
+		# If there's no provider or order ID
+		if not oClaim['provider'] or not oClaim['orderId']:
+			return Services.Response(error=1514)
+
+		# Get the extra claim details
+		dDetails = KtOrder.claimDetails(data['orderId'])
+		if not dDetails:
+			return Services.Response(error=(1104, 'order'))
+
+		print(dDetails)
+
+		# Generate the data for the record and the WS message
+		dData = {
+			"customerId": data['customerId'],
+			"orderId": data['orderId'],
+			"user": data['provider'],
+			"transferredBy": sesh['memo_id']
+		}
+
+		# Create a new claim instance for the agent and store in the DB
+		oOrderClaim = KtOrderClaim(dData)
+
+		# Add the extra details
+		dData['customerName'] = dDetails['customerName']
+		dData['type'] = dDetails['type']
+
+		# Create the record in the DB
+		try:
+			if not oOrderClaim.create():
+				return Services.Response(error=1100)
+
+			# Sync the transfer for anyone interested
+			Sync.push('monolith', 'user-%s' % str(data['provider']), {
+				"type": 'claim_transfered',
+				"claim": dData
+			})
+
+		# If there's somehow a claim already
+		except Record_MySQL.DuplicateException as e:
+
+			# Find the existing claim
+			oOldClaim = KtOrderClaim.get(data['customerId'])
+
+			# Save instead of create
+			oOrderClaim.save()
+
+			# Notify the old provider they lost the claim
+			Sync.push('monolith', 'user-%s' % str(oOldClaim['user']), {
+				"type": 'claim_removed',
+				"customerId": data['customerId']
+			})
+
+			# Notify the new provider they gained a claim
+			Sync.push('monolith', 'user-%s' % str(data['provider']), {
+				"type": 'claim_transfered',
+				"claim": dData
+			})
+
+		# Get current date/time
+		sDT = arrow.get().format('YYYY-MM-DD HH:mm:ss')
+
+		# Find the order status (fuck this is fucking stupid as fuck, fuck memo)
+		oStatus = SmpOrderStatus.filter({
+			"orderId": oOrderClaim['orderId']
+		}, limit=1)
+		if oStatus:
+			oStatus['modifiedBy'] = sesh['memo_id']
+			oStatus['attentionRole'] = 'Provider'
+			oStatus['orderLabel'] = 'Provider - Agent Transfer'
+			oStatus['updatedAt'] = sDT
+			oStatus.save()
+
+		# Store transfer note
+		oSmpNote = SmpNote({
+			"action": 'Agent Transfer',
+			"createdBy": sesh['memo_id'],
+			"note": data['note'],
+			"parentTable": 'kt_order',
+			"parentColumn": 'orderId',
+			"columnValue": data['orderId'],
+			"createdAt": sDT,
+			"updatedAt": sDT
+		})
+		oSmpNote.create()
+
+		# Return OK
+		return Services.Response(True)
+
+	def encounter_read(self, data):
+		"""Encounter
+
+		Returns encounter type based on state
+
+		Arguments:
+			data (dict): Data sent with the request
+
+		Returns:
+			Services.Response
+		"""
+
+		# Verify fields
+		try: DictHelper.eval(data, ['state'])
+		except ValueError as e: return Services.Response(error=(1001, [(f, 'missing') for f in e.args]))
+
+		# Look up the state
+		dState = SmpState.filter({
+			"abbreviation": data['state']
+		}, raw=['legalEncounterType'], limit=1)
+		if not dState:
+			return Services.Response(error=1104)
+
+		# Return the encounter
+		return Services.Response(dState['legalEncounterType'])
+
 	def messageIncoming_create(self, data):
 		"""Message Incoming
 
@@ -1381,6 +1532,10 @@ class Monolith(Services.Service):
 		# Check the number isn't blocked
 		if SMSStop.filter({"phoneNumber": data['customerPhone'], "service": data['type']}):
 			return Services.Response(error=1500)
+
+		# If the content is too long
+		if len(data['content']) >= 1600:
+			return Services.Response(error=1510)
 
 		# If it's internal
 		if '_internal_' in data:
@@ -1725,6 +1880,398 @@ class Monolith(Services.Service):
 			CustomerMsgPhone.unclaimedCount()
 		)
 
+	def orderApprove_update(self, data, sesh):
+		"""Order Approve
+
+		Handles requests related to approving an order
+
+		Arguments:
+			data (mixed): Data sent with the request
+			sesh (Sesh._Session): The session associated with the request
+
+		Returns:
+			Services.Response
+		"""
+
+		# Verify minimum fields
+		try: DictHelper.eval(data, ['orderId'])
+		except ValueError as e: return Services.Response(error=(1001, [(f, 'missing') for f in e.args]))
+
+		# Send the request to Konnektive
+		oResponse = Services.update('konnektive', 'order/qa', {
+			"action": 'APPROVE',
+			"orderId": data['orderId']
+		}, sesh)
+		if oResponse.errorExists(): return oResponse
+
+		# Get current date/time
+		sDT = arrow.get().format('YYYY-MM-DD HH:mm:ss')
+
+		# Store SOAP notes
+		oSmpNote = SmpNote({
+			"action": 'Approve Order',
+			"createdBy": sesh['memo_id'],
+			"note": data['soap'],
+			"createdAt": sDT,
+			"updatedAt": sDT
+		})
+		oSmpNote.create()
+
+		# Find the order status (fuck this is fucking stupid as fuck, fuck memo)
+		oStatus = SmpOrderStatus.filter({
+			"orderId": data['orderId']
+		}, limit=1)
+		if oStatus:
+			oStatus['approvalProviderId'] = sesh['memo_id']
+			oStatus['modifiedBy'] = sesh['memo_id']
+			oStatus['attentionRole'] = None
+			oStatus['orderLabel'] = None
+			oStatus['orderStatus'] = 'COMPLETE'
+			oStatus['reviewStatus'] = 'APPROVED'
+			oStatus['updateAt'] = sDT
+			oStatus.save()
+
+		# Notify the patient of the approval
+		SMSWorkflow.providerApproves(data['orderId'], sesh['memo_id'], self)
+
+		# Return OK
+		return Services.Response(True)
+
+	def orderDecline_update(self, data, sesh):
+		"""Order Decline
+
+		Handles requests related to declining an order
+
+		Arguments:
+			data (mixed): Data sent with the request
+			sesh (Sesh._Session): The session associated with the request
+
+		Returns:
+			Services.Response
+		"""
+
+		# Verify minimum fields
+		try: DictHelper.eval(data, ['orderId'])
+		except ValueError as e: return Services.Response(error=(1001, [(f, 'missing') for f in e.args]))
+
+		# Send the request to Konnektive
+		oResponse = Services.update('konnektive', 'order/qa', {
+			"action": 'DECLINE',
+			"orderId": data['orderId']
+		}, sesh)
+		if oResponse.errorExists(): return oResponse
+
+		# Get current date/time
+		sDT = arrow.get().format('YYYY-MM-DD HH:mm:ss')
+
+		# Store Decline note
+		oSmpNote = SmpNote({
+			"action": 'Decline Order',
+			"createdBy": sesh['memo_id'],
+			"note": 'Order declined for medical reasons',
+			"createdAt": sDT,
+			"updatedAt": sDT
+		})
+		oSmpNote.create()
+
+		# Find the order status (fuck this is fucking stupid as fuck, fuck memo)
+		oStatus = SmpOrderStatus.filter({
+			"orderId": data['orderId']
+		}, limit=1)
+		if oStatus:
+			oStatus['modifiedBy'] = sesh['memo_id']
+			oStatus['attentionRole'] = None
+			oStatus['orderLabel'] = None
+			oStatus['orderStatus'] = 'DECLINED'
+			oStatus['reviewStatus'] = 'DECLINED'
+			oStatus['declineReason'] = 'Medical Decline'
+			oStatus['updateAt'] = sDT
+			oStatus.save()
+
+		# Notify the patient of the approval
+		SMSWorkflow.providerDeclines(data['orderId'], sesh['memo_id'], self)
+
+		# Return OK
+		return Services.Response(True)
+
+	def orderClaim_create(self, data, sesh):
+		"""Order Claim Create
+
+		Stores a record to claim a PENDING order
+
+		Arguments:
+			data (dict): Data sent with the request
+			sesh (Sesh._Session): The session associated with the request
+
+		Returns:
+			Services.Response
+		"""
+
+		# Make sure the user has the proper permission to do this
+		oResponse = Services.read('auth', 'rights/verify', {
+			"name": "order_claims",
+			"right": Rights.CREATE
+		}, sesh)
+		if not oResponse.data:
+			return Services.Response(error=Rights.INVALID)
+
+		# Verify fields
+		try: DictHelper.eval(data, ['customerId', 'orderId'])
+		except ValueError as e: return Services.Response(error=(1001, [(f, 'missing') for f in e.args]))
+
+		# Check how many claims this user already has
+		iCount = KtOrderClaim.count(filter={
+			"user": sesh['memo_id']
+		})
+
+		# If they're at or more than the maximum
+		if iCount >= sesh['claims_max']:
+			return Services.Response(error=1505)
+
+		# Attempt to create the record
+		try:
+			oKtOrderClaim = KtOrderClaim({
+				"customerId": data['customerId'],
+				"orderId": data['orderId'],
+				"user": sesh['memo_id']
+			})
+		except ValueError as e:
+			return Services.Response(error=(1001, e.args[0]))
+
+		# Try to create the record
+		try:
+			oKtOrderClaim.create()
+
+		# If we got a duplicate exception
+		except Record_MySQL.DuplicateException:
+
+			# Fine the user who claimed it
+			dClaim = KtOrderClaim.get(data['customerId'], raw=['user']);
+
+			# Return the error with the user ID
+			return Services.Response(error=(1101, dClaim['user']))
+
+		# Send to SMSWorkflow
+		SMSWorkflow.providerOpens(data['orderId'], sesh['memo_id'], self)
+
+		# Return OK
+		return Services.Response(True)
+
+	def orderClaim_delete(self, data, sesh):
+		"""Order Claim Delete
+
+		Deletes a record to claim a customer conversation by a order
+
+		Arguments:
+			data (dict): Data sent with the request
+			sesh (Sesh._Session): The session associated with the request
+
+		Returns:
+			Services.Response
+		"""
+
+		# Make sure the user has the proper permission to do this
+		oResponse = Services.read('auth', 'rights/verify', {
+			"name": "order_claims",
+			"right": Rights.DELETE
+		}, sesh)
+		if not oResponse.data:
+			return Services.Response(error=Rights.INVALID)
+
+		# Verify fields
+		try: DictHelper.eval(data, ['customerId', 'reason'])
+		except ValueError as e: return Services.Response(error=(1001, [(f, 'missing') for f in e.args]))
+
+		# Fetch the claim
+		oClaim = KtOrderClaim.get(data['customerId'])
+		if not oClaim:
+			return Services.Response(error=1104)
+
+		# If the user is not the one who made the claim
+		if oClaim['user'] != sesh['memo_id']:
+			return Services.Response(error=1000)
+
+		# If the order was approved
+		if data['reason'] == 'approve':
+			pass
+
+		# If the order was rejected
+		elif data['reason'] == 'decline':
+			pass
+
+		# If the order was transfered
+		elif data['reason'] == 'transfer':
+			pass
+
+		# Else, invalid reason
+		else:
+			return Services.Response(error=(1001, [('reason', 'invalid')]))
+
+		# Attempt to delete the record and return the result
+		return Services.Response(
+			oClaim.delete()
+		)
+
+	def orderClaimClear_update(self, data, sesh):
+		"""Order Claim Clear
+
+		Clears the transferred by state
+
+		Arguments:
+			data (dict): Data sent with the request
+			sesh (Sesh._Session): The session associated with the request
+
+		Returns:
+			Services.Response
+		"""
+
+		# Make sure the user has the proper permission to do this
+		oResponse = Services.read('auth', 'rights/verify', {
+			"name": "order_claims",
+			"right": Rights.CREATE
+		}, sesh)
+		if not oResponse.data:
+			return Services.Response(error=Rights.INVALID)
+
+		# Verify fields
+		try: DictHelper.eval(data, ['customerId'])
+		except ValueError as e: return Services.Response(error=(1001, [(f, 'missing') for f in e.args]))
+
+		# Find the claim
+		oClaim = KtOrderClaim.get(data['customerId'])
+		if not oClaim:
+			return Services.Response(error=(1104, data['customerId']))
+
+		# If the current owner of the claim is not the person clearing, return
+		#	an error
+		if oClaim['user'] != sesh['memo_id']:
+			return Services.Response(error=1000)
+
+		# Clear the transferred by
+		oClaim['transferredBy'] = None
+		oClaim.save()
+
+		# Return OK
+		return Services.Response(True)
+
+	def orderClaimed_read(self, data, sesh):
+		"""Order Claimed
+
+		Fetches the list of customers and name associated that the user has
+		claimed
+
+		Arguments:
+			data (dict): Data sent with the request
+			sesh (Sesh._Session): The session associated with the request
+
+		Returns:
+			Services.Response
+		"""
+
+		# Make sure the user has the proper permission to do this
+		oResponse = Services.read('auth', 'rights/verify', {
+			"name": "order_claims",
+			"right": Rights.CREATE
+		}, sesh)
+		if not oResponse.data:
+			return Services.Response(error=Rights.INVALID)
+
+		# Get and return the claimed records
+		return Services.Response(
+			KtOrder.claimed(sesh['memo_id'])
+		)
+
+	def orderLabel_update(self, data, sesh):
+		"""Order Label
+
+		Creates or updates the label associated with an order
+
+		Arguments:
+			data (dict): Data sent with the request
+			sesh (Sesh._Session): The session associated with the request
+
+		Returns:
+			Services.Response
+		"""
+
+		# Make sure the user has the proper permission to do this
+		oResponse = Services.read('auth', 'rights/verify', {
+			"name": "memo_notes",
+			"right": Rights.CREATE
+		}, sesh)
+		if not oResponse.data:
+			return Services.Response(error=Rights.INVALID)
+
+		# Verify fields
+		try: DictHelper.eval(data, ['orderId', 'label'])
+		except ValueError as e: return Services.Response(error=(1001, [(f, 'missing') for f in e.args]))
+
+		# Get current date/time
+		sDT = arrow.get().format('YYYY-MM-DD HH:mm:ss')
+
+		# If we got a label
+		if 'label' in data:
+
+			# If we have no label
+			if 'orderId' not in data:
+				return Services.Response(error=(1001, [('label', 'missing')]))
+
+			# Figure out the role based on the label
+			lLabel = data['label'].split(' - ')
+			if lLabel[0] == 'Provider':
+				lLabel[0] = 'Doctor'
+
+			# Find the latest status for this order
+			oStatus = SmpOrderStatus.filter(
+				{"orderId": data['orderId']},
+				limit=1
+			)
+
+			# If there's none
+			if not oStatus:
+
+				# Figure out the action
+				if lLabel[0] == 'CSR':
+					sAction = 'Send to CSR'
+				elif lLabel[0] == 'Doctor':
+					sAction = 'Send to Provider'
+				else:
+					sAction = 'Set Label'
+
+				# Create a new status
+				oStatus = SmpOrderStatus({
+					"orderId": data['orderId'],
+					"orderStatus": '',
+					"reviewStatus": '',
+					"attentionRole": lLabel[0] != '' and lLabel[0] or None,
+					"orderLabel": len(lLabel) == 2 and data['label'] or '',
+					"declineReason": None,
+					"smpNoteId": None,
+					"currentFlag": 'Y',
+					"createdBy": 11,
+					"modifiedBy": 11,
+					"createdAt": sDT,
+					"updatedAt": sDT
+				});
+				oStatus.create()
+
+			# Else
+			else:
+
+				# Figure out the action
+				if lLabel[0] == 'CSR' and oStatus['attentionRole'] != 'CSR':
+					sAction = 'Send to CSR'
+				elif lLabel[0] == 'Doctor' and oStatus['attentionRole'] != 'Doctor':
+					sAction = 'Send to Provider'
+				else:
+					sAction = 'Set Label'
+
+				# Update the existing status
+				oStatus['attentionRole'] = lLabel[0] != '' and lLabel[0] or None
+				oStatus['orderLabel'] = len(lLabel) == 2 and data['label'] or ''
+				oStatus['updatedAt']: sDT
+				oStatus.save()
+
 	def orderRefresh_update(self, data, sesh):
 		"""Order Refresh
 
@@ -1753,6 +2300,155 @@ class Monolith(Services.Service):
 
 		# Return the response
 		return Services.Response.fromDict(oRes)
+
+	def orderTransfer_update(self, data, sesh):
+		"""Order Transfer
+
+		Sends an order to an agent
+
+		Arguments:
+			data (dict): Data sent with the request
+			sesh (Sesh._Session): The session associated with the request
+
+		Returns:
+			Services.Response
+		"""
+
+		# Make sure the user has the proper permission to do this
+		oResponse = Services.read('auth', 'rights/verify', {
+			"name": "order_claims",
+			"right": Rights.CREATE
+		}, sesh)
+		if not oResponse.data:
+			return Services.Response(error=Rights.INVALID)
+
+		# Verify fields
+		try: DictHelper.eval(data, ['customerId', 'agent', 'note'])
+		except ValueError as e: return Services.Response(error=(1001, [(f, 'missing') for f in e.args]))
+
+		# Find the claim
+		oOrderClaim = KtOrderClaim.get(data['customerId'])
+		if not oOrderClaim:
+			return Services.Response(error=1104)
+
+		# If the owner of the claim isn't the one transferring
+		if oOrderClaim['user'] != sesh['memo_id']:
+			return Services.Response(error=1513)
+
+		# If we don't have an agent
+		bAgent = True
+		if data['agent'] == 0:
+
+			# We had no specific agent
+			bAgent = False
+
+			# Find the round robin
+			oResponse = Services.read('providers', 'roundrobin', {}, sesh);
+			if oResponse.errorExists(): return oResponse
+
+			# If there's only one
+			if len(oResponse.data) == 1:
+				data['agent'] = oResponse.data[0]
+
+			# Else, get the counts and use the one with the least
+			else:
+				lCounts = CustomerClaimed.counts(oResponse.data)
+				data['agent'] = lCounts[0]['user']
+
+		# Find the order associated with the claim
+		dKtOrder = KtOrder.filter({
+			"orderId": oOrderClaim['orderId']
+		}, raw=['phoneNumber'], limit=1)
+		if not dKtOrder:
+			return Services.Response(error=1104)
+
+		# Generate the data for the record and the WS message
+		dData = {
+			"phoneNumber": dKtOrder['phoneNumber'],
+			"user": data['agent'],
+			"transferredBy": sesh['memo_id'],
+			"provider": sesh['memo_id'],
+			"orderId": oOrderClaim['orderId'],
+		}
+
+		# Create a new claim instance for the agent and store in the DB
+		oCustClaim = CustomerClaimed(dData)
+		try:
+			if not oCustClaim.create():
+				return Services.Response(error=1100)
+
+			# Sync the transfer for anyone interested
+			Sync.push('monolith', 'user-%s' % str(data['agent']), {
+				"type": 'claim_transfered',
+				"claim": dData
+			})
+
+		except Record_MySQL.DuplicateException as e:
+
+			# Find the existing claim
+			dOldClaim = CustomerClaimed.get(dKtOrder['phoneNumber'], raw=['user'])
+
+			# If we had a specific agent requested
+			if bAgent or dOldClaim['user'] == data['agent']:
+
+				# Save instead of create
+				oCustClaim.save()
+
+				# Notify the old agent they lost the claim
+				Sync.push('monolith', 'user-%s' % str(dOldClaim['user']), {
+					"type": 'claim_removed',
+					"phoneNumber": dKtOrder['phoneNumber']
+				})
+
+				# Notify the new agent they gained a claim
+				Sync.push('monolith', 'user-%s' % str(data['agent']), {
+					"type": 'claim_transfered',
+					"claim": dData
+				})
+
+			# Else, we dont' care who the agent is
+			else:
+
+				# Keep the existing agent and save
+				oCustClaim['agent'] = dOldClaim['user']
+				oCustClaim.save()
+
+				# Notify the agent the claim has been update
+				dData['agent'] = dOldClaim['user']
+				Sync.push('monolith', 'user-%s' % str(dOldClaim['user']), {
+					"type": 'claim_updated',
+					"claim": dData
+				})
+
+		# Get current date/time
+		sDT = arrow.get().format('YYYY-MM-DD HH:mm:ss')
+
+		# Find the order status (fuck this is fucking stupid as fuck, fuck memo)
+		oStatus = SmpOrderStatus.filter({
+			"orderId": oOrderClaim['orderId']
+		}, limit=1)
+		if oStatus:
+			oStatus['modifiedBy'] = sesh['memo_id']
+			oStatus['attentionRole'] = 'CSR'
+			oStatus['orderLabel'] = 'CSR - Provider Transfer'
+			oStatus['updatedAt'] = sDT
+			oStatus.save()
+
+		# Store transfer note
+		oSmpNote = SmpNote({
+			"action": 'Provider Transfer',
+			"createdBy": sesh['memo_id'],
+			"note": data['note'],
+			"parentTable": 'kt_order',
+			"parentColumn": 'orderId',
+			"columnValue": oOrderClaim['orderId'],
+			"createdAt": sDT,
+			"updatedAt": sDT
+		})
+		oSmpNote.create()
+
+		# Return OK
+		return Services.Response(True)
 
 	def ordersPendingCsr_read(self, data, sesh):
 		"""Order Pending CSR
@@ -1796,6 +2492,50 @@ class Monolith(Services.Service):
 		# Fetch and return the data
 		return Services.Response(
 			KtOrder.queueCsrCount()
+		)
+
+	def ordersPendingProviderEd_read(self, data, sesh):
+		"""Order Pending Provider ED
+
+		Returns the unclaimed pending ED orders
+
+		Arguments:
+			data (dict): Data sent with the request
+			sesh (Sesh._Session): The session associated with the request
+
+		Returns:
+			Services.Response
+		"""
+
+		# If the user has no ED states
+		if not sesh['states']['ed']:
+			return Services.Response(error=1506)
+
+		# Fetch and return the queue
+		return Services.Response(
+			KtOrder.queue('ed', sesh['states']['ed'])
+		)
+
+	def ordersPendingProviderHrt_read(self, data, sesh):
+		"""Order Pending Provider HRT
+
+		Returns the unclaimed pending HRT orders
+
+		Arguments:
+			data (dict): Data sent with the request
+			sesh (Sesh._Session): The session associated with the request
+
+		Returns:
+			Services.Response
+		"""
+
+		# If the user has no HRT states
+		if not sesh['states']['hrt']:
+			return Services.Response(error=1506)
+
+		# Fetch and return the queue
+		return Services.Response(
+			KtOrder.queue('hrt', sesh['states']['hrt'])
 		)
 
 	def passwdForgot_create(self, data):
@@ -1906,10 +2646,10 @@ class Monolith(Services.Service):
 		# Return OK
 		return Services.Response(True)
 
-	def session_read(self, data, sesh):
-		"""Session
+	def providerCalendly_read(self, data, sesh):
+		"""Provider Calendly
 
-		Returns the ID of the user logged into the current session
+		Returns all upcoming appointments associated with the provider
 
 		Arguments:
 			data (dict): Data sent with the request
@@ -1918,26 +2658,146 @@ class Monolith(Services.Service):
 		Returns:
 			Services.Response
 		"""
-		return Services.Response({
-			"memo": {"id": sesh['memo_id']},
-			"user" : {"id": sesh['user_id']}
+
+		# Make sure the user has the proper permission to do this
+		oResponse = Services.read('auth', 'rights/verify', {
+			"name": "calendly",
+			"right": Rights.READ
+		}, sesh)
+		if not oResponse.data:
+			return Services.Response(error=Rights.INVALID)
+
+		# Check for meme_id in session
+		if 'memo_id' not in sesh:
+			return Services.Response(error=1507)
+
+		# Get the emails for the user
+		dUser = User.get(sesh['memo_id'], raw=['email', 'calendlyEmail'])
+		if not dUser:
+			return Services.Response(error=(1104, 'user'))
+
+		# Find all calendly appointments in progress or in the future associated
+		#	with the user
+		lAppts = Calendly.filter({
+			"prov_emailAddress": [dUser['email'], dUser['calendlyEmail']],
+			"end": {"gte": Record_MySQL.Literal('CURRENT_TIMESTAMP')}
+		}, orderby='start', raw=True)
+
+		# Return anything found
+		return Services.Response(lAppts)
+
+	def providerSms_create(self, data, sesh):
+		"""Provider SMS
+
+		Sends an SMS from a provider to a customer and stores it in the notes
+
+		Arguments:
+			data (dict): Data sent with the request
+			sesh (Sesh._Session): The session associated with the request
+
+		Returns:
+			Services.Response
+		"""
+
+		# Make sure the user has the proper permission to do this
+		oResponse = Services.read('auth', 'rights/verify', {
+			"name": "memo_notes",
+			"right": Rights.CREATE
+		}, sesh)
+		if not oResponse.data:
+			return Services.Response(error=Rights.INVALID)
+
+		# Verify fields
+		try: DictHelper.eval(data, ['customerId', 'orderId', 'content'])
+		except ValueError as e: return Services.Response(error=(1001, [(f, 'missing') for f in e.args]))
+
+		# If the content is too long
+		if len(data['content']) >= 1600:
+			return Services.Response(error=1510)
+
+		# Find the name of the creator
+		dUser = User.get(sesh['memo_id'], raw=['firstName', 'lastName'])
+		if not dUser:
+			return Services.Response(error=(1104, 'user'))
+
+		# Find the name and phone number of the customer
+		dKtCustomer = KtCustomer.filter({
+			"customerId": str(data['customerId'])
+		}, raw=['shipFirstName', 'shipLastName', 'phoneNumber'], limit=1)
+		if not dKtCustomer:
+			return Services.Response(error=(1104, 'customer'))
+
+		# Check the number isn't blocked
+		if SMSStop.filter({"phoneNumber": dKtCustomer['phoneNumber'], "service": 'doctor'}):
+			return Services.Response(error=1500)
+
+		# Send the SMS
+		oResponse = Services.create('communications', 'sms', {
+			"_internal_": Services.internalKey(),
+			"to": dKtCustomer['phoneNumber'][-10:],
+			"content": data['content'],
+			"service": 'doctor'
 		})
+
+		# If we got an error
+		if oResponse.errorExists():
+			return oResponse
+
+		# Monolith is stupid af and saving SMS messages in the same table as
+		#	notes is a special level of laziness and/or incompetence
+		data['content'] = '\n[Sender] %s %s\n[Receiver] %s %s - %s\n[Content] %s' % (
+			dUser['firstName'],
+			dUser['lastName'],
+			dKtCustomer['shipFirstName'],
+			dKtCustomer['shipLastName'],
+			dKtCustomer['phoneNumber'],
+			data['content']
+		)
+
+		# Get current date/time
+		sDT = arrow.get().format('YYYY-MM-DD HH:mm:ss')
+
+		# Create an instance to check fields
+		try:
+			oSmpNote = SmpNote({
+				"parentTable": 'kt_customer',
+				"parentColumn": 'customerId',
+				"columnValue": str(data['customerId']),
+				"action": 'Send Communication',
+				"createdBy": sesh['memo_id'],
+				"note": data['content'],
+				"createdAt": sDT,
+				"updatedAt": sDT
+			})
+		except ValueError as e:
+			return Services.Response(error=(1001, e.args[0]))
+
+		# Save the record
+		oSmpNote.create()
+
+		# Pass the info along to SMS workflow
+		SMSWorkflow.providerMessaged(data['orderId'], oSmpNote['id'])
+
+		# Return the ID of the new note
+		return Services.Response(oSmpNote['id'])
 
 	def signin_create(self, data):
 		"""Signin
 
-		Signs a user into the system
+		Used to verify a user sign in, but doesn't actually create the session.
+		Can only be called by other services
 
-		Arguments:
-			data (dict): The data passed to the request
-
-		Returns:
-			Result
+		Arguments
 		"""
 
 		# Verify fields
-		try: DictHelper.eval(data, ['userName', 'passwd'])
+		try: DictHelper.eval(data, ['_internal_', 'userName', 'passwd'])
 		except ValueError as e: return Services.Response(error=(1001, [(f, 'missing') for f in e.args]))
+
+		# Verify the key, remove it if it's ok
+		if not Services.internalKey(data['_internal_']):
+			return Services.Response(error=Errors.SERVICE_INTERNAL_KEY)
+		del data['_internal_']
 
 		# Look for the user by alias
 		oUser = User.filter({"userName": data['userName']}, limit=1)
@@ -1952,56 +2812,8 @@ class Monolith(Services.Service):
 		if not bcrypt.checkpw(data['passwd'].encode('utf8'), oUser['password'].encode('utf8')):
 			return Services.Response(error=1201)
 
-		# Create a new session
-		oSesh = Sesh.create("mono:" + uuid.uuid4().hex)
-
-		# Store the user ID and information in it
-		oSesh['memo_id'] = oUser['id']
-
-		# Save the session
-		oSesh.save()
-
-		# Check the CSR tool for the memo user / agent
-		oResponse = Services.read('csr', 'agent/internal', {
-			"_internal_": Services.internalKey(),
-			"id": oUser['id']
-		}, oSesh)
-		if oResponse.errorExists():
-			if oResponse.error['code'] == 1104:
-				return Services.Response(error=Rights.INVALID)
-			return oResponse
-
-		# Store the user ID and claim vars in the session
-		oSesh['user_id'] = oResponse.data['_id']
-		oSesh['claims_max'] = oResponse.data['claims_max']
-		oSesh['claims_timeout'] = oResponse.data['claims_timeout']
-		oSesh.save()
-
-		# Return the session ID and primary user data
-		return Services.Response({
-			"memo": {"id": oSesh['memo_id']},
-			"session": oSesh.id(),
-			"user": {"id": oResponse.data['_id']}
-		})
-
-	def signout_create(self, data, sesh):
-		"""Signout
-
-		Called to sign out a user and destroy their session
-
-		Arguments:
-			data (dict): Data sent with the request
-			sesh (Sesh._Session): The session associated with the user
-
-		Returns:
-			Services.Response
-		"""
-
-		# Close the session so it can no longer be found/used
-		sesh.close()
-
-		# Return OK
-		return Services.Response(True)
+		# Return the record data
+		return Services.Response(oUser.record())
 
 	def statsClaimed_read(self, data, sesh):
 		"""Stats: Claimed
@@ -2026,7 +2838,7 @@ class Monolith(Services.Service):
 
 		# Fetch and return claim stats
 		return Services.Response(
-			CustomerClaimed.stats()
+			CustomerClaim.stats()
 		)
 
 	def user_create(self, data, sesh):
@@ -2128,7 +2940,7 @@ class Monolith(Services.Service):
 		"""
 
 		# If the user is not the one logged in
-		if 'id' in data and (data['id'] != sesh['memo_id'] or '_internal_' in data):
+		if 'id' in data and ('memo_id' not in data or data['id'] != sesh['memo_id'] or '_internal_' in data):
 
 			# If there's no internal
 			if '_internal_' not in data:
@@ -2218,6 +3030,38 @@ class Monolith(Services.Service):
 		return Services.Response(
 			oUser.save()
 		)
+
+	def userId_read(self, data):
+		"""User ID
+
+		Fetches the ID of a user based on one or multiple fields in the User
+		table
+
+		Arguments:
+			data (dict): Data sent with the request
+
+		Returns:
+			Services.Response
+		"""
+
+		# Verify fields
+		try: DictHelper.eval(data, ['_internal_'])
+		except ValueError as e: return Services.Response(error=(1001, [(f, 'missing') for f in e.args]))
+
+		# Verify the key, remove it if it's ok
+		if not Services.internalKey(data['_internal_']):
+			return Services.Response(error=Errors.SERVICE_INTERNAL_KEY)
+		del data['_internal_']
+
+		# Get the user
+		dUser = User.filter(data, raw=['id'], limit=1)
+
+		# If there's no user
+		if not dUser:
+			return Services.Response(False)
+
+		# Return the user's ID
+		return Services.Response(dUser['id'])
 
 	def userName_read(self, data, sesh):
 		"""User Name
@@ -2335,6 +3179,10 @@ class Monolith(Services.Service):
 			return Services.Response(error=Errors.SERVICE_INTERNAL_KEY)
 		del data['_internal_']
 
+		# If there's no IDs
+		if not data['id']:
+			return Services.Response(error=(1001, [('id', 'empty')]))
+
 		# If the fields aren't passed
 		if 'fields' not in data:
 			data['fields'] = True
@@ -2343,3 +3191,40 @@ class Monolith(Services.Service):
 		return Services.Response(
 			User.get(data['id'], raw=data['fields'])
 		)
+
+	def workflow_create(self, data):
+		"""Workflow
+
+		Works as a passthrough for SMS Workflow requests
+
+		Arguments:
+			data (dict): Data sent with the request
+
+		Returns:
+			Services.Response
+		"""
+
+		# Verify fields
+		try: DictHelper.eval(data, ['_internal_', 'call', 'args'])
+		except ValueError as e: return Services.Response(error=(1001, [(f, "missing") for f in e.args]))
+
+		# Verify the key, remove it if it's ok
+		if not Services.internalKey(data['_internal_']):
+			return Services.Response(error=Errors.SERVICE_INTERNAL_KEY)
+		del data['_internal_']
+
+		# Try to find the module method or else return an error
+		try:
+			fMethod = getattr(SMSWorkflow, data['call'])
+		except Exception as e:
+			return Services.Response(error=(1511, str(e)))
+
+		# Try to call the method with the passed arguments
+		try:
+			data['monolith'] = self
+			bRes = fMethod(**data['args'])
+		except Exception as e:
+			return Services.Response(error=(1512, str(e)))
+
+		# Return the response
+		return Services.Response(bRes)

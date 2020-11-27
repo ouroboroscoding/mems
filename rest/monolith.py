@@ -40,6 +40,7 @@ REST.Server({
 	"/customer/hrtLabs": {"methods": REST.READ, "session": True},
 	"/customer/id/byPhone": {"methods": REST.READ, "session": True},
 	"/customer/messages": {"methods": REST.READ, "session": True},
+	"/customer/mip": {"methods": REST.READ, "session": True},
 	"/customer/mips": {"methods": REST.READ, "session": True},
 	"/customer/mip/answer": {"methods": REST.UPDATE, "session": True},
 	"/customer/name": {"methods": REST.READ, "session": True},
@@ -48,6 +49,9 @@ REST.Server({
 	"/customer/shipping": {"methods": REST.READ, "session": True},
 	"/customer/stop": {"methods": REST.CREATE | REST.DELETE, "session": True},
 	"/customer/stops": {"methods": REST.READ, "session": True},
+	"/customer/transfer": {"methods": REST.UPDATE, "session": True},
+
+	"/encounter": {"methods": REST.READ},
 
 	"/message/incoming": {"methods": REST.CREATE},
 	"/message/outgoing": {"methods": REST.CREATE},
@@ -59,28 +63,40 @@ REST.Server({
 	"/msgs/unclaimed": {"methods": REST.READ, "session": True},
 	"/msgs/unclaimed/count": {"methods": REST.READ, "session": True},
 
+	"/order/approve": {"methods": REST.UPDATE, "session": True},
+	"/order/decline": {"methods": REST.UPDATE, "session": True},
+	"/order/claim": {"methods": REST.CREATE | REST.DELETE, "session": True},
+	"/order/claim/clear": {"methods": REST.UPDATE, "session": True},
+	"/order/claimed": {"methods": REST.READ, "session": True},
+	"/order/label": {"methods": REST.UPDATE, "session": True},
 	"/order/refresh": {"methods": REST.UPDATE, "session": True},
+	"/order/transfer": {"methods": REST.UPDATE, "session": True},
 
 	"/orders/pending/csr": {"methods": REST.READ, "session": True},
 	"/orders/pending/csr/count": {"methods": REST.READ, "session": True},
+	"/orders/pending/provider/ed": {"methods": REST.READ, "session": True},
+	"/orders/pending/provider/hrt": {"methods": REST.READ, "session": True},
 
 	"/passwd/forgot": {"methods": REST.CREATE | REST.UPDATE},
 
 	"/pharmacy/fill/error": {"methods": REST.UPDATE | REST.DELETE, "session": True},
 	"/pharmacy/fill/errors": {"methods": REST.READ, "session": True},
 
-	"/session": {"methods": REST.READ, "session": True},
+	"/provider/calendly": {"methods": REST.READ, "session": True},
+	"/provider/sms": {"methods": REST.CREATE, "session": True},
 
 	"/signin": {"methods": REST.POST},
-	"/signout": {"methods": REST.POST, "session": True},
 
 	"/stats/claimed": {"methods": REST.READ, "session": True},
 
 	"/user": {"methods": REST.CREATE | REST.READ | REST.UPDATE, "session": True},
 	"/users": {"methods": REST.READ, "session": True},
 	"/user/active": {"methods": REST.UPDATE, "session": True},
+	"/user/id": {"methods": REST.READ},
 	"/user/name": {"methods": REST.READ, "session": True},
-	"/user/passwd": {"methods": REST.UPDATE, "session": True}
+	"/user/passwd": {"methods": REST.UPDATE, "session": True},
+
+	"/workflow": {"methods": REST.POST}
 
 }, 'monolith', "https?://(.*\\.)?%s" % Conf.get(("rest","allowed")).replace('.', '\\.')).run(
 	host=oRestConf['monolith']['host'],

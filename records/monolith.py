@@ -126,6 +126,69 @@ class Calendly(Record_MySQL.Record):
 			Record_MySQL.ESelect.ALL
 		)
 
+# Campaign class
+class Campaign(Record_MySQL.Record):
+	"""Campaign
+
+	Represents a campaign in KNK and the type associated
+	"""
+
+	_conf = None
+	"""Configuration"""
+
+	@classmethod
+	def config(cls):
+		"""Config
+
+		Returns the configuration data associated with the record type
+
+		Returns:
+			dict
+		"""
+
+		# If we haven loaded the config yet
+		if not cls._conf:
+			cls._conf = Record_MySQL.Record.generateConfig(
+				Tree.fromFile('definitions/monolith/campaign.json'),
+				'mysql'
+			)
+
+		# Return the config
+		return cls._conf
+
+	@classmethod
+	def ids(cls, custom={}):
+		"""IDs
+
+		Returns the set of campaign IDs
+
+		Arguments:
+			custom (dict): Custom Host and DB info
+				'host' the name of the host to get/set data on
+				'append' optional postfix for dynamic DBs
+
+		Returns:
+			list
+		"""
+
+		# Fetch the record structure
+		dStruct = cls.struct(custom)
+
+		# Generate the SQL
+		sSQL = "SELECT `id`\n" \
+				"FROM `%(db)s`.`%(table)s`\n" \
+				"ORDER BY `id`" % {
+			"db": dStruct['db'],
+			"table": dStruct['table']
+		}
+
+		# Return the IDs as a list
+		return Record_MySQL.Commands.select(
+			dStruct['host'],
+			sSQL,
+			Record_MySQL.ESelect.COLUMN
+		)
+
 # CustomerClaimed class
 class CustomerClaimed(Record_MySQL.Record):
 	"""CustomerClaimed
@@ -155,6 +218,42 @@ class CustomerClaimed(Record_MySQL.Record):
 
 		# Return the config
 		return cls._conf
+
+	@classmethod
+	def counts(cls, ids=None, custom={}):
+		"""Counts
+
+		Returns the count of claims per user
+
+		Arguments:
+			ids (int[]): List of IDs to look for
+			custom (dict): Custom Host and DB info
+				'host' the name of the host to get/set data on
+				'append' optional postfix for dynamic DBs
+
+		Returns:
+			list
+		"""
+
+		# Fetch the record structure
+		dStruct = cls.struct(custom)
+
+		# If we have IDs
+		sWhere = ids and ('WHERE `user` in (%s)\n' % ','.join(ids)) or ''
+
+		# Generate SQL
+		sSQL = "SELECT `user`, COUNT(*) as `count`\n" \
+				"FROM `%(db)s`.`%(table)s`\n" \
+				"%(where)s" \
+				"GROUP BY `user`\n" \
+				"ORDER BY `count` ASC" % {
+					"db": dStruct['db'],
+					"table": dStruct['table'],
+					"where": sWhere
+				}
+
+		# Fetch the data and return the records
+		return Record_MySQL.Commands.select(dStruct['host'], sSQL)
 
 	@classmethod
 	def stats(cls, custom={}):
@@ -908,6 +1007,54 @@ class KtOrder(Record_MySQL.Record):
 	"""Configuration"""
 
 	@classmethod
+	def claimed(cls, user, custom={}):
+		"""Claimed
+
+		Returns all the customers the user has claimed
+
+		Arguments:
+			user (int): The ID of the user
+			custom (dict): Custom Host and DB info
+				'host' the name of the host to get/set data on
+				'append' optional postfix for dynamic DBs
+
+		Returns:
+			list
+		"""
+
+		# Fetch the record structure
+		dStruct = cls.struct(custom)
+
+		# Generate the SQL
+		sSQL = "SELECT\n" \
+				"	`ktoc`.`customerId`,\n" \
+				"	`ktoc`.`orderId`,\n" \
+				"	`ktoc`.`transferredBy`,\n" \
+				"	CONCAT(`ktc`.`firstName`, ' ', `ktc`.`lastName`) as `customerName`,\n" \
+				"	`c`.`type`\n" \
+				"FROM\n" \
+				"	`%(db)s`.`%(table)s` as `kto`,\n" \
+				"	`%(db)s`.`kt_customer` as `ktc`,\n" \
+				"	`%(db)s`.`kt_order_claim` as `ktoc`,\n" \
+				"	`%(db)s`.`campaign` as `c`\n" \
+				"WHERE\n" \
+				"	`ktoc`.`user` = %(user)d AND\n" \
+				"	CONVERT(`ktc`.`customerId`, UNSIGNED) = `ktoc`.`customerId` AND\n" \
+				"	`kto`.`orderId` = `ktoc`.`orderId` AND\n" \
+				"	`kto`.`campaignId` = `c`.`id`" % {
+			"db": dStruct['db'],
+			"table": dStruct['table'],
+			"user": user
+		}
+
+		# Fetch and return the data
+		return Record_MySQL.Commands.select(
+			dStruct['host'],
+			sSQL,
+			Record_MySQL.ESelect.ALL
+		)
+
+	@classmethod
 	def config(cls):
 		"""Config
 
@@ -926,6 +1073,83 @@ class KtOrder(Record_MySQL.Record):
 
 		# Return the config
 		return cls._conf
+
+	@classmethod
+	def claimDetails(cls, order_id, custom={}):
+		"""Claim Details
+
+		Gets the campaign and customer name associated with the order, details
+		useful for claims
+
+		Arguments:
+			order_id (str): The ID of the order
+			custom (dict): Custom Host and DB info
+				'host' the name of the host to get/set data on
+				'append' optional postfix for dynamic DBs
+
+		Returns:
+			list
+		"""
+
+		# Fetch the record structure
+		dStruct = cls.struct(custom)
+
+		# Generate the SQL
+		sSQL = "SELECT\n" \
+				"	CONCAT(`ktc`.`firstName`, ' ', `ktc`.`lastName`) as `customerName`,\n" \
+				"	`c`.`type`\n" \
+				"FROM\n" \
+				"	`%(db)s`.`%(table)s` as `kto`,\n" \
+				"	`%(db)s`.`kt_customer` as `ktc`,\n" \
+				"	`%(db)s`.`campaign` as `c`\n" \
+				"WHERE\n" \
+				"	`kto`.`orderId` = '%(order)s' AND\n" \
+				"	`kto`.`customerId` = `ktc`.`customerId` AND\n" \
+				"	`kto`.`campaignId` = `c`.`id`" % {
+			"db": dStruct['db'],
+			"table": dStruct['table'],
+			"order": Record_MySQL.Commands.escape(dStruct['host'], order_id)
+		}
+
+		# Fetch and return the data
+		return Record_MySQL.Commands.select(
+			dStruct['host'],
+			sSQL,
+			Record_MySQL.ESelect.ROW
+		)
+
+	@classmethod
+	def distinctCampaigns(cls, custom={}):
+		"""Distinct Campaigns
+
+		Returns the set of campaign IDs associated with orders
+
+		Arguments:
+			custom (dict): Custom Host and DB info
+				'host' the name of the host to get/set data on
+				'append' optional postfix for dynamic DBs
+
+		Returns:
+			list
+		"""
+
+		# Fetch the record structure
+		dStruct = cls.struct(custom)
+
+		# Generate the SQL
+		sSQL = "SELECT DISTINCT CONVERT(`campaignId`, UNSIGNED) as `id`\n" \
+				"FROM `%(db)s`.`%(table)s`\n" \
+				"ORDER BY `id`" % {
+			"db": dStruct['db'],
+			"table": dStruct['table']
+		}
+
+		# Return the IDs as a list
+		return Record_MySQL.Commands.select(
+			dStruct['host'],
+			sSQL,
+			Record_MySQL.ESelect.COLUMN
+		)
 
 	@classmethod
 	def ordersByPhone(cls, phone, custom={}):
@@ -1047,6 +1271,94 @@ class KtOrder(Record_MySQL.Record):
 			sSQL,
 			Record_MySQL.ESelect.CELL
 		)
+
+	@classmethod
+	def queue(cls, group, states, custom={}):
+		"""Queue
+
+		Returns all pending, unclaimed, ED orders in the given states
+
+		Arguments:
+			group (str): 'ed' or 'hrt'
+			states (list): The states to check for pending orders in
+			custom (dict): Custom Host and DB info
+				'host' the name of the host to get/set data on
+				'append' optional postfix for dynamic DBs
+
+		Returns:
+			list
+		"""
+
+		# Fetch the record structure
+		dStruct = cls.struct(custom)
+
+		# Generate the SQL
+		sSQL = "SELECT\n" \
+				"	`kto`.`orderId`,\n" \
+				"	CONCAT(`kto`.`shipFirstName`, ' ', `kto`.`shipLastName`) as `customerName`,\n" \
+				"	`kto`.`phoneNumber` as `customerPhone`,\n" \
+				"	`kto`.`shipCity`,\n" \
+				"	IFNULL(`ss`.`name`, '[state missing]') as `shipState`,\n" \
+				"	IFNULL(`ss`.`legalEncounterType`, '') as `encounter`,\n" \
+				"	CONVERT(`kto`.`customerId`, UNSIGNED) as `customerId`,\n" \
+				"	`kto`.`dateCreated`,\n" \
+				"	`kto`.`dateUpdated`,\n" \
+				"	IFNULL(`os`.`attentionRole`, 'Not Assigned') AS `attentionRole`,\n" \
+				"	IFNULL(`os`.`orderLabel`, 'Not Labeled') AS `orderLabel`\n" \
+				"FROM `%(db)s`.`%(table)s` AS `kto`\n" \
+				"JOIN `%(db)s`.`campaign` as `cmp` ON `cmp`.`id` = CONVERT(`kto`.`campaignId`, UNSIGNED)\n" \
+				"LEFT JOIN `%(db)s`.`smp_state` as `ss` ON `ss`.`abbreviation` = `kto`.`shipState`\n" \
+				"LEFT JOIN `%(db)s`.`smp_order_status` as `os` ON `os`.`orderId` = `kto`.`orderId`\n" \
+				"LEFT JOIN `%(db)s`.`kt_order_claim` as `ktoc` ON `ktoc`.`customerId` = CONVERT(`kto`.`customerId`, UNSIGNED)\n" \
+				"WHERE `kto`.`orderStatus` = 'PENDING'\n" \
+				"AND IFNULL(`kto`.`cardType`, '') <> 'TESTCARD'\n" \
+				"AND `kto`.`shipState` IN (%(states)s)\n" \
+				"AND `ktoc`.`user` IS NULL\n" \
+				"AND `cmp`.`type` = '%(group)s'\n" \
+				"AND `attentionRole` IN ('Doctor', 'Not Assigned')\n" \
+				"ORDER BY `kto`.`dateUpdated` ASC" % {
+			"db": dStruct['db'],
+			"table": dStruct['table'],
+			"group": group,
+			"states": "'%s'" % "','".join(states)
+		}
+
+		# Fetch and return the data
+		return Record_MySQL.Commands.select(
+			dStruct['host'],
+			sSQL,
+			Record_MySQL.ESelect.ALL
+		)
+
+# KtOrderClaim class
+class KtOrderClaim(Record_MySQL.Record):
+	"""KtOrderClaim
+
+	Represents a claim of a customer/order by a user
+	"""
+
+	_conf = None
+	"""Configuration"""
+
+	@classmethod
+	def config(cls):
+		"""Config
+
+		Returns the configuration data associated with the record type
+
+		Returns:
+			dict
+		"""
+
+		# If we haven loaded the config yet
+		if not cls._conf:
+			cls._conf = Record_MySQL.Record.generateConfig(
+				Tree.fromFile('definitions/monolith/kt_order_claim.json'),
+				'mysql'
+			)
+
+		# Return the config
+		return cls._conf
 
 # ShippingInfo class
 class ShippingInfo(Record_MySQL.Record):
@@ -1203,6 +1515,36 @@ class SmpOrderStatus(Record_MySQL.Record):
 			sSQL,
 			Record_MySQL.ESelect.ROW
 		)
+
+# SmpState class
+class SmpState(Record_MySQL.Record):
+	"""SmpState
+
+	Represents states and their encounter types
+	"""
+
+	_conf = None
+	"""Configuration"""
+
+	@classmethod
+	def config(cls):
+		"""Config
+
+		Returns the configuration data associated with the record type
+
+		Returns:
+			dict
+		"""
+
+		# If we haven loaded the config yet
+		if not cls._conf:
+			cls._conf = Record_MySQL.Record.generateConfig(
+				Tree.fromFile('definitions/monolith/smp_state.json'),
+				'mysql'
+			)
+
+		# Return the config
+		return cls._conf
 
 # SMSPatientWorkflow class
 class SMSPatientWorkflow(Record_MySQL.Record):
@@ -1413,15 +1755,16 @@ class TfLanding(Record_MySQL.Record):
 		return cls._conf
 
 	@classmethod
-	def find(cls, last_name, email, phone, custom={}):
+	def find(cls, last_name, email, phone, form, custom={}):
 		"""Find
 
-		Attempts to find a landing using customer info
+		Attempts to find landings using customer info
 
 		Arguments:
 			last_name (str): The last name of the customer
 			email (str): The email of the customer
 			phone (str): The phone number of the customer
+			form (str[str[]): A form type of types to filter by
 			custom (dict): Custom Host and DB info
 				'host' the name of the host to get/set data on
 				'append' optional postfix for dynamic DBs
@@ -1433,23 +1776,42 @@ class TfLanding(Record_MySQL.Record):
 		# Fetch the record structure
 		dStruct = cls.struct(custom)
 
+		# Where clauses
+		lWhere = [
+			"`lastName` = '%s'" % Record_MySQL.Commands.escape(dStruct['host'], last_name),
+			"`birthDay` IS NOT NULL",
+			"`birthDay` != ''",
+			"(`email` = '%(email)s' OR `phone` IN ('1%(phone)s', '%(phone)s'))" % {
+				"email": Record_MySQL.Commands.escape(dStruct['host'], email),
+				"phone": Record_MySQL.Commands.escape(dStruct['host'], phone)
+			}
+		]
+
+		# If we have a form type or types
+		if form:
+			if isinstance(form, str):
+				lWhere.append(
+					"`formId` = '%s'" % Record_MySQL.Commands.escape(dStruct['host'], form)
+				)
+			elif isinstance(form, list):
+				form = [Record_MySQL.Commands.escape(dStruct['host'], s) for s in form]
+				lWhere.append(
+					"`formId` IN ('%s')" % "','".join(form)
+				)
+			else:
+				raise ValueError('form must be str|str[]')
+
 		# Generate SQL
 		sSQL = "SELECT `landing_id`, `formId`, `submitted_at`, `complete`\n" \
 				"FROM `%(db)s`.`%(table)s`\n" \
-				"WHERE `lastName` = '%(lastName)s'\n" \
-				"AND `birthDay` IS NOT NULL\n" \
-				"AND `birthDay` != ''\n" \
-				"AND (\n" \
-				"	`email` = '%(email)s' OR\n" \
-				"	`phone` IN ('1%(phone)s', '%(phone)s')\n" \
-				")\n" \
+				"WHERE %(where)s\n" \
 				"ORDER BY `submitted_at` DESC\n" % {
 			"db": dStruct['db'],
 			"table": dStruct['table'],
-			"lastName": Record_MySQL.Commands.escape(dStruct['host'], last_name),
-			"email": Record_MySQL.Commands.escape(dStruct['host'], email),
-			"phone": Record_MySQL.Commands.escape(dStruct['host'], phone)
+			"where": '\nAND'.join(lWhere)
 		}
+
+		print(sSQL)
 
 		# Execute and return the select
 		return Record_MySQL.Commands.select(
