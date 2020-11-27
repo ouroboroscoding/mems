@@ -36,9 +36,6 @@ from records.monolith import \
 # Regex for validating email
 _emailRegex = re.compile(r"[^@\s]+@[^@\s]+\.[a-zA-Z0-9]{2,}$")
 
-# mip forms
-_mipForms = ['MIP-H1', 'MIP-A2', 'MIP-A1']
-
 class Monolith(Services.Service):
 	"""Monolith Service class
 
@@ -2837,7 +2834,7 @@ class Monolith(Services.Service):
 
 		# Fetch and return claim stats
 		return Services.Response(
-			CustomerClaim.stats()
+			CustomerClaimed.stats()
 		)
 
 	def user_create(self, data, sesh):
