@@ -1044,13 +1044,13 @@ class Monolith(Services.Service):
 			dNote['action'] = sAction
 			dNote['parentTable'] = 'kt_order'
 			dNote['parentColumn'] = 'orderId'
-			dNote['columnValue'] = data['orderId']
+			dNote['columnValue'] = str(data['orderId'])
 
 		# Else, use the customerId
 		else:
 			dNote['parentTable'] = 'kt_customer'
 			dNote['parentColumn'] = 'customerId'
-			dNote['columnValue'] = data['customerId']
+			dNote['columnValue'] = str(data['customerId'])
 
 		# Attempt to create an instance to verify the fields
 		try:
@@ -1308,63 +1308,60 @@ class Monolith(Services.Service):
 		if oClaim['user'] != sesh['memo_id']:
 			return Services.Response(error=1513)
 
-		# If there's no provider or order ID
+		# If there's a provider and an order ID
 		if not oClaim['provider'] or not oClaim['orderId']:
-			return Services.Response(error=1514)
 
-		# Get the extra claim details
-		dDetails = KtOrder.claimDetails(data['orderId'])
-		if not dDetails:
-			return Services.Response(error=(1104, 'order'))
+			# Get the extra claim details
+			dDetails = KtOrder.claimDetails(data['orderId'])
+			if not dDetails:
+				return Services.Response(error=(1104, 'order'))
 
-		print(dDetails)
+			# Generate the data for the record and the WS message
+			dData = {
+				"customerId": data['customerId'],
+				"orderId": data['orderId'],
+				"user": data['provider'],
+				"transferredBy": sesh['memo_id']
+			}
 
-		# Generate the data for the record and the WS message
-		dData = {
-			"customerId": data['customerId'],
-			"orderId": data['orderId'],
-			"user": data['provider'],
-			"transferredBy": sesh['memo_id']
-		}
+			# Create a new claim instance for the agent and store in the DB
+			oOrderClaim = KtOrderClaim(dData)
 
-		# Create a new claim instance for the agent and store in the DB
-		oOrderClaim = KtOrderClaim(dData)
+			# Add the extra details
+			dData['customerName'] = dDetails['customerName']
+			dData['type'] = dDetails['type']
 
-		# Add the extra details
-		dData['customerName'] = dDetails['customerName']
-		dData['type'] = dDetails['type']
+			# Create the record in the DB
+			try:
+				if not oOrderClaim.create():
+					return Services.Response(error=1100)
 
-		# Create the record in the DB
-		try:
-			if not oOrderClaim.create():
-				return Services.Response(error=1100)
+				# Sync the transfer for anyone interested
+				Sync.push('monolith', 'user-%s' % str(data['provider']), {
+					"type": 'claim_transfered',
+					"claim": dData
+				})
 
-			# Sync the transfer for anyone interested
-			Sync.push('monolith', 'user-%s' % str(data['provider']), {
-				"type": 'claim_transfered',
-				"claim": dData
-			})
+			# If there's somehow a claim already
+			except Record_MySQL.DuplicateException as e:
 
-		# If there's somehow a claim already
-		except Record_MySQL.DuplicateException as e:
+				# Find the existing claim
+				oOldClaim = KtOrderClaim.get(data['customerId'])
 
-			# Find the existing claim
-			oOldClaim = KtOrderClaim.get(data['customerId'])
+				# Save instead of create
+				oOrderClaim.save()
 
-			# Save instead of create
-			oOrderClaim.save()
+				# Notify the old provider they lost the claim
+				Sync.push('monolith', 'user-%s' % str(oOldClaim['user']), {
+					"type": 'claim_removed',
+					"customerId": data['customerId']
+				})
 
-			# Notify the old provider they lost the claim
-			Sync.push('monolith', 'user-%s' % str(oOldClaim['user']), {
-				"type": 'claim_removed',
-				"customerId": data['customerId']
-			})
-
-			# Notify the new provider they gained a claim
-			Sync.push('monolith', 'user-%s' % str(data['provider']), {
-				"type": 'claim_transfered',
-				"claim": dData
-			})
+				# Notify the new provider they gained a claim
+				Sync.push('monolith', 'user-%s' % str(data['provider']), {
+					"type": 'claim_transfered',
+					"claim": dData
+				})
 
 		# Get current date/time
 		sDT = arrow.get().format('YYYY-MM-DD HH:mm:ss')
