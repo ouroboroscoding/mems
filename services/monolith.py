@@ -441,7 +441,8 @@ class Monolith(Services.Service):
 		lLandings = TfLanding.find(
 			dCustomer['lastName'],
 			dCustomer['emailAddress'] or '',
-			dCustomer['phoneNumber']
+			dCustomer['phoneNumber'],
+			['MIP-A1', 'MIP-A2', 'MIP-H1', 'MIP-H2']
 		)
 
 		# If there's no mip
@@ -501,7 +502,8 @@ class Monolith(Services.Service):
 		lLandings = TfLanding.find(
 			dCustomer['lastName'],
 			dCustomer['emailAddress'] or '',
-			dCustomer['phoneNumber']
+			dCustomer['phoneNumber'],
+			['MIP-A1', 'MIP-A2', 'MIP-H1', 'MIP-H2']
 		)
 		if not lLandings:
 			return Services.Response(error=(1104, 'mip'))
