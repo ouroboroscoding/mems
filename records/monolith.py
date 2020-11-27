@@ -1811,8 +1811,6 @@ class TfLanding(Record_MySQL.Record):
 			"where": '\nAND'.join(lWhere)
 		}
 
-		print(sSQL)
-
 		# Execute and return the select
 		return Record_MySQL.Commands.select(
 			dStruct['host'],

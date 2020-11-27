@@ -137,7 +137,8 @@ def fetch(data):
 	lLanding = TfLanding.find(
 		data['last'],
 		data['email'] or '',
-		data['phone'] or ''
+		data['phone'] or '',
+		['MIP-A1', 'MIP-A2', 'MIP-H1', 'MIP-H2']
 	)
 
 	# If we have any
