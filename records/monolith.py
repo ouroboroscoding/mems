@@ -1755,7 +1755,7 @@ class TfLanding(Record_MySQL.Record):
 		return cls._conf
 
 	@classmethod
-	def find(cls, last_name, email, phone, form, custom={}):
+	def find(cls, last_name, email, phone, form=None, custom={}):
 		"""Find
 
 		Attempts to find landings using customer info
