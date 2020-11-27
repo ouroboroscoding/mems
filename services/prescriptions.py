@@ -497,6 +497,10 @@ class Prescriptions(Services.Service):
 					# Debugging
 					print('Consent return: %s' % dData)
 
+					# If we did not get consent
+					if dData['Result']['ResultCode'] == 'ERROR':
+						return Services.Response(error=(1602, dData['Result']['ResultDescription']))
+
 					# We got consent, loop back around
 					continue
 
