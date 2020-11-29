@@ -22,7 +22,7 @@ from RestOC import DictHelper, Errors, Record_MySQL, Services, Sesh
 from shared import Rights, SMSWorkflow
 
 # Records imports
-from records.providers import ItemToRX, Provider, RoundRobinAgent, Template
+from records.providers import ProductToRx, Provider, RoundRobinAgent, Template
 
 class Providers(Services.Service):
 	"""Providers Service class
@@ -30,7 +30,7 @@ class Providers(Services.Service):
 	Service for Providers access
 	"""
 
-	_install = [ItemToRX, Provider, Template]
+	_install = [ProductToRx, Provider, Template]
 	"""Record types called in install"""
 
 	def initialise(self):
@@ -115,70 +115,10 @@ class Providers(Services.Service):
 		# Create the provider and return the ID
 		return Services.Response(sID)
 
-	def orderToRx_create(self, data, sesh):
-		"""Order To RX Create
+	def customerToRx_read(self, data, sesh):
+		"""Customer To RX Read
 
-		Sets the prescription IDs associated with the order items
-
-		Arguments:
-			data (mixed): Data sent with the request
-			sesh (Sesh._Session): The session associated with the request
-
-		Returns:
-			Services.Response
-		"""
-
-		# Make sure the user has the proper permission to do this
-		oResponse = Services.read('auth', 'rights/verify', {
-			"name": "prescriptions",
-			"right": Rights.CREATE
-		}, sesh)
-		if not oResponse.data:
-			return Services.Response(error=Rights.INVALID)
-
-		# Verify minimum fields
-		try: DictHelper.eval(data, ['order_id', 'items'])
-		except ValueError as e: return Services.Response(error=(1001, [(f, 'missing') for f in e.args]))
-
-		# Make sure items is a list
-		if not isinstance(data['items'], list):
-			return Services.Response(error=(1001, [('items', 'invalid')]))
-
-		# Init the list of records that will be created
-		lItems = []
-
-		# Go through each item
-		dErrors = {}
-		for d in data['items']:
-
-			# Create the instance to validate
-			try:
-				lItems.append(ItemToRX({
-					"order_id": data['order_id'],
-					"item_id": d['item_id'],
-					"ds_id": d['ds_id'],
-					"user": sesh['memo_id']
-				}))
-			except ValueError as e:
-				dErrors[d['item_id']] = e.args[0]
-
-		# If there's any errors
-		if dErrors:
-			return Services.Response(error=(1001, dErrors))
-
-		# Try to create the records
-		try:
-			ItemToRX.createMany(lItems)
-		except Record_MySQL.DuplicateException as e:
-			return Services.Response(error=(1101, d['item_id']))
-
-		# Return OK
-		return Services.Response(True)
-
-	def orderToRx_read(self, data, sesh):
-		"""Order To RX Read
-
-		Returns all items and their prescriptions for an order
+		Returns all productions and their prescriptions for a customer
 
 		Arguments:
 			data (mixed): Data sent with the request
@@ -197,15 +137,89 @@ class Providers(Services.Service):
 			return Services.Response(error=Rights.INVALID)
 
 		# Verify minimum fields
-		try: DictHelper.eval(data, ['order_id'])
+		try: DictHelper.eval(data, ['customer_id'])
 		except ValueError as e: return Services.Response(error=(1001, [(f, 'missing') for f in e.args]))
 
 		# Find all the records and return them
 		return Services.Response(
-			ItemToRX.filter({
-				"order_id": data['order_id']
-			}, raw=['item_id', 'ds_id', 'user'])
+			ProductToRx.filter({
+				"customer_id": data['customer_id']
+			}, raw=['product_id', 'ds_id', 'user_id'])
 		)
+
+	def customerToRx_update(self, data, sesh):
+		"""Customer To RX Update
+
+		Sets the prescription IDs associated with the products the customer
+		has
+
+		Arguments:
+			data (mixed): Data sent with the request
+			sesh (Sesh._Session): The session associated with the request
+
+		Returns:
+			Services.Response
+		"""
+
+		# Make sure the user has the proper permission to do this
+		oResponse = Services.read('auth', 'rights/verify', {
+			"name": "prescriptions",
+			"right": Rights.CREATE
+		}, sesh)
+		if not oResponse.data:
+			return Services.Response(error=Rights.INVALID)
+
+		# Verify minimum fields
+		try: DictHelper.eval(data, ['customer_id', 'products'])
+		except ValueError as e: return Services.Response(error=(1001, [(f, 'missing') for f in e.args]))
+
+		# Make sure the customer ID is an int
+		try: data['customer_id'] = int(data['customer_id'])
+		except ValueError as e: lErrors.append(('customer_id', 'invalid'))
+
+		# Make sure products is a list
+		if not isinstance(data['products'], list):
+			return Services.Response(error=(1001, [('products', 'invalid')]))
+
+		# Go through each one and make sure the keys are available, valid, and
+		#	not duplicates
+		lErrors = []
+		lDsIds = []
+		for i in range(len(data['products'])):
+
+			# Make sure keys exist
+			try: DictHelper.eval(data['products'][i], ['product_id', 'ds_id'])
+			except ValueError as e: lErrors.extend([('%d.%s' % (i, f), 'missing') for f in e.args])
+
+			# Make sure the product ID is an int
+			try: data['products'][i]['product_id'] = int(data['products'][i]['product_id'])
+			except ValueError as e: lErrors.append(('%d.product_id' % f, 'invalid'))
+
+			# Make sure the dosespot ID is an int
+			try: data['products'][i]['ds_id'] = int(data['products'][i]['ds_id'])
+			except ValueError as e: lErrors.append(('%d.ds_id' % f, 'invalid'))
+
+			# Make sure we don't have the prescription already
+			if data['products'][i]['ds_id'] in lDsIds:
+				return Services.Response(error=(1101, data['products'][i]['ds_id']))
+
+			# Add the prescription to the list
+			lDsIds.append(data['products'][i]['ds_id'])
+
+		# If we have any errors
+		if lErrors:
+			return Services.Response(error=(1001, lErrors))
+
+		print(sesh)
+
+		# Try to create the records
+		try:
+			ProductToRx.updateCustomer(data['customer_id'], data['products'], sesh['memo_id'])
+		except Record_MySQL.DuplicateException as e:
+			return Services.Response(error=1101)
+
+		# Return OK
+		return Services.Response(True)
 
 	def provider_create(self, data, sesh):
 		"""Provider Create
