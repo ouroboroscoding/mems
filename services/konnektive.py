@@ -530,13 +530,16 @@ class Konnektive(Services.Service):
 			},
 			"campaign": dO['campaignName'],
 			"couponCode": dO['couponCode'],
+			"customerId": dOrder['customerId'],
 			"date": dO['dateUpdated'],
 			"email": dO['emailAddress'],
 			"encounter": dO['state'] and self._encounters[dO['state']] or '',
 			"items": 'items' in dO and [{
 				"campaign": dI['name'],
 				"description": dI['productDescription'],
+				"itemId": dI['orderItemId'],
 				"price": dI['price'],
+				"productId": dI['productId'],
 				"shipping": dI['shipping']
 			} for dI in dO['items'].values()] or [],
 			"orderId": dO['orderId'],
@@ -701,6 +704,7 @@ class Konnektive(Services.Service):
 			},
 			"campaign": dOrder['campaignName'],
 			"couponCode": dOrder['couponCode'],
+			"customerId": dOrder['customerId'],
 			"date": dOrder['dateUpdated'],
 			"email": dOrder['emailAddress'],
 			"encounter": dOrder['state'] and self._encounters[dOrder['state']] or '',
@@ -709,6 +713,7 @@ class Konnektive(Services.Service):
 				"description": dI['productDescription'],
 				"itemId": dI['orderItemId'],
 				"price": dI['price'],
+				"productId": dI['productId'],
 				"shipping": dI['shipping']
 			} for dI in dOrder['items'].values()] or [],
 			"orderId": dOrder['orderId'],

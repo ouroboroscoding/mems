@@ -15,9 +15,9 @@ __created__		= "2020-10-15"
 from FormatOC import Tree
 from RestOC import Conf, Record_MySQL
 
-# ItemToRX class
-class ItemToRX(Record_MySQL.Record):
-	"""ItemToRX
+# ProductToRx class
+class ProductToRx(Record_MySQL.Record):
+	"""ProductToRx
 
 	Represents a single order item and its prescription in DoseSpot
 	"""
@@ -38,12 +38,58 @@ class ItemToRX(Record_MySQL.Record):
 		# If we haven loaded the config yet
 		if not cls._conf:
 			cls._conf = Record_MySQL.Record.generateConfig(
-				Tree.fromFile('definitions/providers/item_to_rx.json'),
+				Tree.fromFile('definitions/providers/product_to_rx.json'),
 				'mysql'
 			)
 
 		# Return the config
 		return cls._conf
+
+	@classmethod
+	def updateCustomer(cls, customer_id, products, user_id, custom={}):
+		"""Update Customer
+
+		Create/Update multiple products associated with a customer
+
+		Arguments:
+			customer_id (uint): The ID of the customer
+			products (dict[]) : List of product and dosespot IDs
+			custom (dict): Custom Host and DB info
+				'host' the name of the host to get/set data on
+				'append' optional postfix for dynamic DBs
+
+		Returns:
+			list
+		"""
+
+		# Fetch the record structure
+		dStruct = cls.struct(custom)
+
+		# Create each insert
+		lInserts = []
+		for d in products:
+			lInserts.append('(%d, %d, %d, %d)' % (
+				customer_id,
+				d['product_id'],
+				d['ds_id'],
+				user_id
+			))
+
+		# Generate SQL
+		sSQL = 'INSERT INTO `%(db)s`.`%(table)s` ' \
+				'(`customer_id`, `product_id`, `ds_id`, `user_id`)\n' \
+				'VALUES %(inserts)s\n' \
+				'ON DUPLICATE KEY UPDATE `ds_id` = VALUES(`ds_id`)' % {
+			"db": dStruct['db'],
+			"table": dStruct['table'],
+			"inserts": ',\n'.join(lInserts)
+		}
+
+		# Insert the record
+		Record_MySQL.Commands.execute(
+			dStruct['host'],
+			sSQL
+		)
 
 # Provider class
 class Provider(Record_MySQL.Record):
