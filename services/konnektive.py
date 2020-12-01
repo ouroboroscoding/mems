@@ -759,7 +759,7 @@ class Konnektive(Services.Service):
 			return Services.Response(error=Rights.INVALID)
 
 		# Verify fields
-		try: DictHelper.eval(data, ['orderId', 'action'])
+		try: DictHelper.eval(data, ['customerId', 'orderId', 'action'])
 		except ValueError as e: return Services.Response(error=(1001, [(f, 'missing') for f in e.args]))
 
 		# Uppercase the action
@@ -770,10 +770,10 @@ class Konnektive(Services.Service):
 			return Services.Response(error=(1001, [('action', 'invalid')]))
 
 		# Send the update to Konnektive
-		#bRes = self._post('customer/update', {
-		#	"orderId": data['orderId']
-		#})
-		bRes = True
+		bRes = self._post('customer/update', {
+			"customerId": data['customerId'],
+			"orderId": data['orderId']
+		})
 
 		# If we failed
 		if not bRes:
