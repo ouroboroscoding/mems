@@ -1890,13 +1890,12 @@ class Monolith(Services.Service):
 		"""
 
 		# Verify minimum fields
-		try: DictHelper.eval(data, ['customerId', 'orderId'])
+		try: DictHelper.eval(data, ['orderId'])
 		except ValueError as e: return Services.Response(error=(1001, [(f, 'missing') for f in e.args]))
 
 		# Send the request to Konnektive
 		oResponse = Services.update('konnektive', 'order/qa', {
 			"action": 'APPROVE',
-			"customerId": data['customerId'],
 			"orderId": data['orderId']
 		}, sesh)
 		if oResponse.errorExists(): return oResponse
@@ -1960,13 +1959,12 @@ class Monolith(Services.Service):
 		"""
 
 		# Verify minimum fields
-		try: DictHelper.eval(data, ['customerId', 'orderId'])
+		try: DictHelper.eval(data, ['orderId'])
 		except ValueError as e: return Services.Response(error=(1001, [(f, 'missing') for f in e.args]))
 
 		# Send the request to Konnektive
 		oResponse = Services.update('konnektive', 'order/qa', {
 			"action": 'DECLINE',
-			"customerId": data['customerId'],
 			"orderId": data['orderId']
 		}, sesh)
 		if oResponse.errorExists(): return oResponse
