@@ -1315,7 +1315,7 @@ class KtOrder(Record_MySQL.Record):
 				"AND `kto`.`shipState` IN (%(states)s)\n" \
 				"AND `ktoc`.`user` IS NULL\n" \
 				"AND `cmp`.`type` = '%(group)s'\n" \
-				"AND `attentionRole` IN ('Doctor', 'Not Assigned')\n" \
+				"AND (`os`.`attentionRole` = 'Doctor' OR `os`.`attentionRole` IS NULL)\n" \
 				"ORDER BY `kto`.`dateUpdated` ASC" % {
 			"db": dStruct['db'],
 			"table": dStruct['table'],

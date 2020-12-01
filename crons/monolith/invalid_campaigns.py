@@ -33,8 +33,6 @@ def run():
 	# Fetch distinct campaign IDs in orders
 	lOrderIDs = KtOrder.distinctCampaigns()
 
-	lOrderIDs.append('2000')
-
 	# Get the list of campaign IDs
 	lCampaignIDs = Campaign.ids()
 
