@@ -75,7 +75,9 @@ REST.Server({
 	"/orders/pending/csr": {"methods": REST.READ, "session": True},
 	"/orders/pending/csr/count": {"methods": REST.READ, "session": True},
 	"/orders/pending/provider/ed": {"methods": REST.READ, "session": True},
+	"/orders/pending/provider/ed/cont": {"methods": REST.READ, "session": True},
 	"/orders/pending/provider/hrt": {"methods": REST.READ, "session": True},
+	"/orders/pending/provider/hrt/cont": {"methods": REST.READ, "session": True},
 
 	"/passwd/forgot": {"methods": REST.CREATE | REST.UPDATE},
 
