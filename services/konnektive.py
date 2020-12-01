@@ -771,6 +771,7 @@ class Konnektive(Services.Service):
 
 		# Send the update to Konnektive
 		bRes = self._post('order/qa', {
+			"action": data['action'],
 			"orderId": data['orderId']
 		})
 
