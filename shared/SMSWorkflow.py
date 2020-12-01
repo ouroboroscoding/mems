@@ -266,7 +266,7 @@ def providerApproves(order_id, user_id, monolith):
 
 	# Process the template
 	sContent = processTemplate(sContent, dOrder, {
-		"provider_name": '% %s' % (dUser['firstName'], dUser['lastName'])
+		"provider_name": '%s %s' % (dUser['firstName'], dUser['lastName'])
 	});
 
 	# Message data
@@ -352,7 +352,7 @@ def providerDeclines(order_id, user_id, monolith):
 
 	# Process the template
 	sContent = processTemplate(sContent, dOrder, {
-		"provider_name": '% %s' % (dUser['firstName'], dUser['lastName'])
+		"provider_name": '%s %s' % (dUser['firstName'], dUser['lastName'])
 	});
 
 	# Message data
