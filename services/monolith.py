@@ -1305,8 +1305,11 @@ class Monolith(Services.Service):
 		if oClaim['user'] != sesh['memo_id']:
 			return Services.Response(error=1513)
 
+		# Get current date/time
+		sDT = arrow.get().format('YYYY-MM-DD HH:mm:ss')
+
 		# If there's a provider and an order ID
-		if not oClaim['provider'] or not oClaim['orderId']:
+		if oClaim['provider'] and oClaim['orderId']:
 
 			# Get the extra claim details
 			dDetails = KtOrder.claimDetails(data['orderId'])
@@ -1360,19 +1363,16 @@ class Monolith(Services.Service):
 					"claim": dData
 				})
 
-		# Get current date/time
-		sDT = arrow.get().format('YYYY-MM-DD HH:mm:ss')
-
-		# Find the order status (fuck this is fucking stupid as fuck, fuck memo)
-		oStatus = SmpOrderStatus.filter({
-			"orderId": oOrderClaim['orderId']
-		}, limit=1)
-		if oStatus:
-			oStatus['modifiedBy'] = sesh['memo_id']
-			oStatus['attentionRole'] = 'Provider'
-			oStatus['orderLabel'] = 'Provider - Agent Transfer'
-			oStatus['updatedAt'] = sDT
-			oStatus.save()
+			# Find the order status (fuck this is fucking stupid as fuck, fuck memo)
+			oStatus = SmpOrderStatus.filter({
+				"orderId": oOrderClaim['orderId']
+			}, limit=1)
+			if oStatus:
+				oStatus['modifiedBy'] = sesh['memo_id']
+				oStatus['attentionRole'] = 'Doctor'
+				oStatus['orderLabel'] = 'Provider - Agent Transfer'
+				oStatus['updatedAt'] = sDT
+				oStatus.save()
 
 		# Store transfer note
 		oSmpNote = SmpNote({
@@ -1900,6 +1900,18 @@ class Monolith(Services.Service):
 		}, sesh)
 		if oResponse.errorExists(): return oResponse
 
+		# Find the order and change the status
+		oKtOrder = KtOrder.filter({
+			"orderId": data['orderId']
+		}, limit=1)
+		oKtOrder['orderStatus'] = 'COMPLETE'
+		oKtOrder.save()
+
+		# Update memo cause it sucks
+		self.orderRefresh_update({
+			"orderId": data['orderId']
+		}, sesh)
+
 		# Get current date/time
 		sDT = arrow.get().format('YYYY-MM-DD HH:mm:ss')
 
@@ -1924,7 +1936,7 @@ class Monolith(Services.Service):
 			oStatus['orderLabel'] = None
 			oStatus['orderStatus'] = 'COMPLETE'
 			oStatus['reviewStatus'] = 'APPROVED'
-			oStatus['updateAt'] = sDT
+			oStatus['updatedAt'] = sDT
 			oStatus.save()
 
 		# Notify the patient of the approval
@@ -1957,6 +1969,18 @@ class Monolith(Services.Service):
 		}, sesh)
 		if oResponse.errorExists(): return oResponse
 
+		# Find the order and change the status
+		oKtOrder = KtOrder.filter({
+			"orderId": data['orderId']
+		}, limit=1)
+		oKtOrder['orderStatus'] = 'DECLINED'
+		oKtOrder.save()
+
+		# Update memo cause it sucks
+		self.orderRefresh_update({
+			"orderId": data['orderId']
+		}, sesh)
+
 		# Get current date/time
 		sDT = arrow.get().format('YYYY-MM-DD HH:mm:ss')
 
@@ -1981,7 +2005,7 @@ class Monolith(Services.Service):
 			oStatus['orderStatus'] = 'DECLINED'
 			oStatus['reviewStatus'] = 'DECLINED'
 			oStatus['declineReason'] = 'Medical Decline'
-			oStatus['updateAt'] = sDT
+			oStatus['updatedAt'] = sDT
 			oStatus.save()
 
 		# Notify the patient of the approval
