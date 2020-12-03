@@ -506,7 +506,7 @@ class Monolith(Services.Service):
 			return Services.Response(error=(1104, 'mip'))
 
 		# Get the DOB
-		sDOB = TfAnswer.dob(lLanding[0]['landing_id'])
+		sDOB = TfAnswer.dob(lLandings[0]['landing_id'])
 		if not sDOB:
 			return Services.Response(error=1910)
 
