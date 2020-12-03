@@ -28,12 +28,14 @@ oRestConf = init(
 
 # Create the HTTP server and map requests to service
 REST.Server({
-	"/patient": {"methods": REST.CREATE | REST.READ, "session": True},
+	"/patient": {"methods": REST.CREATE | REST.READ | REST.UPDATE, "session": True},
 	"/patient/medications": {"methods": REST.READ, "session": True},
 	"/patient/pharmacies": {"methods": REST.READ, "session": True},
 	"/patient/pharmacy": {"methods": REST.CREATE | REST.DELETE, "session": True},
 	"/patient/prescriptions": {"methods": REST.READ},
 	"/patient/sso": {"methods": REST.READ, "session": True},
+
+	"/pharmacies": {"methods": REST.READ, "session": True},
 
 	"/pharmacy/fill": {"methods": REST.CREATE | REST.DELETE, "session": True},
 	"/pharmacy/fill/byCustomer": {"methods": REST.READ, "session": True},

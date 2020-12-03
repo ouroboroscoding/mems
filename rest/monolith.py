@@ -34,7 +34,7 @@ REST.Server({
 	"/customer/claim": {"methods": REST.CREATE | REST.UPDATE | REST.DELETE, "session": True},
 	"/customer/claim/clear": {"methods": REST.UPDATE, "session": True},
 	"/customer/dob": {"methods": REST.READ, "session": True},
-	"/customer/dsid": {"methods": REST.CREATE | REST.READ, "session": True},
+	"/customer/dsid": {"methods": REST.CREATE | REST.READ | REST.UPDATE, "session": True},
 	"/customer/exists": {"methods": REST.READ, "session": True},
 	"/customer/hide": {"methods": REST.UPDATE, "session": True},
 	"/customer/hrtLabs": {"methods": REST.READ, "session": True},

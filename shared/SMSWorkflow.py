@@ -266,7 +266,7 @@ def providerApproves(order_id, user_id, monolith):
 
 	# Process the template
 	sContent = processTemplate(sContent, dOrder, {
-		"provider_name": '% %s' % (dUser['firstName'], dUser['lastName'])
+		"provider_name": '%s %s' % (dUser['firstName'], dUser['lastName'])
 	});
 
 	# Message data
@@ -352,7 +352,7 @@ def providerDeclines(order_id, user_id, monolith):
 
 	# Process the template
 	sContent = processTemplate(sContent, dOrder, {
-		"provider_name": '% %s' % (dUser['firstName'], dUser['lastName'])
+		"provider_name": '%s %s' % (dUser['firstName'], dUser['lastName'])
 	});
 
 	# Message data
@@ -402,7 +402,7 @@ def providerMessaged(order_id, note_id):
 
 	# Find the patient's workflow
 	oWorkflow = SMSPatientWorkflow.filter({
-		"orderId": order.order_id,
+		"orderId": order_id,
 		"groupId": GROUP_ED
 	}, limit=1);
 

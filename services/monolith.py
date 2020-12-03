@@ -486,12 +486,12 @@ class Monolith(Services.Service):
 		try: DictHelper.eval(data, ['customerId', 'clinician_id'])
 		except ValueError as e: return Services.Response(error=(1001, [(f, 'missing') for f in e.args]))
 
-		# Find the customer
-		dCustomer = KtCustomer.filter({
-			"customerId": str(data['customerId'])
-		}, raw=True, limit=1)
-		if not dCustomer:
-			return Services.Response(error=(1104, 'customer'))
+		# Find the customer in Konnektive
+		oResponse = Services.read('konnektive', 'customer', {
+			"customerId": data['customerId']
+		}, sesh)
+		if oResponse.errorExists(): return oResponse
+		dCustomer = oResponse.data
 
 		# Make sure we don't already have the patient record
 		dDsPatient = DsPatient.filter({
@@ -502,16 +502,16 @@ class Monolith(Services.Service):
 
 		# Get the latest landing
 		lLandings = TfLanding.find(
-			dCustomer['lastName'],
-			dCustomer['emailAddress'] or '',
-			dCustomer['phoneNumber'],
+			dCustomer['shipping']['lastName'],
+			dCustomer['email'] or '',
+			dCustomer['phone'],
 			['MIP-A1', 'MIP-A2', 'MIP-H1', 'MIP-H2']
 		)
 		if not lLandings:
 			return Services.Response(error=(1104, 'mip'))
 
 		# Get the DOB
-		sDOB = TfAnswer.dob(lLandings[0]['landing_id'])
+		sDOB = TfAnswer.dob(lLanding[0]['landing_id'])
 		if not sDOB:
 			return Services.Response(error=1910)
 
@@ -519,18 +519,18 @@ class Monolith(Services.Service):
 		try:
 			sDT = arrow.get().format('YYYY-MM-DD HH:mm:ss')
 			dData = {
-				"customerId": dCustomer['customerId'],
-				"firstName": dCustomer['firstName'],
-				"lastName": dCustomer['lastName'],
+				"customerId": str(dCustomer['customerId']),
+				"firstName": dCustomer['shipping']['firstName'],
+				"lastName": dCustomer['shipping']['lastName'],
 				"dateOfBirth": sDOB,
 				"gender": '1',
-				"email": dCustomer['emailAddress'],
-				"address1": dCustomer['shipAddress1'],
-				"address2": dCustomer['shipAddress2'],
-				"city": dCustomer['shipCity'],
-				"state": dCustomer['shipState'],
-				"zipCode": dCustomer['shipPostalCode'],
-				"primaryPhone": dCustomer['phoneNumber'],
+				"email": dCustomer['email'],
+				"address1": dCustomer['shipping']['address1'],
+				"address2": dCustomer['shipping']['address2'],
+				"city": dCustomer['shipping']['city'],
+				"state": dCustomer['shipping']['state'],
+				"zipCode": dCustomer['shipping']['postalCode'],
+				"primaryPhone": dCustomer['phone'],
 				"primaryPhoneType": '4',
 				"active": 'Y',
 				"createdAt": sDT,
@@ -548,15 +548,30 @@ class Monolith(Services.Service):
 		if oResponse.errorExists():
 			return oResponse
 
+		# Store the patient ID
+		iPatientId = oResponse.data
+
+		# If we got a default pharmacy
+		if 'pharmacy_id' in data:
+
+			# Add the pharmacy to the patient
+			oResponse = Services.create('prescriptions', 'patient/pharmacy', {
+				"patient_id": iPatientId,
+				"pharmacy_id": data['pharmacy_id'],
+				"clinician_id": data['clinician_id']
+			}, sesh)
+			if oResponse.errorExists():
+				return oResponse
+
 		# Add the patient ID and save the record
 		try:
-			oDsPatient['patientId'] = str(oResponse.data)
+			oDsPatient['patientId'] = str(iPatientId)
 			oDsPatient.create()
 		except Record_MySQL.DuplicateException:
 			return Services.Response(error=1101)
 
 		# Return the ID
-		return oResponse
+		return Services.Response(True)
 
 	def customerDsid_read(self, data, sesh):
 		"""Customer DoseSpot ID
@@ -585,7 +600,7 @@ class Monolith(Services.Service):
 
 		# Find the patient ID
 		dPatient = DsPatient.filter(
-			{"customerId": data['customerId']},
+			{"customerId": str(data['customerId'])},
 			raw=['patientId'],
 			limit=1
 		)
@@ -596,6 +611,116 @@ class Monolith(Services.Service):
 
 		# Return the ID
 		return Services.Response(int(dPatient['patientId']))
+
+	def customerDsid_update(self, data, sesh):
+		"""Customer DoseSpot ID Update
+
+		Updates an existing patient in DoseSpot
+
+		Arguments:
+			data (dict): Data sent with the request
+			sesh (Sesh._Session): The session associated with the request
+
+		Returns:
+			Services.Response
+		"""
+
+		# Make sure the user has the proper permission to do this
+		oResponse = Services.read('auth', 'rights/verify', {
+			"name": "prescriptions",
+			"right": Rights.CREATE
+		}, sesh)
+		if not oResponse.data:
+			return Services.Response(error=Rights.INVALID)
+
+		# Verify fields
+		try: DictHelper.eval(data, ['customerId', 'clinician_id'])
+		except ValueError as e: return Services.Response(error=(1001, [(f, 'missing') for f in e.args]))
+
+		# Find the patient record
+		oDsPatient = DsPatient.filter({
+			"customerId": data['customerId']
+		}, limit=1)
+		if not oDsPatient:
+			return Services.Response(error=(1104, 'patient'))
+
+		# Find the customer in Konnektive
+		oResponse = Services.read('konnektive', 'customer', {
+			"customerId": data['customerId']
+		}, sesh)
+		if oResponse.errorExists():
+			if oResponse.error['code'] == 1104:
+				oResponse.error['msg'] = 'konnektive'
+			return oResponse
+
+		# Store the customer data
+		dCustomer = oResponse.data
+
+		# Look for a landing by customerId
+		dLanding = TfLanding.filter({
+			"ktCustomerId": str(data['customerId']),
+			"formId": ['MIP-A1', 'MIP-A2', 'MIP-H1', 'MIP-H2']
+		}, raw=['landing_id'], limit=1, orderby=[['submitted_at', 'DESC']])
+
+		# If there's no landing
+		if not dLanding:
+
+			# Get the latest landing
+			lLandings = TfLanding.find(
+				dCustomer['shipping']['lastName'],
+				dCustomer['email'] or '',
+				dCustomer['phone'],
+				['MIP-A1', 'MIP-A2', 'MIP-H1', 'MIP-H2']
+			)
+			if not lLandings:
+				return Services.Response(error=(1104, 'mip'))
+
+			# Store the latest
+			dLanding = lLandings[0]
+
+		# Get the DOB
+		sDOB = TfAnswer.dob(dLanding['landing_id'])
+		if not sDOB:
+			return Services.Response(error=1910)
+
+		# Try to update the fields
+		try:
+			sDT = arrow.get().format('YYYY-MM-DD HH:mm:ss')
+			oDsPatient['firstName'] = dCustomer['shipping']['firstName'];
+			oDsPatient['lastName'] = dCustomer['shipping']['lastName'];
+			oDsPatient['dateOfBirth'] = sDOB;
+			oDsPatient['email'] = dCustomer['email'];
+			oDsPatient['address1'] = dCustomer['shipping']['address1'];
+			oDsPatient['address2'] = dCustomer['shipping']['address2'];
+			oDsPatient['city'] = dCustomer['shipping']['city'];
+			oDsPatient['state'] = dCustomer['shipping']['state'];
+			oDsPatient['zipCode'] = dCustomer['shipping']['postalCode'];
+			oDsPatient['primaryPhone'] = dCustomer['phone'];
+			oDsPatient['updatedAt'] = sDT
+			oDsPatient.save()
+		except ValueError as e:
+			return Services.Response(error=(1001, [e.args[0]]))
+
+		# Send the data to the prescriptions service to get the patient ID
+		oResponse = Services.update('prescriptions', 'patient', {
+			"patient": {
+				"id": oDsPatient['patientId'],
+				"firstName": dCustomer['shipping']['firstName'],
+				"lastName": dCustomer['shipping']['lastName'],
+				"dateOfBirth": sDOB,
+				"email": dCustomer['email'],
+				"address1": dCustomer['shipping']['address1'],
+				"address2": dCustomer['shipping']['address2'],
+				"city": dCustomer['shipping']['city'],
+				"state": dCustomer['shipping']['state'],
+				"zipCode": dCustomer['shipping']['postalCode'],
+				"primaryPhone": dCustomer['phone']
+			},
+			"clinician_id": data['clinician_id']
+		}, sesh)
+
+		# Return the response
+		return oResponse
 
 	def customerExists_read(self, data, sesh):
 		"""Customer Exists
@@ -1310,6 +1435,9 @@ class Monolith(Services.Service):
 		if oClaim['user'] != sesh['memo_id']:
 			return Services.Response(error=1513)
 
+		# Get current date/time
+		sDT = arrow.get().format('YYYY-MM-DD HH:mm:ss')
+
 		# If there's a provider and an order ID
 		if oClaim['provider'] and oClaim['orderId']:
 
@@ -1366,19 +1494,16 @@ class Monolith(Services.Service):
 					"claim": dData
 				})
 
-		# Get current date/time
-		sDT = arrow.get().format('YYYY-MM-DD HH:mm:ss')
-
-		# Find the order status (fuck this is fucking stupid as fuck, fuck memo)
-		oStatus = SmpOrderStatus.filter({
-			"orderId": oClaim['orderId']
-		}, limit=1)
-		if oStatus:
-			oStatus['modifiedBy'] = sesh['memo_id']
-			oStatus['attentionRole'] = 'Provider'
-			oStatus['orderLabel'] = 'Provider - Agent Transfer'
-			oStatus['updatedAt'] = sDT
-			oStatus.save()
+			# Find the order status (fuck this is fucking stupid as fuck, fuck memo)
+			oStatus = SmpOrderStatus.filter({
+				"orderId": oOrderClaim['orderId']
+			}, limit=1)
+			if oStatus:
+				oStatus['modifiedBy'] = sesh['memo_id']
+				oStatus['attentionRole'] = 'Doctor'
+				oStatus['orderLabel'] = 'Provider - Agent Transfer'
+				oStatus['updatedAt'] = sDT
+				oStatus.save()
 
 		# Store transfer note
 		oSmpNote = SmpNote({
@@ -1906,6 +2031,18 @@ class Monolith(Services.Service):
 		}, sesh)
 		if oResponse.errorExists(): return oResponse
 
+		# Find the order and change the status
+		oKtOrder = KtOrder.filter({
+			"orderId": data['orderId']
+		}, limit=1)
+		oKtOrder['orderStatus'] = 'COMPLETE'
+		oKtOrder.save()
+
+		# Update memo cause it sucks
+		self.orderRefresh_update({
+			"orderId": data['orderId']
+		}, sesh)
+
 		# Get current date/time
 		sDT = arrow.get().format('YYYY-MM-DD HH:mm:ss')
 
@@ -1930,7 +2067,7 @@ class Monolith(Services.Service):
 			oStatus['orderLabel'] = None
 			oStatus['orderStatus'] = 'COMPLETE'
 			oStatus['reviewStatus'] = 'APPROVED'
-			oStatus['updateAt'] = sDT
+			oStatus['updatedAt'] = sDT
 			oStatus.save()
 
 		# Notify the patient of the approval
@@ -1963,6 +2100,18 @@ class Monolith(Services.Service):
 		}, sesh)
 		if oResponse.errorExists(): return oResponse
 
+		# Find the order and change the status
+		oKtOrder = KtOrder.filter({
+			"orderId": data['orderId']
+		}, limit=1)
+		oKtOrder['orderStatus'] = 'DECLINED'
+		oKtOrder.save()
+
+		# Update memo cause it sucks
+		self.orderRefresh_update({
+			"orderId": data['orderId']
+		}, sesh)
+
 		# Get current date/time
 		sDT = arrow.get().format('YYYY-MM-DD HH:mm:ss')
 
@@ -1987,7 +2136,7 @@ class Monolith(Services.Service):
 			oStatus['orderStatus'] = 'DECLINED'
 			oStatus['reviewStatus'] = 'DECLINED'
 			oStatus['declineReason'] = 'Medical Decline'
-			oStatus['updateAt'] = sDT
+			oStatus['updatedAt'] = sDT
 			oStatus.save()
 
 		# Notify the patient of the approval

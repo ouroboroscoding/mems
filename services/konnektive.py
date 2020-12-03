@@ -770,10 +770,10 @@ class Konnektive(Services.Service):
 			return Services.Response(error=(1001, [('action', 'invalid')]))
 
 		# Send the update to Konnektive
-		#bRes = self._post('customer/update', {
-		#	"orderId": data['orderId']
-		#})
-		bRes = True
+		bRes = self._post('order/qa', {
+			"action": data['action'],
+			"orderId": data['orderId']
+		})
 
 		# If we failed
 		if not bRes:

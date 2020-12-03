@@ -96,7 +96,7 @@ def _fill():
 				"crm_id": o['crm_id'],
 				"crm_order": o['crm_order'],
 				"list": 'fill',
-				"reason": dRes['data'],
+				"reason": dRes['data'][:255],
 				"fail_count": 1
 			})
 			oFillError.create(conflict='replace')
@@ -356,9 +356,9 @@ def _welldyneNeverStarted():
 
 			# Create a new pharmacy fill error record
 			oFillError = PharmacyFillError({
-				"crm_type": o['crm_type'],
-				"crm_id": o['crm_id'],
-				"crm_order": o['crm_order'],
+				"crm_type": d['crm_type'],
+				"crm_id": d['crm_id'],
+				"crm_order": d['crm_order'],
 				"list": 'fill',
 				"reason": dRes['data'][:255],
 				"fail_count": 1
@@ -425,9 +425,9 @@ def _welldyneOutbound():
 
 			# Create a new pharmacy fill error record
 			oFillError = PharmacyFillError({
-				"crm_type": 'knk',
-				"crm_id": str(d['customerId']),
-				"crm_order": d['orderId'],
+				"crm_type": o['crm_type'],
+				"crm_id": o['crm_id'],
+				"crm_order": o['crm_order'],
 				"list": 'outbound',
 				"reason": dRes['data'][:255],
 				"fail_count": 1
