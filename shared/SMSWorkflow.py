@@ -402,7 +402,7 @@ def providerMessaged(order_id, note_id):
 
 	# Find the patient's workflow
 	oWorkflow = SMSPatientWorkflow.filter({
-		"orderId": order.order_id,
+		"orderId": order_id,
 		"groupId": GROUP_ED
 	}, limit=1);
 
