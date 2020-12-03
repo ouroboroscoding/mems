@@ -38,22 +38,27 @@ _dPharmacies = {
 }
 
 _dProviders = {
-	43432: 'Gary Klein',
 	43331: 'Kelley Wyant',
-	43423: 'Stephenie Brinson',
+	43332: 'Peter Fotinos',
 	43410: 'Veronica Pike',
-	43431: 'Joseph Keenan',
-	43411: 'Elizabeth Hernandez Nurse Practitioner',
-	43433: 'Faride Ramos',
-	43425: 'Roland Green',
-	43332: 'Dr. Peter Fotinos',
+	43411: 'Elizabeth Hernandez ',
+	43423: 'Stephenie Brinson',
 	43424: 'Jonathan Figg',
-	43434: 'Ron Waldrop MD',
+	43425: 'Roland Green',
+	43431: 'Joseph Keenan',
+	43432: 'Gary Klein',
+	43433: 'Faride Ramos',
+	43434: 'Ron Waldrop',
+	43545: 'Josh Sawyer',
+	43546: 'Dylan Whitaker',
+	43547: 'Ejune Wu',
+	43548: 'Chris Berry',
 	43900: 'Janelle Weyer',
+	44175: 'Cassandra Franco',
 	44188: 'Vincent Meoli',
 	44731: 'Arnaldo Trabucco',
 	44756: 'Beau Butherus',
-	45107: 'Edilberto Atienza MD',
+	45107: 'Edilberto Atienza',
 	45135: 'Dawn Adams',
 	45544: 'Gabbrielle Knabe',
 	46445: 'Shannon Gruhn',
@@ -63,22 +68,46 @@ _dProviders = {
 	46710: 'Elizabeth Brown',
 	46711: 'Edward Henson',
 	47103: 'Harold Hibbs',
-	47221: 'Fawn  Munro',
+	47221: 'Fawn Munro',
+	47489: 'Melissa Mendoza',
+	47490: 'Dacia Mann',
 	47754: 'Aaron Borengasser PA',
+	47756: 'Colby Jestes',
 	48200: 'Tony Underwood',
-	48721: 'Heather Gall - Nurse Practitioner',
+	48721: 'Heather Gall',
 	48871: 'Mariama Hubbard',
-	50616: 'Mark Matthews',
-	52785: 'Dr. Ben de Miranda',
+	48907: 'Annissa dominguez',
+	48908: 'Joe Compton',
+	49258: 'Nikki Wombwell',
+	49492: 'Sven Wombwell',
+	50616: 'Mark Matthews ',
+	50890: 'Mekala Parker',
+	51575: 'Joe Compton',
+	52785: 'Ben de Miranda',
 	52854: 'Paige Smith',
-	53780: 'Dr. Muna Orra',
-	54215: 'Jamie Bittar Nurse Practitioner',
-	57458: 'Sasha Hanson Nurse Practitioner',
-	58275: 'Stacy Comeau Nurse Practitioner',
-	59335: 'Jessica Toath Nurse Practitioner',
-	65753: 'Neifa Nayor APRN',
-	66591: 'Dr. Marc Calabrese',
-	76563: 'Andrew Abraham M.D.'
+	53780: 'Muna Orra',
+	54215: 'Jamie Bittar',
+	54347: 'Jessie Burgess',
+	55449: 'Craig Larsen',
+	56947: 'Karll Cloutier',
+	57458: 'Sasha Hanson',
+	58275: 'Stacy Comeau ',
+	59335: 'Jessica Toath',
+	62723: 'Yannick Ferreri',
+	62726: 'Yannick Ferreri',
+	63820: 'Maciej Malczewski',
+	63821: 'Jo-Anne Stevens',
+	64034: 'Payton Bernal',
+	64299: 'Jeremie Lanctôt',
+	64381: 'Chris Cloutier',
+	65024: 'Phil Cloutier',
+	65481: 'Michelle Coulombe',
+	65589: 'Eddy Wilson',
+	65753: 'Neifa Nayor',
+	66591: 'Marc Calabrese',
+	69646: 'Sam Gagnon',
+	76563: 'Andrew Abraham',
+	85007: 'Grace Oropesa'
 }
 
 _dStatus = {
@@ -394,6 +423,90 @@ class Prescriptions(Services.Service):
 		# Return the pharmacies
 		return Services.Response(dData['Item'])
 
+	def patient_update(self, data, sesh):
+		"""Patient Update
+
+		Updates patient demographic data in DoseSpot
+
+		Arguments:
+			data (dict): Data sent with the request
+			sesh (Sesh._Session): The session associated with the request
+
+		Returns:
+			Services.Response
+		"""
+
+		# Make sure the user has the proper permission to do this
+		oResponse = Services.read('auth', 'rights/verify', {
+			"name": "prescriptions",
+			"right": Rights.CREATE
+		}, sesh)
+		if not oResponse.data:
+			return Services.Response(error=Rights.INVALID)
+
+		# Verify fields
+		try: DictHelper.eval(data, ['clinician_id', 'patient'])
+		except ValueError as e: return Services.Response(error=(1001, [(f, 'missing') for f in e.args]))
+
+		# Make sure patient is a dict and has at least an id
+		if not isinstance(data['patient'], dict) or 'id' not in data['patient']:
+			return Services.Response(error=(1001, [('patient', 'invalid')]))
+
+		# Convert the keys
+		try:
+			dData = {
+				"FirstName": StrHelper.normalize(data['patient']['firstName']),
+				"LastName": StrHelper.normalize(data['patient']['lastName']),
+				"DateOfBirth": data['patient']['dateOfBirth'][0:10],
+				"Email": data['patient']['email'],
+				"Address1": (data['patient']['address1'] or '')[0:35],
+				"Address2": (data['patient']['address2'] or '')[0:35],
+				"City": data['patient']['city'],
+				"State": data['patient']['state'],
+				"ZipCode": data['patient']['zipCode'],
+				"PrimaryPhone": data['patient']['primaryPhone']
+			}
+		except Exception as e:
+			return Services.Response(error=(1001, str(e)))
+
+		# Generate the token
+		sToken = self._generateToken(data['clinician_id'])
+
+		# Generate the URL
+		sURL = 'https://%s/webapi/api/patients/%d' % (
+			self._host,
+			data['patient']['id']
+		)
+
+		# Generate the headers
+		dHeaders = {
+			"Accept": "application/json",
+			"Authorization": "Bearer %s" % sToken
+		}
+
+		# Make the request
+		oRes = requests.post(sURL, data=dData, headers=dHeaders)
+
+		print(oRes)
+
+		# If we didn't get a 200
+		if oRes.status_code != 200:
+			return Services.Response(error=(1601, oRes.text))
+
+		print(oRes.text)
+
+		# Get the response
+		dRes = oRes.json()
+
+		print(dRes)
+
+		# If we got an error
+		if dRes['Result']['ResultCode'] == 'ERROR':
+			return Services.Response(error=(1602, dData['Result']['ResultDescription']))
+
+		# Return OK
+		return Services.Response(True)
+
 	def patientMedications_read(self, data, sesh):
 		"""Patient Medications
 
@@ -511,8 +624,6 @@ class Prescriptions(Services.Service):
 			# We got a result, quit the consent loop
 			break
 
-
-
 		# If there's no items
 		if not dData['Items']:
 			return Services.Response([])
@@ -532,8 +643,6 @@ class Prescriptions(Services.Service):
 		Returns:
 			Services.Response
 		"""
-
-		return Services.Response(False)
 
 		# Verify fields
 		try: DictHelper.eval(data, ['patient_id'])
@@ -603,8 +712,6 @@ class Prescriptions(Services.Service):
 			Services.Response
 		"""
 
-		return Services.Response(False)
-
 		# Verify fields
 		try: DictHelper.eval(data, ['patient_id', 'pharmacy_id'])
 		except ValueError as e: return Services.Response(error=(1001, [(f, 'missing') for f in e.args]))
@@ -632,11 +739,13 @@ class Prescriptions(Services.Service):
 		sToken = self._generateToken(data['clinician_id'])
 
 		# Generate the URL
-		sURL = 'https://%s/webapi/api/patients/%d/pharmacies/%s' % (
+		sURL = 'https://%s/webapi/api/patients/%d/pharmacies/%d' % (
 			self._host,
 			data['patient_id'],
 			data['pharmacy_id']
 		)
+
+		print(sURL)
 
 		# Generate the headers
 		dHeaders = {
@@ -647,12 +756,16 @@ class Prescriptions(Services.Service):
 		# Make the request
 		oRes = requests.post(sURL, headers=dHeaders)
 
+		print(oRes)
+
 		# If we didn't get a 200
 		if oRes.status_code != 200:
 			return Services.Response(error=(1601, oRes.text))
 
 		# Get the data
 		dData = oRes.json()
+
+		print(dData)
 
 		# If we got an error
 		if dData['Result']['ResultCode'] == 'ERROR':
@@ -878,6 +991,26 @@ class Prescriptions(Services.Service):
 
 		# Return the URL
 		return Services.Response(sURL)
+
+	def pharmacies_read(self, data, sesh):
+		"""Pharmacies
+
+		Returns the list of valid pharmacies to use
+
+		Arguments:
+			data (dict): Data sent with the request
+			sesh (Sesh._Session): The session associated with the request
+
+		Returns:
+			Services.Response
+		"""
+
+		# Fetch and return the pharmacies
+		return Services.Response(
+			Pharmacy.filter({
+				"active": True
+			}, raw=True, orderby='name')
+		)
 
 	def pharmacyFill_create(self, data, sesh):
 		"""Pharmacy Fill Create
