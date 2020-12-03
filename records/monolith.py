@@ -1030,6 +1030,7 @@ class KtOrder(Record_MySQL.Record):
 				"	`ktoc`.`customerId`,\n" \
 				"	`ktoc`.`orderId`,\n" \
 				"	`ktoc`.`transferredBy`,\n" \
+				"	`ktoc`.`continuous`,\n" \
 				"	CONCAT(`ktc`.`firstName`, ' ', `ktc`.`lastName`) as `customerName`,\n" \
 				"	`c`.`type`\n" \
 				"FROM\n" \
