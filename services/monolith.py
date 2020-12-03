@@ -566,7 +566,7 @@ class Monolith(Services.Service):
 			return Services.Response(error=1101)
 
 		# Return the ID
-		return Services.Response(True)
+		return Services.Response(iPatientId)
 
 	def customerDsid_read(self, data, sesh):
 		"""Customer DoseSpot ID
