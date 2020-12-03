@@ -1030,6 +1030,7 @@ class KtOrder(Record_MySQL.Record):
 				"	`ktoc`.`customerId`,\n" \
 				"	`ktoc`.`orderId`,\n" \
 				"	`ktoc`.`transferredBy`,\n" \
+				"	`ktoc`.`continuous`,\n" \
 				"	CONCAT(`ktc`.`firstName`, ' ', `ktc`.`lastName`) as `customerName`,\n" \
 				"	`c`.`type`\n" \
 				"FROM\n" \
@@ -1096,6 +1097,7 @@ class KtOrder(Record_MySQL.Record):
 
 		# Generate the SQL
 		sSQL = "SELECT\n" \
+				"	`kto`.`customerId`,\n" \
 				"	CONCAT(`ktc`.`firstName`, ' ', `ktc`.`lastName`) as `customerName`,\n" \
 				"	`c`.`type`\n" \
 				"FROM\n" \
@@ -1276,7 +1278,7 @@ class KtOrder(Record_MySQL.Record):
 	def queue(cls, group, states, custom={}):
 		"""Queue
 
-		Returns all pending, unclaimed, ED orders in the given states
+		Returns all pending, unclaimed, orders in the given states
 
 		Arguments:
 			group (str): 'ed' or 'hrt'
@@ -1303,9 +1305,9 @@ class KtOrder(Record_MySQL.Record):
 				"	CONVERT(`kto`.`customerId`, UNSIGNED) as `customerId`,\n" \
 				"	`kto`.`dateCreated`,\n" \
 				"	`kto`.`dateUpdated`,\n" \
-				"	IFNULL(`os`.`attentionRole`, 'Not Assigned') AS `attentionRole`,\n" \
-				"	IFNULL(`os`.`orderLabel`, 'Not Labeled') AS `orderLabel`\n" \
-				"FROM `%(db)s`.`%(table)s` AS `kto`\n" \
+				"	IFNULL(`os`.`attentionRole`, 'Not Assigned') as `attentionRole`,\n" \
+				"	IFNULL(`os`.`orderLabel`, 'Not Labeled') as `orderLabel`\n" \
+				"FROM `%(db)s`.`%(table)s` as `kto`\n" \
 				"JOIN `%(db)s`.`campaign` as `cmp` ON `cmp`.`id` = CONVERT(`kto`.`campaignId`, UNSIGNED)\n" \
 				"LEFT JOIN `%(db)s`.`smp_state` as `ss` ON `ss`.`abbreviation` = `kto`.`shipState`\n" \
 				"LEFT JOIN `%(db)s`.`smp_order_status` as `os` ON `os`.`orderId` = `kto`.`orderId`\n" \
@@ -1359,6 +1361,98 @@ class KtOrderClaim(Record_MySQL.Record):
 
 		# Return the config
 		return cls._conf
+
+# KtOrderContinuous class
+class KtOrderContinuous(Record_MySQL.Record):
+	"""KtOrderContinuous
+
+	Represents an order that needs to be extended with a new MIP/Prescription(s)
+	"""
+
+	_conf = None
+	"""Configuration"""
+
+	@classmethod
+	def config(cls):
+		"""Config
+
+		Returns the configuration data associated with the record type
+
+		Returns:
+			dict
+		"""
+
+		# If we haven loaded the config yet
+		if not cls._conf:
+			cls._conf = Record_MySQL.Record.generateConfig(
+				Tree.fromFile('definitions/monolith/kt_order_continuous.json'),
+				'mysql'
+			)
+
+		# Return the config
+		return cls._conf
+
+	@classmethod
+	def queue(cls, group, states, custom={}):
+		"""Queue
+
+		Returns all pending, unclaimed, continuous orders in the given states
+
+		Arguments:
+			group (str): 'ed' or 'hrt'
+			states (list): The states to check for pending orders in
+			custom (dict): Custom Host and DB info
+				'host' the name of the host to get/set data on
+				'append' optional postfix for dynamic DBs
+
+		Returns:
+			list
+		"""
+
+		# Fetch the record structure
+		dStruct = cls.struct(custom)
+
+		# Generate the SQL
+		sSQL = "SELECT\n" \
+				"	`cont`.`status`,\n" \
+				"	`kto`.`orderId`,\n" \
+				"	CONCAT(`kto`.`shipFirstName`, ' ', `kto`.`shipLastName`) as `customerName`,\n" \
+				"	`kto`.`phoneNumber` as `customerPhone`,\n" \
+				"	`kto`.`shipCity`,\n" \
+				"	IFNULL(`ss`.`name`, '[state missing]') as `shipState`,\n" \
+				"	IFNULL(`ss`.`legalEncounterType`, '') as `encounter`,\n" \
+				"	CONVERT(`kto`.`customerId`, UNSIGNED) as `customerId`,\n" \
+				"	`kto`.`dateCreated`,\n" \
+				"	`kto`.`dateUpdated`,\n" \
+				"	IFNULL(`os`.`attentionRole`, 'Not Assigned') as `attentionRole`,\n" \
+				"	IFNULL(`os`.`orderLabel`, 'Not Labeled') as `orderLabel`\n" \
+				"FROM `%(db)s`.`%(table)s` as `cont`\n" \
+				"JOIN `%(db)s`.`kt_order` as `kto` ON `kto`.`orderId` = `cont`.`orderId`\n" \
+				"JOIN `%(db)s`.`campaign` as `cmp` ON `cmp`.`id` = CONVERT(`kto`.`campaignId`, UNSIGNED)\n" \
+				"LEFT JOIN `%(db)s`.`smp_state` as `ss` ON `ss`.`abbreviation` = `kto`.`shipState`\n" \
+				"LEFT JOIN `%(db)s`.`smp_order_status` as `os` ON `os`.`orderId` = `kto`.`orderId`\n" \
+				"LEFT JOIN `%(db)s`.`kt_order_claim` as `ktoc` ON `ktoc`.`customerId` = CONVERT(`kto`.`customerId`, UNSIGNED)\n" \
+				"WHERE `cont`.`status` = 'PENDING'\n" \
+				"AND `cont`.`active` = 1\n" \
+				"AND `kto`.`shipState` IN (%(states)s)\n" \
+				"AND `ktoc`.`user` IS NULL\n" \
+				"AND `cmp`.`type` = '%(group)s'\n" \
+				"AND (`os`.`attentionRole` = 'Doctor' OR `os`.`attentionRole` IS NULL)\n" \
+				"ORDER BY `kto`.`dateUpdated` ASC" % {
+			"db": dStruct['db'],
+			"table": dStruct['table'],
+			"group": group,
+			"states": "'%s'" % "','".join(states)
+		}
+
+		print(sSQL)
+
+		# Fetch and return the data
+		return Record_MySQL.Commands.select(
+			dStruct['host'],
+			sSQL,
+			Record_MySQL.ESelect.ALL
+		)
 
 # ShippingInfo class
 class ShippingInfo(Record_MySQL.Record):

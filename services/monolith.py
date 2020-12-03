@@ -29,8 +29,8 @@ from shared import Memo, Rights, SMSWorkflow, Sync
 from records.monolith import \
 	Calendly, Campaign, CustomerClaimed, CustomerClaimedLast, CustomerCommunication, \
 	CustomerMsgPhone, DsPatient, Forgot, HrtLabResultTests, KtCustomer, KtOrder, \
-	KtOrderClaim, ShippingInfo, SmpNote, SmpOrderStatus, SmpState, SMSStop, TfAnswer, \
-	TfLanding, TfQuestion, TfQuestionOption, User, \
+	KtOrderClaim, KtOrderContinuous, ShippingInfo, SmpNote, SmpOrderStatus, \
+	SmpState, SMSStop, TfAnswer, TfLanding, TfQuestion, TfQuestionOption, User, \
 	init as recInit
 
 # Regex for validating email
@@ -162,6 +162,10 @@ class Monolith(Services.Service):
 		if 'provider' not in data:
 			data['provider'] = None
 
+		# If continuous was not passed
+		if 'continuous' not in data:
+			data['continuous'] = None
+
 		# Check how many claims this user already has
 		iCount = CustomerClaimed.count(filter={
 			"user": sesh['memo_id']
@@ -211,6 +215,7 @@ class Monolith(Services.Service):
 				"phoneNumber": data['phoneNumber'],
 				"user": sesh['memo_id'],
 				"orderId": data['orderId'],
+				"continuous": data['continuous'],
 				"provider": data['provider']
 			})
 		except ValueError as e:
@@ -1418,7 +1423,7 @@ class Monolith(Services.Service):
 			return Services.Response(error=Rights.INVALID)
 
 		# Verify fields
-		try: DictHelper.eval(data, ['phoneNumber', 'customerId', 'orderId', 'provider', 'note'])
+		try: DictHelper.eval(data, ['phoneNumber', 'note'])
 		except ValueError as e: return Services.Response(error=(1001, [(f, 'missing') for f in e.args]))
 
 		# Find the claim
@@ -1437,15 +1442,16 @@ class Monolith(Services.Service):
 		if oClaim['provider'] and oClaim['orderId']:
 
 			# Get the extra claim details
-			dDetails = KtOrder.claimDetails(data['orderId'])
+			dDetails = KtOrder.claimDetails(oClaim['orderId'])
 			if not dDetails:
 				return Services.Response(error=(1104, 'order'))
 
 			# Generate the data for the record and the WS message
 			dData = {
-				"customerId": data['customerId'],
-				"orderId": data['orderId'],
-				"user": data['provider'],
+				"customerId": dDetails['customerId'],
+				"orderId": oClaim['orderId'],
+				"continuous": oClaim['continuous'],
+				"user": oClaim['provider'],
 				"transferredBy": sesh['memo_id']
 			}
 
@@ -1462,7 +1468,7 @@ class Monolith(Services.Service):
 					return Services.Response(error=1100)
 
 				# Sync the transfer for anyone interested
-				Sync.push('monolith', 'user-%s' % str(data['provider']), {
+				Sync.push('monolith', 'user-%s' % str(oClaim['provider']), {
 					"type": 'claim_transfered',
 					"claim": dData
 				})
@@ -1471,7 +1477,7 @@ class Monolith(Services.Service):
 			except Record_MySQL.DuplicateException as e:
 
 				# Find the existing claim
-				oOldClaim = KtOrderClaim.get(data['customerId'])
+				oOldClaim = KtOrderClaim.get(oClaim['customerId'])
 
 				# Save instead of create
 				oOrderClaim.save()
@@ -1479,11 +1485,11 @@ class Monolith(Services.Service):
 				# Notify the old provider they lost the claim
 				Sync.push('monolith', 'user-%s' % str(oOldClaim['user']), {
 					"type": 'claim_removed',
-					"customerId": data['customerId']
+					"customerId": dDetails['customerId']
 				})
 
 				# Notify the new provider they gained a claim
-				Sync.push('monolith', 'user-%s' % str(data['provider']), {
+				Sync.push('monolith', 'user-%s' % str(oClaim['provider']), {
 					"type": 'claim_transfered',
 					"claim": dData
 				})
@@ -1506,7 +1512,7 @@ class Monolith(Services.Service):
 			"note": data['note'],
 			"parentTable": 'kt_order',
 			"parentColumn": 'orderId',
-			"columnValue": data['orderId'],
+			"columnValue": oClaim['orderId'],
 			"createdAt": sDT,
 			"updatedAt": sDT
 		})
@@ -2164,6 +2170,10 @@ class Monolith(Services.Service):
 		try: DictHelper.eval(data, ['customerId', 'orderId'])
 		except ValueError as e: return Services.Response(error=(1001, [(f, 'missing') for f in e.args]))
 
+		# If 'continuous' is missing, assume false
+		if 'continuous' not in data:
+			data['continuous'] = False
+
 		# Check how many claims this user already has
 		iCount = KtOrderClaim.count(filter={
 			"user": sesh['memo_id']
@@ -2178,6 +2188,7 @@ class Monolith(Services.Service):
 			oKtOrderClaim = KtOrderClaim({
 				"customerId": data['customerId'],
 				"orderId": data['orderId'],
+				"continuous": data['continuous'],
 				"user": sesh['memo_id']
 			})
 		except ValueError as e:
@@ -2514,6 +2525,7 @@ class Monolith(Services.Service):
 			"transferredBy": sesh['memo_id'],
 			"provider": sesh['memo_id'],
 			"orderId": oOrderClaim['orderId'],
+			"continuous": oOrderClaim['continuous']
 		}
 
 		# Create a new claim instance for the agent and store in the DB
@@ -2551,7 +2563,7 @@ class Monolith(Services.Service):
 					"claim": dData
 				})
 
-			# Else, we dont' care who the agent is
+			# Else, we don't care who the agent is
 			else:
 
 				# Keep the existing agent and save
@@ -2661,6 +2673,28 @@ class Monolith(Services.Service):
 			KtOrder.queue('ed', sesh['states']['ed'])
 		)
 
+	def ordersPendingProviderEdCont_read(self, data, sesh):
+		"""Order Pending Provider ED
+
+		Returns the unclaimed pending ED orders
+
+		Arguments:
+			data (dict): Data sent with the request
+			sesh (Sesh._Session): The session associated with the request
+
+		Returns:
+			Services.Response
+		"""
+
+		# If the user has no ED states
+		if not sesh['states']['ed']:
+			return Services.Response(error=1506)
+
+		# Fetch and return the queue
+		return Services.Response(
+			KtOrderContinuous.queue('ed', sesh['states']['ed'])
+		)
+
 	def ordersPendingProviderHrt_read(self, data, sesh):
 		"""Order Pending Provider HRT
 
@@ -2681,6 +2715,28 @@ class Monolith(Services.Service):
 		# Fetch and return the queue
 		return Services.Response(
 			KtOrder.queue('hrt', sesh['states']['hrt'])
+		)
+
+	def ordersPendingProviderHrtCont_read(self, data, sesh):
+		"""Order Pending Provider HRT
+
+		Returns the unclaimed pending HRT orders
+
+		Arguments:
+			data (dict): Data sent with the request
+			sesh (Sesh._Session): The session associated with the request
+
+		Returns:
+			Services.Response
+		"""
+
+		# If the user has no HRT states
+		if not sesh['states']['hrt']:
+			return Services.Response(error=1506)
+
+		# Fetch and return the queue
+		return Services.Response(
+			KtOrderContinuous.queue('hrt', sesh['states']['hrt'])
 		)
 
 	def passwdForgot_create(self, data):
