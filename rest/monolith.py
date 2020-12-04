@@ -63,6 +63,8 @@ REST.Server({
 	"/msgs/unclaimed": {"methods": REST.READ, "session": True},
 	"/msgs/unclaimed/count": {"methods": REST.READ, "session": True},
 
+	"/notes/claimed/new": {"methods": REST.READ, "session": True},
+
 	"/order/approve": {"methods": REST.UPDATE, "session": True},
 	"/order/decline": {"methods": REST.UPDATE, "session": True},
 	"/order/claim": {"methods": REST.CREATE | REST.DELETE, "session": True},

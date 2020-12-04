@@ -29,8 +29,9 @@ from shared import Memo, Rights, SMSWorkflow, Sync
 from records.monolith import \
 	Calendly, Campaign, CustomerClaimed, CustomerClaimedLast, CustomerCommunication, \
 	CustomerMsgPhone, DsPatient, Forgot, HrtLabResultTests, KtCustomer, KtOrder, \
-	KtOrderClaim, KtOrderContinuous, ShippingInfo, SmpNote, SmpOrderStatus, \
-	SmpState, SMSStop, TfAnswer, TfLanding, TfQuestion, TfQuestionOption, User, \
+	KtOrderClaim, KtOrderClaimLast, KtOrderContinuous, ShippingInfo, SmpNote, \
+	SmpOrderStatus, SmpState, SMSStop, TfAnswer, TfLanding, TfQuestion, \
+	TfQuestionOption, User, \
 	init as recInit
 
 # Regex for validating email
@@ -1840,8 +1841,6 @@ class Monolith(Services.Service):
 		# Fetch the last claimed time
 		iTS = CustomerClaimedLast.get(sesh['memo_id'])
 
-		print(time())
-
 		# Store the new time
 		CustomerClaimedLast.set(sesh['memo_id'], int(time()))
 
@@ -2005,6 +2004,38 @@ class Monolith(Services.Service):
 		# Fetch and return the data
 		return Services.Response(
 			CustomerMsgPhone.unclaimedCount()
+		)
+
+	def notesClaimedNew_read(self, data, sesh):
+		"""Notes Claimed New
+
+		Checks if there's any new notes for the given customers
+
+		Arguments:
+			data (dict): Data sent with the request
+			sesh (Sesh._Session): The session associated with the request
+
+		Returns:
+			Services.Response
+		"""
+
+		# Verify fields
+		try: DictHelper.eval(data, ['customerIds'])
+		except ValueError as e: return Services.Response(error=(1001, [(f, 'missing') for f in e.args]))
+
+		# If it's not a list
+		if not isinstance(data['customerIds'], (list,tuple)):
+			return Services.Response(error=(1001, [('customerIds', 'invalid')]))
+
+		# Fetch the last claimed time
+		iTS = KtOrderClaimLast.get(sesh['memo_id'])
+
+		# Store the new time
+		KtOrderClaimLast.set(sesh['memo_id'], int(time()))
+
+		# Fetch and return the list of customerIds with new messages
+		return Services.Response(
+			SmpNote.newNotes(data['customerIds'], iTS)
 		)
 
 	def orderApprove_update(self, data, sesh):
