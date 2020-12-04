@@ -22,10 +22,10 @@ from FormatOC import Tree
 from RestOC import Conf, Record_MySQL
 
 # Custome SQL
-sClaimedNewSQL = ''
 sConversationSQL = ''
 sLatestStatusSQL = ''
 sSmpNotes = ''
+sSmpNotesNew = ''
 sNumOfOrdersSQL = ''
 sSearchSQL = ''
 
@@ -35,20 +35,18 @@ def init():
 	Need to find a better way to do this
 	"""
 
-	global sClaimedNewSQL, sConversationSQL, \
-			sLandingSQL, sLatestStatusSQL, \
-			sSmpNotes, sNumOfOrdersSQL, sSearchSQL, \
-			sUnclaimedSQL, sUnclaimedCountSQL
+	global sConversationSQL, sLatestStatusSQL, sSmpNotes, sSmpNotesNew, \
+			sNumOfOrdersSQL, sSearchSQL
 
 	# SQL files
-	with open('records/sql/claimed_new.sql') as oF:
-		sClaimedNewSQL = oF.read()
 	with open('records/sql/conversation.sql') as oF:
 		sConversationSQL = oF.read()
 	with open('records/sql/latest_status.sql') as oF:
 		sLatestStatusSQL = oF.read()
 	with open('records/sql/smp_notes.sql') as oF:
 		sSmpNotes = oF.read()
+	with open('records/sql/smp_notes_new.sql') as oF:
+		sSmpNotesNew = oF.read()
 	with open('records/sql/number_of_orders.sql') as oF:
 		sNumOfOrdersSQL = oF.read()
 	with open('records/sql/search.sql') as oF:
@@ -469,7 +467,15 @@ class CustomerCommunication(Record_MySQL.Record):
 			lNumbers.extend([s, '1%s' % s])
 
 		# Generate SQL
-		sSQL = sClaimedNewSQL % {
+		sSQL = "SELECT\n" \
+				"	`fromPhone`, count(`fromPhone`) as `count`\n" \
+				"FROM\n" \
+				"	`%(db)s`.`%(table)s`\n" \
+				"WHERE\n" \
+				"	`createdAt` > FROM_UNIXTIME(%(ts)d) AND\n" \
+				"	`fromPhone` IN (%(numbers)s)\n" \
+				"GROUP BY\n" \
+				"	`fromPhone`" % {
 			"db": dStruct['db'],
 			"table": dStruct['table'],
 			"ts": ts,
@@ -1362,6 +1368,129 @@ class KtOrderClaim(Record_MySQL.Record):
 		# Return the config
 		return cls._conf
 
+# KtOrderClaimLast class
+class KtOrderClaimLast(Record_MySQL.Record):
+	"""KtOrderClaimLast
+
+	Represents the last time a user looked up new notes on claimed
+	customers
+	"""
+
+	_conf = None
+	"""Configuration"""
+
+	@classmethod
+	def config(cls):
+		"""Config
+
+		Returns the configuration data associated with the record type
+
+		Returns:
+			dict
+		"""
+
+		# If we haven loaded the config yet
+		if not cls._conf:
+			cls._conf = Record_MySQL.Record.generateConfig(
+				Tree.fromFile('definitions/monolith/kt_order_claim_last.json'),
+				'mysql'
+			)
+
+		# Return the config
+		return cls._conf
+
+	@classmethod
+	def get(cls, user, custom={}):
+		"""Get
+
+		Get's the last timestamp for the given user
+
+		Arguments:
+			user (uint): The user to get the timestamp for
+			custom (dict): Custom Host and DB info
+				'host' the name of the host to get/set data on
+				'append' optional postfix for dynamic DBs
+
+		Returns:
+			uint
+		"""
+
+		# Fetch the record structure
+		dStruct = cls.struct(custom)
+
+		# Generate the SQL
+		sSQL = 'SELECT UNIX_TIMESTAMP(`timestamp`)\n' \
+			'FROM `%(db)s`.`%(table)s`\n' \
+			'WHERE `user` = %(user)d' % {
+				"db": dStruct['db'],
+				"table": dStruct['table'],
+				"user": user
+			}
+
+		# Fetch the value
+		iTS = Record_MySQL.Commands.select(
+			dStruct['host'],
+			sSQL,
+			Record_MySQL.ESelect.CELL
+		)
+
+		# If we got no value
+		if not iTS:
+			iTS = int(time())
+
+		# Return the timestamp
+		return iTS
+
+	@classmethod
+	def set(cls, user, ts, custom={}):
+		"""Set
+
+		Updates the current value for the user or else creates it
+
+		Arguments:
+			user (uint): The unique ID of the user the timestamp is
+				associated with
+			ts (uint): The timestamp to store
+			custom (dict): Custom Host and DB info
+				'host' the name of the host to get/set data on
+				'append' optional postfix for dynamic DBs
+
+		Returns:
+			None
+		"""
+
+		# Fetch the record structure
+		dStruct = cls.struct(custom)
+
+		# Generate the SQL
+		sSQL = 'UPDATE `%(db)s`.`%(table)s`\n' \
+			'SET `timestamp` = FROM_UNIXTIME(%(ts)d)\n' \
+			'WHERE `user` = %(user)d' % {
+				"db": dStruct['db'],
+				"table": dStruct['table'],
+				"ts": ts,
+				"user": user
+			}
+
+		# Attempt to update the timestamp
+		iRows = Record_MySQL.Commands.execute(
+			dStruct['host'],
+			sSQL
+		)
+
+		# If we updated nothing
+		if not iRows:
+
+			# Create the new record
+			try:
+				oRecord = cls({
+					"user": user,
+					"timestamp": ts
+				})
+				oRecord.create()
+			except Record_MySQL.DuplicateException:
+				pass
+
 # KtOrderContinuous class
 class KtOrderContinuous(Record_MySQL.Record):
 	"""KtOrderContinuous
@@ -1546,6 +1675,43 @@ class SmpNote(Record_MySQL.Record):
 
 		# Return the config
 		return cls._conf
+
+	@classmethod
+	def newNotes(cls, ids, ts, custom={}):
+		"""New Notes
+
+		Returns if there's any new notes associated with the given customer
+		IDs
+
+		Arguments:
+			ids (int[]): A list of unique customer IDs
+			custom (dict): Custom Host and DB info
+				'host' the name of the host to get/set data on
+				'append' optional postfix for dynamic DBs
+
+		Returns:
+			list
+		"""
+
+		# Init the return
+		dRet = {}
+
+		# Fetch the record structure
+		dStruct = cls.struct(custom)
+
+		# Generate SQL
+		sSQL = sSmpNotesNew % {
+			"db": dStruct['db'],
+			"table": dStruct['table'],
+			"ts": ts,
+			"ids": "'%s'" % "','".join([str(d) for d in ids])
+		}
+
+		# Fetch the data
+		lRecords = Record_MySQL.Commands.select(dStruct['host'], sSQL)
+
+		# Return
+		return {d['customerId']:d['count'] for d in lRecords}
 
 # SmpOrderStatus class
 class SmpOrderStatus(Record_MySQL.Record):
