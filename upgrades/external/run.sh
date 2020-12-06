@@ -50,4 +50,5 @@ server {
 }"
 cd /etc/nginx/sites-enabled
 ln -sf ../sites-available/external.conf .
-/usr/sbin/nginx -s reload
+sed -i 's/me\/mems\/www/me\/mems\/nodes\/www/' mems.conf
+/usr/sbin/nginx -t && /usr/sbin/nginx -s reload
