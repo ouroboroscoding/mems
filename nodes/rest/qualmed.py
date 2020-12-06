@@ -1,5 +1,5 @@
 # coding=utf8
-""" Qualified Medication Service
+""" Qualified Medication REST
 
 Handles Qualified Medication related activities
 """

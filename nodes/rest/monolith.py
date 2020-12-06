@@ -1,5 +1,5 @@
 # coding=utf8
-""" Monolith Service
+""" Monolith REST
 
 Handles everything in the old memo system
 """

@@ -1,5 +1,5 @@
 # coding=utf8
-""" Auth Service
+""" Auth REST
 
 Handles logins and letting them sign in/out
 """

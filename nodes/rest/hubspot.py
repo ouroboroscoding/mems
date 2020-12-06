@@ -1,5 +1,5 @@
 # coding=utf8
-""" HubSpot Service
+""" HubSpot REST
 
 Handles interactions with HubSpot
 """

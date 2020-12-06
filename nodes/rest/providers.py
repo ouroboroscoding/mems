@@ -1,5 +1,5 @@
 # coding=utf8
-""" Providers Service
+""" Providers REST
 
 Handles Providers related activities
 """
