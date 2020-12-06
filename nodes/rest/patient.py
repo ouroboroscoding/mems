@@ -1,5 +1,5 @@
 # coding=utf8
-""" Patient Service
+""" Patient REST
 
 Handles patient access
 """

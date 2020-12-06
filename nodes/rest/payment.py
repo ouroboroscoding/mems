@@ -1,5 +1,5 @@
 # coding=utf8
-""" Payment Service
+""" Payment REST
 
 Handles interactions with Payment
 """

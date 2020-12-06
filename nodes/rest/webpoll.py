@@ -1,5 +1,5 @@
 # coding=utf8
-""" Web Poll Service
+""" Web Poll REST
 
 Handles web polling (websocket)
 """

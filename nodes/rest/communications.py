@@ -1,5 +1,5 @@
 # coding=utf8
-"""Communications Loader
+"""Communications REST
 
 Loads the Communications service and maps HTTP requests to specific Service
 requests

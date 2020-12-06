@@ -1,5 +1,5 @@
 # coding=utf8
-""" Products Service
+""" Products REST
 
 Handles Product related activities
 """

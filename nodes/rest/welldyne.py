@@ -1,5 +1,5 @@
 # coding=utf8
-""" WellDyne Service
+""" WellDyne REST
 
 Handles everything associated with WellDyneRx
 """
