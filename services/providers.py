@@ -42,6 +42,9 @@ class Providers(Services.Service):
 			Monolith
 		"""
 
+		# Get providers conf
+		self._conf = Conf.get(('services', 'providers'))
+
 		# Return self for chaining
 		return self
 
@@ -728,7 +731,7 @@ class Providers(Services.Service):
 		if oResponse.errorExists(): return oResponse
 
 		# Create a new session
-		oSesh = Sesh.create("prov:" + uuid.uuid4().hex)
+		oSesh = Sesh.create("prov:" + uuid.uuid4().hex, self._conf['sesh_ttl'])
 
 		# Store the user ID and information in it
 		oSesh['memo_id'] = oResponse.data['id']
