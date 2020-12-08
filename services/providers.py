@@ -12,6 +12,7 @@ __email__		= "chris@fuelforthefire.ca"
 __created__		= "2020-10-15"
 
 # Python imports
+from time import time
 import uuid
 
 # Pip imports
@@ -32,6 +33,9 @@ class Providers(Services.Service):
 
 	_install = [ProductToRx, Provider, Template]
 	"""Record types called in install"""
+
+	_seshPre = 'prov:'
+	"""Prefix for sessions"""
 
 	def initialise(self):
 		"""Initialise
@@ -696,8 +700,8 @@ class Providers(Services.Service):
 			Services.Response
 		"""
 
-		# If the session doesn't start with "prov:" it's not valid
-		if sesh.id()[0:5] != 'prov:':
+		# If the session doesn't start with the proper prefix it's not valid
+		if sesh.id()[0:5] != self._seshPre:
 			return Services.Response(error=102)
 
 		# Return the session info
@@ -730,8 +734,11 @@ class Providers(Services.Service):
 		oResponse = Services.create('monolith', 'signin', data)
 		if oResponse.errorExists(): return oResponse
 
-		# Create a new session
-		oSesh = Sesh.create("prov:" + uuid.uuid4().hex, self._conf['sesh_ttl'])
+		# Generate a new UUID
+		sUUID = str(uuid.uuid4())
+
+		# Create a new session using the UUID with a custom TTL
+		oSesh = Sesh.create("%s%s" % (self._seshPre, sUUID), self._conf['sesh_ttl'])
 
 		# Store the user ID and information in it
 		oSesh['memo_id'] = oResponse.data['id']
@@ -765,6 +772,25 @@ class Providers(Services.Service):
 		oSesh['claims_timeout'] = dProvider['claims_timeout']
 		oSesh.save()
 
+		# Look for a pre-existing signin with no sign out
+		oPrevTrack = Tracking.filter({
+			"memo_id": oSesh['memo_id'],
+			"end": None
+		}, limit=1, orderby=[['_updated', 'DESC']])
+		if oPrevTrack:
+			oPrevTrack['resolution'] = 'new_signin'
+			oPrevTrack['end'] = int(time())
+			oPrevTrack.save()
+
+		# Create the sign in tracking
+		oTracking = Tracking({
+			"memo_id": oSesh['memo_id'],
+			"sesh": sUUID,
+			"action": 'signin',
+			"start": int(time())
+		})
+		oTracking.create()
+
 		# Return the session ID and primary user data
 		return Services.Response({
 			"memo": {"id": oSesh['memo_id']},
@@ -787,6 +813,25 @@ class Providers(Services.Service):
 		Returns:
 			Services.Response
 		"""
+
+		# Get the current session ID
+		sSeshID	= sesh.id()
+
+		# If it starts with the proper prefix
+		if sSeshID[0:5] == self._seshPre:
+
+			# Find the previous sign in
+			oTracking = Tracking.filter({
+				"memo_id": sesh['memo_id'],
+				"sesh": sSeshID[5:],
+				"action": 'signin',
+				"end": None
+			}, limit=1)
+
+			# If we found one, end it
+			if oTracking:
+				oTracking['resolution'] = 'signout'
+				oTracking.save()
 
 		# Close the session so it can no longer be found/used
 		sesh.close()
