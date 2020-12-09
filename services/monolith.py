@@ -1022,6 +1022,19 @@ class Monolith(Services.Service):
 		except ValueError as e:
 			return Services.Response(error=(1001, [e.args[0]]))
 
+		# If it's DOB
+		if data['ref'] in ['b63763bc7f3b71dc', 'birthdate']:
+
+			# Find the landing
+			lLandings = TfLanding.filter({
+				"landing_id": data['landing_id']
+			})
+
+			# Update DOB for each
+			for o in lLandings:
+				o['birthDay'] = data['value']
+				o.save()
+
 		# Save the record and return the result
 		return Services.Response(
 			oTfAnswer.save()
