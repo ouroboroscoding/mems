@@ -2236,6 +2236,16 @@ class Monolith(Services.Service):
 		try:
 			oKtOrderClaim.create()
 
+			# Send to SMSWorkflow
+			SMSWorkflow.providerOpens(data['orderId'], sesh['memo_id'], self)
+
+			# Add tracking
+			oResponse = Services.create('providers', 'tracking', {
+				"action": 'viewed',
+				"crm_type": 'knk',
+				"crm_id": data['customerId']
+			})
+
 		# If we got a duplicate exception
 		except Record_MySQL.DuplicateException:
 
@@ -2245,8 +2255,6 @@ class Monolith(Services.Service):
 			# Return the error with the user ID
 			return Services.Response(error=(1101, dClaim['user']))
 
-		# Send to SMSWorkflow
-		SMSWorkflow.providerOpens(data['orderId'], sesh['memo_id'], self)
 
 		# Return OK
 		return Services.Response(True)
@@ -2286,16 +2294,14 @@ class Monolith(Services.Service):
 			return Services.Response(error=1000)
 
 		# If the order was approved
-		if data['reason'] == 'approve':
-			pass
+		if data['reason'] in ['approved', 'declined', 'transferred']:
 
-		# If the order was rejected
-		elif data['reason'] == 'decline':
-			pass
-
-		# If the order was transfered
-		elif data['reason'] == 'transfer':
-			pass
+			# Add tracking
+			oResponse = Services.create('providers', 'tracking', {
+				"resolution": data['reason'],
+				"crm_type": 'knk',
+				"crm_id": data['customerId']
+			})
 
 		# Else, invalid reason
 		else:

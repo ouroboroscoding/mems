@@ -17,13 +17,14 @@ import uuid
 
 # Pip imports
 from FormatOC import Node
-from RestOC import DictHelper, Errors, Record_MySQL, Services, Sesh
+from RestOC import Conf, DictHelper, Errors, Record_MySQL, Services, Sesh
 
 # Shared imports
 from shared import Rights, SMSWorkflow
 
 # Records imports
-from records.providers import ProductToRx, Provider, RoundRobinAgent, Template
+from records.providers import ProductToRx, Provider, RoundRobinAgent, Template, \
+								Tracking
 
 class Providers(Services.Service):
 	"""Providers Service class
@@ -729,7 +730,7 @@ class Providers(Services.Service):
 		try: DictHelper.eval(data, ['userName', 'passwd'])
 		except ValueError as e: return Services.Response(error=(1001, [(f, 'missing') for f in e.args]))
 
-		# Check monolith for the user
+		# Check internal key
 		data['_internal_'] = Services.internalKey()
 		oResponse = Services.create('monolith', 'signin', data)
 		if oResponse.errorExists(): return oResponse
@@ -831,6 +832,7 @@ class Providers(Services.Service):
 			# If we found one, end it
 			if oTracking:
 				oTracking['resolution'] = 'signout'
+				oTracking['end'] = int(time)
 				oTracking.save()
 
 		# Close the session so it can no longer be found/used
@@ -1025,3 +1027,71 @@ class Providers(Services.Service):
 		return Services.Response(
 			Template.get(raw=True, orderby=['title'])
 		)
+
+	def tracking_create(self, data):
+		"""Tracking
+
+		Internal only request to add tracking to a provider
+
+		Arguments:
+			data (mixed): Data sent with the request
+
+		Returns:
+			Services.Response
+		"""
+
+		# Verify fields
+		try: DictHelper.eval(data, ['_internal_', 'crm_type', 'crm_id'])
+		except ValueError as e: return Services.Response(error=(1001, [(f, 'missing') for f in e.args]))
+		if 'action' not in data and 'resolution' not in data:
+			return Services.Response(error=(1001, [('action', 'missing')]))
+
+		# Check internal key
+		data['_internal_'] = Services.internalKey()
+		oResponse = Services.create('monolith', 'signin', data)
+		if oResponse.errorExists(): return oResponse
+
+		# If we're creating a new action
+		if 'action' in data:
+
+			# If it's not a viewed
+			if data['action'] != 'viewed':
+				return Services.Response(error=(1001, [('action', 'invalid')]))
+
+			# Create a new tracking instance
+			oTracking = Tracking({
+				"memo_id": sesh['memo_id'],
+				"sesh": sesh.id()[5:],
+				"action": data['action'],
+				"start": int(time()),
+				"crm_type": data['crm_type'],
+				"crm_id": data['crm_id']
+			})
+			oTracking.create()
+
+			# Return OK
+			return Services.Response(True)
+
+		# Else, we're adding a resolution
+		else:
+
+			# If it's not a viewed
+			if data['resolution'] not in ['approved', 'declined', 'transferred']:
+				return Services.Response(error=(1001, [('resolution', 'invalid')]))
+
+			# Look for an existing viewed tracking
+			oTracking = Tracking.filter({
+				"memo_id": sesh['memo_id'],
+				"end": None,
+				"crm_type": data['crm_type'],
+				"crm_id": data['crm_id']
+			}, limit=1, orderby=[['_created', 'DESC']])
+
+			# If we found one
+			if oTracking:
+				oTracking['resolution'] = data['resolution']
+				oTracking['end'] = int(time())
+				oTracking.save()
+
+			# Return
+			return Services.Response(oTracking and True or False)
