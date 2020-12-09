@@ -32,7 +32,7 @@ REST.Server({
 
 	"/customer/calendly": {"methods": REST.READ, "session": True},
 	"/customer/claim": {"methods": REST.CREATE | REST.UPDATE | REST.DELETE, "session": True},
-	"/customer/claim/clear": {"methods": REST.UPDATE, "session": True},
+	"/customer/claim/view": {"methods": REST.UPDATE, "session": True},
 	"/customer/dob": {"methods": REST.READ, "session": True},
 	"/customer/dsid": {"methods": REST.CREATE | REST.READ | REST.UPDATE, "session": True},
 	"/customer/exists": {"methods": REST.READ, "session": True},
@@ -68,7 +68,7 @@ REST.Server({
 	"/order/approve": {"methods": REST.UPDATE, "session": True},
 	"/order/decline": {"methods": REST.UPDATE, "session": True},
 	"/order/claim": {"methods": REST.CREATE | REST.DELETE, "session": True},
-	"/order/claim/clear": {"methods": REST.UPDATE, "session": True},
+	"/order/claim/view": {"methods": REST.UPDATE, "session": True},
 	"/order/claimed": {"methods": REST.READ, "session": True},
 	"/order/label": {"methods": REST.UPDATE, "session": True},
 	"/order/refresh": {"methods": REST.UPDATE, "session": True},

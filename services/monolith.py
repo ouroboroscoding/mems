@@ -217,7 +217,8 @@ class Monolith(Services.Service):
 				"user": sesh['memo_id'],
 				"orderId": data['orderId'],
 				"continuous": data['continuous'],
-				"provider": data['provider']
+				"provider": data['provider'],
+				"viewed": True
 			})
 		except ValueError as e:
 			return Services.Response(error=(1001, e.args[0]))
@@ -332,6 +333,7 @@ class Monolith(Services.Service):
 		# Switch the user associated to the logged in user
 		oClaim['user'] = data['user_id']
 		oClaim['transferredBy'] = sesh['memo_id']
+		oClaim['viewed'] = False
 		oClaim.save()
 
 		# If the user transferred it to themselves, they don't need a
@@ -345,7 +347,8 @@ class Monolith(Services.Service):
 					"phoneNumber": data['phoneNumber'],
 					"orderId": oClaim['orderId'],
 					"provider": oClaim['provider'],
-					"transferredBy": sesh['memo_id']
+					"transferredBy": sesh['memo_id'],
+					"viewed": False
 				}
 			})
 
@@ -361,10 +364,10 @@ class Monolith(Services.Service):
 		# Return OK
 		return Services.Response(True)
 
-	def customerClaimClear_update(self, data, sesh):
-		"""Customer Claim Clear
+	def customerClaimView_update(self, data, sesh):
+		"""Customer Claim View
 
-		Clears the transferred by state
+		Marks the claim as viewed for the first time
 
 		Arguments:
 			data (dict): Data sent with the request
@@ -396,8 +399,8 @@ class Monolith(Services.Service):
 		if oClaim['user'] != sesh['memo_id']:
 			return Services.Response(error=1000)
 
-		# Clear the transferred by
-		oClaim['transferredBy'] = None
+		# Mark the viewed flag
+		oClaim['viewed'] = True
 		oClaim.save()
 
 		# Return OK
@@ -1453,7 +1456,8 @@ class Monolith(Services.Service):
 				"orderId": oClaim['orderId'],
 				"continuous": oClaim['continuous'],
 				"user": oClaim['provider'],
-				"transferredBy": sesh['memo_id']
+				"transferredBy": sesh['memo_id'],
+				"viewed": False
 			}
 
 			# Create a new claim instance for the agent and store in the DB
@@ -2221,13 +2225,17 @@ class Monolith(Services.Service):
 		if iCount >= sesh['claims_max']:
 			return Services.Response(error=1505)
 
+		# Init warning
+		mWarning = None
+
 		# Attempt to create the record
 		try:
 			oKtOrderClaim = KtOrderClaim({
 				"customerId": data['customerId'],
 				"orderId": data['orderId'],
 				"continuous": data['continuous'],
-				"user": sesh['memo_id']
+				"user": sesh['memo_id'],
+				"viewed": True
 			})
 		except ValueError as e:
 			return Services.Response(error=(1001, e.args[0]))
@@ -2241,10 +2249,13 @@ class Monolith(Services.Service):
 
 			# Add tracking
 			oResponse = Services.create('providers', 'tracking', {
+				"_internal_": Services.internalKey(),
 				"action": 'viewed',
 				"crm_type": 'knk',
 				"crm_id": data['customerId']
-			})
+			}, sesh)
+			if oResponse.errorExists():
+				mWarning = oResponse.error;
 
 		# If we got a duplicate exception
 		except Record_MySQL.DuplicateException:
@@ -2255,9 +2266,8 @@ class Monolith(Services.Service):
 			# Return the error with the user ID
 			return Services.Response(error=(1101, dClaim['user']))
 
-
 		# Return OK
-		return Services.Response(True)
+		return Services.Response(True, warning=mWarning)
 
 	def orderClaim_delete(self, data, sesh):
 		"""Order Claim Delete
@@ -2293,15 +2303,21 @@ class Monolith(Services.Service):
 		if oClaim['user'] != sesh['memo_id']:
 			return Services.Response(error=1000)
 
+		# Init warning
+		mWarning = None
+
 		# If the order was approved
 		if data['reason'] in ['approved', 'declined', 'transferred']:
 
 			# Add tracking
 			oResponse = Services.create('providers', 'tracking', {
+				"_internal_": Services.internalKey(),
 				"resolution": data['reason'],
 				"crm_type": 'knk',
 				"crm_id": data['customerId']
-			})
+			}, sesh)
+			if oResponse.errorExists():
+				mWarning = oResponse.error;
 
 		# Else, invalid reason
 		else:
@@ -2309,13 +2325,14 @@ class Monolith(Services.Service):
 
 		# Attempt to delete the record and return the result
 		return Services.Response(
-			oClaim.delete()
+			oClaim.delete(),
+			warning=mWarning
 		)
 
-	def orderClaimClear_update(self, data, sesh):
-		"""Order Claim Clear
+	def orderClaimView_update(self, data, sesh):
+		"""Order Claim View
 
-		Clears the transferred by state
+		Marks the claim as viewed for the first time
 
 		Arguments:
 			data (dict): Data sent with the request
@@ -2347,12 +2364,25 @@ class Monolith(Services.Service):
 		if oClaim['user'] != sesh['memo_id']:
 			return Services.Response(error=1000)
 
-		# Clear the transferred by
-		oClaim['transferredBy'] = None
+		# Set the viewed flag
+		oClaim['viewed'] = True
 		oClaim.save()
 
+		# Init warning
+		mWarning = None
+
+		# Add tracking
+		oResponse = Services.create('providers', 'tracking', {
+			"_internal_": Services.internalKey(),
+			"action": 'viewed',
+			"crm_type": 'knk',
+			"crm_id": data['customerId']
+		}, sesh)
+		if oResponse.errorExists():
+			mWarning = oResponse.error;
+
 		# Return OK
-		return Services.Response(True)
+		return Services.Response(True, warning=mWarning)
 
 	def orderClaimed_read(self, data, sesh):
 		"""Order Claimed
@@ -2569,7 +2599,8 @@ class Monolith(Services.Service):
 			"transferredBy": sesh['memo_id'],
 			"provider": sesh['memo_id'],
 			"orderId": oOrderClaim['orderId'],
-			"continuous": oOrderClaim['continuous']
+			"continuous": oOrderClaim['continuous'],
+			"viewed": False
 		}
 
 		# Create a new claim instance for the agent and store in the DB

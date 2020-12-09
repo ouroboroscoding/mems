@@ -832,7 +832,7 @@ class Providers(Services.Service):
 			# If we found one, end it
 			if oTracking:
 				oTracking['resolution'] = 'signout'
-				oTracking['end'] = int(time)
+				oTracking['end'] = int(time())
 				oTracking.save()
 
 		# Close the session so it can no longer be found/used
@@ -1028,7 +1028,7 @@ class Providers(Services.Service):
 			Template.get(raw=True, orderby=['title'])
 		)
 
-	def tracking_create(self, data):
+	def tracking_create(self, data, sesh):
 		"""Tracking
 
 		Internal only request to add tracking to a provider
@@ -1046,10 +1046,10 @@ class Providers(Services.Service):
 		if 'action' not in data and 'resolution' not in data:
 			return Services.Response(error=(1001, [('action', 'missing')]))
 
-		# Check internal key
-		data['_internal_'] = Services.internalKey()
-		oResponse = Services.create('monolith', 'signin', data)
-		if oResponse.errorExists(): return oResponse
+		# Verify the key, remove it if it's ok
+		if not Services.internalKey(data['_internal_']):
+			return Services.Response(error=Errors.SERVICE_INTERNAL_KEY)
+		del data['_internal_']
 
 		# If we're creating a new action
 		if 'action' in data:
@@ -1065,7 +1065,7 @@ class Providers(Services.Service):
 				"action": data['action'],
 				"start": int(time()),
 				"crm_type": data['crm_type'],
-				"crm_id": data['crm_id']
+				"crm_id": str(data['crm_id'])
 			})
 			oTracking.create()
 
@@ -1084,7 +1084,7 @@ class Providers(Services.Service):
 				"memo_id": sesh['memo_id'],
 				"end": None,
 				"crm_type": data['crm_type'],
-				"crm_id": data['crm_id']
+				"crm_id": str(data['crm_id'])
 			}, limit=1, orderby=[['_created', 'DESC']])
 
 			# If we found one
