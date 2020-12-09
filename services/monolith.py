@@ -2006,8 +2006,8 @@ class Monolith(Services.Service):
 			CustomerMsgPhone.unclaimedCount()
 		)
 
-	def notesClaimedNew_read(self, data, sesh):
-		"""Notes Claimed New
+	def notesNew_read(self, data, sesh):
+		"""Notes New
 
 		Checks if there's any new notes for the given customers
 
@@ -2027,6 +2027,13 @@ class Monolith(Services.Service):
 		if not isinstance(data['customerIds'], (list,tuple)):
 			return Services.Response(error=(1001, [('customerIds', 'invalid')]))
 
+		# If the ignore flag is set
+		if 'ignore' in data:
+			try: data['ignore'] = int(data['ignore'])
+			except ValueError: return Services.Response(error=(1001, [('ignore', 'invalid')]))
+		else:
+			data['ignore'] = None
+
 		# Fetch the last claimed time
 		iTS = KtOrderClaimLast.get(sesh['memo_id'])
 
@@ -2035,7 +2042,7 @@ class Monolith(Services.Service):
 
 		# Fetch and return the list of customerIds with new messages
 		return Services.Response(
-			SmpNote.newNotes(data['customerIds'], iTS)
+			SmpNote.newNotes(data['customerIds'], iTS, data['ignore'])
 		)
 
 	def orderApprove_update(self, data, sesh):
