@@ -625,7 +625,7 @@ class CustomerMsgPhone(Record_MySQL.Record):
 				"	`cmp`.`customerName`,\n" \
 				"	`cc`.`transferredBy`,\n" \
 				"	`cc`.`viewed`,\n" \
-				"	`cc`.`provider`\n," \
+				"	`cc`.`provider`,\n" \
 				"	`cc`.`orderId`\n" \
 				"FROM\n" \
 				"	`%(db)s`.`%(table)s` AS `cmp` JOIN\n" \
