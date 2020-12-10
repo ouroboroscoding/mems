@@ -17,7 +17,7 @@ user=root" > external.conf
 /usr/bin/supervisorctl update
 
 # Install new host
-exho "# External upstream
+echo "# External upstream
 upstream external_server {
 	server localhost:8100 fail_timeout=0;
 }

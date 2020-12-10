@@ -624,7 +624,8 @@ class CustomerMsgPhone(Record_MySQL.Record):
 				"	`cmp`.`customerPhone`,\n" \
 				"	`cmp`.`customerName`,\n" \
 				"	`cc`.`transferredBy`,\n" \
-				"	`cc`.`provider`\n," \
+				"	`cc`.`viewed`,\n" \
+				"	`cc`.`provider`,\n" \
 				"	`cc`.`orderId`\n" \
 				"FROM\n" \
 				"	`%(db)s`.`%(table)s` AS `cmp` JOIN\n" \
@@ -1029,6 +1030,7 @@ class KtOrder(Record_MySQL.Record):
 				"	`ktoc`.`customerId`,\n" \
 				"	`ktoc`.`orderId`,\n" \
 				"	`ktoc`.`transferredBy`,\n" \
+				"	`ktoc`.`viewed`,\n" \
 				"	`ktoc`.`continuous`,\n" \
 				"	CONCAT(`ktc`.`firstName`, ' ', `ktc`.`lastName`) as `customerName`,\n" \
 				"	`c`.`type`\n" \

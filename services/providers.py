@@ -12,17 +12,19 @@ __email__		= "chris@fuelforthefire.ca"
 __created__		= "2020-10-15"
 
 # Python imports
+from time import time
 import uuid
 
 # Pip imports
 from FormatOC import Node
-from RestOC import DictHelper, Errors, Record_MySQL, Services, Sesh
+from RestOC import Conf, DictHelper, Errors, Record_MySQL, Services, Sesh
 
 # Shared imports
 from shared import Rights, SMSWorkflow
 
 # Records imports
-from records.providers import ProductToRx, Provider, RoundRobinAgent, Template
+from records.providers import ProductToRx, Provider, RoundRobinAgent, Template, \
+								Tracking
 
 class Providers(Services.Service):
 	"""Providers Service class
@@ -33,6 +35,9 @@ class Providers(Services.Service):
 	_install = [ProductToRx, Provider, Template]
 	"""Record types called in install"""
 
+	_seshPre = 'prov:'
+	"""Prefix for sessions"""
+
 	def initialise(self):
 		"""Initialise
 
@@ -41,6 +46,9 @@ class Providers(Services.Service):
 		Returns:
 			Monolith
 		"""
+
+		# Get providers conf
+		self._conf = Conf.get(('services', 'providers'))
 
 		# Return self for chaining
 		return self
@@ -693,8 +701,8 @@ class Providers(Services.Service):
 			Services.Response
 		"""
 
-		# If the session doesn't start with "prov:" it's not valid
-		if sesh.id()[0:5] != 'prov:':
+		# If the session doesn't start with the proper prefix it's not valid
+		if sesh.id()[0:5] != self._seshPre:
 			return Services.Response(error=102)
 
 		# Return the session info
@@ -722,13 +730,16 @@ class Providers(Services.Service):
 		try: DictHelper.eval(data, ['userName', 'passwd'])
 		except ValueError as e: return Services.Response(error=(1001, [(f, 'missing') for f in e.args]))
 
-		# Check monolith for the user
+		# Check internal key
 		data['_internal_'] = Services.internalKey()
 		oResponse = Services.create('monolith', 'signin', data)
 		if oResponse.errorExists(): return oResponse
 
-		# Create a new session
-		oSesh = Sesh.create("prov:" + uuid.uuid4().hex)
+		# Generate a new UUID
+		sUUID = str(uuid.uuid4())
+
+		# Create a new session using the UUID with a custom TTL
+		oSesh = Sesh.create("%s%s" % (self._seshPre, sUUID), self._conf['sesh_ttl'])
 
 		# Store the user ID and information in it
 		oSesh['memo_id'] = oResponse.data['id']
@@ -762,6 +773,25 @@ class Providers(Services.Service):
 		oSesh['claims_timeout'] = dProvider['claims_timeout']
 		oSesh.save()
 
+		# Look for a pre-existing signin with no sign out
+		oPrevTrack = Tracking.filter({
+			"memo_id": oSesh['memo_id'],
+			"end": None
+		}, limit=1, orderby=[['_updated', 'DESC']])
+		if oPrevTrack:
+			oPrevTrack['resolution'] = 'new_signin'
+			oPrevTrack['end'] = int(time())
+			oPrevTrack.save()
+
+		# Create the sign in tracking
+		oTracking = Tracking({
+			"memo_id": oSesh['memo_id'],
+			"sesh": sUUID,
+			"action": 'signin',
+			"start": int(time())
+		})
+		oTracking.create()
+
 		# Return the session ID and primary user data
 		return Services.Response({
 			"memo": {"id": oSesh['memo_id']},
@@ -784,6 +814,26 @@ class Providers(Services.Service):
 		Returns:
 			Services.Response
 		"""
+
+		# Get the current session ID
+		sSeshID	= sesh.id()
+
+		# If it starts with the proper prefix
+		if sSeshID[0:5] == self._seshPre:
+
+			# Find the previous sign in
+			oTracking = Tracking.filter({
+				"memo_id": sesh['memo_id'],
+				"sesh": sSeshID[5:],
+				"action": 'signin',
+				"end": None
+			}, limit=1)
+
+			# If we found one, end it
+			if oTracking:
+				oTracking['resolution'] = 'signout'
+				oTracking['end'] = int(time())
+				oTracking.save()
 
 		# Close the session so it can no longer be found/used
 		sesh.close()
@@ -977,3 +1027,71 @@ class Providers(Services.Service):
 		return Services.Response(
 			Template.get(raw=True, orderby=['title'])
 		)
+
+	def tracking_create(self, data, sesh):
+		"""Tracking
+
+		Internal only request to add tracking to a provider
+
+		Arguments:
+			data (mixed): Data sent with the request
+
+		Returns:
+			Services.Response
+		"""
+
+		# Verify fields
+		try: DictHelper.eval(data, ['_internal_', 'crm_type', 'crm_id'])
+		except ValueError as e: return Services.Response(error=(1001, [(f, 'missing') for f in e.args]))
+		if 'action' not in data and 'resolution' not in data:
+			return Services.Response(error=(1001, [('action', 'missing')]))
+
+		# Verify the key, remove it if it's ok
+		if not Services.internalKey(data['_internal_']):
+			return Services.Response(error=Errors.SERVICE_INTERNAL_KEY)
+		del data['_internal_']
+
+		# If we're creating a new action
+		if 'action' in data:
+
+			# If it's not a viewed
+			if data['action'] != 'viewed':
+				return Services.Response(error=(1001, [('action', 'invalid')]))
+
+			# Create a new tracking instance
+			oTracking = Tracking({
+				"memo_id": sesh['memo_id'],
+				"sesh": sesh.id()[5:],
+				"action": data['action'],
+				"start": int(time()),
+				"crm_type": data['crm_type'],
+				"crm_id": str(data['crm_id'])
+			})
+			oTracking.create()
+
+			# Return OK
+			return Services.Response(True)
+
+		# Else, we're adding a resolution
+		else:
+
+			# If it's not a viewed
+			if data['resolution'] not in ['approved', 'declined', 'transferred']:
+				return Services.Response(error=(1001, [('resolution', 'invalid')]))
+
+			# Look for an existing viewed tracking
+			oTracking = Tracking.filter({
+				"memo_id": sesh['memo_id'],
+				"end": None,
+				"crm_type": data['crm_type'],
+				"crm_id": str(data['crm_id'])
+			}, limit=1, orderby=[['_created', 'DESC']])
+
+			# If we found one
+			if oTracking:
+				oTracking['resolution'] = data['resolution']
+				oTracking['end'] = int(time())
+				oTracking.save()
+
+			# Return
+			return Services.Response(oTracking and True or False)
