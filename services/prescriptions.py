@@ -458,13 +458,16 @@ class Prescriptions(Services.Service):
 				"FirstName": StrHelper.normalize(data['patient']['firstName']),
 				"LastName": StrHelper.normalize(data['patient']['lastName']),
 				"DateOfBirth": data['patient']['dateOfBirth'][0:10],
+				"Gender": data['patient']['gender'],
 				"Email": data['patient']['email'],
 				"Address1": (data['patient']['address1'] or '')[0:35],
 				"Address2": (data['patient']['address2'] or '')[0:35],
 				"City": data['patient']['city'],
 				"State": data['patient']['state'],
 				"ZipCode": data['patient']['zipCode'],
-				"PrimaryPhone": data['patient']['primaryPhone']
+				"PrimaryPhone": data['patient']['primaryPhone'],
+				"PrimaryPhoneType": data['patient']['primaryPhoneType'],
+				"Active": 'true'
 			}
 		except Exception as e:
 			return Services.Response(error=(1001, str(e)))
