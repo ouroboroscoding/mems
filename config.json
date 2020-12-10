@@ -172,6 +172,9 @@
 			"override": false,
 			"support_email": "bast@maleexcel.com"
 		},
+		"providers": {
+			"sesh_ttl": 7200
+		},
 		"queue": {
 			"key": null
 		}
