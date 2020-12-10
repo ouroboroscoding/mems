@@ -1,5 +1,5 @@
 # coding=utf8
-""" Providers Service
+""" Providers REST
 
 Handles Providers related activities
 """
@@ -46,7 +46,9 @@ REST.Server({
 	"/signout": {"methods": REST.CREATE},
 
 	"/template": {"methods": REST.ALL, "session": True},
-	"/templates": {"methods": REST.READ, "session": True}
+	"/templates": {"methods": REST.READ, "session": True},
+
+	"/tracking": {"methods": REST.CREATE, "session": True}
 
 }, 'providers', "https?://(.*\\.)?%s" % Conf.get(("rest","allowed")).replace('.', '\\.')).run(
 	host=oRestConf['providers']['host'],

@@ -71,6 +71,7 @@ def run(period=None):
 			# Find any Claims older than this date
 			lClaims = CustomerClaimed.filter({
 				"user": lAgents,
+				"provider": None,
 				"updatedAt": {"lte": sDT}
 			})
 

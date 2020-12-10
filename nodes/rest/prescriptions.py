@@ -1,5 +1,5 @@
 # coding=utf8
-""" Prescriptions Service
+""" Prescriptions REST
 
 Handles interactions with Prescriptions
 """

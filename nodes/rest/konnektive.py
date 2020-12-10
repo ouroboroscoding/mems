@@ -1,5 +1,5 @@
 # coding=utf8
-""" Konnektive Service
+""" Konnektive REST
 
 Handles interactions with Konnektive
 """

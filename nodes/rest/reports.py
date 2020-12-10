@@ -1,5 +1,5 @@
 # coding=utf8
-""" Reports Service
+""" Reports REST
 
 Handles Report related activities
 """

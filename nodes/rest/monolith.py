@@ -1,5 +1,5 @@
 # coding=utf8
-""" Monolith Service
+""" Monolith REST
 
 Handles everything in the old memo system
 """
@@ -32,7 +32,7 @@ REST.Server({
 
 	"/customer/calendly": {"methods": REST.READ, "session": True},
 	"/customer/claim": {"methods": REST.CREATE | REST.UPDATE | REST.DELETE, "session": True},
-	"/customer/claim/clear": {"methods": REST.UPDATE, "session": True},
+	"/customer/claim/view": {"methods": REST.UPDATE, "session": True},
 	"/customer/dob": {"methods": REST.READ, "session": True},
 	"/customer/dsid": {"methods": REST.CREATE | REST.READ | REST.UPDATE, "session": True},
 	"/customer/exists": {"methods": REST.READ, "session": True},
@@ -63,10 +63,12 @@ REST.Server({
 	"/msgs/unclaimed": {"methods": REST.READ, "session": True},
 	"/msgs/unclaimed/count": {"methods": REST.READ, "session": True},
 
+	"/notes/new": {"methods": REST.READ, "session": True},
+
 	"/order/approve": {"methods": REST.UPDATE, "session": True},
 	"/order/decline": {"methods": REST.UPDATE, "session": True},
 	"/order/claim": {"methods": REST.CREATE | REST.DELETE, "session": True},
-	"/order/claim/clear": {"methods": REST.UPDATE, "session": True},
+	"/order/claim/view": {"methods": REST.UPDATE, "session": True},
 	"/order/claimed": {"methods": REST.READ, "session": True},
 	"/order/label": {"methods": REST.UPDATE, "session": True},
 	"/order/refresh": {"methods": REST.UPDATE, "session": True},
@@ -75,7 +77,9 @@ REST.Server({
 	"/orders/pending/csr": {"methods": REST.READ, "session": True},
 	"/orders/pending/csr/count": {"methods": REST.READ, "session": True},
 	"/orders/pending/provider/ed": {"methods": REST.READ, "session": True},
+	"/orders/pending/provider/ed/cont": {"methods": REST.READ, "session": True},
 	"/orders/pending/provider/hrt": {"methods": REST.READ, "session": True},
+	"/orders/pending/provider/hrt/cont": {"methods": REST.READ, "session": True},
 
 	"/passwd/forgot": {"methods": REST.CREATE | REST.UPDATE},
 

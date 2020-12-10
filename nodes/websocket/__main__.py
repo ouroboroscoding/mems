@@ -1,7 +1,7 @@
 # coding=utf8
-""" WebSocket Service
+""" WebSocket Node
 
-Handles syncing up changes using wevsockets and sessions
+Handles syncing up changes using websockets and sessions
 """
 
 __author__		= "Chris Nasr"

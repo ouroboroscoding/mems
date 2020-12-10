@@ -1,5 +1,5 @@
 # coding=utf8
-""" CSR Service
+""" CSR REST
 
 Handles CSR related activities
 """

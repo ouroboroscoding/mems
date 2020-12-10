@@ -22,10 +22,8 @@ from FormatOC import Tree
 from RestOC import Conf, Record_MySQL
 
 # Custome SQL
-sClaimedNewSQL = ''
 sConversationSQL = ''
 sLatestStatusSQL = ''
-sSmpNotes = ''
 sNumOfOrdersSQL = ''
 sSearchSQL = ''
 
@@ -35,20 +33,13 @@ def init():
 	Need to find a better way to do this
 	"""
 
-	global sClaimedNewSQL, sConversationSQL, \
-			sLandingSQL, sLatestStatusSQL, \
-			sSmpNotes, sNumOfOrdersSQL, sSearchSQL, \
-			sUnclaimedSQL, sUnclaimedCountSQL
+	global sConversationSQL, sLatestStatusSQL, sNumOfOrdersSQL, sSearchSQL
 
 	# SQL files
-	with open('records/sql/claimed_new.sql') as oF:
-		sClaimedNewSQL = oF.read()
 	with open('records/sql/conversation.sql') as oF:
 		sConversationSQL = oF.read()
 	with open('records/sql/latest_status.sql') as oF:
 		sLatestStatusSQL = oF.read()
-	with open('records/sql/smp_notes.sql') as oF:
-		sSmpNotes = oF.read()
 	with open('records/sql/number_of_orders.sql') as oF:
 		sNumOfOrdersSQL = oF.read()
 	with open('records/sql/search.sql') as oF:
@@ -469,7 +460,15 @@ class CustomerCommunication(Record_MySQL.Record):
 			lNumbers.extend([s, '1%s' % s])
 
 		# Generate SQL
-		sSQL = sClaimedNewSQL % {
+		sSQL = "SELECT\n" \
+				"	`fromPhone`, count(`fromPhone`) as `count`\n" \
+				"FROM\n" \
+				"	`%(db)s`.`%(table)s`\n" \
+				"WHERE\n" \
+				"	`createdAt` > FROM_UNIXTIME(%(ts)d) AND\n" \
+				"	`fromPhone` IN (%(numbers)s)\n" \
+				"GROUP BY\n" \
+				"	`fromPhone`" % {
 			"db": dStruct['db'],
 			"table": dStruct['table'],
 			"ts": ts,
@@ -625,7 +624,8 @@ class CustomerMsgPhone(Record_MySQL.Record):
 				"	`cmp`.`customerPhone`,\n" \
 				"	`cmp`.`customerName`,\n" \
 				"	`cc`.`transferredBy`,\n" \
-				"	`cc`.`provider`\n," \
+				"	`cc`.`viewed`,\n" \
+				"	`cc`.`provider`,\n" \
 				"	`cc`.`orderId`\n" \
 				"FROM\n" \
 				"	`%(db)s`.`%(table)s` AS `cmp` JOIN\n" \
@@ -1030,6 +1030,8 @@ class KtOrder(Record_MySQL.Record):
 				"	`ktoc`.`customerId`,\n" \
 				"	`ktoc`.`orderId`,\n" \
 				"	`ktoc`.`transferredBy`,\n" \
+				"	`ktoc`.`viewed`,\n" \
+				"	`ktoc`.`continuous`,\n" \
 				"	CONCAT(`ktc`.`firstName`, ' ', `ktc`.`lastName`) as `customerName`,\n" \
 				"	`c`.`type`\n" \
 				"FROM\n" \
@@ -1096,6 +1098,7 @@ class KtOrder(Record_MySQL.Record):
 
 		# Generate the SQL
 		sSQL = "SELECT\n" \
+				"	`kto`.`customerId`,\n" \
 				"	CONCAT(`ktc`.`firstName`, ' ', `ktc`.`lastName`) as `customerName`,\n" \
 				"	`c`.`type`\n" \
 				"FROM\n" \
@@ -1276,7 +1279,7 @@ class KtOrder(Record_MySQL.Record):
 	def queue(cls, group, states, custom={}):
 		"""Queue
 
-		Returns all pending, unclaimed, ED orders in the given states
+		Returns all pending, unclaimed, orders in the given states
 
 		Arguments:
 			group (str): 'ed' or 'hrt'
@@ -1303,9 +1306,9 @@ class KtOrder(Record_MySQL.Record):
 				"	CONVERT(`kto`.`customerId`, UNSIGNED) as `customerId`,\n" \
 				"	`kto`.`dateCreated`,\n" \
 				"	`kto`.`dateUpdated`,\n" \
-				"	IFNULL(`os`.`attentionRole`, 'Not Assigned') AS `attentionRole`,\n" \
-				"	IFNULL(`os`.`orderLabel`, 'Not Labeled') AS `orderLabel`\n" \
-				"FROM `%(db)s`.`%(table)s` AS `kto`\n" \
+				"	IFNULL(`os`.`attentionRole`, 'Not Assigned') as `attentionRole`,\n" \
+				"	IFNULL(`os`.`orderLabel`, 'Not Labeled') as `orderLabel`\n" \
+				"FROM `%(db)s`.`%(table)s` as `kto`\n" \
 				"JOIN `%(db)s`.`campaign` as `cmp` ON `cmp`.`id` = CONVERT(`kto`.`campaignId`, UNSIGNED)\n" \
 				"LEFT JOIN `%(db)s`.`smp_state` as `ss` ON `ss`.`abbreviation` = `kto`.`shipState`\n" \
 				"LEFT JOIN `%(db)s`.`smp_order_status` as `os` ON `os`.`orderId` = `kto`.`orderId`\n" \
@@ -1359,6 +1362,221 @@ class KtOrderClaim(Record_MySQL.Record):
 
 		# Return the config
 		return cls._conf
+
+# KtOrderClaimLast class
+class KtOrderClaimLast(Record_MySQL.Record):
+	"""KtOrderClaimLast
+
+	Represents the last time a user looked up new notes on claimed
+	customers
+	"""
+
+	_conf = None
+	"""Configuration"""
+
+	@classmethod
+	def config(cls):
+		"""Config
+
+		Returns the configuration data associated with the record type
+
+		Returns:
+			dict
+		"""
+
+		# If we haven loaded the config yet
+		if not cls._conf:
+			cls._conf = Record_MySQL.Record.generateConfig(
+				Tree.fromFile('definitions/monolith/kt_order_claim_last.json'),
+				'mysql'
+			)
+
+		# Return the config
+		return cls._conf
+
+	@classmethod
+	def get(cls, user, custom={}):
+		"""Get
+
+		Get's the last timestamp for the given user
+
+		Arguments:
+			user (uint): The user to get the timestamp for
+			custom (dict): Custom Host and DB info
+				'host' the name of the host to get/set data on
+				'append' optional postfix for dynamic DBs
+
+		Returns:
+			uint
+		"""
+
+		# Fetch the record structure
+		dStruct = cls.struct(custom)
+
+		# Generate the SQL
+		sSQL = 'SELECT UNIX_TIMESTAMP(`timestamp`)\n' \
+			'FROM `%(db)s`.`%(table)s`\n' \
+			'WHERE `user` = %(user)d' % {
+				"db": dStruct['db'],
+				"table": dStruct['table'],
+				"user": user
+			}
+
+		# Fetch the value
+		iTS = Record_MySQL.Commands.select(
+			dStruct['host'],
+			sSQL,
+			Record_MySQL.ESelect.CELL
+		)
+
+		# If we got no value
+		if not iTS:
+			iTS = int(time())
+
+		# Return the timestamp
+		return iTS
+
+	@classmethod
+	def set(cls, user, ts, custom={}):
+		"""Set
+
+		Updates the current value for the user or else creates it
+
+		Arguments:
+			user (uint): The unique ID of the user the timestamp is
+				associated with
+			ts (uint): The timestamp to store
+			custom (dict): Custom Host and DB info
+				'host' the name of the host to get/set data on
+				'append' optional postfix for dynamic DBs
+
+		Returns:
+			None
+		"""
+
+		# Fetch the record structure
+		dStruct = cls.struct(custom)
+
+		# Generate the SQL
+		sSQL = 'UPDATE `%(db)s`.`%(table)s`\n' \
+			'SET `timestamp` = FROM_UNIXTIME(%(ts)d)\n' \
+			'WHERE `user` = %(user)d' % {
+				"db": dStruct['db'],
+				"table": dStruct['table'],
+				"ts": ts,
+				"user": user
+			}
+
+		# Attempt to update the timestamp
+		iRows = Record_MySQL.Commands.execute(
+			dStruct['host'],
+			sSQL
+		)
+
+		# If we updated nothing
+		if not iRows:
+
+			# Create the new record
+			try:
+				oRecord = cls({
+					"user": user,
+					"timestamp": ts
+				})
+				oRecord.create()
+			except Record_MySQL.DuplicateException:
+				pass
+
+# KtOrderContinuous class
+class KtOrderContinuous(Record_MySQL.Record):
+	"""KtOrderContinuous
+
+	Represents an order that needs to be extended with a new MIP/Prescription(s)
+	"""
+
+	_conf = None
+	"""Configuration"""
+
+	@classmethod
+	def config(cls):
+		"""Config
+
+		Returns the configuration data associated with the record type
+
+		Returns:
+			dict
+		"""
+
+		# If we haven loaded the config yet
+		if not cls._conf:
+			cls._conf = Record_MySQL.Record.generateConfig(
+				Tree.fromFile('definitions/monolith/kt_order_continuous.json'),
+				'mysql'
+			)
+
+		# Return the config
+		return cls._conf
+
+	@classmethod
+	def queue(cls, group, states, custom={}):
+		"""Queue
+
+		Returns all pending, unclaimed, continuous orders in the given states
+
+		Arguments:
+			group (str): 'ed' or 'hrt'
+			states (list): The states to check for pending orders in
+			custom (dict): Custom Host and DB info
+				'host' the name of the host to get/set data on
+				'append' optional postfix for dynamic DBs
+
+		Returns:
+			list
+		"""
+
+		# Fetch the record structure
+		dStruct = cls.struct(custom)
+
+		# Generate the SQL
+		sSQL = "SELECT\n" \
+				"	`cont`.`status`,\n" \
+				"	`kto`.`orderId`,\n" \
+				"	CONCAT(`kto`.`shipFirstName`, ' ', `kto`.`shipLastName`) as `customerName`,\n" \
+				"	`kto`.`phoneNumber` as `customerPhone`,\n" \
+				"	`kto`.`shipCity`,\n" \
+				"	IFNULL(`ss`.`name`, '[state missing]') as `shipState`,\n" \
+				"	IFNULL(`ss`.`legalEncounterType`, '') as `encounter`,\n" \
+				"	CONVERT(`kto`.`customerId`, UNSIGNED) as `customerId`,\n" \
+				"	`kto`.`dateCreated`,\n" \
+				"	`kto`.`dateUpdated`,\n" \
+				"	IFNULL(`os`.`attentionRole`, 'Not Assigned') as `attentionRole`,\n" \
+				"	IFNULL(`os`.`orderLabel`, 'Not Labeled') as `orderLabel`\n" \
+				"FROM `%(db)s`.`%(table)s` as `cont`\n" \
+				"JOIN `%(db)s`.`kt_order` as `kto` ON `kto`.`orderId` = `cont`.`orderId`\n" \
+				"JOIN `%(db)s`.`campaign` as `cmp` ON `cmp`.`id` = CONVERT(`kto`.`campaignId`, UNSIGNED)\n" \
+				"LEFT JOIN `%(db)s`.`smp_state` as `ss` ON `ss`.`abbreviation` = `kto`.`shipState`\n" \
+				"LEFT JOIN `%(db)s`.`smp_order_status` as `os` ON `os`.`orderId` = `kto`.`orderId`\n" \
+				"LEFT JOIN `%(db)s`.`kt_order_claim` as `ktoc` ON `ktoc`.`customerId` = CONVERT(`kto`.`customerId`, UNSIGNED)\n" \
+				"WHERE `cont`.`status` = 'PENDING'\n" \
+				"AND `cont`.`active` = 1\n" \
+				"AND `kto`.`shipState` IN (%(states)s)\n" \
+				"AND `ktoc`.`user` IS NULL\n" \
+				"AND `cmp`.`type` = '%(group)s'\n" \
+				"AND (`os`.`attentionRole` = 'Doctor' OR `os`.`attentionRole` IS NULL)\n" \
+				"ORDER BY `kto`.`dateUpdated` ASC" % {
+			"db": dStruct['db'],
+			"table": dStruct['table'],
+			"group": group,
+			"states": "'%s'" % "','".join(states)
+		}
+
+		print(sSQL)
+
+		# Fetch and return the data
+		return Record_MySQL.Commands.select(
+			dStruct['host'],
+			sSQL,
+			Record_MySQL.ESelect.ALL
+		)
 
 # ShippingInfo class
 class ShippingInfo(Record_MySQL.Record):
@@ -1420,7 +1638,43 @@ class SmpNote(Record_MySQL.Record):
 		dStruct = cls.struct(custom)
 
 		# Generate SQL
-		sSQL = sSmpNotes % {
+		sSQL = "SELECT\n" \
+				"	`smp`.`id`,\n" \
+				"	`smp`.`action`,\n" \
+				"	`smp`.`note`,\n" \
+				"	`smp`.`createdAt`,\n" \
+				"	CONCAT(`user`.`firstName`, ' ', `user`.`lastName`) AS `createdBy`,\n" \
+				"	`user`.`userRole` AS `userRole`\n" \
+				"FROM\n" \
+				"	`%(db)s`.`kt_order` as `kto`,\n" \
+				"	`%(db)s`.`%(table)s` as `smp`,\n" \
+				"	`%(db)s`.`user` as `user`\n" \
+				"WHERE\n" \
+				"	`kto`.`customerId` = %(id)d AND\n" \
+				"	`smp`.`parentTable` = 'kt_order' AND\n" \
+				"	`smp`.`parentColumn` = 'orderId' AND\n" \
+				"	`smp`.`columnValue` = `kto`.`orderId` AND\n" \
+				"	`smp`.`createdBy` = `user`.`id`\n" \
+				"\n" \
+				"UNION\n" \
+				"\n" \
+				"SELECT\n" \
+				"	`smp`.`id`,\n" \
+				"	`smp`.`action`,\n" \
+				"	`smp`.`note`,\n" \
+				"	`smp`.`createdAt`,\n" \
+				"	CONCAT(`user`.`firstName`, ' ', `user`.`lastName`) AS `createdBy`,\n" \
+				"	`user`.`userRole` AS `userRole`\n" \
+				"FROM\n" \
+				"	`%(db)s`.`%(table)s` as `smp`,\n" \
+				"	`%(db)s`.`user` as `user`\n" \
+				"WHERE\n" \
+				"	`smp`.`parentTable` = 'kt_customer' AND\n" \
+				"	`smp`.`parentColumn` = 'customerId' AND\n" \
+				"	`smp`.`columnValue` = %(id)d AND\n" \
+				"	`smp`.`createdBy` = `user`.`id`\n" \
+				"\n" \
+				"ORDER BY `createdAt`" % {
 			"db": dStruct['db'],
 			"table": dStruct['table'],
 			"id": customer_id
@@ -1452,6 +1706,79 @@ class SmpNote(Record_MySQL.Record):
 
 		# Return the config
 		return cls._conf
+
+	@classmethod
+	def newNotes(cls, ids, ts, ignore=None, custom={}):
+		"""New Notes
+
+		Returns if there's any new notes associated with the given customer
+		IDs
+
+		Arguments:
+			ids (uint[]): A list of unique customer IDs
+			ts (uint): Timestamp threshold of messages
+			ignore (int): User ID to ignore
+			custom (dict): Custom Host and DB info
+				'host' the name of the host to get/set data on
+				'append' optional postfix for dynamic DBs
+
+		Returns:
+			list
+		"""
+
+		# Init the return
+		dRet = {}
+
+		# Fetch the record structure
+		dStruct = cls.struct(custom)
+
+		# If we get an ignore ID
+		sIgnore = ignore and \
+					'	AND `smp`.`createdBy` != %d\n' % ignore or \
+					''
+
+		# Generate SQL
+		sSQL = "SELECT `customerId`, COUNT(*) as `count`\n" \
+				"FROM (\n" \
+				"	SELECT\n" \
+				"		`kto`.`customerId` as `customerId`,\n" \
+				"		`smp`.`id` as `id`\n" \
+				"	FROM\n" \
+				"		`%(db)s`.`kt_order` as `kto`,\n" \
+				"		`%(db)s`.`%(table)s` as `smp`\n" \
+				"	WHERE `kto`.`customerId` IN (%(ids)s)\n" \
+				"	AND `smp`.`parentTable` = 'kt_order'\n" \
+				"	AND `smp`.`parentColumn` = 'orderId'\n" \
+				"	AND `smp`.`columnValue` = `kto`.`orderId`\n" \
+				"	AND `smp`.`createdAt` > FROM_UNIXTIME(%(ts)d)\n" \
+				"%(ignore)s" \
+				"\n" \
+				"	UNION\n" \
+				"\n" \
+				"	SELECT\n" \
+				"		`smp`.`columnValue` as `customerId`,\n" \
+				"		`smp`.`id` as `id`\n" \
+				"	FROM\n" \
+				"		`%(db)s`.`%(table)s` as `smp`\n" \
+				"	WHERE `smp`.`parentTable` = 'kt_customer'\n" \
+				"	AND `smp`.`parentColumn` = 'customerId'\n" \
+				"	AND `smp`.`columnValue` IN (%(ids)s)\n" \
+				"	AND `smp`.`createdAt` > FROM_UNIXTIME(%(ts)d)\n" \
+				"%(ignore)s" \
+				") as `t`\n" \
+				"GROUP BY `t`.`customerId`" % {
+			"db": dStruct['db'],
+			"table": dStruct['table'],
+			"ts": ts,
+			"ignore": sIgnore,
+			"ids": "'%s'" % "','".join([str(d) for d in ids])
+		}
+
+		# Fetch the data
+		lRecords = Record_MySQL.Commands.select(dStruct['host'], sSQL)
+
+		# Return
+		return {d['customerId']:d['count'] for d in lRecords}
 
 # SmpOrderStatus class
 class SmpOrderStatus(Record_MySQL.Record):

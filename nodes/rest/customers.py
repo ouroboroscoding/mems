@@ -1,5 +1,5 @@
 # coding=utf8
-""" Customers Service
+""" Customers REST
 
 Handles Customer related activities
 """
