@@ -643,7 +643,7 @@ class Monolith(Services.Service):
 
 		# Find the patient record
 		oDsPatient = DsPatient.filter({
-			"customerId": data['customerId']
+			"customerId": str(data['customerId'])
 		}, limit=1)
 		if not oDsPatient:
 			return Services.Response(error=(1104, 'patient'))
@@ -708,17 +708,20 @@ class Monolith(Services.Service):
 		# Send the data to the prescriptions service to get the patient ID
 		oResponse = Services.update('prescriptions', 'patient', {
 			"patient": {
-				"id": oDsPatient['patientId'],
+				"id": int(oDsPatient['patientId']),
 				"firstName": dCustomer['shipping']['firstName'],
 				"lastName": dCustomer['shipping']['lastName'],
 				"dateOfBirth": sDOB,
+				"gender": '1',
 				"email": dCustomer['email'],
 				"address1": dCustomer['shipping']['address1'],
 				"address2": dCustomer['shipping']['address2'],
 				"city": dCustomer['shipping']['city'],
 				"state": dCustomer['shipping']['state'],
 				"zipCode": dCustomer['shipping']['postalCode'],
-				"primaryPhone": dCustomer['phone']
+				"primaryPhone": dCustomer['phone'],
+				"primaryPhoneType": '4',
+				"active": 'Y'
 			},
 			"clinician_id": data['clinician_id']
 		}, sesh)
