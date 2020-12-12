@@ -907,8 +907,8 @@ class Monolith(Services.Service):
 		try: DictHelper.eval(data, ['customerId'])
 		except ValueError as e: return Services.Response(error=(1001, [(f, 'missing') for f in e.args]))
 
-		# If we want any form
-		if 'form' not in data or data['form'] == 'any':
+		# If we want all forms
+		if 'form' not in data or data['form'] == 'all':
 			data['form'] = None
 
 		# Find the customer by ID
@@ -3000,7 +3000,7 @@ class Monolith(Services.Service):
 			return Services.Response(error=Rights.INVALID)
 
 		# Verify fields
-		try: DictHelper.eval(data, ['customerId', 'orderId', 'content'])
+		try: DictHelper.eval(data, ['customerId', 'content'])
 		except ValueError as e: return Services.Response(error=(1001, [(f, 'missing') for f in e.args]))
 
 		# If the content is too long
@@ -3067,8 +3067,9 @@ class Monolith(Services.Service):
 		# Save the record
 		oSmpNote.create()
 
-		# Pass the info along to SMS workflow
-		SMSWorkflow.providerMessaged(data['orderId'], oSmpNote['id'])
+		# Pass the info along to SMS workflow if we have an order ID
+		if 'orderId' in data:
+			SMSWorkflow.providerMessaged(data['orderId'], oSmpNote['id'])
 
 		# Return the ID of the new note
 		return Services.Response(oSmpNote['id'])
