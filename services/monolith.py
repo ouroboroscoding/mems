@@ -53,6 +53,14 @@ class Monolith(Services.Service):
 	}
 	"""Tracking links"""
 
+	_DECLINE_NOTES = {
+		'Medical': 'Order declined for medical reasons.',
+		'Duplicate Order': 'Order declined due to duplicate.',
+		'Current Customer': 'Order declined at customer\'s request.',
+		'Contact Attempt': 'Order declined because customer can not be reached.'
+	}
+	"""Decline Notes"""
+
 	def initialise(self):
 		"""Initialise
 
@@ -2106,6 +2114,9 @@ class Monolith(Services.Service):
 
 		# Store SOAP notes
 		oSmpNote = SmpNote({
+			"parentTable": 'kt_order',
+			"parentColumn": 'orderId',
+			"columnValue": data['orderId'],
 			"action": 'Approve Order',
 			"createdBy": sesh['memo_id'],
 			"note": data['soap'],
@@ -2148,8 +2159,12 @@ class Monolith(Services.Service):
 		"""
 
 		# Verify minimum fields
-		try: DictHelper.eval(data, ['orderId'])
+		try: DictHelper.eval(data, ['orderId', 'reason'])
 		except ValueError as e: return Services.Response(error=(1001, [(f, 'missing') for f in e.args]))
+
+		# Check the reason
+		if data['reason'] not in self._DECLINE_NOTES.keys():
+			return Services.Response(error=(1001, [('reason', 'invalid')]))
 
 		# Send the request to Konnektive
 		oResponse = Services.update('konnektive', 'order/qa', {
@@ -2175,9 +2190,12 @@ class Monolith(Services.Service):
 
 		# Store Decline note
 		oSmpNote = SmpNote({
+			"parentTable": 'kt_order',
+			"parentColumn": 'orderId',
+			"columnValue": data['orderId'],
 			"action": 'Decline Order',
 			"createdBy": sesh['memo_id'],
-			"note": 'Order declined for medical reasons',
+			"note": self._DECLINE_NOTES[data['reason']],
 			"createdAt": sDT,
 			"updatedAt": sDT
 		})
@@ -2193,12 +2211,15 @@ class Monolith(Services.Service):
 			oStatus['orderLabel'] = None
 			oStatus['orderStatus'] = 'DECLINED'
 			oStatus['reviewStatus'] = 'DECLINED'
-			oStatus['declineReason'] = 'Medical Decline'
+			oStatus['declineReason'] = '%s Decline' % data['reason']
 			oStatus['updatedAt'] = sDT
 			oStatus.save()
 
-		# Notify the patient of the approval
-		SMSWorkflow.providerDeclines(data['orderId'], sesh['memo_id'], self)
+		# If it was a medical decline
+		if data['reason'] == 'Medical':
+
+			# Notify the patient of the decline
+			SMSWorkflow.providerDeclines(data['orderId'], sesh['memo_id'], self)
 
 		# Return OK
 		return Services.Response(True)

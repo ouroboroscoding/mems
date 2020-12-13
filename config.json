@@ -62,7 +62,8 @@
 	"konnektive": {
 		"host": "api.konnektive.com",
 		"user": "",
-		"pass": ""
+		"pass": "",
+		"allow_qa_update": false
 	},
 
 	"memo": {

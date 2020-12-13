@@ -144,6 +144,7 @@ class Konnektive(Services.Service):
 		self._user = Conf.get(('konnektive', 'user'))
 		self._pass = Conf.get(('konnektive', 'pass'))
 		self._host = Conf.get(('konnektive', 'host'))
+		self._allowQaUpdate = Conf.get(('konnektive', 'allow_qa_update'))
 
 		# Store encounter types
 		self._encounters = JSON.load('definitions/encounter_by_state.json');
@@ -769,15 +770,18 @@ class Konnektive(Services.Service):
 		if data['action'] not in ['APPROVE', 'DECLINE']:
 			return Services.Response(error=(1001, [('action', 'invalid')]))
 
-		# Send the update to Konnektive
-		bRes = self._post('order/qa', {
-			"action": data['action'],
-			"orderId": data['orderId']
-		})
+		# If QA updates are allowed
+		if self._allowQaUpdate:
 
-		# If we failed
-		if not bRes:
-			return Services.Response(error=1103)
+			# Send the update to Konnektive
+			bRes = self._post('order/qa', {
+				"action": data['action'],
+				"orderId": data['orderId']
+			})
+
+			# If we failed
+			if not bRes:
+				return Services.Response(error=1103)
 
 		# Return OK
 		return Services.Response(True)
