@@ -42,6 +42,8 @@ REST.Server({
 	"/outbound/ready": {"methods": REST.UPDATE, "session": True},
 	"/outbounds": {"methods": REST.READ, "session": True},
 
+	"/postback": {"methods": REST.CREATE, "environ": True},
+
 	"/stats": {"methods": REST.READ, "session": True},
 
 	"/trigger/info": {"methods": REST.READ, "session": True}

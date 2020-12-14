@@ -22,7 +22,7 @@ from RestOC import Conf, DictHelper, Errors, Services, \
 					Sesh, StrHelper, Templates
 
 # Shared imports
-from shared import Rights
+from shared import Environment, Rights
 
 # Records imports
 from records.patient import Account, AccountSetup, AccountSetupAttempt, \
@@ -99,39 +99,6 @@ class Patient(Services.Service):
 
 		# Return OK
 		return True
-
-	@classmethod
-	def getClientIP(cls, environ):
-		"""Get Client IP
-
-		Returns the IP of the client when connecting via webserver
-
-		Returns:
-			str
-		"""
-
-		# Init return var
-		sIP	= '0.0.0.0'
-
-		# Check common environment variables
-		if 'HTTP_CLIENT_IP' in environ:
-			sIP = environ['HTTP_CLIENT_IP']
-		elif 'HTTP_X_CLIENTIP' in environ:
-			sIP = environ['HTTP_X_CLIENTIP']
-		elif 'HTTP_X_FORWARDED_FOR' in environ:
-			sIP = environ['HTTP_X_FORWARDED_FOR']
-		elif 'HTTP_X_RN_XFF' in environ:
-			sIP = environ['HTTP_X_RN_XFF']
-		elif 'REMOTE_ADDR' in environ:
-			sIP = environ['REMOTE_ADDR']
-
-		# If there's multiple IPs
-		if sIP.find(','):
-			lIPs = sIP.split(',')
-			sIP = lIPs[-1].strip()
-
-		# Return the IP
-		return sIP
 
 	def account_read(self, data, sesh):
 		"""Account Read
@@ -1005,7 +972,7 @@ class Patient(Services.Service):
 				"date": oDT.format('YYYY-MM-DD'),
 				"time": oDT.format('HH:mm:ss'),
 				"type": 'signin',
-				"ip": self.getClientIP(environ)
+				"ip": Environment.getClientIP(environ)
 			}
 			oActivity = Activity(dActivity)
 			oActivity.create()
