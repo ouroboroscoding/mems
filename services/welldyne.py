@@ -21,7 +21,7 @@ import pysftp
 from RestOC import Conf, DictHelper, Record_MySQL, Services
 
 # Shared imports
-from shared import Excel, Rights
+from shared import Environment, Excel, Rights
 
 # Records imports
 from records.welldyne import \
@@ -48,6 +48,9 @@ class WellDyne(Services.Service):
 		Returns:
 			WellDyne
 		"""
+
+		# Get conf
+		self._conf = Conf.get(('services', 'welldyne'), {})
 
 		# Return self for chaining
 		return self
@@ -852,6 +855,41 @@ class WellDyne(Services.Service):
 		# Else return an empty array
 		else:
 			return Services.Response([])
+
+	def postback_create(self, data, environ):
+		"""Postback
+
+		Used by WellDyneRX to post information to MaleExcel
+
+		Arguments:
+			data (dict): Data sent with the request
+			environ (dict): Environment info
+
+		Returns:
+			Services.Response
+		"""
+
+		# Check the IP
+		if Environment.getClientIP(environ) not in self._conf['whitelist']:
+			return Services.Response(error=102)
+
+		# Verify fields
+		try: DictHelper.eval(data, ['type', 'response'])
+		except ValueError as e: return Services.Response(error=(1001, [(f, "missing") for f in e.args]))
+
+		# If the type is initial
+		if data['type'] == 'initial':
+
+			# Verify fields
+			try: DictHelper.eval(data['response'], ['Created', 'ErrorResponse', 'OrderInvoiceNumber', 'Success', 'UniqueId'])
+			except ValueError as e: return Services.Response(error=(1001, [('response.%s' % f, "missing") for f in e.args]))
+
+			# Return OK
+			return Services.Response(True)
+
+		# Else
+		else:
+			return Services.Response(error=(1001, (['type', 'invalid'])))
 
 	def stats_read(self, data, sesh):
 		"""Stats
