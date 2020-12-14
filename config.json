@@ -178,6 +178,9 @@
 		},
 		"queue": {
 			"key": null
+		},
+		"welldyne": {
+			"whitelist": []
 		}
 	},
 
