@@ -2445,7 +2445,7 @@ class Monolith(Services.Service):
 
 		# Get and return the claimed records
 		return Services.Response(
-			KtOrder.claimed(sesh['memo_id'])
+			KtOrderClaim.byUser(sesh['memo_id'])
 		)
 
 	def orderLabel_update(self, data, sesh):

@@ -1007,56 +1007,6 @@ class KtOrder(Record_MySQL.Record):
 	"""Configuration"""
 
 	@classmethod
-	def claimed(cls, user, custom={}):
-		"""Claimed
-
-		Returns all the customers the user has claimed
-
-		Arguments:
-			user (int): The ID of the user
-			custom (dict): Custom Host and DB info
-				'host' the name of the host to get/set data on
-				'append' optional postfix for dynamic DBs
-
-		Returns:
-			list
-		"""
-
-		# Fetch the record structure
-		dStruct = cls.struct(custom)
-
-		# Generate the SQL
-		sSQL = "SELECT\n" \
-				"	`ktoc`.`customerId`,\n" \
-				"	`ktoc`.`orderId`,\n" \
-				"	`ktoc`.`transferredBy`,\n" \
-				"	`ktoc`.`viewed`,\n" \
-				"	`ktoc`.`continuous`,\n" \
-				"	CONCAT(`ktc`.`firstName`, ' ', `ktc`.`lastName`) as `customerName`,\n" \
-				"	`c`.`type`\n" \
-				"FROM\n" \
-				"	`%(db)s`.`%(table)s` as `kto`,\n" \
-				"	`%(db)s`.`kt_customer` as `ktc`,\n" \
-				"	`%(db)s`.`kt_order_claim` as `ktoc`,\n" \
-				"	`%(db)s`.`campaign` as `c`\n" \
-				"WHERE\n" \
-				"	`ktoc`.`user` = %(user)d AND\n" \
-				"	CONVERT(`ktc`.`customerId`, UNSIGNED) = `ktoc`.`customerId` AND\n" \
-				"	`kto`.`orderId` = `ktoc`.`orderId` AND\n" \
-				"	`kto`.`campaignId` = `c`.`id`" % {
-			"db": dStruct['db'],
-			"table": dStruct['table'],
-			"user": user
-		}
-
-		# Fetch and return the data
-		return Record_MySQL.Commands.select(
-			dStruct['host'],
-			sSQL,
-			Record_MySQL.ESelect.ALL
-		)
-
-	@classmethod
 	def config(cls):
 		"""Config
 
@@ -1338,10 +1288,60 @@ class KtOrderClaim(Record_MySQL.Record):
 	"""KtOrderClaim
 
 	Represents a claim of a customer/order by a user
+
+	This table started out as meant to be by order, but unfortunately at some
+	point we needed to be able to claim just a customer and not one specific
+	order, so orderId is no longer unique and can be null. It's a bit confusing,
+	but such is life.
 	"""
 
 	_conf = None
 	"""Configuration"""
+
+	@classmethod
+	def byUser(cls, user, custom={}):
+		"""By User
+
+		Returns all the customers the user has claimed
+
+		Arguments:
+			user (int): The ID of the user
+			custom (dict): Custom Host and DB info
+				'host' the name of the host to get/set data on
+				'append' optional postfix for dynamic DBs
+
+		Returns:
+			list
+		"""
+
+		# Fetch the record structure
+		dStruct = cls.struct(custom)
+
+		# Generate the SQL
+		sSQL = "SELECT\n" \
+				"	`ktoc`.`customerId`,\n" \
+				"	`ktoc`.`orderId`,\n" \
+				"	`ktoc`.`transferredBy`,\n" \
+				"	`ktoc`.`viewed`,\n" \
+				"	`ktoc`.`continuous`,\n" \
+				"	CONCAT(`ktc`.`firstName`, ' ', `ktc`.`lastName`) as `customerName`,\n" \
+				"	IFNULL(`c`.`type`, 'view') as `type`\n" \
+				"FROM `%(db)s`.`%(table)s` as `ktoc`\n" \
+				"JOIN `%(db)s`.`kt_customer` as `ktc` ON CONVERT(`ktc`.`customerId`, UNSIGNED) = `ktoc`.`customerId`\n" \
+				"LEFT JOIN `%(db)s`.`kt_order` as `kto` ON `kto`.`orderId` = `ktoc`.`orderId`\n" \
+				"LEFT JOIN `%(db)s`.`campaign` as `c` ON `c`.`id` = `kto`.`campaignId`\n" \
+				"WHERE `ktoc`.`user` = %(user)d" % {
+			"db": dStruct['db'],
+			"table": dStruct['table'],
+			"user": user
+		}
+
+		# Fetch and return the data
+		return Record_MySQL.Commands.select(
+			dStruct['host'],
+			sSQL,
+			Record_MySQL.ESelect.ALL
+		)
 
 	@classmethod
 	def config(cls):
