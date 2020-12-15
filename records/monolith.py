@@ -21,6 +21,9 @@ from time import time
 from FormatOC import Tree
 from RestOC import Conf, Record_MySQL
 
+# Shared imports
+from shared import Record_MySQLSearch
+
 # Custome SQL
 sConversationSQL = ''
 sLatestStatusSQL = ''
@@ -886,7 +889,7 @@ class HrtLabResultTests(Record_MySQL.Record):
 		return cls._conf
 
 # KtCustomer class
-class KtCustomer(Record_MySQL.Record):
+class KtCustomer(Record_MySQLSearch.Record):
 	"""KtCustomer
 
 	Represents a customer in konnektive
