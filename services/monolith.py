@@ -915,8 +915,8 @@ class Monolith(Services.Service):
 		try: DictHelper.eval(data, ['customerId'])
 		except ValueError as e: return Services.Response(error=(1001, [(f, 'missing') for f in e.args]))
 
-		# If we want any form
-		if 'form' not in data or data['form'] == 'any':
+		# If we want all forms
+		if 'form' not in data or data['form'] == 'all':
 			data['form'] = None
 
 		# Find the customer by ID
@@ -1278,6 +1278,45 @@ class Monolith(Services.Service):
 			"notes": lNotes,
 			"status": dStatus
 		})
+
+	def customerSearch_read(self, data, sesh):
+		"""Customer Search
+
+		Fetch and return a list of customers based on search data
+
+		Arguments:
+			data (dict): Data sent with the request
+			sesh (Sesh._Session): The session associated with the request
+
+		Returns:
+			Services.Response
+		"""
+
+		# Make sure the user has the proper permission to do this
+		oResponse = Services.read('auth', 'rights/verify', {
+			"name": "customers",
+			"right": Rights.READ
+		}, sesh)
+		if not oResponse.data:
+			return Services.Response(error=Rights.INVALID)
+
+		# Verify fields
+		try: DictHelper.eval(data, ['filter'])
+		except ValueError as e: return Services.Response(error=(1001, [(f, 'missing') for f in e.args]))
+
+		# If the filter isn't a dict
+		if not isinstance(data['filter'], dict):
+			return Services.Response(error=(1001, [('filter', "must be a key:value store")]))
+
+		# If fields is not a list
+		if 'fields' in data and not isinstance(data['fields'], list):
+			return Services.Response(error=(1001, [('fields', "must be a list")]))
+
+		# Search based on the data passed
+		lRecords = KtCustomer.search(data['filter'], raw=('fields' in data and data['fields'] or True))
+
+		# Return the results
+		return Services.Response(lRecords)
 
 	def customerShipping_read(self, data, sesh):
 		"""Customer Shipping
@@ -2344,7 +2383,7 @@ class Monolith(Services.Service):
 		mWarning = None
 
 		# If the order was approved
-		if data['reason'] in ['approved', 'declined', 'transferred']:
+		if data['reason'] in ['approved', 'declined', 'transferred', 'x']:
 
 			# Add tracking
 			oResponse = Services.create('providers', 'tracking', {
@@ -2445,7 +2484,7 @@ class Monolith(Services.Service):
 
 		# Get and return the claimed records
 		return Services.Response(
-			KtOrder.claimed(sesh['memo_id'])
+			KtOrderClaim.byUser(sesh['memo_id'])
 		)
 
 	def orderLabel_update(self, data, sesh):
@@ -3021,7 +3060,7 @@ class Monolith(Services.Service):
 			return Services.Response(error=Rights.INVALID)
 
 		# Verify fields
-		try: DictHelper.eval(data, ['customerId', 'orderId', 'content'])
+		try: DictHelper.eval(data, ['customerId', 'content'])
 		except ValueError as e: return Services.Response(error=(1001, [(f, 'missing') for f in e.args]))
 
 		# If the content is too long
@@ -3088,8 +3127,9 @@ class Monolith(Services.Service):
 		# Save the record
 		oSmpNote.create()
 
-		# Pass the info along to SMS workflow
-		SMSWorkflow.providerMessaged(data['orderId'], oSmpNote['id'])
+		# Pass the info along to SMS workflow if we have an order ID
+		if 'orderId' in data:
+			SMSWorkflow.providerMessaged(data['orderId'], oSmpNote['id'])
 
 		# Return the ID of the new note
 		return Services.Response(oSmpNote['id'])
