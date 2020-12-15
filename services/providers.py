@@ -259,6 +259,7 @@ class Providers(Services.Service):
 		dProvider = {}
 		if 'claims_max' in data: dProvider['claims_max'] = data.pop('claims_max')
 		if 'claims_timeout' in data: dProvider['claims_timeout'] = data.pop('claims_timeout')
+		if 'agent' in data: dProvider['agent'] = data.pop('agent')
 
 		# Send the data to monolith to create the memo user
 		data['_internal_'] = Services.internalKey()
@@ -367,7 +368,7 @@ class Providers(Services.Service):
 
 		# Try to update the claims vars
 		lErrors = []
-		for s in ['claims_max', 'claims_timeout']:
+		for s in ['claims_max', 'claims_timeout', 'agent']:
 			if s in data:
 				try: oProvider[s] = data.pop(s)
 				except ValueError as e: lErrors.append(e.args[0])
