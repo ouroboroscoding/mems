@@ -881,7 +881,7 @@ class WellDyne(Services.Service):
 		if data['type'] == 'initial':
 
 			# Verify fields
-			try: DictHelper.eval(data['response'], ['Created', 'ErrorResponse', 'OrderInvoiceNumber', 'Success', 'UniqueId'])
+			try: DictHelper.eval(data['response'], ['Created', 'OrderInvoiceNumber', 'Success', 'UniqueId'])
 			except ValueError as e: return Services.Response(error=(1001, [('response.%s' % f, "missing") for f in e.args]))
 
 			# Return OK
