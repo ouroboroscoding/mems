@@ -1076,7 +1076,7 @@ class Providers(Services.Service):
 		else:
 
 			# If it's not a viewed
-			if data['resolution'] not in ['approved', 'declined', 'transferred']:
+			if data['resolution'] not in ['approved', 'declined', 'transferred', 'x']:
 				return Services.Response(error=(1001, [('resolution', 'invalid')]))
 
 			# Look for an existing viewed tracking
