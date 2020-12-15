@@ -703,6 +703,7 @@ class CSR(Services.Service):
 		for d in lAgents:
 			if d['memo_id'] in dMemoUsers:
 				d['userName'] = dMemoUsers[d['memo_id']]['userName']
+				d['name'] = '%s %s' % (dMemoUsers[d['memo_id']]['firstName'], dMemoUsers[d['memo_id']]['lastName'])
 				d['firstName'] = dMemoUsers[d['memo_id']]['firstName']
 				d['lastName'] = dMemoUsers[d['memo_id']]['lastName']
 				d['email'] = dMemoUsers[d['memo_id']]['email']
@@ -710,6 +711,7 @@ class CSR(Services.Service):
 				d['dsClinicianId'] = dMemoUsers[d['memo_id']]['dsClinicianId']
 			else:
 				d['userName'] = 'n/a'
+				d['name'] = 'Not Found'
 				d['firstName'] = 'Not'
 				d['lastName'] = 'Found'
 				d['email'] = ''
@@ -717,7 +719,7 @@ class CSR(Services.Service):
 				d['dsClinicianId'] = None
 
 		# Return the agents in order of userName
-		return Services.Response(sorted(lAgents, key=lambda o: o['userName']))
+		return Services.Response(sorted(lAgents, key=lambda o: o['name']))
 
 	def list_create(self, data, sesh):
 		"""List Create
