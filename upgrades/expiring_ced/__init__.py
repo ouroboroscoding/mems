@@ -1,6 +1,6 @@
 # Import version files
-from . import alter_tables
+from . import update_expiring, update_template
 
 modules = [
-	alter_tables
+	update_expiring, update_template
 ]

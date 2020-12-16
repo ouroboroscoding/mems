@@ -72,6 +72,11 @@
 		"pass": "Pass"
 	},
 
+	"mip": {
+		"domain": "https://monolith-staging.herokuapp.com/",
+		"ced": "mip/cont/ced?formId=MIP-CED&ktCustomerId=%(customerId)s"
+	},
+
 	"missed_calls": {
 		"sheets": {
 			"default": {
