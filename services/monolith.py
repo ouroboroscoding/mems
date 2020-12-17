@@ -2184,85 +2184,6 @@ class Monolith(Services.Service):
 		# Return OK
 		return Services.Response(True)
 
-	def orderDecline_update(self, data, sesh):
-		"""Order Decline
-
-		Handles requests related to declining an order
-
-		Arguments:
-			data (mixed): Data sent with the request
-			sesh (Sesh._Session): The session associated with the request
-
-		Returns:
-			Services.Response
-		"""
-
-		# Verify minimum fields
-		try: DictHelper.eval(data, ['orderId', 'reason'])
-		except ValueError as e: return Services.Response(error=(1001, [(f, 'missing') for f in e.args]))
-
-		# Check the reason
-		if data['reason'] not in self._DECLINE_NOTES.keys():
-			return Services.Response(error=(1001, [('reason', 'invalid')]))
-
-		# Send the request to Konnektive
-		oResponse = Services.update('konnektive', 'order/qa', {
-			"action": 'DECLINE',
-			"orderId": data['orderId']
-		}, sesh)
-		if oResponse.errorExists(): return oResponse
-
-		# Find the order and change the status
-		oKtOrder = KtOrder.filter({
-			"orderId": data['orderId']
-		}, limit=1)
-		oKtOrder['orderStatus'] = 'DECLINED'
-		oKtOrder.save()
-
-		# Update memo cause it sucks
-		self.orderRefresh_update({
-			"orderId": data['orderId']
-		}, sesh)
-
-		# Get current date/time
-		sDT = arrow.get().format('YYYY-MM-DD HH:mm:ss')
-
-		# Store Decline note
-		oSmpNote = SmpNote({
-			"parentTable": 'kt_order',
-			"parentColumn": 'orderId',
-			"columnValue": data['orderId'],
-			"action": 'Decline Order',
-			"createdBy": sesh['memo_id'],
-			"note": self._DECLINE_NOTES[data['reason']],
-			"createdAt": sDT,
-			"updatedAt": sDT
-		})
-		oSmpNote.create()
-
-		# Find the order status (fuck this is fucking stupid as fuck, fuck memo)
-		oStatus = SmpOrderStatus.filter({
-			"orderId": data['orderId']
-		}, limit=1)
-		if oStatus:
-			oStatus['modifiedBy'] = sesh['memo_id']
-			oStatus['attentionRole'] = None
-			oStatus['orderLabel'] = None
-			oStatus['orderStatus'] = 'DECLINED'
-			oStatus['reviewStatus'] = 'DECLINED'
-			oStatus['declineReason'] = '%s Decline' % data['reason']
-			oStatus['updatedAt'] = sDT
-			oStatus.save()
-
-		# If it was a medical decline
-		if data['reason'] == 'Medical':
-
-			# Notify the patient of the decline
-			SMSWorkflow.providerDeclines(data['orderId'], sesh['memo_id'], self)
-
-		# Return OK
-		return Services.Response(True)
-
 	def orderClaim_create(self, data, sesh):
 		"""Order Claim Create
 
@@ -2486,6 +2407,241 @@ class Monolith(Services.Service):
 		return Services.Response(
 			KtOrderClaim.byUser(sesh['memo_id'])
 		)
+
+	def orderContinuous_read(self, data, sesh):
+		"""Order Continuous Approve
+
+		Updates the status of a continuous order to Approved
+
+		Arguments:
+			data (dict): Data sent with the request
+			sesh (Sesh._Session): The session associated with the request
+
+		Returns:
+			Services.Response
+		"""
+
+		# Validate rights
+		oResponse = Services.read('auth', 'rights/verify', {
+			"name": "orders",
+			"right": Rights.READ
+		}, sesh)
+		if not oResponse.data:
+			return Services.Response(error=Rights.INVALID)
+
+		# Verify fields
+		try: DictHelper.eval(data, ['customerId', 'orderId'])
+		except ValueError as e: return Services.Response(error=(1001, [(f, 'missing') for f in e.args]))
+
+		# Find the local order
+		dOrderCont = KtOrderContinuous.filter({
+			"customerId": data['customerId'],
+			"orderId": data['orderId']
+		}, raw=['status'])
+		if not dOrderCont:
+			return Services.Response(error=1104)
+
+		# Find the order in Konnektive
+		oResponse = Services.read('konnektive', 'order', {
+			"orderId": data['orderId']
+		}, sesh)
+		if oResponse.errorExists():
+			return oResponse
+
+		# Store the order
+		dOrder = oResponse.data
+
+		# Overwrite the status
+		dOrder['status'] = dOrderCont['status']
+
+		# Return the order
+		return Services.Response(dOrder)
+
+	def orderContinuousApprove_update(self, data, sesh):
+		"""Order Continuous Approve
+
+		Updates the status of a continuous order to Approved
+
+		Arguments:
+			data (dict): Data sent with the request
+			sesh (Sesh._Session): The session associated with the request
+
+		Returns:
+			Services.Response
+		"""
+
+		# Validate rights
+		oResponse = Services.read('auth', 'rights/verify', {
+			"name": "orders",
+			"right": Rights.UPDATE
+		}, sesh)
+		if not oResponse.data:
+			return Services.Response(error=Rights.INVALID)
+
+		# Verify fields
+		try: DictHelper.eval(data, ['customerId', 'orderId'])
+		except ValueError as e: return Services.Response(error=(1001, [(f, 'missing') for f in e.args]))
+
+		# Find the order
+		oOrder = KtOrderContinuous.filter({
+			"customerId": data['customerId'],
+			"orderId": data['orderId']
+		})
+		if not oOrder:
+			return Services.Response(error=1104)
+
+		# If the order is not pending
+		if oOrder['status'] != 'PENDING':
+			return Services.Response(error=1515)
+
+		# Set the status and user, then save the order
+		oOrder['status'] = 'COMPLETE'
+		oOrder['user'] = sesh['memo_id']
+		oOrder.save()
+
+		# Notify the patient
+		SMSWorkflow.providerApprovesContinuous()
+
+		# Return OK
+		return Services.Response(True)
+
+	def orderContinuousDecline_update(self, data, sesh):
+		"""Order Continuous Decline
+
+		Updates the status of a continuous order to Declined
+
+		Arguments:
+			data (dict): Data sent with the request
+			sesh (Sesh._Session): The session associated with the request
+
+		Returns:
+			Services.Response
+		"""
+
+		# Validate rights
+		oResponse = Services.read('auth', 'rights/verify', {
+			"name": "orders",
+			"right": Rights.UPDATE
+		}, sesh)
+		if not oResponse.data:
+			return Services.Response(error=Rights.INVALID)
+
+		# Verify fields
+		try: DictHelper.eval(data, ['customerId', 'orderId'])
+		except ValueError as e: return Services.Response(error=(1001, [(f, 'missing') for f in e.args]))
+
+		# Make sure customer ID is an int
+		try: data['customerId'] = int(data['customerId'])
+		except ValueError: return Services.Response(error=(1001, [('customerId', 'not an int')]))
+
+		# Find the order
+		oOrder = KtOrderContinuous.filter({
+			"customerId": data['customerId'],
+			"orderId": data['orderId']
+		})
+		if not oOrder:
+			return Services.Response(error=1104)
+
+		# If the order is not pending
+		if oOrder['status'] != 'PENDING':
+			return Services.Response(error=1515)
+
+		# Cancel the purchase in Konnektive
+		oResponse = Services.update('konnektive', 'purchase/cancel', {
+			"purchaseId": oOrder['purchaseId'],
+			"reason": 'Medical Decline'
+		}, sesh)
+		if oResponse.errorExists(): return oResponse
+
+		# Set the status and user, then save the order
+		oOrder['status'] = 'DECLINED'
+		oOrder['user'] = sesh['memo_id']
+		oOrder.save()
+
+		# Notify the patient
+		SMSWorkflow.providerDeclinesContinuous()
+
+		# Return OK
+		return Services.Response(True)
+
+	def orderDecline_update(self, data, sesh):
+		"""Order Decline
+
+		Handles requests related to declining an order
+
+		Arguments:
+			data (mixed): Data sent with the request
+			sesh (Sesh._Session): The session associated with the request
+
+		Returns:
+			Services.Response
+		"""
+
+		# Verify minimum fields
+		try: DictHelper.eval(data, ['orderId', 'reason'])
+		except ValueError as e: return Services.Response(error=(1001, [(f, 'missing') for f in e.args]))
+
+		# Check the reason
+		if data['reason'] not in self._DECLINE_NOTES.keys():
+			return Services.Response(error=(1001, [('reason', 'invalid')]))
+
+		# Send the request to Konnektive
+		oResponse = Services.update('konnektive', 'order/qa', {
+			"action": 'DECLINE',
+			"orderId": data['orderId']
+		}, sesh)
+		if oResponse.errorExists(): return oResponse
+
+		# Find the order and change the status
+		oKtOrder = KtOrder.filter({
+			"orderId": data['orderId']
+		}, limit=1)
+		oKtOrder['orderStatus'] = 'DECLINED'
+		oKtOrder.save()
+
+		# Update memo cause it sucks
+		self.orderRefresh_update({
+			"orderId": data['orderId']
+		}, sesh)
+
+		# Get current date/time
+		sDT = arrow.get().format('YYYY-MM-DD HH:mm:ss')
+
+		# Store Decline note
+		oSmpNote = SmpNote({
+			"parentTable": 'kt_order',
+			"parentColumn": 'orderId',
+			"columnValue": data['orderId'],
+			"action": 'Decline Order',
+			"createdBy": sesh['memo_id'],
+			"note": self._DECLINE_NOTES[data['reason']],
+			"createdAt": sDT,
+			"updatedAt": sDT
+		})
+		oSmpNote.create()
+
+		# Find the order status (fuck this is fucking stupid as fuck, fuck memo)
+		oStatus = SmpOrderStatus.filter({
+			"orderId": data['orderId']
+		}, limit=1)
+		if oStatus:
+			oStatus['modifiedBy'] = sesh['memo_id']
+			oStatus['attentionRole'] = None
+			oStatus['orderLabel'] = None
+			oStatus['orderStatus'] = 'DECLINED'
+			oStatus['reviewStatus'] = 'DECLINED'
+			oStatus['declineReason'] = '%s Decline' % data['reason']
+			oStatus['updatedAt'] = sDT
+			oStatus.save()
+
+		# If it was a medical decline
+		if data['reason'] == 'Medical':
+
+			# Notify the patient of the decline
+			SMSWorkflow.providerDeclines(data['orderId'], sesh['memo_id'], self)
+
+		# Return OK
+		return Services.Response(True)
 
 	def orderLabel_update(self, data, sesh):
 		"""Order Label

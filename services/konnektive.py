@@ -850,3 +850,49 @@ class Konnektive(Services.Service):
 			} or None,
 			"currency": d['currencySymbol']
 		} for d in lTransactions])
+
+	def purchaseCancel_update(self, data, sesh):
+		"""Purchase Cancel
+
+		Stops a purchase (subscription) in Konnektive so that the customer
+		will stop being billed at intervals
+
+		Arguments:
+			data (dict): Data sent with the request
+			sesh (Sesh._Session): The session associated with the request
+			verify (bool): Allow bypassing verification for internal calls
+
+		Returns:
+			Services.Response
+		"""
+
+		# Validate rights
+		oResponse = Services.read('auth', 'rights/verify', {
+			"name": "orders",
+			"right": Rights.UPDATE
+		}, sesh)
+		if not oResponse.data:
+			return Services.Response(error=Rights.INVALID)
+
+		# Verify fields
+		try: DictHelper.eval(data, ['purchaseId'])
+		except ValueError as e: return Services.Response(error=(1001, [(f, 'missing') for f in e.args]))
+
+		# Init the data sent to Konnektive
+		dData = {
+			"purchaseId": data['purchaseId']
+		}
+
+		# If a reason was passed
+		if 'reason' in data:
+			dData['reason'] = data['reason']
+
+		# Cancel the purchase
+		bRes = oKNK._post('purchase/cancel', dData)
+
+		# If we failed
+		if not bRes:
+			return Services.Response(error=1103)
+
+		# Return OK
+		return Services.Response(True)

@@ -71,6 +71,7 @@ def _stepZero():
 				oOC = KtOrderContinuous({
 					"customerId": int(o['crm_id']),
 					"orderId": o['crm_order'],
+					"purchaseId": o['crm_purchase'],
 					"active": False,
 					"status": 'PENDING'
 				})
