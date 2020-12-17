@@ -2529,7 +2529,7 @@ class Monolith(Services.Service):
 		oSmpNote = SmpNote({
 			"parentTable": 'kt_customer',
 			"parentColumn": 'customerId',
-			"columnValue": data['customerId'],
+			"columnValue": str(data['customerId']),
 			"action": 'Approve Continuous Order',
 			"createdBy": sesh['memo_id'],
 			"note": data['soap'],
@@ -2604,7 +2604,7 @@ class Monolith(Services.Service):
 		oSmpNote = SmpNote({
 			"parentTable": 'kt_customer',
 			"parentColumn": 'customerId',
-			"columnValue": data['customerId'],
+			"columnValue": str(data['customerId']),
 			"action": 'Decline Order',
 			"createdBy": sesh['memo_id'],
 			"note": self._DECLINE_NOTES[data['reason']],
