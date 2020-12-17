@@ -2479,7 +2479,7 @@ class Monolith(Services.Service):
 			return Services.Response(error=Rights.INVALID)
 
 		# Verify fields
-		try: DictHelper.eval(data, ['customerId', 'orderId'])
+		try: DictHelper.eval(data, ['customerId', 'orderId', 'soap'])
 		except ValueError as e: return Services.Response(error=(1001, [(f, 'missing') for f in e.args]))
 
 		# Find the order
@@ -2501,6 +2501,22 @@ class Monolith(Services.Service):
 
 		# Notify the patient
 		SMSWorkflow.providerApprovesContinuous()
+
+		# Get current date/time
+		sDT = arrow.get().format('YYYY-MM-DD HH:mm:ss')
+
+		# Store SOAP notes
+		oSmpNote = SmpNote({
+			"parentTable": 'kt_customer',
+			"parentColumn": 'customerId',
+			"columnValue": data['customerId'],
+			"action": 'Approve Continuous Order',
+			"createdBy": sesh['memo_id'],
+			"note": data['soap'],
+			"createdAt": sDT,
+			"updatedAt": sDT
+		})
+		oSmpNote.create()
 
 		# Return OK
 		return Services.Response(True)
@@ -2527,7 +2543,7 @@ class Monolith(Services.Service):
 			return Services.Response(error=Rights.INVALID)
 
 		# Verify fields
-		try: DictHelper.eval(data, ['customerId', 'orderId'])
+		try: DictHelper.eval(data, ['customerId', 'orderId', 'reason'])
 		except ValueError as e: return Services.Response(error=(1001, [(f, 'missing') for f in e.args]))
 
 		# Make sure customer ID is an int
@@ -2549,7 +2565,7 @@ class Monolith(Services.Service):
 		# Cancel the purchase in Konnektive
 		oResponse = Services.update('konnektive', 'purchase/cancel', {
 			"purchaseId": oOrder['purchaseId'],
-			"reason": 'Medical Decline'
+			"reason": data['reason']
 		}, sesh)
 		if oResponse.errorExists(): return oResponse
 
@@ -2560,6 +2576,19 @@ class Monolith(Services.Service):
 
 		# Notify the patient
 		SMSWorkflow.providerDeclinesContinuous()
+
+		# Store Decline note
+		oSmpNote = SmpNote({
+			"parentTable": 'kt_customer',
+			"parentColumn": 'customerId',
+			"columnValue": data['customerId'],
+			"action": 'Decline Order',
+			"createdBy": sesh['memo_id'],
+			"note": self._DECLINE_NOTES[data['reason']],
+			"createdAt": sDT,
+			"updatedAt": sDT
+		})
+		oSmpNote.create()
 
 		# Return OK
 		return Services.Response(True)
