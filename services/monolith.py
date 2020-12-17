@@ -2437,7 +2437,7 @@ class Monolith(Services.Service):
 		dOrderCont = KtOrderContinuous.filter({
 			"customerId": data['customerId'],
 			"orderId": data['orderId']
-		}, raw=['status'])
+		}, raw=['status'], limit=1)
 		if not dOrderCont:
 			return Services.Response(error=1104)
 
@@ -2486,7 +2486,7 @@ class Monolith(Services.Service):
 		oOrder = KtOrderContinuous.filter({
 			"customerId": data['customerId'],
 			"orderId": data['orderId']
-		})
+		}, limit=1)
 		if not oOrder:
 			return Services.Response(error=1104)
 
@@ -2554,7 +2554,7 @@ class Monolith(Services.Service):
 		oOrder = KtOrderContinuous.filter({
 			"customerId": data['customerId'],
 			"orderId": data['orderId']
-		})
+		}, limit=1)
 		if not oOrder:
 			return Services.Response(error=1104)
 
