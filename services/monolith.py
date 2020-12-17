@@ -2520,7 +2520,7 @@ class Monolith(Services.Service):
 		oOrder.save()
 
 		# Notify the patient
-		SMSWorkflow.providerApprovesContinuous()
+		SMSWorkflow.providerApprovesContinuous(data['orderId'], sesh['memo_id'], self)
 
 		# Get current date/time
 		sDT = arrow.get().format('YYYY-MM-DD HH:mm:ss')
@@ -2595,7 +2595,7 @@ class Monolith(Services.Service):
 		oOrder.save()
 
 		# Notify the patient
-		SMSWorkflow.providerDeclinesContinuous()
+		SMSWorkflow.providerDeclinesContinuous(data['orderId'], sesh['memo_id'], self)
 
 		# Store Decline note
 		oSmpNote = SmpNote({
