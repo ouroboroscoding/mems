@@ -2597,6 +2597,9 @@ class Monolith(Services.Service):
 		# Notify the patient
 		SMSWorkflow.providerDeclinesContinuous(data['orderId'], sesh['memo_id'], self)
 
+		# Get current date/time
+		sDT = arrow.get().format('YYYY-MM-DD HH:mm:ss')
+
 		# Store Decline note
 		oSmpNote = SmpNote({
 			"parentTable": 'kt_customer',
