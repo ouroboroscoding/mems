@@ -23,7 +23,7 @@ from services.konnektive import Konnektive
 
 # Cron imports
 from crons import isRunning, emailError
-from crons.shared import SMSWorkflow
+from shared import SMSWorkflow
 
 def _stepZero():
 	"""Step Zero
@@ -66,7 +66,6 @@ def _stepZero():
 				"purchaseId": o['crm_purchase'],
 				"cancelReason": 'Expiring Prescription'
 			})
-			bRes = True
 
 			# If it's cancelled
 			if bRes:
