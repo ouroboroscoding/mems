@@ -919,24 +919,40 @@ class Monolith(Services.Service):
 		if 'form' not in data or data['form'] == 'all':
 			data['form'] = None
 
-		# Find the customer by ID
-		dCustomer = KtCustomer.filter(
-			{"customerId": data['customerId']},
-			raw=['lastName', 'emailAddress', 'phoneNumber'],
-			limit=1
-		)
+		# Init the landing filter
+		dFilter = {
+			"ktCustomerId": data['customerId']
+		}
 
-		# Try to find the landing
-		lLandings = TfLanding.find(
-			dCustomer['lastName'],
-			dCustomer['emailAddress'] or '',
-			dCustomer['phoneNumber'],
-			data['form']
-		)
+		# If we have a request for specific forms
+		if data['form']:
+			dFilter['form'] = data['form']
 
-		# If there's no mip
+		# Find the MIPs by customer ID
+		lLandings = TfLanding.filter(dFilter, raw=['landing_id', 'formId', 'submitted_at', 'complete'])
+
+		# If we found none, fall back to the old format just to see if we get
+		#	anything
 		if not lLandings:
-			return Services.Response(0)
+
+			# Find the customer by ID
+			dCustomer = KtCustomer.filter(
+				{"customerId": data['customerId']},
+				raw=['lastName', 'emailAddress', 'phoneNumber'],
+				limit=1
+			)
+
+			# Try to find the landing
+			lLandings = TfLanding.find(
+				dCustomer['lastName'],
+				dCustomer['emailAddress'] or '',
+				dCustomer['phoneNumber'],
+				data['form']
+			)
+
+			# If there's no mips
+			if not lLandings:
+				return Services.Response(0)
 
 		# Init the return
 		lRet = []
