@@ -929,7 +929,11 @@ class Monolith(Services.Service):
 			dFilter['formId'] = data['form']
 
 		# Find the MIPs by customer ID
-		lLandings = TfLanding.filter(dFilter, raw=['landing_id', 'formId', 'submitted_at', 'complete'])
+		lLandings = TfLanding.filter(
+			dFilter,
+			raw=['landing_id', 'formId', 'submitted_at', 'complete'],
+			orderby=[['submitted_at', 'DESC']]
+		)
 
 		# If we found none, fall back to the old format just to see if we get
 		#	anything
