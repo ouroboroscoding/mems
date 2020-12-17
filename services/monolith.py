@@ -926,7 +926,7 @@ class Monolith(Services.Service):
 
 		# If we have a request for specific forms
 		if data['form']:
-			dFilter['form'] = data['form']
+			dFilter['formId'] = data['form']
 
 		# Find the MIPs by customer ID
 		lLandings = TfLanding.filter(dFilter, raw=['landing_id', 'formId', 'submitted_at', 'complete'])
