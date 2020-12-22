@@ -324,6 +324,7 @@ def process(item, backfill=None):
 			oExpiring = Expiring({
 				"crm_type": item['crm_type'],
 				"crm_id": item['crm_id'],
+				"crm_order": item['crm_order'],
 				"crm_purchase": lItems[0]['purchaseId'],
 				"rx_id": str(dPrescription['id']),
 				"step": 0
@@ -376,6 +377,7 @@ def process(item, backfill=None):
 				oExpiring = Expiring({
 					"crm_type": item['crm_type'],
 					"crm_id": item['crm_id'],
+					"crm_order": item['crm_order'],
 					"crm_purchase": m['purchaseId'],
 					"rx_id": str(dPrescription['id']),
 					"step": 0

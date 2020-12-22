@@ -33,7 +33,8 @@ REST.Server({
 	"/customer/transactions": {"methods": REST.READ, "session": True},
 	"/order": {"methods": REST.READ, "session": True},
 	"/order/qa": {"methods": REST.UPDATE, "session": True},
-	"/order/transactions": {"methods": REST.READ, "session": True}
+	"/order/transactions": {"methods": REST.READ, "session": True},
+	"/purchase/cancel": {"methods": REST.UPDATE, "session": True}
 
 }, 'konnektive', "https?://(.*\\.)?%s" % Conf.get(("rest","allowed")).replace('.', '\\.')).run(
 	host=oRestConf['konnektive']['host'],

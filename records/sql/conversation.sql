@@ -2,6 +2,7 @@ SELECT
 	`id`,
 	`status`,
 	`errorMessage` as `error`,
+	`fromPhone`,
 	`fromName`,
 	`notes`,
 	`createdAt`,

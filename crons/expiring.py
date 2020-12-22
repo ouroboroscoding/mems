@@ -13,9 +13,11 @@ __email__		= "bast@maleexcel.com"
 __created__		= "2020-09-28"
 
 # Pip imports
-from RestOC import Services
+from RestOC import Conf, Services
+from RestOC.Record_MySQL import DuplicateException
 
 # Record imports
+from records.monolith import KtOrderContinuous
 from records.prescriptions import Expiring
 
 # Service imports
@@ -33,6 +35,9 @@ def _stepZero():
 	Returns:
 		bool
 	"""
+
+	# Get the MIP conf
+	dMIP = Conf.get('mip')
 
 	# Initialise service instances
 	oKNK = Konnektive()
@@ -54,31 +59,30 @@ def _stepZero():
 				"purchaseId": o['crm_purchase']
 			});
 
-			# If we got nothing
-			if not lPurchases:
+			# If we got nothing, or the status is already cancelled
+			if not lPurchases or lPurchases[0]['status'] == 'CANCELLED':
 
 				# Delete it
 				o.delete()
 				continue
 
-			# Cancel the purchase
-			bRes = oKNK._post('purchase/cancel', {
-				"purchaseId": o['crm_purchase'],
-				"cancelReason": 'Expiring Prescription'
-			})
-
-			# If it's cancelled
-			if bRes:
+			# Create a new continuous order record
+			try:
+				oOC = KtOrderContinuous({
+					"customerId": int(o['crm_id']),
+					"orderId": o['crm_order'],
+					"purchaseId": o['crm_purchase'],
+					"active": False,
+					"status": 'PENDING'
+				})
+				oOC.create()
 
 				# Find the template
 				sContent = SMSWorkflow.fetchTemplate(0, 'sms', 0)
 
-				# Generate the MIP link
-				sLink = 'https://some_link.com/'
-
 				# Process the template
 				sContent = SMSWorkflow.processTemplate(sContent, lPurchases[0], {
-					"mip_link": sLink
+					"mip_link": '%s%s' % (dMIP['domain'], dMIP['ced'] % {"customerId": o['crm_id']})
 				});
 
 				# Send the SMS to the patient
@@ -93,9 +97,13 @@ def _stepZero():
 					emailError('Expiring Error', 'Couldn\'t send sms:\n\n%s' % str(o.record()))
 					return
 
-				# Update the step
-				o['step'] = 1
-				o.save()
+			# Catch duplicate errors on continuous model
+			except DuplicateException as e:
+				pass
+
+			# Update the step
+			o['step'] = 1
+			o.save()
 
 		else:
 			emailError('Expiring Error', 'Unknown CRM: %s' % o['crm_type'])
