@@ -112,7 +112,7 @@ class Providers(Services.Service):
 				"medications": 1,		# Read
 				"memo_mips": 3,			# Read, Update
 				"memo_notes": 5,		# Read, Update, Create
-				"orders": 2,			# Update
+				"orders": 3,			# Read, Update
 				"prescriptions": 7		# Read, Update, Create
 			}
 		}, sesh)
