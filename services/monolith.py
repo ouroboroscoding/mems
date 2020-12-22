@@ -2034,6 +2034,10 @@ class Monolith(Services.Service):
 		try: DictHelper.eval(data, ['ids'])
 		except ValueError as e: return Services.Response(error=(1001, [(f, "missing") for f in e.args]))
 
+		# If there's nothing
+		if not data['ids']:
+			return Services.Response([])
+
 		# Get the status and error message of a specific message and return it
 		return Services.Response(
 			CustomerCommunication.get(data['ids'], raw=['id', 'status', 'errorMessage'])
