@@ -1714,7 +1714,7 @@ class Monolith(Services.Service):
 				"lastMsgAt": sDT,
 				"hiddenFlag": 'N',
 				"totalIncoming": 1,
-				"totalOutgoing": 0,
+				"totalOutGoing": 0,
 				"createdAt": sDT,
 				"updatedAt": sDT
 			})

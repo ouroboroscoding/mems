@@ -66,16 +66,11 @@ def parse(server):
 		list
 	"""
 
-	# Init the return dict
-	dRet = {}
+	# Init the return list
+	lRet = []
 
 	# Fetch the config
 	dConf = Conf.get(('missed_calls', 'justcall'))
-
-	# Create a list for each type
-	for sType in dConf['numbers'].values():
-		if sType not in dRet:
-			dRet[sType] = []
 
 	# Search for unseen emails
 	sStatus, lIDs = server.search(None, '(UNSEEN FROM "%s")' % dConf['from'])
@@ -112,10 +107,9 @@ def parse(server):
 				if lMatches[1] not in dConf['numbers']:
 					emailError('Unknown Missed Call Number', str(lMatches))
 					continue
-				sGroup = dConf['numbers'][lMatches[1]]
 
 				# Store the data in the result var
-				dRet[sGroup].append({
+				lRet.append({
 					"date": lDate.group(1),
 					"time": lDate.group(2),
 					"type": 'MISSED',
@@ -137,4 +131,4 @@ def parse(server):
 				emailError('JustCall Missed Calls Error', sBody)
 
 	# Return anything found
-	return dRet
+	return lRet
