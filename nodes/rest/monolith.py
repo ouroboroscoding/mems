@@ -87,8 +87,7 @@ REST.Server({
 
 	"/passwd/forgot": {"methods": REST.CREATE | REST.UPDATE},
 
-	"/pharmacy/fill/error": {"methods": REST.UPDATE | REST.DELETE, "session": True},
-	"/pharmacy/fill/errors": {"methods": REST.READ, "session": True},
+	"/phone/change": {"methods": REST.UPDATE, "session": True},
 
 	"/provider/calendly": {"methods": REST.READ, "session": True},
 	"/provider/sms": {"methods": REST.CREATE, "session": True},

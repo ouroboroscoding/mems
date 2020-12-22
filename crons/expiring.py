@@ -36,7 +36,7 @@ def _stepZero():
 		bool
 	"""
 
-	# Get the MIP conf and generate the base URL
+	# Get the MIP conf
 	dMIP = Conf.get('mip')
 
 	# Initialise service instances
@@ -84,8 +84,6 @@ def _stepZero():
 				sContent = SMSWorkflow.processTemplate(sContent, lPurchases[0], {
 					"mip_link": '%s%s' % (dMIP['domain'], dMIP['ced'] % {"customerId": o['crm_id']})
 				});
-
-				print(sContent)
 
 				# Send the SMS to the patient
 				oResponse = Services.create('monolith', 'message/outgoing', {
