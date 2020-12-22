@@ -90,7 +90,7 @@
 		},
 		"justcall": {
 			"from": "help@justcall.io",
-			"numbers": {}
+			"numbers": []
 		},
 		"signia": "notifications@virtualacd.biz"
 	},

@@ -12,6 +12,7 @@ __email__		= "bast@maleexecl.com"
 __created__		= "2020-04-26"
 
 # Python imports
+import arrow
 import copy
 from hashlib import sha1
 import re
@@ -617,7 +618,8 @@ class CustomerMsgPhone(Record_MySQL.Record):
 				"	`lastMsgAt` = '%(date)s',\n" \
 				"	`hiddenFlag` = '%(hidden)s',\n" \
 				"	`%(increment)s` = `%(increment)s` + 1,\n" \
-				"	`lastMsg` = CONCAT('%(message)s', IFNULL(`lastMsg`, ''))\n" \
+				"	`lastMsg` = CONCAT('%(message)s', IFNULL(`lastMsg`, '')),\n" \
+				"	`updatedAt` = '%(dt)s\n" \
 				"WHERE `customerPhone` = '%(customerPhone)s'" % {
 			"db": dStruct['db'],
 			"table": dStruct['table'],
@@ -626,7 +628,8 @@ class CustomerMsgPhone(Record_MySQL.Record):
 			"message": Record_MySQL.Commands.escape(dStruct['host'], message),
 			"customerPhone": Record_MySQL.Commands.escape(dStruct['host'], customerPhone),
 			"hidden": sHidden,
-			"increment": sIncrement
+			"increment": sIncrement,
+			"dt": arrow.get().format('YYYY-MM-DD HH:mm:ss')
 		}
 
 		# Execute the update
