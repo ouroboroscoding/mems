@@ -619,7 +619,7 @@ class CustomerMsgPhone(Record_MySQL.Record):
 				"	`hiddenFlag` = '%(hidden)s',\n" \
 				"	`%(increment)s` = `%(increment)s` + 1,\n" \
 				"	`lastMsg` = CONCAT('%(message)s', IFNULL(`lastMsg`, '')),\n" \
-				"	`updatedAt` = '%(dt)s\n" \
+				"	`updatedAt` = '%(dt)s'\n" \
 				"WHERE `customerPhone` = '%(customerPhone)s'" % {
 			"db": dStruct['db'],
 			"table": dStruct['table'],
