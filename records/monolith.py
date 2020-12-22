@@ -280,6 +280,35 @@ class CustomerClaimed(Record_MySQL.Record):
 		# Fetch the data and return the records
 		return Record_MySQL.Commands.select(dStruct['host'], sSQL)
 
+	def swapNumber(self, number):
+		"""Swap Number
+
+		Swaps the primary key for another value
+
+		Arguments:
+			number (str): The new primary key
+
+		Returns:
+			uint
+		"""
+
+		# Swap the number
+		sOldNumber = self._dRecord['phoneNumber']
+		self._dRecord['phoneNumber'] = number
+
+		# Execute the SQL and return the rows changed
+		return Record_MySQL.Commands.execute(
+			self._dStruct['host'],
+			"UPDATE `%(db)s`.`%(table)s`\n" \
+			"SET `phoneNumber` = '%(new)s'\n" \
+			"WHERE `phoneNumber` = '%(old)s'" % {
+				"db": self._dStruct['db'],
+				"table": self._dStruct['table'],
+				"new": number,
+				"old": sOldNumber
+			}
+		)
+
 # CustomerClaimedLast class
 class CustomerClaimedLast(Record_MySQL.Record):
 	"""CustomerClaimedLast

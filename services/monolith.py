@@ -2998,6 +2998,179 @@ class Monolith(Services.Service):
 		# Return OK
 		return Services.Response(True)
 
+	def phoneChange_update(self, data, sesh):
+		"""Phone Change
+
+		Changes the phone number associated with a customer and all records
+		associated with that number
+
+		Arguments:
+			data (dict): Data sent with the request
+			sesh (Sesh._Session): The session associated with the request
+
+		Returns:
+			Services.Response
+		"""
+
+		# Make sure the user has the proper permission to do this
+		oResponse = Services.read('auth', 'rights/verify', {
+			"name": "customers",
+			"right": Rights.UPDATE
+		}, sesh)
+		if not oResponse.data:
+			return Services.Response(error=Rights.INVALID)
+
+		# Verify fields
+		try: DictHelper.eval(data, ['old', 'new'])
+		except ValueError as e: return Services.Response(error=(1001, [(f, 'missing') for f in e.args]))
+
+		# Check the values are numeric and cut down to the last 10 digits
+		for k in ['old', 'new']:
+			if not data[k].isnumeric():
+				return Services.Response(error=(1001, [(k, 'is not numeric')]))
+			data[k] = data[k][-10:]
+
+		# If we have a customer ID
+		if 'customerId' in data:
+
+			# Find the customer
+			oCustomer = KtCustomer.filter({
+				"customerId": data['customerId'],
+				"phoneNumber": [data['old'], '1%s' % data['old']]
+			}, limit=1)
+			if not oCustomer:
+				return Services.Response(error=1104)
+
+			# Update the customer in Konnektive
+			oResponse = Services.update('konnektive', 'customer', {
+				"customerId": data['customerId'],
+				"phone": data['new']
+			}, sesh)
+			if oResponse.errorExists():
+				return oResponse
+
+			# Sync the local copy
+			oCustomer['phoneNumber'] = data['new']
+			oCustomer.save()
+
+		# Update all incoming messages
+		CustomerCommunication.updateField('fromPhone', data['new'], filter={
+			"fromPhone": data['old']
+		})
+
+		# Update all outgoing messages
+		CustomerCommunication.updateField('toPhone', data['new'], filter={
+			"toPhone": data['old']
+		})
+
+		# Find the old summary
+		oOldSummary = CustomerMsgPhone.filter({
+			"customerPhone": [data['old'], '1%s' % data['old']]
+		}, limit=1)
+
+		# Find the new summary
+		oNewSummary = CustomerMsgPhone.filter({
+			"customerPhone": [data['new'], '1%s' % data['new']]
+		}, limit=1)
+
+		# If we found one
+		if oOldSummary or oNewSummary:
+
+			# If we have both summaries
+			if oOldSummary and oNewSummary:
+
+				# Delete the old one
+				oOldSummary.delete()
+
+				# Set the new one to work on
+				oSummary = oNewSummary
+
+			# Else, choose from whichever we got
+			else:
+				oSummary = oNewSummary and oNewSummary or oOldSummary
+
+			# Set the new number
+			oSummary['customerPhone'] = data['new']
+
+			# Get the conversations for the number
+			lMsgs = CustomerCommunication.thread(data['new'])
+
+			# If we got any messages
+			if len(lMsgs):
+
+				# Set the last message fields
+				iLast = len(lMsgs) - 1;
+				oSummary['lastMsgDir'] = lMsgs[iLast]['fromPhone'] == data['new'] and \
+											'Incoming' or \
+											'Outgoing'
+				oSummary['lastMsgAt'] = lMsgs[iLast]['createdAt']
+
+				# Keep track of incoming/outgoing and summary texts
+				iIncoming = 0
+				iOutgoing = 0
+				lTexts = []
+
+				# Go through each one in reverse
+				for d in reversed(lMsgs):
+
+					# If it's incoming
+					if d['fromPhone'] == data['new']:
+						iIncoming += 1
+						lTexts.append('\n--------\nReceived at %s\n%s' % (
+							d['createdAt'],
+							d['notes']
+						))
+
+					# Else it's outgoing
+					else:
+						iOutgoing += 1
+						lTexts.append('\n--------\nSent by %s at %s\n%s' % (
+							d['fromName'],
+							d['createdAt'],
+							d['notes']
+						))
+
+				# Update the rest of the fields
+				oSummary['totalIncoming'] = iIncoming
+				oSummary['totalOutGoing'] = iOutgoing
+				oSummary['lastMsg'] = ''.join(lTexts)
+				oSummary['updatedAt'] = arrow.get().format('YYYY-MM-DD HH:mm:ss')
+
+			# Save the summary
+			oSummary.save()
+
+		# Look for a claim associated with the number
+		oClaim = CustomerClaimed.get(data['old'])
+		if oClaim:
+
+			# If the claim already exists
+			if CustomerClaimed.exists(data['new']):
+
+				# Notify the user they lost the claim
+				Sync.push('monolith', 'user-%s' % str(oClaim['user']), {
+					"type": 'claim_removed',
+					"phoneNumber": oClaim['phoneNumber']
+				})
+
+				# Delete the claim
+				oClaim.delete()
+
+			# Else, swap it
+			else:
+
+				# Notify the user the claim is swapped
+				Sync.push('monolith', 'user-%s' % str(oClaim['user']), {
+					"type": 'claim_swapped',
+					"phoneNumber": oClaim['phoneNumber'],
+					"newNumber": data['new']
+				})
+
+				# Swap the number
+				oClaim.swapNumber(data['new'])
+
+		# Return OK
+		return Services.Response(True)
+
 	def providerCalendly_read(self, data, sesh):
 		"""Provider Calendly
 
