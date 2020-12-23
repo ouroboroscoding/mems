@@ -1,4 +1,9 @@
 {
+	"contact_form": {
+		"from": "maleexcel@ded3204.inmotionhosting.com",
+		"failed": ""
+	},
+
 	"crons": {
 		"welldyne": {
 			"reports": ["bast@maleexcel.com"]
@@ -78,16 +83,6 @@
 	},
 
 	"missed_calls": {
-		"sheets": {
-			"default": {
-				"key": "",
-				"worksheet": "Missed Calls"
-			},
-			"hrt": {
-				"key": "",
-				"worksheet": "Missed Calls"
-			}
-		},
 		"justcall": {
 			"from": "help@justcall.io",
 			"numbers": []
