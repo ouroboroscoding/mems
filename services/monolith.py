@@ -107,6 +107,110 @@ class Monolith(Services.Service):
 			if not o.tableCreate():
 				print("Failed to create `%s` table" % o.tableName())
 
+	def agentClaim_delete(self, data, sesh):
+		"""Agent Claim Delete
+
+		Deletes an existing claim
+
+		Arguments:
+			data (dict): Data sent with the request
+			sesh (Sesh._Session): The session associated with the request
+
+		Returns:
+			Services.Response
+		"""
+
+		# Make sure the user has the proper permission to do this
+		oResponse = Services.read('auth', 'rights/verify', {
+			"name": "csr_overwrite",
+			"right": Rights.DELETE
+		}, sesh)
+		if not oResponse.data:
+			return Services.Response(error=Rights.INVALID)
+
+		# Verify fields
+		try: DictHelper.eval(data, ['phoneNumber'])
+		except ValueError as e: return Services.Response(error=(1001, [(f, 'missing') for f in e.args]))
+
+		# Find the claim
+		oClaim = CustomerClaimed.get(data['phoneNumber'])
+		if not oClaim:
+			return Services.Response(error=1104)
+
+		# Store the agent ID
+		iAgent = oClaim['user']
+
+		# Delete the claim
+		if oClaim.delete():
+
+			# Notify the agent they lost the claim
+			Sync.push('monolith', 'user-%s' % str(iAgent), {
+				"type": 'claim_removed',
+				"phoneNumber": data['phoneNumber']
+			})
+
+			# Return OK
+			return Services.Response(True)
+
+		# Failed
+		return Services.Response(False)
+
+	def agentClaims_read(self, data, sesh):
+		"""Agent Claims
+
+		Returns all claims by all agents currently in the system
+
+		Arguments:
+			data (dict): Data sent with the request
+			sesh (Sesh._Session): The session associated with the request
+
+		Returns:
+			Services.Response
+		"""
+
+		# Make sure the user has the proper permission to do this
+		oResponse = Services.read('auth', 'rights/verify', {
+			"name": "csr_overwrite",
+			"right": Rights.READ
+		}, sesh)
+		if not oResponse.data:
+			return Services.Response(error=Rights.INVALID)
+
+		# Fetch all the current claims
+		lClaims = CustomerClaimed.get(raw=True, orderby=[['createdAt', 'DESC']])
+
+		# If there's nothing, return nothing
+		if not lClaims:
+			return Services.Response([])
+
+		# Get a list of all the user IDs
+		lUserIDs = set()
+		for d in lClaims:
+			lUserIDs.add(d['user'])
+			if d['provider']: lUserIDs.add(d['provider'])
+			if d['transferredBy']: lUserIDs.add(d['transferredBy'])
+
+		# Get the names of all the users
+		dUsers = {
+			d['id']: '%s %s' % (d['firstName'], d['lastName'])
+			for d in User.get(list(lUserIDs), raw=['id', 'firstName', 'lastName'])
+		}
+
+		# Go through each claim and update the name accordingly
+		for d in lClaims:
+			d['user'] = d['user'] in dUsers and dUsers[d['user']] or 'N/A'
+			if d['provider']:
+				d['provider'] = d['provider'] in dUsers and dUsers[d['provider']] or 'N/A'
+			else:
+				d['provider'] = ''
+			if d['transferredBy']:
+				d['transferredBy'] = d['transferredBy'] in dUsers and dUsers[d['transferredBy']] or 'N/A'
+			else:
+				d['transferredBy'] = ''
+
+		# Return the list of claims
+		return Services.Response(lClaims)
+
 	def customerCalendly_read(self, data, sesh):
 		"""Customer Calendly
 
@@ -277,13 +381,34 @@ class Monolith(Services.Service):
 			return Services.Response(error=1104)
 
 		# If the user is not the one who made the claim
-		if oClaim['user'] != sesh['memo_id']:
-			return Services.Response(error=1000)
+		iOldUser = None
+		if 'memo_id' not in sesh or oClaim['user'] != sesh['memo_id']:
+
+			# Make sure the user has the proper permission to do this
+			oResponse = Services.read('auth', 'rights/verify', {
+				"name": "csr_overwrite",
+				"right": Rights.DELETE
+			}, sesh)
+			if not oResponse.data:
+				return Services.Response(error=Rights.INVALID)
+
+			# Store the old user
+			iOldUser = oClaim['user']
+
+		# Delete the record and keep the result
+		bRes = oClaim.delete()
+
+		# If the user is not the owner
+		if iOldUser:
+
+			# Notify the user they lost the claim
+			Sync.push('monolith', 'user-%s' % str(iOldUser), {
+				"type": 'claim_removed',
+				"phoneNumber": data['phoneNumber']
+			})
 
 		# Delete the claim and return the response
-		return Services.Response(
-			oClaim.delete()
-		)
+		return Services.Response(bRes)
 
 	def customerClaim_update(self, data, sesh):
 		"""Customer Claim Update
