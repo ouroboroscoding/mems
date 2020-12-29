@@ -188,7 +188,9 @@ class Monolith(Services.Service):
 		for d in lClaims:
 			lUserIDs.add(d['user'])
 			if d['provider']: lUserIDs.add(d['provider'])
-			if d['transferredBy']: lUserIDs.add(d['transferredBy'])
+			if d['transferredBy']:
+				d['transferredBy'] = int(d['transferredBy'])
+				lUserIDs.add(d['transferredBy'])
 
 		# Get the names of all the users
 		dUsers = {
