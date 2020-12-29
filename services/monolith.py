@@ -381,34 +381,13 @@ class Monolith(Services.Service):
 			return Services.Response(error=1104)
 
 		# If the user is not the one who made the claim
-		iOldUser = None
-		if 'memo_id' not in sesh or oClaim['user'] != sesh['memo_id']:
-
-			# Make sure the user has the proper permission to do this
-			oResponse = Services.read('auth', 'rights/verify', {
-				"name": "csr_overwrite",
-				"right": Rights.DELETE
-			}, sesh)
-			if not oResponse.data:
-				return Services.Response(error=Rights.INVALID)
-
-			# Store the old user
-			iOldUser = oClaim['user']
-
-		# Delete the record and keep the result
-		bRes = oClaim.delete()
-
-		# If the user is not the owner
-		if iOldUser:
-
-			# Notify the user they lost the claim
-			Sync.push('monolith', 'user-%s' % str(iOldUser), {
-				"type": 'claim_removed',
-				"phoneNumber": data['phoneNumber']
-			})
+		if oClaim['user'] != sesh['memo_id']:
+			return Services.Response(error=Rights.INVALID)
 
 		# Delete the claim and return the response
-		return Services.Response(bRes)
+		return Services.Response(
+			oClaim.delete()
+		)
 
 	def customerClaim_update(self, data, sesh):
 		"""Customer Claim Update
