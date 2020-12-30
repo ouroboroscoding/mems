@@ -861,16 +861,18 @@ class Prescriptions(Services.Service):
 			Services.Response
 		"""
 
-		# DisplayName: "Tadalafil 5mg Tablet"
-		# DaysSupply: 30
-		# Directions: "1 tab po qday"
-		# DispenseUnitId: 26
-		# MedicationStatus: 1
-		# NDC: "00093301756"
-		# Refills: 11
+		# patient_id: 16488285
+		# clinician_id: 143626
+		# display: "Tadalafil 5mg Tablet"
+		# quantity: 30
+		# supply: 30
+		# directions: "1 tab po qday"
+		# unit_id: 26
+		# ndc: "00093301756"
+		# refills: 11
 
 		# Verify fields
-		try: DictHelper.eval(data, ['patient_id', 'clinician_id', 'ndc', 'display', 'supply', 'directions', 'unit_id'])
+		try: DictHelper.eval(data, ['patient_id', 'clinician_id', 'ndc', 'display', 'quantity', 'supply', 'directions', 'unit_id'])
 		except ValueError as e: return Services.Response(error=(1001, [(f, 'missing') for f in e.args]))
 
 		# Make sure the user has the proper permission to do this
@@ -886,11 +888,9 @@ class Prescriptions(Services.Service):
 		if 'refills' not in data:
 			data['refills'] = 0
 
-		# If effective missing
-
 		# Make sure all values are ints
 		lErrors = []
-		for k in ['patient_id', 'clinician_id', 'ndc', 'refills', 'supply', 'unit_id']:
+		for k in ['patient_id', 'clinician_id', 'ndc', 'refills', 'quantity', 'supply', 'unit_id']:
 			try: data[k] = int(data[k])
 			except ValueError: lErrors.append((k, 'not an integer'))
 		if lErrors:
@@ -899,13 +899,21 @@ class Prescriptions(Services.Service):
 		# Init the data to send to DoseSpot
 		dData = {
 			"DisplayName": str(data['display']),
+			"Quantity": data['quantity'],
 			"DaysSupply": data['supply'],
 			"Directions": str(data['directions']),
 			"DispenseUnitId": data['unit_id'],
-			"MedicationStatus": 1,
+			"NoSubstitutions": True,
+			"Status": 1,
 			"NDC": str(data['ndc']),
 			"Refills": data['refills']
 		}
+
+		# If we have an effective date
+		if 'effective' in data:
+			dData['EffectiveDate'] = data['effective']
+
+		print(dData)
 
 		# Generate the token
 		sToken = self._generateToken(data['clinician_id'])
@@ -922,7 +930,24 @@ class Prescriptions(Services.Service):
 			"Authorization": "Bearer %s" % sToken
 		}
 
+		# Make the request
+		oRes = requests.post(sURL, headers=dHeaders, json=dData)
 
+		# If we didn't get a 200
+		if oRes.status_code != 200:
+			return Services.Response(error=(1601, oRes.text))
+
+		# Get the data
+		dData = oRes.json()
+
+		print(dData)
+
+		# If we got an error
+		if dData['Result']['ResultCode'] == 'ERROR':
+			return Services.Response(error=(1602, dData['Result']['ResultDescription']))
+
+		# Return the pharmacies
+		return Services.Response(True)
 
 	def patientPrescriptions_read(self, data, sesh=None):
 		"""Patient Prescriptions
