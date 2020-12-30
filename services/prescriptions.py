@@ -848,6 +848,107 @@ class Prescriptions(Services.Service):
 		# Return the pharmacies
 		return Services.Response(True)
 
+	def patientPrescription_create(self, data, sesh):
+		"""Patient Prescription Create
+
+		Creates a new prescription for the patient
+
+		Arguments:
+			data (dict): Data sent with the request
+			sesh (Sesh._Session): The session associated with the request
+
+		Returns:
+			Services.Response
+		"""
+
+		# patient_id: 16488285
+		# clinician_id: 143626
+		# display: "Tadalafil 5mg Tablet"
+		# quantity: 30
+		# supply: 30
+		# directions: "1 tab po qday"
+		# unit_id: 26
+		# ndc: "00093301756"
+		# refills: 11
+
+		# Verify fields
+		try: DictHelper.eval(data, ['patient_id', 'clinician_id', 'ndc', 'display', 'quantity', 'supply', 'directions', 'unit_id'])
+		except ValueError as e: return Services.Response(error=(1001, [(f, 'missing') for f in e.args]))
+
+		# Make sure the user has the proper permission to do this
+		oResponse = Services.read('auth', 'rights/verify', {
+			"name": "prescriptions",
+			"right": Rights.CREATE,
+			"ident": data['patient_id']
+		}, sesh)
+		if not oResponse.data:
+			return Services.Response(error=Rights.INVALID)
+
+		# If refills missing, set to 0
+		if 'refills' not in data:
+			data['refills'] = 0
+
+		# Make sure all values are ints
+		lErrors = []
+		for k in ['patient_id', 'clinician_id', 'ndc', 'refills', 'quantity', 'supply', 'unit_id']:
+			try: data[k] = int(data[k])
+			except ValueError: lErrors.append((k, 'not an integer'))
+		if lErrors:
+			return Services.Response(error=(1001, lErrors))
+
+		# Init the data to send to DoseSpot
+		dData = {
+			"DisplayName": str(data['display']),
+			"Quantity": data['quantity'],
+			"DaysSupply": data['supply'],
+			"Directions": str(data['directions']),
+			"DispenseUnitId": data['unit_id'],
+			"NoSubstitutions": True,
+			"Status": 1,
+			"NDC": str(data['ndc']),
+			"Refills": data['refills']
+		}
+
+		# If we have an effective date
+		if 'effective' in data:
+			dData['EffectiveDate'] = data['effective']
+
+		print(dData)
+
+		# Generate the token
+		sToken = self._generateToken(data['clinician_id'])
+
+		# Generate the URL
+		sURL = 'https://%s/webapi/api/patients/%d/prescriptions/ndc' % (
+			self._host,
+			data['patient_id']
+		)
+
+		# Generate the headers
+		dHeaders = {
+			"Accept": "application/json",
+			"Authorization": "Bearer %s" % sToken
+		}
+
+		# Make the request
+		oRes = requests.post(sURL, headers=dHeaders, json=dData)
+
+		# If we didn't get a 200
+		if oRes.status_code != 200:
+			return Services.Response(error=(1601, oRes.text))
+
+		# Get the data
+		dData = oRes.json()
+
+		print(dData)
+
+		# If we got an error
+		if dData['Result']['ResultCode'] == 'ERROR':
+			return Services.Response(error=(1602, dData['Result']['ResultDescription']))
+
+		# Return the pharmacies
+		return Services.Response(True)
+
 	def patientPrescriptions_read(self, data, sesh=None):
 		"""Patient Prescriptions
 

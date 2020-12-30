@@ -32,6 +32,7 @@ REST.Server({
 	"/patient/medications": {"methods": REST.READ, "session": True},
 	"/patient/pharmacies": {"methods": REST.READ, "session": True},
 	"/patient/pharmacy": {"methods": REST.CREATE | REST.DELETE, "session": True},
+	"/patient/prescription": {"methods": REST.CREATE | REST.READ, "session": True},
 	"/patient/prescriptions": {"methods": REST.READ},
 	"/patient/sso": {"methods": REST.READ, "session": True},
 
