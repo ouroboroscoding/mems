@@ -1968,6 +1968,36 @@ class SMSStop(Record_MySQL.Record):
 		# Return the config
 		return cls._conf
 
+# SMSStopChange class
+class SMSStopChange(Record_MySQL.Record):
+	"""SMSStopChange
+
+	Represents a change in the STOP/START state of a customer phone number
+	"""
+
+	_conf = None
+	"""Configuration"""
+
+	@classmethod
+	def config(cls):
+		"""Config
+
+		Returns the configuration data associated with the record type
+
+		Returns:
+			dict
+		"""
+
+		# If we haven loaded the config yet
+		if not cls._conf:
+			cls._conf = Record_MySQL.Record.generateConfig(
+				Tree.fromFile('definitions/monolith/sms_stop_change.json'),
+				'mysql'
+			)
+
+		# Return the config
+		return cls._conf
+
 # SMSTemplate class
 class SMSTemplate(Record_MySQL.Record):
 	"""SMSTemplate
