@@ -105,7 +105,7 @@ def parse(server):
 
 				# If there's no group
 				if lMatches[1] not in dConf['numbers']:
-					emailError('Unknown Missed Call Number', str(lMatches))
+					emailError('Unknown Missed Call Number', str(lMatches), Conf.get(('missed_calls', 'justcall', 'errors')))
 					continue
 
 				# Store the data in the result var

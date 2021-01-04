@@ -38,13 +38,15 @@ def _cleanupPidfiles():
 # Register at exit function
 atexit.register(_cleanupPidfiles)
 
-def emailError(subject, error):
+def emailError(subject, error, recipient=None):
 	"""Email Error
 
 	Send out an email with an error message
 
 	Arguments:
+		subject (str): The subject of the email
 		error (str): The error to email
+		recipient (str|str[]): The recipient of the email
 
 	Returns:
 		bool
@@ -58,7 +60,7 @@ def emailError(subject, error):
 		"_internal_": Services.internalKey(),
 		"text_body": error,
 		"subject": subject,
-		"to": Conf.get(('developer', 'emails'))
+		"to": recipient or Conf.get(('developer', 'emails'))
 	})
 	if oResponse.errorExists():
 		print(oResponse.error)
