@@ -30,8 +30,8 @@ from records.monolith import \
 	Calendly, Campaign, CustomerClaimed, CustomerClaimedLast, CustomerCommunication, \
 	CustomerMsgPhone, DsPatient, Forgot, HrtLabResultTests, KtCustomer, KtOrder, \
 	KtOrderClaim, KtOrderClaimLast, KtOrderContinuous, ShippingInfo, SmpNote, \
-	SmpOrderStatus, SmpState, SMSStop, TfAnswer, TfLanding, TfQuestion, \
-	TfQuestionOption, User, \
+	SmpOrderStatus, SmpState, SMSStop, SMSStopChange, TfAnswer, TfLanding, \
+	TfQuestion, TfQuestionOption, User, \
 	init as recInit
 
 # Regex for validating email
@@ -1296,7 +1296,9 @@ class Monolith(Services.Service):
 					"orderLabel": len(lLabel) == 2 and data['label'] or '',
 					"declineReason": None,
 					"smpNoteId": None,
+					"hrtProviderReviewOrderFlag": 'N',
 					"currentFlag": 'Y',
+					"labResultOnNoteFlag": 'N',
 					"createdBy": 11,
 					"modifiedBy": 11,
 					"createdAt": sDT,
@@ -1510,9 +1512,25 @@ class Monolith(Services.Service):
 
 		# Try to add it to the DB
 		try:
-			return Services.Response(
-				oStop.create()
-			)
+			oStop.create()
+
+			# Get current date/time
+			sDT = arrow.get().format('YYYY-MM-DD HH:mm:ss')
+
+			# Track the change
+			oStopChange = SMSStopChange({
+				"phoneNumber": data['phoneNumber'],
+				"action": 'add',
+				"service": data['service'],
+				"agent": sesh['memo_id'],
+				"createdAt": sDT,
+				"updatedAt": sDT
+			})
+			oStopChange.create()
+
+			# Return OK
+			return Services.Response(True)
+
 		except Record_MySQL.DuplicateException as e:
 			return Services.Response(error=1101)
 
@@ -1555,10 +1573,25 @@ class Monolith(Services.Service):
 		if oStop['agent'] is None:
 			return Services.Response(error=1509)
 
-		# Else, delete it and return the response
-		return Services.Response(
-			oStop.delete()
-		)
+		# Delete the record
+		oStop.delete()
+
+		# Get current date/time
+		sDT = arrow.get().format('YYYY-MM-DD HH:mm:ss')
+
+		# Track the change
+		oStopChange = SMSStopChange({
+			"phoneNumber": data['phoneNumber'],
+			"action": 'remove',
+			"service": data['service'],
+			"agent": sesh['memo_id'],
+			"createdAt": sDT,
+			"updatedAt": sDT
+		})
+		oStopChange.create()
+
+		# Return OK
+		return Services.Response(True)
 
 	def customerStops_read(self, data, sesh):
 		"""Customer Stops

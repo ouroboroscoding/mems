@@ -85,7 +85,8 @@
 	"missed_calls": {
 		"justcall": {
 			"from": "help@justcall.io",
-			"numbers": []
+			"numbers": [],
+			"errors": []
 		},
 		"signia": "notifications@virtualacd.biz"
 	},
