@@ -42,7 +42,10 @@ REST.Server({
 	"/pharmacy/fill/byCustomer": {"methods": REST.READ, "session": True},
 
 	"/pharmacy/fill/error": {"methods": REST.CREATE | REST.UPDATE | REST.DELETE, "session": True},
-	"/pharmacy/fill/errors": {"methods": REST.READ, "session": True}
+	"/pharmacy/fill/errors": {"methods": REST.READ, "session": True},
+
+	"/product": {"methods": REST.ALL, "session": True},
+	"/products": {"methods": REST.READ, "session": True}
 
 }, 'prescriptions', "https?://(.*\\.)?%s" % Conf.get(("rest","allowed")).replace('.', '\\.')).run(
 	host=oRestConf['prescriptions']['host'],
