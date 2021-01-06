@@ -1,6 +1,6 @@
 # Import version files
-from . import create_table
+from . import create_table, insert_records
 
 modules = [
-	create_table
+	create_table, insert_records
 ]

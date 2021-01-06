@@ -67,7 +67,7 @@ def check(sesh, name, right, ident=None):
 
 	# If the check failed, raise an exception
 	if not oResponse.data:
-		raise Services.ResponseException(error=Rights.INVALID)
+		raise Services.ResponseException(error=INVALID)
 
 def checkReturn(sesh, name, right, ident=None):
 	""" Check Return
