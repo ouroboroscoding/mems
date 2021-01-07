@@ -33,6 +33,9 @@ REST.Server({
 	"/agent/claim": {"methods": REST.DELETE, "session": True},
 	"/agent/claims": {"methods": REST.READ, "session": True},
 
+	"/calendly/event": {"methods": REST.ALL, "session": True},
+	"/calendly/events": {"methods": REST.READ, "session": True},
+
 	"/customer/calendly": {"methods": REST.READ, "session": True},
 	"/customer/claim": {"methods": REST.CREATE | REST.UPDATE | REST.DELETE, "session": True},
 	"/customer/claim/view": {"methods": REST.UPDATE, "session": True},
@@ -94,6 +97,8 @@ REST.Server({
 
 	"/provider/calendly": {"methods": REST.READ, "session": True},
 	"/provider/sms": {"methods": REST.CREATE, "session": True},
+
+	"/providers": {"methods": REST.READ, "session": True},
 
 	"/signin": {"methods": REST.POST},
 

@@ -27,11 +27,19 @@ from shared import Memo, Rights, SMSWorkflow, Sync
 
 # Records imports
 from records.monolith import \
-	Calendly, Campaign, CustomerClaimed, CustomerClaimedLast, CustomerCommunication, \
-	CustomerMsgPhone, DsPatient, Forgot, HrtLabResultTests, KtCustomer, KtOrder, \
-	KtOrderClaim, KtOrderClaimLast, KtOrderContinuous, ShippingInfo, SmpNote, \
-	SmpOrderStatus, SmpState, SMSStop, SMSStopChange, TfAnswer, TfLanding, \
-	TfQuestion, TfQuestionOption, User, \
+	Calendly, CalendlyEvent, \
+	Campaign, \
+	CustomerClaimed, CustomerClaimedLast, \
+	CustomerCommunication, CustomerMsgPhone, \
+	DsPatient, \
+	Forgot, \
+	HrtLabResultTests, \
+	KtCustomer, KtOrder, KtOrderClaim, KtOrderClaimLast, KtOrderContinuous, \
+	ShippingInfo, \
+	SmpNote, SmpOrderStatus, SmpState, \
+	SMSStop, SMSStopChange, \
+	TfAnswer, TfLanding, TfQuestion, TfQuestionOption, \
+	User, \
 	init as recInit
 
 # Regex for validating email
@@ -212,6 +220,166 @@ class Monolith(Services.Service):
 
 		# Return the list of claims
 		return Services.Response(lClaims)
+
+	def calendlyEvent_create(self, data, sesh):
+		"""Calendly Event Create
+
+		Creates a new calendly event associated with a record in calendly
+
+		Arguments:
+			data (dict): Data sent with the request
+			sesh (Sesh._Session): The session associated with the request
+
+		Returns:
+			Services.Response
+		"""
+
+		# Make sure the user has the proper rights
+		Rights.check(sesh, 'calendly_admin', Rights.CREATE)
+
+		# Create a new instance
+		try:
+			oCalendlyEvent = CalendlyEvent(data)
+		except ValueError as e:
+			return Services.Response(error=(1001, e.args[0]))
+
+		# If both the state and the provider is empty, there's an issue
+		if 'state' not in data and 'provider' not in data:
+			return Services.Error(1516)
+
+		# Create the record and get the ID
+		try:
+			return Services.Response(
+				oCalendlyEvent.create()
+			)
+		except Record_MySQL.DuplicateException:
+			return Services.Response(error=1101)
+
+	def calendlyEvent_delete(self, data, sesh):
+		"""Calendly Event Delete
+
+		Deletes an existing calendly event associated with a record in calendly,
+		does not delete the event in Calendly itself
+
+		Arguments:
+			data (dict): Data sent with the request
+			sesh (Sesh._Session): The session associated with the request
+
+		Returns:
+			Services.Response
+		"""
+
+		# Make sure the user has the proper rights
+		Rights.check(sesh, 'calendly_admin', Rights.DELETE)
+
+		# Verify minimum fields
+		try: DictHelper.eval(data, ['id'])
+		except ValueError as e: return Services.Response(error=(1001, [(f, 'missing') for f in e.args]))
+
+		# Find the record
+		oCalendlyEvent = CalendlyEvent.get(data['id'])
+
+		# Delete the record and return the result
+		return Services.Response(
+			oCalendlyEvent.delete()
+		)
+
+	def calendlyEvent_read(self, data, sesh):
+		"""Calendly Event Read
+
+		Fetches an existing calendly event associated with a record in calendly
+
+		Arguments:
+			data (dict): Data sent with the request
+			sesh (Sesh._Session): The session associated with the request
+
+		Returns:
+			Services.Response
+		"""
+
+		# Make sure the user has the proper rights
+		Rights.check(sesh, 'calendly_admin', Rights.READ)
+
+		# Verify minimum fields
+		try: DictHelper.eval(data, ['id'])
+		except ValueError as e: return Services.Response(error=(1001, [(f, 'missing') for f in e.args]))
+
+		# Find the record
+		dCalendlyEvent = CalendlyEvent.get(data['id'], raw=True)
+		if not dCalendlyEvent:
+			return Services.Error(1104)
+
+		# Return the product
+		return Services.Response(dCalendlyEvent)
+
+	def calendlyEvent_update(self, data, sesh):
+		"""Calendly Event Update
+
+		Updates an existing calendly event associated with a record in calendly,
+		does not update the record in Calendly itself
+
+		Arguments:
+			data (dict): Data sent with the request
+			sesh (Sesh._Session): The session associated with the request
+
+		Returns:
+			Services.Response
+		"""
+
+		# Verify minimum fields
+		try: DictHelper.eval(data, ['id'])
+		except ValueError as e: return Services.Response(error=(1001, [(f, 'missing') for f in e.args]))
+
+		# Make sure the user has the proper rights
+		Rights.check(sesh, 'calendly_admin', Rights.UPDATE)
+
+		# Find the record
+		oCalendlyEvent = CalendlyEvent.get(data['id'])
+
+		# Remove fields that can't be changed
+		del data['id']
+		if 'createdAt' in data: del data['createdAt']
+		if 'updatedAt' in data: del data['updatedAt']
+
+		# Step through each field passed and update/validate it
+		lErrors = []
+		for f in data:
+			try: oCalendlyEvent[f] = data[f]
+			except ValueError as e: lErrors.append(e.args[0])
+
+		# If there was any errors
+		if lErrors:
+			return Services.Error(1001, lErrors)
+
+		# If both the state and the provider is empty, there's an issue
+		if 'state' not in oCalendlyEvent and 'provider' not in oCalendlyEvent:
+			return Services.Error(1516)
+
+		# Update the record and return the result
+		return Services.Response(
+			oCalendlyEvent.save()
+		)
+
+	def calendlyEvents_read(self, data, sesh):
+		"""Calendly Events Read
+
+		Fetches all existing calendly events associated with records in calendly
+
+		Arguments:
+			data (dict): Data sent with the request
+			sesh (Sesh._Session): The session associated with the request
+
+		Returns:
+			Services.Response
+		"""
+
+		# Make sure the user has the proper rights
+		Rights.check(sesh, 'calendly_admin', Rights.READ)
+
+		# Return all records
+		return Services.Response(
+			CalendlyEvent.get(raw=True, orderby='name')
+		)
 
 	def customerCalendly_read(self, data, sesh):
 		"""Customer Calendly
@@ -3658,13 +3826,39 @@ class Monolith(Services.Service):
 		# Return the ID of the new note
 		return Services.Response(oSmpNote['id'])
 
+	def providers_read(self, data, sesh):
+		"""Providers
+
+		Returns a map of user ID to name of only Doctor users
+
+		Arguments:
+			data (dict): Data sent with the request
+			sesh (Sesh._Session): The session associated with the request
+
+		Returns:
+			Services.Response
+		"""
+
+		# Fetch all users with Doctor userRole and concat their name
+		return Services.Response([
+			{"id": d['id'], "name": '%s %s' % (d['firstName'], d['lastName'])}
+			for d in User.filter({
+				"userRole": 'Doctor',
+				"activeFlag": 'Y'
+			}, raw=['id', 'firstName', 'lastName'], orderby=['firstName', 'lastName'])
+		])
+
 	def signin_create(self, data):
 		"""Signin
 
 		Used to verify a user sign in, but doesn't actually create the session.
 		Can only be called by other services
 
-		Arguments
+		Arguments:
+			data (dict): Data sent with the request
+
+		Returns:
+			Services.Response
 		"""
 
 		# Verify fields

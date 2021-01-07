@@ -121,6 +121,36 @@ class Calendly(Record_MySQL.Record):
 			Record_MySQL.ESelect.ALL
 		)
 
+# CalendlyEvent class
+class CalendlyEvent(Record_MySQL.Record):
+	"""Calendly Event
+
+	Represents a calendly event that a customer can set an appointment for
+	"""
+
+	_conf = None
+	"""Configuration"""
+
+	@classmethod
+	def config(cls):
+		"""Config
+
+		Returns the configuration data associated with the record type
+
+		Returns:
+			dict
+		"""
+
+		# If we haven loaded the config yet
+		if not cls._conf:
+			cls._conf = Record_MySQL.Record.generateConfig(
+				Tree.fromFile('definitions/monolith/calendly_event.json'),
+				'mysql'
+			)
+
+		# Return the config
+		return cls._conf
+
 # Campaign class
 class Campaign(Record_MySQL.Record):
 	"""Campaign
