@@ -27,7 +27,7 @@ from shared import Rights
 
 # Records imports
 from records.prescriptions import Medication, Pharmacy, PharmacyFill, \
-									PharmacyFillError
+									PharmacyFillError, Product
 
 _dPharmacies = {
 	6141: "Belmar Pharmacy",
@@ -145,7 +145,7 @@ class Prescriptions(Services.Service):
 	Service for Prescriptions access
 	"""
 
-	_install = [Medication, Pharmacy, PharmacyFill, PharmacyFillError]
+	_install = [Medication, Pharmacy, PharmacyFill, PharmacyFillError, Product]
 	"""Record types called in install"""
 
 	def _generateIds(self, clinician_id):
@@ -288,13 +288,8 @@ class Prescriptions(Services.Service):
 			Services.Response
 		"""
 
-		# Make sure the user has the proper permission to do this
-		oResponse = Services.read('auth', 'rights/verify', {
-			"name": "prescriptions",
-			"right": Rights.CREATE
-		}, sesh)
-		if not oResponse.data:
-			return Services.Response(error=Rights.INVALID)
+		# Make sure the user has the proper rights
+		Rights.check(sesh, 'prescriptions', Rights.CREATE)
 
 		# Verify fields
 		try: DictHelper.eval(data, ['clinician_id', 'patient'])
@@ -372,14 +367,8 @@ class Prescriptions(Services.Service):
 		try: DictHelper.eval(data, ['patient_id'])
 		except ValueError as e: return Services.Response(error=(1001, [(f, 'missing') for f in e.args]))
 
-		# Make sure the user has the proper permission to do this
-		oResponse = Services.read('auth', 'rights/verify', {
-			"name": "prescriptions",
-			"right": Rights.READ,
-			"ident": data['patient_id']
-		}, sesh)
-		if not oResponse.data:
-			return Services.Response(error=Rights.INVALID)
+		# Make sure the user has the proper rights
+		Rights.check(sesh, 'prescriptions', Rights.READ, data['patient_id'])
 
 		# If the clinician ID isn't passed
 		if 'clinician_id' not in data or not data['clinician_id']:
@@ -436,13 +425,8 @@ class Prescriptions(Services.Service):
 			Services.Response
 		"""
 
-		# Make sure the user has the proper permission to do this
-		oResponse = Services.read('auth', 'rights/verify', {
-			"name": "prescriptions",
-			"right": Rights.CREATE
-		}, sesh)
-		if not oResponse.data:
-			return Services.Response(error=Rights.INVALID)
+		# Make sure the user has the proper rights
+		Rights.check(sesh, 'prescriptions', Rights.CREATE)
 
 		# Verify fields
 		try: DictHelper.eval(data, ['clinician_id', 'patient'])
@@ -490,18 +474,12 @@ class Prescriptions(Services.Service):
 		# Make the request
 		oRes = requests.post(sURL, data=dData, headers=dHeaders)
 
-		print(oRes)
-
 		# If we didn't get a 200
 		if oRes.status_code != 200:
 			return Services.Response(error=(1601, oRes.text))
 
-		print(oRes.text)
-
 		# Get the response
 		dRes = oRes.json()
-
-		print(dRes)
 
 		# If we got an error
 		if dRes['Result']['ResultCode'] == 'ERROR':
@@ -538,14 +516,8 @@ class Prescriptions(Services.Service):
 		# Else
 		else:
 
-			# Make sure the user has the proper permission to do this
-			oResponse = Services.read('auth', 'rights/verify', {
-				"name": "medications",
-				"right": Rights.READ,
-				"ident": data['patient_id']
-			}, sesh)
-			if not oResponse.data:
-				return Services.Response(error=Rights.INVALID)
+			# Make sure the user has the proper rights
+			Rights.check(sesh, 'medications', Rights.READ, data['patient_id'])
 
 		# Make sure we got ints
 		lErrors = []
@@ -651,14 +623,8 @@ class Prescriptions(Services.Service):
 		try: DictHelper.eval(data, ['patient_id'])
 		except ValueError as e: return Services.Response(error=(1001, [(f, 'missing') for f in e.args]))
 
-		# Make sure the user has the proper permission to do this
-		oResponse = Services.read('auth', 'rights/verify', {
-			"name": "prescriptions",
-			"right": Rights.READ,
-			"ident": data['patient_id']
-		}, sesh)
-		if not oResponse.data:
-			return Services.Response(error=Rights.INVALID)
+		# Make sure the user has the proper rights
+		Rights.check(sesh, 'prescriptions', Rights.READ, data['patient_id'])
 
 		# If the clinician ID isn't passed
 		if 'clinician_id' not in data or not data['clinician_id']:
@@ -719,14 +685,8 @@ class Prescriptions(Services.Service):
 		try: DictHelper.eval(data, ['patient_id', 'pharmacy_id'])
 		except ValueError as e: return Services.Response(error=(1001, [(f, 'missing') for f in e.args]))
 
-		# Make sure the user has the proper permission to do this
-		oResponse = Services.read('auth', 'rights/verify', {
-			"name": "prescriptions",
-			"right": Rights.UPDATE,
-			"ident": data['patient_id']
-		}, sesh)
-		if not oResponse.data:
-			return Services.Response(error=Rights.INVALID)
+		# Make sure the user has the proper rights
+		Rights.check(sesh, 'prescriptions', Rights.UPDATE, data['patient_id'])
 
 		# If the clinician ID isn't passed
 		if 'clinician_id' not in data or not data['clinician_id']:
@@ -748,8 +708,6 @@ class Prescriptions(Services.Service):
 			data['pharmacy_id']
 		)
 
-		print(sURL)
-
 		# Generate the headers
 		dHeaders = {
 			"Accept": "application/json",
@@ -759,16 +717,12 @@ class Prescriptions(Services.Service):
 		# Make the request
 		oRes = requests.post(sURL, headers=dHeaders)
 
-		print(oRes)
-
 		# If we didn't get a 200
 		if oRes.status_code != 200:
 			return Services.Response(error=(1601, oRes.text))
 
 		# Get the data
 		dData = oRes.json()
-
-		print(dData)
 
 		# If we got an error
 		if dData['Result']['ResultCode'] == 'ERROR':
@@ -796,14 +750,8 @@ class Prescriptions(Services.Service):
 		try: DictHelper.eval(data, ['patient_id', 'pharmacy_id'])
 		except ValueError as e: return Services.Response(error=(1001, [(f, 'missing') for f in e.args]))
 
-		# Make sure the user has the proper permission to do this
-		oResponse = Services.read('auth', 'rights/verify', {
-			"name": "prescriptions",
-			"right": Rights.UPDATE,
-			"ident": data['patient_id']
-		}, sesh)
-		if not oResponse.data:
-			return Services.Response(error=Rights.INVALID)
+		# Make sure the user has the proper rights
+		Rights.check(sesh, 'prescriptions', Rights.UPDATE, data['patient_id'])
 
 		# If the clinician ID isn't passed
 		if 'clinician_id' not in data or not data['clinician_id']:
@@ -875,14 +823,8 @@ class Prescriptions(Services.Service):
 		try: DictHelper.eval(data, ['patient_id', 'clinician_id', 'ndc', 'display', 'quantity', 'supply', 'directions', 'unit_id'])
 		except ValueError as e: return Services.Response(error=(1001, [(f, 'missing') for f in e.args]))
 
-		# Make sure the user has the proper permission to do this
-		oResponse = Services.read('auth', 'rights/verify', {
-			"name": "prescriptions",
-			"right": Rights.CREATE,
-			"ident": data['patient_id']
-		}, sesh)
-		if not oResponse.data:
-			return Services.Response(error=Rights.INVALID)
+		# Make sure the user has the proper rights
+		Rights.check(sesh, 'prescriptions', Rights.CREATE, data['patient_id'])
 
 		# If refills missing, set to 0
 		if 'refills' not in data:
@@ -982,14 +924,8 @@ class Prescriptions(Services.Service):
 		# Else
 		else:
 
-			# Make sure the user has the proper permission to do this
-			oResponse = Services.read('auth', 'rights/verify', {
-				"name": "prescriptions",
-				"right": Rights.READ,
-				"ident": data['patient_id']
-			}, sesh)
-			if not oResponse.data:
-				return Services.Response(error=Rights.INVALID)
+			# Make sure the user has the proper rights
+			Rights.check(sesh, 'prescriptions', Rights.READ, data['patient_id'])
 
 		# If the clinician ID isn't passed
 		if 'clinician_id' not in data or not data['clinician_id']:
@@ -1062,14 +998,8 @@ class Prescriptions(Services.Service):
 		try: DictHelper.eval(data, ['clinician_id', 'patient_id'])
 		except ValueError as e: return Services.Response(error=(1001, [(f, 'missing') for f in e.args]))
 
-		# Make sure the user has the proper permission to do this
-		oResponse = Services.read('auth', 'rights/verify', {
-			"name": "prescriptions",
-			"right": Rights.UPDATE,
-			"ident": data['patient_id']
-		}, sesh)
-		if not oResponse.data:
-			return Services.Response(error=Rights.INVALID)
+		# Make sure the user has the proper rights
+		Rights.check(sesh, 'prescriptions', Rights.UPDATE, data['patient_id'])
 
 		# Make sure we got ints
 		for s in ['clinician_id', 'patient_id']:
@@ -1130,12 +1060,7 @@ class Prescriptions(Services.Service):
 		"""
 
 		# Make sure the user has the proper rights
-		oResponse = Services.read('auth', 'rights/verify', {
-			"name": "pharmacy_fill",
-			"right": Rights.CREATE
-		}, sesh)
-		if not oResponse.data:
-			return Services.Response(error=Rights.INVALID)
+		Rights.check(sesh, 'pharmacy_fill', Rights.CREATE)
 
 		# Verify minimum fields
 		try: DictHelper.eval(data, ['crm_type', 'crm_id', 'crm_order'])
@@ -1202,12 +1127,7 @@ class Prescriptions(Services.Service):
 		"""
 
 		# Make sure the user has the proper rights
-		oResponse = Services.read('auth', 'rights/verify', {
-			"name": "prescriptions",
-			"right": Rights.READ
-		}, sesh)
-		if not oResponse.data:
-			return Services.Response(error=Rights.INVALID)
+		Rights.check(sesh, 'prescriptions', Rights.READ)
 
 		# Verify minimum fields
 		try: DictHelper.eval(data, ['crm_type', 'crm_id'])
@@ -1262,12 +1182,7 @@ class Prescriptions(Services.Service):
 		"""
 
 		# Make sure the user has the proper rights
-		oResponse = Services.read('auth', 'rights/verify', {
-			"name": "pharmacy_fill",
-			"right": Rights.DELETE
-		}, sesh)
-		if not oResponse.data:
-			return Services.Response(error=Rights.INVALID)
+		Rights.check(sesh, 'pharmacy_fill', Rights.DELETE)
 
 		# Verify minimum fields
 		try: DictHelper.eval(data, ['_id'])
@@ -1307,12 +1222,7 @@ class Prescriptions(Services.Service):
 			print(oResponse.error)
 
 		# Make sure the user has the proper rights
-		oResponse = Services.read('auth', 'rights/verify', {
-			"name": "pharmacy_fill",
-			"right": Rights.CREATE
-		}, sesh)
-		if not oResponse.data:
-			return Services.Response(error=Rights.INVALID)
+		Rights.check(sesh, 'pharmacy_fill', Rights.CREATE)
 
 		# Verify minimum fields
 		try: DictHelper.eval(data, ['crm_type', 'crm_id'])
@@ -1369,12 +1279,7 @@ class Prescriptions(Services.Service):
 		"""
 
 		# Make sure the user has the proper rights
-		oResponse = Services.read('auth', 'rights/verify', {
-			"name": "pharmacy_fill",
-			"right": Rights.DELETE
-		}, sesh)
-		if not oResponse.data:
-			return Services.Response(error=Rights.INVALID)
+		Rights.check(sesh, 'pharmacy_fill', Rights.DELETE)
 
 		# Verify minimum fields
 		try: DictHelper.eval(data, ['_id'])
@@ -1404,12 +1309,7 @@ class Prescriptions(Services.Service):
 		"""
 
 		# Make sure the user has the proper rights
-		oResponse = Services.read('auth', 'rights/verify', {
-			"name": "pharmacy_fill",
-			"right": Rights.UPDATE
-		}, sesh)
-		if not oResponse.data:
-			return Services.Response(error=Rights.INVALID)
+		Rights.check(sesh, 'pharmacy_fill', Rights.UPDATE)
 
 		# Verify minimum fields
 		try: DictHelper.eval(data, ['_id'])
@@ -1451,12 +1351,7 @@ class Prescriptions(Services.Service):
 		"""
 
 		# Make sure the user has the proper rights
-		oResponse = Services.read('auth', 'rights/verify', {
-			"name": "pharmacy_fill",
-			"right": Rights.READ
-		}, sesh)
-		if not oResponse.data:
-			return Services.Response(error=Rights.INVALID)
+		Rights.check(sesh, 'pharmacy_fill', Rights.READ)
 
 		# Init the base requirements
 		dFilter = {"fail_count": {
@@ -1493,3 +1388,175 @@ class Prescriptions(Services.Service):
 		# Else return an empty array
 		else:
 			return Services.Response([])
+
+	def product_create(self, data, sesh):
+		"""Product Create
+
+		Creates a new product associated with a specific pharmacy
+
+		Arguments:
+			data (dict): Data sent with the request
+			sesh (Sesh._Session): The session associated with the request
+
+		Returns:
+			Services.Response
+		"""
+
+		# Verify minimum fields
+		try: DictHelper.eval(data, ['pharmacy'])
+		except ValueError as e: return Services.Response(error=(1001, [(f, 'missing') for f in e.args]))
+
+		# Make sure the user has the proper rights
+		Rights.check(sesh, 'rx_product', Rights.CREATE, data['pharmacy'])
+
+		# Create a new instance
+		try:
+			oProduct = Product(data)
+		except ValueError as e:
+			return Services.Response(error=(1001, e.args[0]))
+
+		# Create the record and get the ID
+		try:
+			sID = oProduct.create(changes={"user": sesh['user_id']})
+		except Record_MySQL.DuplicateException:
+			return Services.Response(error=1101)
+
+		# Return the ID
+		return Services.Response(sID)
+
+	def product_delete(self, data, sesh):
+		"""Product Delete
+
+		Deletes an existing product associated with a specific pharmacy
+
+		Arguments:
+			data (dict): Data sent with the request
+			sesh (Sesh._Session): The session associated with the request
+
+		Returns:
+			Services.Response
+		"""
+
+		# Verify minimum fields
+		try: DictHelper.eval(data, ['_id'])
+		except ValueError as e: return Services.Response(error=(1001, [(f, 'missing') for f in e.args]))
+
+		# Find the record
+		oProduct = Product.get(data['_id'])
+
+		# Make sure the user has the proper rights based on the associated
+		#	pharmacy
+		Rights.check(sesh, 'rx_product', Rights.DELETE, oProduct['pharmacy'])
+
+		# Delete the record and return the result
+		return Services.Response(
+			oProduct.delete(changes={"user": sesh['user_id']})
+		)
+
+	def product_read(self, data, sesh):
+		"""Product Read
+
+		Fetches an existing product associated with a specific pharmacy
+
+		Arguments:
+			data (dict): Data sent with the request
+			sesh (Sesh._Session): The session associated with the request
+
+		Returns:
+			Services.Response
+		"""
+
+		# Verify minimum fields
+		try: DictHelper.eval(data, ['_id'])
+		except ValueError as e: return Services.Response(error=(1001, [(f, 'missing') for f in e.args]))
+
+		# Find the record
+		dProduct = Product.get(data['_id'])
+
+		# Make sure the user has the proper rights based on the associated
+		#	pharmacy
+		Rights.check(sesh, 'rx_product', Rights.READ, dProduct['pharmacy'])
+
+		# Return the product
+		return Services.Response(dProduct)
+
+	def product_update(self, data, sesh):
+		"""Product Updates
+
+		Updates an existing product associated with a specific pharmacy
+
+		Arguments:
+			data (dict): Data sent with the request
+			sesh (Sesh._Session): The session associated with the request
+
+		Returns:
+			Services.Response
+		"""
+
+		# Verify minimum fields
+		try: DictHelper.eval(data, ['_id'])
+		except ValueError as e: return Services.Response(error=(1001, [(f, 'missing') for f in e.args]))
+
+		# If an attempt is made to change the pharmacy
+		if 'pharmacy' in data:
+			return Services.Error(1603)
+
+		# Find the record
+		oProduct = Product.get(data['_id'])
+
+		# Make sure the user has the proper rights based on the associated
+		#	pharmacy
+		Rights.check(sesh, 'rx_product', Rights.UPDATE, oProduct['pharmacy'])
+
+		# Remove fields that can't be changed
+		del data['_id']
+		if '_created' in data: del data['_created']
+
+		# Step through each field passed and update/validate it
+		lErrors = []
+		for f in data:
+			try: oProduct[f] = data[f]
+			except ValueError as e: lErrors.append(e.args[0])
+
+		# If there was any errors
+		if lErrors:
+			return Services.Error(1001, lErrors)
+
+		# Update the record and return the result
+		return Services.Response(
+			oProduct.save(changes={"user": sesh['user_id']})
+		)
+
+	def products_read(self, data, sesh):
+		"""Products Read
+
+		Returns all products the user has access to view based on pharmacy
+
+		Arguments:
+			data (dict): Data sent with the request
+			sesh (Sesh._Session): The session associated with the request
+
+		Returns:
+			Services.Response
+		"""
+
+		# Init the list of rights and the return
+		dRights = {}
+		lRet = []
+
+		# Fetch all products
+		lProducts = Product.get(raw=True, orderby=['pharmacy', 'key'])
+
+		# Go through each product
+		for d in lProducts:
+
+			# If we haven't checked rights yet
+			if d['pharmacy'] not in dRights:
+				dRights[d['pharmacy']] = Rights.checkReturn(sesh, 'rx_product', Rights.READ, d['pharmacy'])
+
+			# If the user can view it
+			if dRights[d['pharmacy']]:
+				lRet.append(d)
+
+		# Return what's allowed
+		return Services.Response(lRet)
