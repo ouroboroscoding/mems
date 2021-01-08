@@ -979,7 +979,7 @@ class Prescriptions(Services.Service):
 			d['StatusText'] = d['Status'] in _dStatus and _dStatus[d['Status']] or 'Unknown Status'
 
 		# Generate and return the result
-		return Services.Response(dData['Items'])
+		return Services.Response(dData['Items'][::-1])
 
 	def patientSso_read(self, data, sesh):
 		"""Patient SSO
