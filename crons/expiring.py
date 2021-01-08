@@ -45,7 +45,7 @@ def _stepZero():
 	})
 
 	# Get the template
-	sContent = SMSWorkflow.fetchTemplate(0, 'sms', 0)
+	sTemplate = SMSWorkflow.fetchTemplate(0, 'sms', 0)
 
 	# Go through each one
 	for o in lExpiring:
@@ -77,7 +77,7 @@ def _stepZero():
 				oOC.create()
 
 				# Process the template
-				sContent = SMSWorkflow.processTemplate(sContent, lPurchases[0], {
+				sContent = SMSWorkflow.processTemplate(sTemplate, lPurchases[0], {
 					"mip_link": '%s%s' % (dMIP['domain'], dMIP['ced'] % {"customerId": o['crm_id']})
 				});
 
@@ -126,7 +126,7 @@ def _stepOne():
 	})
 
 	# Get the template
-	sContent = SMSWorkflow.fetchTemplate(0, 'sms', 1)
+	sTemplate = SMSWorkflow.fetchTemplate(0, 'sms', 1)
 
 	# Go through each one
 	for o in lExpiring:
@@ -153,7 +153,7 @@ def _stepOne():
 			});
 
 			# Process the template
-			sContent = SMSWorkflow.processTemplate(sContent, lPurchases[0], {
+			sContent = SMSWorkflow.processTemplate(sTemplate, lPurchases[0], {
 				"mip_link": '%s%s' % (dMIP['domain'], dMIP['ced'] % {"customerId": o['crm_id']})
 			});
 
@@ -198,7 +198,7 @@ def _stepTwo():
 	})
 
 	# Get the template
-	sContent = SMSWorkflow.fetchTemplate(0, 'sms', 2)
+	sTemplate = SMSWorkflow.fetchTemplate(0, 'sms', 2)
 
 	# Go through each one
 	for o in lExpiring:
@@ -225,7 +225,7 @@ def _stepTwo():
 			});
 
 			# Process the template
-			sContent = SMSWorkflow.processTemplate(sContent, lPurchases[0], {
+			sContent = SMSWorkflow.processTemplate(sTemplate, lPurchases[0], {
 				"mip_link": '%s%s' % (dMIP['domain'], dMIP['ced'] % {"customerId": o['crm_id']})
 			});
 
