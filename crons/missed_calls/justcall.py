@@ -69,11 +69,8 @@ def parse(server):
 	# Init the return list
 	lRet = []
 
-	# Fetch the config
-	dConf = Conf.get(('missed_calls', 'justcall'))
-
 	# Search for unseen emails
-	sStatus, lIDs = server.search(None, '(UNSEEN FROM "%s")' % dConf['from'])
+	sStatus, lIDs = server.search(None, '(UNSEEN FROM "%s")' % Conf.get(('missed_calls', 'justcall')))
 
 	# If there are IDs
 	if(lIDs[0]):
@@ -102,11 +99,6 @@ def parse(server):
 				lPayload = oMsg.get_payload()
 				lMatches = reBody.search(lPayload[0].get_payload(decode=True).decode('utf-8'))
 				lMatches = lMatches.groups();
-
-				# If there's no group
-				if lMatches[1] not in dConf['numbers']:
-					emailError('Unknown Missed Call Number', str(lMatches), Conf.get(('missed_calls', 'justcall', 'errors')))
-					continue
 
 				# Store the data in the result var
 				lRet.append({
