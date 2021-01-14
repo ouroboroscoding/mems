@@ -1356,7 +1356,7 @@ class Monolith(Services.Service):
 					"ref": data['ref'],
 					"questionId": dTfQuestion['questionId'],
 					"type": dTfQuestion['type'],
-					"value": data['value']
+					"value": data['value'],
 					"createdAt": sDT,
 					"updatedAt": sDT
 				})
