@@ -1320,15 +1320,49 @@ class Monolith(Services.Service):
 			"ref": data['ref']
 		}, limit=1)
 
-		# If it's not found
-		if not oTfAnswer:
-			return Services.Response(error=1104)
+		# If it's found
+		if oTfAnswer:
 
-		# Update the value
-		try:
-			oTfAnswer['value'] = data['value']
-		except ValueError as e:
-			return Services.Response(error=(1001, [e.args[0]]))
+			# Update the value
+			try:
+				oTfAnswer['value'] = data['value']
+				mRes = oTfAnswer.save()
+			except ValueError as e:
+				return Services.Response(error=(1001, [e.args[0]]))
+
+		# Else, if it's not found
+		else:
+
+			# Find the landing in order to get the form type
+			dTfLanding = TfLanding.filter({
+				"landing_id": data['landing_id']
+			}, raw=['formId'], limit=1)
+			if not dLanding:
+				return Services.Response(error=(1104, 'landing'))
+
+			# Find the question in order to get the questionId and type
+			dTfQuestion = TfQuestion.filter({
+				"formId": dTfLanding['formId'],
+				"ref": data['ref']
+			}, raw=['questionId', 'type'], limit=1)
+			if not dTfQuestion:
+				return Services.Response(error=(1104, 'question'))
+
+			# Create the answer
+			try:
+				sDT = arrow.get().format('YYYY-MM-DD HH:mm:ss')
+				oTfAnswer = TfAnswer({
+					"landing_id": data['landing_id'],
+					"ref": data['ref'],
+					"questionId": dTfQuestion['questionId'],
+					"type": dTfQuestion['type'],
+					"value": data['value']
+					"createdAt": sDT,
+					"updatedAt": sDT
+				})
+				mRes = oTfAnswer.create()
+			except ValueError as e:
+				return Services.Response(error=(1001, e.args[0]))
 
 		# If it's DOB
 		if data['ref'] in ['b63763bc7f3b71dc', 'birthdate']:
@@ -1343,10 +1377,8 @@ class Monolith(Services.Service):
 				o['birthDay'] = data['value']
 				o.save()
 
-		# Save the record and return the result
-		return Services.Response(
-			oTfAnswer.save()
-		)
+		# Return the result of the update/create
+		return Services.Response(mRes)
 
 	def customerName_read(self, data, sesh):
 		"""Customer Name
