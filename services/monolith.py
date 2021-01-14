@@ -1337,7 +1337,7 @@ class Monolith(Services.Service):
 			dTfLanding = TfLanding.filter({
 				"landing_id": data['landing_id']
 			}, raw=['formId'], limit=1)
-			if not dLanding:
+			if not dTfLanding:
 				return Services.Response(error=(1104, 'landing'))
 
 			# Find the question in order to get the questionId and type
