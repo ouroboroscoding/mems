@@ -806,17 +806,17 @@ class Monolith(Services.Service):
 			sDT = arrow.get().format('YYYY-MM-DD HH:mm:ss')
 			dData = {
 				"customerId": str(dCustomer['customerId']),
-				"firstName": dCustomer['shipping']['firstName'][:35],
-				"lastName": dCustomer['shipping']['lastName'][:35],
+				"firstName": dCustomer['shipping']['firstName'] and dCustomer['shipping']['firstName'][:35],
+				"lastName": dCustomer['shipping']['lastName'] and dCustomer['shipping']['lastName'][:35],
 				"dateOfBirth": sDOB,
 				"gender": '1',
-				"email": dCustomer['email'][:255],
-				"address1": dCustomer['shipping']['address1'][:35],
-				"address2": dCustomer['shipping']['address2'][:35],
-				"city": dCustomer['shipping']['city'][:35],
-				"state": dCustomer['shipping']['state'][:35],
-				"zipCode": dCustomer['shipping']['postalCode'][:10],
-				"primaryPhone": dCustomer['phone'][:25],
+				"email": dCustomer['email'] and dCustomer['email'][:255],
+				"address1": dCustomer['shipping']['address1'] and dCustomer['shipping']['address1'][:35],
+				"address2": dCustomer['shipping']['address2'] and dCustomer['shipping']['address2'][:35],
+				"city": dCustomer['shipping']['city'] and dCustomer['shipping']['city'][:35],
+				"state": dCustomer['shipping']['state'] and dCustomer['shipping']['state'][:35],
+				"zipCode": dCustomer['shipping']['postalCode'] and dCustomer['shipping']['postalCode'][:10],
+				"primaryPhone": dCustomer['phone'] and dCustomer['phone'][:25],
 				"primaryPhoneType": '4',
 				"active": 'Y',
 				"createdAt": sDT,
@@ -972,16 +972,16 @@ class Monolith(Services.Service):
 		# Try to update the fields
 		try:
 			sDT = arrow.get().format('YYYY-MM-DD HH:mm:ss')
-			oDsPatient['firstName'] = dCustomer['shipping']['firstName'];
-			oDsPatient['lastName'] = dCustomer['shipping']['lastName'];
+			oDsPatient['firstName'] = dCustomer['shipping']['firstName'] and dCustomer['shipping']['firstName'][:35];
+			oDsPatient['lastName'] = dCustomer['shipping']['lastName'] and dCustomer['shipping']['lastName'][:35];
 			oDsPatient['dateOfBirth'] = sDOB;
-			oDsPatient['email'] = dCustomer['email'];
-			oDsPatient['address1'] = dCustomer['shipping']['address1'];
-			oDsPatient['address2'] = dCustomer['shipping']['address2'];
-			oDsPatient['city'] = dCustomer['shipping']['city'];
-			oDsPatient['state'] = dCustomer['shipping']['state'];
-			oDsPatient['zipCode'] = dCustomer['shipping']['postalCode'];
-			oDsPatient['primaryPhone'] = dCustomer['phone'];
+			oDsPatient['email'] = dCustomer['email'] and dCustomer['email'][:255];
+			oDsPatient['address1'] = dCustomer['shipping']['address1'] and dCustomer['shipping']['address1'][:35];
+			oDsPatient['address2'] = dCustomer['shipping']['address2'] and dCustomer['shipping']['address2'][:35];
+			oDsPatient['city'] = dCustomer['shipping']['city'] and dCustomer['shipping']['city'][:35];
+			oDsPatient['state'] = dCustomer['shipping']['state'] and dCustomer['shipping']['state'][:35];
+			oDsPatient['zipCode'] = dCustomer['shipping']['postalCode'] and dCustomer['shipping']['postalCode'][:10];
+			oDsPatient['primaryPhone'] = dCustomer['phone'] and dCustomer['phone'][:25];
 			oDsPatient['updatedAt'] = sDT
 			oDsPatient.save()
 		except ValueError as e:
