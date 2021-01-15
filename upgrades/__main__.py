@@ -30,6 +30,7 @@ if len(sys.argv) < 2:
 
 # Store the version
 sVer = sys.argv[1].replace('.', '_')
+sVer = sVer.replace('/', '.')
 
 # Load the config
 Conf.load('config.json')
