@@ -68,18 +68,21 @@ class ProductToRx(Record_MySQL.Record):
 		# Create each insert
 		lInserts = []
 		for d in products:
-			lInserts.append('(%d, %d, %d, %d)' % (
+			lInserts.append('(%d, %d, %d, %d, %d)' % (
 				customer_id,
 				d['product_id'],
 				d['ds_id'],
+				d['approved'] and 1 or 0,
 				user_id
 			))
 
 		# Generate SQL
 		sSQL = 'INSERT INTO `%(db)s`.`%(table)s` ' \
-				'(`customer_id`, `product_id`, `ds_id`, `user_id`)\n' \
+				'(`customer_id`, `product_id`, `ds_id`, `approved`, `user_id`)\n' \
 				'VALUES %(inserts)s\n' \
-				'ON DUPLICATE KEY UPDATE `ds_id` = VALUES(`ds_id`)' % {
+				'ON DUPLICATE KEY UPDATE ' \
+					'`ds_id` = VALUES(`ds_id`), ' \
+					'`approved` = VALUES(`approved`)' % {
 			"db": dStruct['db'],
 			"table": dStruct['table'],
 			"inserts": ',\n'.join(lInserts)

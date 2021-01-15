@@ -13,6 +13,7 @@ __created__		= "2020-05-10"
 
 # Python imports
 from base64 import b64encode
+from decimal import Decimal
 from hashlib import sha512
 from time import time
 from urllib.parse import urlencode
@@ -809,45 +810,58 @@ class Prescriptions(Services.Service):
 			Services.Response
 		"""
 
-		# patient_id: 16488285
-		# clinician_id: 143626
-		# display: "Tadalafil 5mg Tablet"
-		# quantity: 30
-		# supply: 30
-		# directions: "1 tab po qday"
-		# unit_id: 26
-		# ndc: "00093301756"
-		# refills: 11
-
 		# Verify fields
-		try: DictHelper.eval(data, ['patient_id', 'clinician_id', 'ndc', 'display', 'quantity', 'supply', 'directions', 'unit_id'])
+		try: DictHelper.eval(data, ['patient_id', 'clinician_id', 'product_id'])
 		except ValueError as e: return Services.Response(error=(1001, [(f, 'missing') for f in e.args]))
 
 		# Make sure the user has the proper rights
 		Rights.check(sesh, 'prescriptions', Rights.CREATE, data['patient_id'])
 
+		# Find the product
+		dProduct = Product.get(data['product_id'], raw=True)
+		if not dProduct:
+			return Services.Error(1104, 'product')
+
 		# If refills missing, set to 0
 		if 'refills' not in data:
 			data['refills'] = 0
 
-		# Make sure all values are ints
+		# Init possible errors
 		lErrors = []
-		for k in ['patient_id', 'clinician_id', 'ndc', 'refills', 'quantity', 'supply', 'unit_id']:
+
+		# Allow certain values to be overriden
+		if 'supply' in data:
+			try: dProduct['supply'] = int(data['supply'])
+			except ValueError: lErrors.append(('supply', 'not an integer'))
+		if 'quantity' in data:
+			dProduct['quantity'] = str(data['quantity'])
+		if 'directions' in data:
+			dProduct['directions'] = str(data['directions'])
+
+		# Make sure all values are ints
+		for k in ['patient_id', 'clinician_id', 'refills']:
 			try: data[k] = int(data[k])
 			except ValueError: lErrors.append((k, 'not an integer'))
+
+		# If there's any errors
 		if lErrors:
-			return Services.Response(error=(1001, lErrors))
+			return Services.Error(1001, lErrors)
+
+		# If quantity is a decimal, and it should be, convert it
+		if isinstance(dProduct['quantity'], Decimal):
+			dProduct['quantity'] = '{0:f}'.format(dProduct['quantity'])
 
 		# Init the data to send to DoseSpot
 		dData = {
-			"DisplayName": str(data['display']),
-			"Quantity": data['quantity'],
-			"DaysSupply": data['supply'],
-			"Directions": str(data['directions']),
-			"DispenseUnitId": data['unit_id'],
+			"DisplayName": dProduct['display'],
+			"Quantity": dProduct['quantity'],
+			"DaysSupply": dProduct['supply'],
+			"Directions": dProduct['directions'],
+			"PharmacyId": dProduct['pharmacy'],
+			"DispenseUnitId": dProduct['unit_id'],
 			"NoSubstitutions": True,
 			"Status": 1,
-			"NDC": str(data['ndc']),
+			"NDC": dProduct['ndc'],
 			"Refills": data['refills']
 		}
 
@@ -888,8 +902,8 @@ class Prescriptions(Services.Service):
 		if dData['Result']['ResultCode'] == 'ERROR':
 			return Services.Response(error=(1602, dData['Result']['ResultDescription']))
 
-		# Return the pharmacies
-		return Services.Response(True)
+		# Return the new prescription's ID
+		return Services.Response(dData['Id'])
 
 	def patientPrescriptions_read(self, data, sesh=None):
 		"""Patient Prescriptions
@@ -1544,8 +1558,11 @@ class Prescriptions(Services.Service):
 		dRights = {}
 		lRet = []
 
+		# If a type was passed
+		dFilter = 'type' in data and {"type": data['type']} or None
+
 		# Fetch all products
-		lProducts = Product.get(raw=True, orderby=['pharmacy', 'key'])
+		lProducts = Product.get(filter=dFilter, raw=True, orderby='title')
 
 		# Go through each product
 		for d in lProducts:
