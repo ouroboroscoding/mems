@@ -141,7 +141,7 @@ def _stepOne():
 			}, raw=['active'])
 
 			# If there's none, or it's marked as active
-			if not dOC:
+			if not dOC or dOC['active']:
 
 				# Delete the record and move on
 				o.delete()
@@ -213,7 +213,7 @@ def _stepTwo():
 			}, raw=['active'])
 
 			# If there's none, or it's marked as active
-			if not dOC:
+			if not dOC or dOC['active']:
 
 				# Delete the record and move on
 				o.delete()
