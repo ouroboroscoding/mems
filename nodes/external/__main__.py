@@ -49,8 +49,14 @@ def calendlyCreate():
 	# Get the body
 	dData = reqJSON()
 
-	print('----------------------------------------\nNew Calendly created:')
-	pprint.pprint(dData)
+	# If the utm source is set
+	if dData['payload']['tracking']['utm_source']:
+
+		# Notify the providers service that the key was used
+		Services.delete('providers', 'calendly/single', {
+			"_internal_": Services.internalKey(),
+			"_key": dData['payload']['tracking']['utm_source']
+		})
 
 	# Return OK
 	return  resJSON(True)
@@ -66,10 +72,7 @@ def calendlyCancelled():
 	"""
 
 	# Get the body
-	dData = reqJSON()
-
-	print('----------------------------------------\nNew Calendly canceled:')
-	pprint.pprint(dData)
+	#dData = reqJSON()
 
 	# Return OK
 	return  resJSON(True)
@@ -86,13 +89,13 @@ def show500():
 	return """
 <!DOCTYPE html>
 <html>
-	<head>
-		<title>500 Internal Server Error</title>
-	</head>
-	<body>
-		<h1>500 Internal Server Error</h1>
-		<p>An internal error has occured which caused your request to fail. An administrator has been notified of the failure and it will be worked on ASAP.</p>
-	</body>
+ <head>
+  <title>500 Internal Server Error</title>
+ </head>
+ <body>
+  <h1>500 Internal Server Error</h1>
+  <p>An internal error has occured which caused your request to fail. An administrator has been notified of the failure and it will be worked on ASAP.</p>
+ </body>
 </html>"""
 
 # Run the webserver

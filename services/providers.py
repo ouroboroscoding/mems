@@ -17,14 +17,15 @@ import uuid
 
 # Pip imports
 from FormatOC import Node
-from RestOC import Conf, DictHelper, Errors, Record_MySQL, Services, Sesh
+from RestOC import Conf, DictHelper, Errors, Record_MySQL, Services, Sesh, \
+					StrHelper
 
 # Shared imports
 from shared import Rights, SMSWorkflow
 
 # Records imports
-from records.providers import ProductToRx, Provider, RoundRobinAgent, Template, \
-								Tracking
+from records.providers import CalendlySingleUse, ProductToRx, Provider, \
+								RoundRobinAgent, Template, Tracking
 
 class Providers(Services.Service):
 	"""Providers Service class
@@ -32,7 +33,8 @@ class Providers(Services.Service):
 	Service for Providers access
 	"""
 
-	_install = [ProductToRx, Provider, Template]
+	_install = [CalendlySingleUse, ProductToRx, Provider, RoundRobinAgent, \
+				Template, Tracking]
 	"""Record types called in install"""
 
 	_seshPre = 'prov:'
@@ -122,6 +124,98 @@ class Providers(Services.Service):
 
 		# Create the provider and return the ID
 		return Services.Response(sID)
+
+	def calendlySingle_create(self, data, sesh):
+		"""Calendly Single Create
+
+		Creates a single use key for Calendly appointments
+
+		Arguments:
+			data (mixed): Data sent with the request
+			sesh (Sesh._Session): The session associated with the request
+
+		Returns:
+			Services.Response
+		"""
+
+		# Verify minimum fields
+		try: DictHelper.eval(data, ['uri', 'name', 'email', 'crm_id'])
+		except ValueError as e: return Services.Response(error=(1001, [(f, 'missing') for f in e.args]))
+
+		# Generate a random key
+		data['_key'] = StrHelper.random(6, 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789_')
+
+		# Check for errors in the data
+		try:
+			oRecord = CalendlySingleUse(data);
+		except ValueError as e:
+			return Services.Error(1001, e.args[0])
+
+		# Loop until we find a usable random key
+		while True:
+			try:
+				oRecord.create()
+				break
+			except Record_MySQL.DuplicateException:
+				oRecord['_key'] = StrHelper.random(6, 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789_')
+
+		# Return the key used
+		return Services.Response(oRecord['_key'])
+
+	def calendlySingle_delete(self, data):
+		"""Calendly Single Delete
+
+		Deletes a single use calendly key
+
+		Arguments:
+			data (mixed): Data sent with the request
+
+		Returns:
+			Services.Response
+		"""
+
+		# Verify minimum fields
+		try: DictHelper.eval(data, ['_internal_', '_key'])
+		except ValueError as e: return Services.Response(error=(1001, [(f, 'missing') for f in e.args]))
+
+		# Verify the key, remove it if it's ok
+		if not Services.internalKey(data['_internal_']):
+			return Services.Response(error=Errors.SERVICE_INTERNAL_KEY)
+		del data['_internal_']
+
+		# Look for the key
+		oRecord = CalendlySingleUse.get(data['_key'])
+		if not oRecord:
+			return Services.Error(1104)
+
+		# Delete the record and return the result
+		return Services.Response(
+			oRecord.delete()
+		)
+
+	def calendlySingle_read(self, data):
+		"""Calendly Single Read
+
+		Returns Calendly data needed to create an embed, assuming the key exists
+
+		Arguments:
+			data (mixed): Data sent with the request
+
+		Returns:
+			Services.Response
+		"""
+
+		# Verify minimum fields
+		try: DictHelper.eval(data, ['_key'])
+		except ValueError as e: return Services.Response(error=(1001, [(f, 'missing') for f in e.args]))
+
+		# Look up the key
+		dRecord = CalendlySingleUse.get(data['_key'], raw=['uri', 'name', 'email', 'crm_id'])
+		if not dRecord:
+			return Services.Error(1104)
+
+		# Return the record
+		return Services.Response(dRecord)
 
 	def customerToRx_read(self, data, sesh):
 		"""Customer To RX Read
