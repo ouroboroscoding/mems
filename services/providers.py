@@ -142,6 +142,9 @@ class Providers(Services.Service):
 		try: DictHelper.eval(data, ['uri', 'name', 'email', 'crm_id'])
 		except ValueError as e: return Services.Response(error=(1001, [(f, 'missing') for f in e.args]))
 
+		# Make sure crm_id is a string
+		data['crm_id'] = str(data['crm_id'])
+
 		# Generate a random key
 		data['_key'] = StrHelper.random(6, 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789_')
 

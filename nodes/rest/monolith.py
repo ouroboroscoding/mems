@@ -77,7 +77,7 @@ REST.Server({
 	"/order/claim": {"methods": REST.CREATE | REST.DELETE, "session": True},
 	"/order/claim/view": {"methods": REST.UPDATE, "session": True},
 	"/order/claimed": {"methods": REST.READ, "session": True},
-	"/order/continuous": {"methods": REST.READ, "session": True},
+	"/order/continuous": {"methods": REST.CREATE | REST.READ, "session": True},
 	"/order/continuous/approve": {"methods": REST.UPDATE, "session": True},
 	"/order/continuous/decline": {"methods": REST.UPDATE, "session": True},
 	"/order/label": {"methods": REST.UPDATE, "session": True},
