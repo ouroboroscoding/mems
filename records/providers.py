@@ -15,6 +15,36 @@ __created__		= "2020-10-15"
 from FormatOC import Tree
 from RestOC import Conf, Record_MySQL
 
+# CalendlySingleUse class
+class CalendlySingleUse(Record_MySQL.Record):
+	"""Calendly Single Use
+
+	Represents a single use calendly link
+	"""
+
+	_conf = None
+	"""Configuration"""
+
+	@classmethod
+	def config(cls):
+		"""Config
+
+		Returns the configuration data associated with the record type
+
+		Returns:
+			dict
+		"""
+
+		# If we haven loaded the config yet
+		if not cls._conf:
+			cls._conf = Record_MySQL.Record.generateConfig(
+				Tree.fromFile('definitions/providers/calendly_single_use.json'),
+				'mysql'
+			)
+
+		# Return the config
+		return cls._conf
+
 # ProductToRx class
 class ProductToRx(Record_MySQL.Record):
 	"""ProductToRx
