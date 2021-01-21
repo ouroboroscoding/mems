@@ -422,6 +422,7 @@ class Konnektive(Services.Service):
 			"cycleType": dP['billingCycleType'],
 			"cycleNumber": dP['billingCycleNumber'],
 			"customerId": dP['customerId'],
+			"date": dP['dateUpdated'],
 			"email": dP['emailAddress'],
 			"interval": dP['billingIntervalDays'],
 			"nextBillDate": dP['nextBillDate'],
@@ -431,6 +432,7 @@ class Konnektive(Services.Service):
 				"id": dP['productId'],
 				"name": dP['productName']
 			},
+			"purchaseId": dP['purchaseId'],
 			"shipping": {
 				"address1": dP['shipAddress1'],
 				"address2": dP['shipAddress2'],

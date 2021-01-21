@@ -138,10 +138,10 @@ def _stepOne():
 			dOC = KtOrderContinuous.filter({
 				"customerId": o['crm_id'],
 				"orderId": o['crm_order']
-			}, raw=['active'])
+			}, raw=['active'], limit=1)
 
 			# If there's none, or it's marked as active
-			if not dOC:
+			if not dOC or dOC['active']:
 
 				# Delete the record and move on
 				o.delete()
@@ -210,10 +210,10 @@ def _stepTwo():
 			dOC = KtOrderContinuous.filter({
 				"customerId": o['crm_id'],
 				"orderId": o['crm_order']
-			}, raw=['active'])
+			}, raw=['active'], limit=1)
 
 			# If there's none, or it's marked as active
-			if not dOC:
+			if not dOC or dOC['active']:
 
 				# Delete the record and move on
 				o.delete()

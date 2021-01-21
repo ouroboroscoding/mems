@@ -2771,10 +2771,10 @@ class Monolith(Services.Service):
 			KtOrderClaim.byUser(sesh['memo_id'])
 		)
 
-	def orderContinuous_read(self, data, sesh):
-		"""Order Continuous Approve
+	def orderContinuous_create(self, data, sesh):
+		"""Order Continuous Create
 
-		Updates the status of a continuous order to Approved
+		Creates a new continuous order using an existing KNK order ID
 
 		Arguments:
 			data (dict): Data sent with the request
@@ -2785,12 +2785,48 @@ class Monolith(Services.Service):
 		"""
 
 		# Validate rights
-		oResponse = Services.read('auth', 'rights/verify', {
-			"name": "orders",
-			"right": Rights.READ
-		}, sesh)
-		if not oResponse.data:
-			return Services.Response(error=Rights.INVALID)
+		Rights.check(sesh, 'orders', Rights.CREATE)
+
+		# Verify fields
+		try: DictHelper.eval(data, ['customerId', 'orderId', 'purchaseId'])
+		except ValueError as e: return Services.Response(error=(1001, [(f, 'missing') for f in e.args]))
+
+		# Try to create the instance
+		try:
+			oOC = KtOrderContinuous({
+				"customerId": int(data['customerId']),
+				"orderId": data['orderId'],
+				"purchaseId": data['purchaseId'],
+				"active": False,
+				"status": 'PENDING'
+			})
+		except ValueError as e:
+			return Services.Error(1001, e.args[0])
+
+		# Try to create the record and return the ID
+		try:
+			return Services.Response(
+				oOC.create()
+			)
+		except Record_MySQL.DuplicateException:
+			return Services.Error(1101)
+
+	def orderContinuous_read(self, data, sesh):
+		"""Order Continuous Read
+
+		Returns the details of the continuous order using the base KNK order
+		as a starting point
+
+		Arguments:
+			data (dict): Data sent with the request
+			sesh (Sesh._Session): The session associated with the request
+
+		Returns:
+			Services.Response
+		"""
+
+		# Validate rights
+		Rights.check(sesh, 'orders', Rights.READ)
 
 		# Verify fields
 		try: DictHelper.eval(data, ['customerId', 'orderId'])

@@ -28,32 +28,36 @@ oRestConf = init(
 )
 
 # Create the HTTP server and map requests to service
-REST.Server({
-	"/product/to/rx": {"methods": REST.CREATE, "session": True},
-	"/customer/to/rx": {"methods": REST.UPDATE | REST.READ, "session": True},
+REST.Server([
 
-	"/prescriptions": {"methods": REST.CREATE, "session": True},
+	{"uri": "/calendly/single", "methods": REST.READ | REST.DELETE, "session": False},
+	{"uri": "/calendly/single", "methods": REST.CREATE, "session": True},
 
-	"/provider": {"methods": REST.ALL, "session": True},
-	"/providers": {"methods": REST.READ, "session": True},
-	"/provider/internal": {"methods": REST.READ, "session": True},
-	"/provider/memo": {"methods": REST.CREATE, "session": True},
-	"/provider/names": {"methods": REST.READ, "session": True},
-	"/provider/passwd": {"methods": REST.UPDATE, "session": True},
-	"/provider/permissions": {"methods": REST.READ | REST.UPDATE, "session": True},
+	{"uri": "/product/to/rx", "methods": REST.CREATE, "session": True},
+	{"uri": "/customer/to/rx", "methods": REST.UPDATE | REST.READ, "session": True},
 
-	"/roundrobin": {"methods": REST.READ, "session": True},
+	{"uri": "/prescriptions", "methods": REST.CREATE, "session": True},
 
-	"/session": {"methods": REST.READ, "session": True},
-	"/signin": {"methods": REST.CREATE},
-	"/signout": {"methods": REST.CREATE},
+	{"uri": "/provider", "methods": REST.ALL, "session": True},
+	{"uri": "/providers", "methods": REST.READ, "session": True},
+	{"uri": "/provider/internal", "methods": REST.READ, "session": True},
+	{"uri": "/provider/memo", "methods": REST.CREATE, "session": True},
+	{"uri": "/provider/names", "methods": REST.READ, "session": True},
+	{"uri": "/provider/passwd", "methods": REST.UPDATE, "session": True},
+	{"uri": "/provider/permissions", "methods": REST.READ | REST.UPDATE, "session": True},
 
-	"/template": {"methods": REST.ALL, "session": True},
-	"/templates": {"methods": REST.READ, "session": True},
+	{"uri": "/roundrobin", "methods": REST.READ, "session": True},
 
-	"/tracking": {"methods": REST.CREATE, "session": True}
+	{"uri": "/session", "methods": REST.READ, "session": True},
+	{"uri": "/signin", "methods": REST.CREATE},
+	{"uri": "/signout", "methods": REST.CREATE},
 
-}, 'providers', "https?://(.*\\.)?%s" % Conf.get(("rest","allowed")).replace('.', '\\.')).run(
+	{"uri": "/template", "methods": REST.ALL, "session": True},
+	{"uri": "/templates", "methods": REST.READ, "session": True},
+
+	{"uri": "/tracking", "methods": REST.CREATE, "session": True}
+
+], 'providers', "https?://(.*\\.)?%s" % Conf.get(("rest","allowed")).replace('.', '\\.')).run(
 	host=oRestConf['providers']['host'],
 	port=oRestConf['providers']['port'],
 	workers=oRestConf['providers']['workers'],

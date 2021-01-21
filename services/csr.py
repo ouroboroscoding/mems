@@ -101,17 +101,19 @@ class CSR(Services.Service):
 			"_internal_": Services.internalKey(),
 			"user": sID,
 			"permissions": {
-				"calendly": 1,
-				"csr_claims": 14,
-				"csr_messaging": 5,
-				"csr_templates": 1,
-				"customers": 1,
-				"memo_mips": 3,
-				"memo_notes": 5,
-				"patient_account": 1,
-				"prescriptions": 3,
-				"pharmacy_fill": 1,
-				"welldyne_adhoc": 4
+				"calendly": 1,				# Read
+				"calendly_admin": 1,		# Read
+				"csr_claims": 14,			# Update, Create, Delete
+				"csr_messaging": 5,			# Read, Create
+				"csr_templates": 1,			# Read
+				"customers": 3,				# Read, Update
+				"memo_mips": 3,				# Read, Update
+				"memo_notes": 5,			# Read, Create
+				"orders": 7,				# Read, Update, Create
+				"patient_account": 1,		# Read
+				"prescriptions": 3,			# Read, Update
+				"pharmacy_fill": 1,			# Read
+				"welldyne_adhoc": 4			# Create
 			}
 		}, sesh)
 		if oResponse.errorExists():
