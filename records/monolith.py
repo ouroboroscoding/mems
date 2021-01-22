@@ -1072,6 +1072,64 @@ class KtOrder(Record_MySQL.Record):
 	"""Configuration"""
 
 	@classmethod
+	def pendingByCustomers(cls, customer_ids, custom={}):
+		"""Pending By Customers
+
+		Returns all the PENDING orders by a set of customers
+
+		Arguments:
+			customers_id (uint[]): The IDs of the customers
+			custom (dict): Custom Host and DB info
+				'host' the name of the host to get/set data on
+				'append' optional postfix for dynamic DBs
+
+		Returns:
+			list
+		"""
+
+		# Fetch the record structure
+		dStruct = cls.struct(custom)
+
+		# Generate the SQL
+		sSQL = "SELECT\n" \
+				"	`kto`.`customerId`,\n" \
+				"	`kto`.`orderId`,\n" \
+				"	`cmp`.`type`,\n" \
+				"	`kto`.`shipCity`,\n" \
+				"	IFNULL(`ss`.`name`, '[state missing]') as `shipState`,\n" \
+				"	IFNULL(`ss`.`legalEncounterType`, '') as `encounter`,\n" \
+				"	`kto`.`dateCreated`,\n" \
+				"	`kto`.`dateUpdated`,\n" \
+				"	IFNULL(`os`.`attentionRole`, 'Not Assigned') as `attentionRole`,\n" \
+				"	IFNULL(`os`.`orderLabel`, 'Not Labeled') as `orderLabel`,\n" \
+				"	`ktoc`.`user` as `claimedUser`,\n" \
+				"	CONCAT(`user`.`firstName`, ' ', `user`.`lastName`) as `claimedName`\n" \
+				"FROM `%(db)s`.`%(table)s` as `kto`\n" \
+				"JOIN `%(db)s`.`campaign` as `cmp` ON `cmp`.`id` = CONVERT(`kto`.`campaignId`, UNSIGNED)\n" \
+				"LEFT JOIN `%(db)s`.`smp_state` as `ss` ON `ss`.`abbreviation` = `kto`.`shipState`\n" \
+				"LEFT JOIN `%(db)s`.`smp_order_status` as `os` ON `os`.`orderId` = `kto`.`orderId`\n" \
+				"LEFT JOIN `%(db)s`.`kt_order_claim` as `ktoc` ON `ktoc`.`customerId` = CONVERT(`kto`.`customerId`, UNSIGNED)\n" \
+				"LEFT JOIN `%(db)s`.`user` ON `user`.`id` = `ktoc`.`user`\n" \
+				"WHERE `kto`.`customerId` IN (%(customer_ids)s)\n" \
+				"AND `kto`.`orderStatus` = 'PENDING'\n" \
+				"AND IFNULL(`kto`.`cardType`, '') <> 'TESTCARD'\n" \
+				"AND (`os`.`attentionRole` = 'Doctor' OR `os`.`attentionRole` IS NULL)\n" \
+				"ORDER BY `kto`.`dateUpdated` ASC" % {
+			"db": dStruct['db'],
+			"table": dStruct['table'],
+			"customer_ids": "'%s'" % "','".join(customer_ids)
+		}
+
+		print(sSQL)
+
+		# Fetch and return the data
+		return Record_MySQL.Commands.select(
+			dStruct['host'],
+			sSQL,
+			Record_MySQL.ESelect.ALL
+		)
+
+	@classmethod
 	def config(cls):
 		"""Config
 
