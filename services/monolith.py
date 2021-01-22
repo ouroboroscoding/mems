@@ -486,7 +486,7 @@ class Monolith(Services.Service):
 				"lastMsgAt": sDT,
 				"hiddenFlag": 'N',
 				"totalIncoming": 0,
-				"totalOutgoing": 0,
+				"totalOutGoing": 0,
 				"createdAt": sDT,
 				"updatedAt": sDT
 			})
@@ -3357,6 +3357,26 @@ class Monolith(Services.Service):
 			"updatedAt": sDT
 		})
 		oSmpNote.create()
+
+		# See if we have a customer msg summary
+		dCMP = CustomerMsgPhone.existsByCustomerId(data['customerId'])
+		if not dCMP['id']:
+
+			# Get current time
+			sDT = arrow.get().format('YYYY-MM-DD HH:mm:ss')
+
+			# Create a new convo
+			oConvo = CustomerMsgPhone({
+				"customerPhone": dCMP['customerPhone'],
+				"customerName": dCMP['customerName'],
+				"lastMsgAt": sDT,
+				"hiddenFlag": 'N',
+				"totalIncoming": 0,
+				"totalOutGoing": 0,
+				"createdAt": sDT,
+				"updatedAt": sDT
+			})
+			oConvo.create()
 
 		# Return OK
 		return Services.Response(True)
