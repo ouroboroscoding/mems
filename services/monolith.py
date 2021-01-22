@@ -1643,6 +1643,22 @@ class Monolith(Services.Service):
 		# Search based on the data passed
 		lRecords = KtCustomer.search(data['filter'], raw=('fields' in data and data['fields'] or True))
 
+		# Get a list of all PENDING orders associated with the customers found
+		lOrders = KtOrder.pendingByCustomers([
+			d['customerId'] for d in lRecords
+		])
+
+		# Create a dictionary of customer ID to orders
+		dOrders = {}
+		for d in lOrders:
+			if d['customerId'] not in dOrders:
+				dOrders[d['customerId']] = []
+			dOrders[d['customerId']].append(d)
+
+		# Go through each record and add an orders list
+		for d in lRecords:
+			d['orders'] = d['customerId'] in dOrders and dOrders[d['customerId']] or False
+
 		# Return the results
 		return Services.Response(lRecords)
 
