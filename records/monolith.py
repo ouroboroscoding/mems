@@ -666,6 +666,48 @@ class CustomerMsgPhone(Record_MySQL.Record):
 		return Record_MySQL.Commands.execute(dStruct['host'], sSQL)
 
 	@classmethod
+	def existsByCustomerId(cls, customer_id, custom={}):
+		"""Exists By Customer ID
+
+		Returns whether summary exists based on the phone number associated
+		with the given customerId
+
+		Arguments:
+			customer_id (str): The ID of the customer
+			custom (dict): Custom Host and DB info
+				'host' the name of the host to get/set data on
+				'append' optional postfix for dynamic DBs
+
+		Returns:
+			dict
+		"""
+
+		# Fetch the record structure
+		dStruct = cls.struct(custom)
+
+		# Generate SQL
+		sSQL = "SELECT\n" \
+				"	`kc`.`phoneNumber` as `customerPhone`,\n" \
+				"	CONCAT(`kc`.`firstName`, ' ', `kc`.`lastName`) as `customerName`,\n" \
+				"	`cmp`.`id`\n" \
+				"FROM `%(db)s`.`kt_customer` as `kc`\n" \
+				"LEFT JOIN `%(db)s`.`%(table)s` as `cmp` on `kc`.`phoneNumber` = `cmp`.`customerPhone`\n" \
+				"WHERE `kc`.`customerId` = '%(customer_id)s'\n" % {
+			"db": dStruct['db'],
+			"table": dStruct['table'],
+			"customer_id": customer_id
+		}
+
+		print(sSQL)
+
+		# Run the query and return the result
+		return Record_MySQL.Commands.select(
+			dStruct['host'],
+			sSQL,
+			Record_MySQL.ESelect.ROW
+		)
+
+	@classmethod
 	def claimed(cls, user, custom={}):
 		"""Claimed
 

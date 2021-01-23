@@ -36,6 +36,36 @@ dServices = {k:None for k in Conf.get(('rest', 'services'))}
 # Register all services
 Services.register(dServices, oRestConf, Conf.get(('services', 'salt')))
 
+def emailError(subject, error):
+	"""Email Error
+
+	Send out an email with an error message
+
+	Arguments:
+		error (str): The error to email
+
+	Returns:
+		bool
+	"""
+
+	# For debugging
+	print('Emailing: %s, %s' % (subject, error))
+
+	# Send the email
+	oResponse = Services.create('communications', 'email', {
+		"_internal_": Services.internalKey(),
+		"text_body": error,
+		"subject": subject,
+		"to": Conf.get(('developer', 'emails'))
+	})
+	if oResponse.errorExists():
+		print(oResponse.error)
+		return False
+
+	# Return OK
+	return True
+
+
 @bottle.post('/calendly/created')
 def calendlyCreate():
 	"""Calendly Create
@@ -49,8 +79,24 @@ def calendlyCreate():
 	# Get the body
 	dData = reqJSON()
 
-	print('----------------------------------------\nNew Calendly created:')
-	pprint.pprint(dData)
+	# If the utm source is set
+	if dData['payload']['tracking']['utm_source']:
+
+		# Notify the providers service that the key was used
+		oResponse = Services.delete('providers', 'calendly/single', {
+			"_internal_": Services.internalKey(),
+			"_key": dData['payload']['tracking']['utm_source']
+		})
+
+		# If we got any sort of error
+		if oResponse.errorExists():
+			emailError(
+				'Calendly Create Failed',
+				'Error: %s\n\nSent: %s' % (
+					str(oResponse.error),
+					str(dData)
+				)
+			)
 
 	# Return OK
 	return  resJSON(True)
@@ -66,13 +112,10 @@ def calendlyCancelled():
 	"""
 
 	# Get the body
-	dData = reqJSON()
-
-	print('----------------------------------------\nNew Calendly canceled:')
-	pprint.pprint(dData)
+	#dData = reqJSON()
 
 	# Return OK
-	return  resJSON(True)
+	return resJSON(True)
 
 def show500():
 	"""Show 500
@@ -86,13 +129,13 @@ def show500():
 	return """
 <!DOCTYPE html>
 <html>
-	<head>
-		<title>500 Internal Server Error</title>
-	</head>
-	<body>
-		<h1>500 Internal Server Error</h1>
-		<p>An internal error has occured which caused your request to fail. An administrator has been notified of the failure and it will be worked on ASAP.</p>
-	</body>
+ <head>
+  <title>500 Internal Server Error</title>
+ </head>
+ <body>
+  <h1>500 Internal Server Error</h1>
+  <p>An internal error has occured which caused your request to fail. An administrator has been notified of the failure and it will be worked on ASAP.</p>
+ </body>
 </html>"""
 
 # Run the webserver

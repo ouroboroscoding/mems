@@ -15,6 +15,36 @@ __created__		= "2020-10-15"
 from FormatOC import Tree
 from RestOC import Conf, Record_MySQL
 
+# CalendlySingleUse class
+class CalendlySingleUse(Record_MySQL.Record):
+	"""Calendly Single Use
+
+	Represents a single use calendly link
+	"""
+
+	_conf = None
+	"""Configuration"""
+
+	@classmethod
+	def config(cls):
+		"""Config
+
+		Returns the configuration data associated with the record type
+
+		Returns:
+			dict
+		"""
+
+		# If we haven loaded the config yet
+		if not cls._conf:
+			cls._conf = Record_MySQL.Record.generateConfig(
+				Tree.fromFile('definitions/providers/calendly_single_use.json'),
+				'mysql'
+			)
+
+		# Return the config
+		return cls._conf
+
 # ProductToRx class
 class ProductToRx(Record_MySQL.Record):
 	"""ProductToRx
@@ -68,18 +98,21 @@ class ProductToRx(Record_MySQL.Record):
 		# Create each insert
 		lInserts = []
 		for d in products:
-			lInserts.append('(%d, %d, %d, %d)' % (
+			lInserts.append('(%d, %d, %d, %d, %d)' % (
 				customer_id,
 				d['product_id'],
 				d['ds_id'],
+				d['approved'] and 1 or 0,
 				user_id
 			))
 
 		# Generate SQL
 		sSQL = 'INSERT INTO `%(db)s`.`%(table)s` ' \
-				'(`customer_id`, `product_id`, `ds_id`, `user_id`)\n' \
+				'(`customer_id`, `product_id`, `ds_id`, `approved`, `user_id`)\n' \
 				'VALUES %(inserts)s\n' \
-				'ON DUPLICATE KEY UPDATE `ds_id` = VALUES(`ds_id`)' % {
+				'ON DUPLICATE KEY UPDATE ' \
+					'`ds_id` = VALUES(`ds_id`), ' \
+					'`approved` = VALUES(`approved`)' % {
 			"db": dStruct['db'],
 			"table": dStruct['table'],
 			"inserts": ',\n'.join(lInserts)

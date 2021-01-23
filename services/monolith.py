@@ -486,7 +486,7 @@ class Monolith(Services.Service):
 				"lastMsgAt": sDT,
 				"hiddenFlag": 'N',
 				"totalIncoming": 0,
-				"totalOutgoing": 0,
+				"totalOutGoing": 0,
 				"createdAt": sDT,
 				"updatedAt": sDT
 			})
@@ -806,17 +806,17 @@ class Monolith(Services.Service):
 			sDT = arrow.get().format('YYYY-MM-DD HH:mm:ss')
 			dData = {
 				"customerId": str(dCustomer['customerId']),
-				"firstName": dCustomer['shipping']['firstName'],
-				"lastName": dCustomer['shipping']['lastName'],
+				"firstName": dCustomer['shipping']['firstName'] and dCustomer['shipping']['firstName'][:35],
+				"lastName": dCustomer['shipping']['lastName'] and dCustomer['shipping']['lastName'][:35],
 				"dateOfBirth": sDOB,
 				"gender": '1',
-				"email": dCustomer['email'],
-				"address1": dCustomer['shipping']['address1'],
-				"address2": dCustomer['shipping']['address2'],
-				"city": dCustomer['shipping']['city'],
-				"state": dCustomer['shipping']['state'],
-				"zipCode": dCustomer['shipping']['postalCode'],
-				"primaryPhone": dCustomer['phone'],
+				"email": dCustomer['email'] and dCustomer['email'][:255],
+				"address1": dCustomer['shipping']['address1'] and dCustomer['shipping']['address1'][:35],
+				"address2": dCustomer['shipping']['address2'] and dCustomer['shipping']['address2'][:35],
+				"city": dCustomer['shipping']['city'] and dCustomer['shipping']['city'][:35],
+				"state": dCustomer['shipping']['state'] and dCustomer['shipping']['state'][:35],
+				"zipCode": dCustomer['shipping']['postalCode'] and dCustomer['shipping']['postalCode'][:10],
+				"primaryPhone": dCustomer['phone'] and dCustomer['phone'][:25],
 				"primaryPhoneType": '4',
 				"active": 'Y',
 				"createdAt": sDT,
@@ -972,16 +972,16 @@ class Monolith(Services.Service):
 		# Try to update the fields
 		try:
 			sDT = arrow.get().format('YYYY-MM-DD HH:mm:ss')
-			oDsPatient['firstName'] = dCustomer['shipping']['firstName'];
-			oDsPatient['lastName'] = dCustomer['shipping']['lastName'];
+			oDsPatient['firstName'] = dCustomer['shipping']['firstName'] and dCustomer['shipping']['firstName'][:35];
+			oDsPatient['lastName'] = dCustomer['shipping']['lastName'] and dCustomer['shipping']['lastName'][:35];
 			oDsPatient['dateOfBirth'] = sDOB;
-			oDsPatient['email'] = dCustomer['email'];
-			oDsPatient['address1'] = dCustomer['shipping']['address1'];
-			oDsPatient['address2'] = dCustomer['shipping']['address2'];
-			oDsPatient['city'] = dCustomer['shipping']['city'];
-			oDsPatient['state'] = dCustomer['shipping']['state'];
-			oDsPatient['zipCode'] = dCustomer['shipping']['postalCode'];
-			oDsPatient['primaryPhone'] = dCustomer['phone'];
+			oDsPatient['email'] = dCustomer['email'] and dCustomer['email'][:255];
+			oDsPatient['address1'] = dCustomer['shipping']['address1'] and dCustomer['shipping']['address1'][:35];
+			oDsPatient['address2'] = dCustomer['shipping']['address2'] and dCustomer['shipping']['address2'][:35];
+			oDsPatient['city'] = dCustomer['shipping']['city'] and dCustomer['shipping']['city'][:35];
+			oDsPatient['state'] = dCustomer['shipping']['state'] and dCustomer['shipping']['state'][:35];
+			oDsPatient['zipCode'] = dCustomer['shipping']['postalCode'] and dCustomer['shipping']['postalCode'][:10];
+			oDsPatient['primaryPhone'] = dCustomer['phone'] and dCustomer['phone'][:25];
 			oDsPatient['updatedAt'] = sDT
 			oDsPatient.save()
 		except ValueError as e:
@@ -2787,10 +2787,10 @@ class Monolith(Services.Service):
 			KtOrderClaim.byUser(sesh['memo_id'])
 		)
 
-	def orderContinuous_read(self, data, sesh):
-		"""Order Continuous Approve
+	def orderContinuous_create(self, data, sesh):
+		"""Order Continuous Create
 
-		Updates the status of a continuous order to Approved
+		Creates a new continuous order using an existing KNK order ID
 
 		Arguments:
 			data (dict): Data sent with the request
@@ -2801,12 +2801,48 @@ class Monolith(Services.Service):
 		"""
 
 		# Validate rights
-		oResponse = Services.read('auth', 'rights/verify', {
-			"name": "orders",
-			"right": Rights.READ
-		}, sesh)
-		if not oResponse.data:
-			return Services.Response(error=Rights.INVALID)
+		Rights.check(sesh, 'orders', Rights.CREATE)
+
+		# Verify fields
+		try: DictHelper.eval(data, ['customerId', 'orderId', 'purchaseId'])
+		except ValueError as e: return Services.Response(error=(1001, [(f, 'missing') for f in e.args]))
+
+		# Try to create the instance
+		try:
+			oOC = KtOrderContinuous({
+				"customerId": int(data['customerId']),
+				"orderId": data['orderId'],
+				"purchaseId": data['purchaseId'],
+				"active": False,
+				"status": 'PENDING'
+			})
+		except ValueError as e:
+			return Services.Error(1001, e.args[0])
+
+		# Try to create the record and return the ID
+		try:
+			return Services.Response(
+				oOC.create()
+			)
+		except Record_MySQL.DuplicateException:
+			return Services.Error(1101)
+
+	def orderContinuous_read(self, data, sesh):
+		"""Order Continuous Read
+
+		Returns the details of the continuous order using the base KNK order
+		as a starting point
+
+		Arguments:
+			data (dict): Data sent with the request
+			sesh (Sesh._Session): The session associated with the request
+
+		Returns:
+			Services.Response
+		"""
+
+		# Validate rights
+		Rights.check(sesh, 'orders', Rights.READ)
 
 		# Verify fields
 		try: DictHelper.eval(data, ['customerId', 'orderId'])
@@ -3321,6 +3357,26 @@ class Monolith(Services.Service):
 			"updatedAt": sDT
 		})
 		oSmpNote.create()
+
+		# See if we have a customer msg summary
+		dCMP = CustomerMsgPhone.existsByCustomerId(data['customerId'])
+		if not dCMP['id']:
+
+			# Get current time
+			sDT = arrow.get().format('YYYY-MM-DD HH:mm:ss')
+
+			# Create a new convo
+			oConvo = CustomerMsgPhone({
+				"customerPhone": dCMP['customerPhone'],
+				"customerName": dCMP['customerName'],
+				"lastMsgAt": sDT,
+				"hiddenFlag": 'N',
+				"totalIncoming": 0,
+				"totalOutGoing": 0,
+				"createdAt": sDT,
+				"updatedAt": sDT
+			})
+			oConvo.create()
 
 		# Return OK
 		return Services.Response(True)

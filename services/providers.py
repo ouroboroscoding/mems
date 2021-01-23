@@ -17,14 +17,15 @@ import uuid
 
 # Pip imports
 from FormatOC import Node
-from RestOC import Conf, DictHelper, Errors, Record_MySQL, Services, Sesh
+from RestOC import Conf, DictHelper, Errors, Record_MySQL, Services, Sesh, \
+					StrHelper
 
 # Shared imports
 from shared import Rights, SMSWorkflow
 
 # Records imports
-from records.providers import ProductToRx, Provider, RoundRobinAgent, Template, \
-								Tracking
+from records.providers import CalendlySingleUse, ProductToRx, Provider, \
+								RoundRobinAgent, Template, Tracking
 
 class Providers(Services.Service):
 	"""Providers Service class
@@ -32,7 +33,8 @@ class Providers(Services.Service):
 	Service for Providers access
 	"""
 
-	_install = [ProductToRx, Provider, Template]
+	_install = [CalendlySingleUse, ProductToRx, Provider, RoundRobinAgent, \
+				Template, Tracking]
 	"""Record types called in install"""
 
 	_seshPre = 'prov:'
@@ -123,6 +125,101 @@ class Providers(Services.Service):
 		# Create the provider and return the ID
 		return Services.Response(sID)
 
+	def calendlySingle_create(self, data, sesh):
+		"""Calendly Single Create
+
+		Creates a single use key for Calendly appointments
+
+		Arguments:
+			data (mixed): Data sent with the request
+			sesh (Sesh._Session): The session associated with the request
+
+		Returns:
+			Services.Response
+		"""
+
+		# Verify minimum fields
+		try: DictHelper.eval(data, ['uri', 'name', 'email', 'crm_id'])
+		except ValueError as e: return Services.Response(error=(1001, [(f, 'missing') for f in e.args]))
+
+		# Make sure crm_id is a string
+		data['crm_id'] = str(data['crm_id'])
+
+		# Generate a random key
+		data['_key'] = StrHelper.random(6, 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789_')
+
+		# Check for errors in the data
+		try:
+			oRecord = CalendlySingleUse(data);
+		except ValueError as e:
+			return Services.Error(1001, e.args[0])
+
+		# Loop until we find a usable random key
+		while True:
+			try:
+				oRecord.create()
+				break
+			except Record_MySQL.DuplicateException:
+				oRecord['_key'] = StrHelper.random(6, 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789_')
+
+		# Return the key used
+		return Services.Response(oRecord['_key'])
+
+	def calendlySingle_delete(self, data):
+		"""Calendly Single Delete
+
+		Deletes a single use calendly key
+
+		Arguments:
+			data (mixed): Data sent with the request
+
+		Returns:
+			Services.Response
+		"""
+
+		# Verify minimum fields
+		try: DictHelper.eval(data, ['_internal_', '_key'])
+		except ValueError as e: return Services.Response(error=(1001, [(f, 'missing') for f in e.args]))
+
+		# Verify the key, remove it if it's ok
+		if not Services.internalKey(data['_internal_']):
+			return Services.Response(error=Errors.SERVICE_INTERNAL_KEY)
+		del data['_internal_']
+
+		# Look for the key
+		oRecord = CalendlySingleUse.get(data['_key'])
+		if not oRecord:
+			return Services.Error(1104)
+
+		# Delete the record and return the result
+		return Services.Response(
+			oRecord.delete()
+		)
+
+	def calendlySingle_read(self, data):
+		"""Calendly Single Read
+
+		Returns Calendly data needed to create an embed, assuming the key exists
+
+		Arguments:
+			data (mixed): Data sent with the request
+
+		Returns:
+			Services.Response
+		"""
+
+		# Verify minimum fields
+		try: DictHelper.eval(data, ['_key'])
+		except ValueError as e: return Services.Response(error=(1001, [(f, 'missing') for f in e.args]))
+
+		# Look up the key
+		dRecord = CalendlySingleUse.get(data['_key'], raw=['uri', 'name', 'email', 'crm_id'])
+		if not dRecord:
+			return Services.Error(1104)
+
+		# Return the record
+		return Services.Response(dRecord)
+
 	def customerToRx_read(self, data, sesh):
 		"""Customer To RX Read
 
@@ -137,12 +234,7 @@ class Providers(Services.Service):
 		"""
 
 		# Make sure the user has the proper permission to do this
-		oResponse = Services.read('auth', 'rights/verify', {
-			"name": "prescriptions",
-			"right": Rights.READ
-		}, sesh)
-		if not oResponse.data:
-			return Services.Response(error=Rights.INVALID)
+		Rights.check(sesh, 'prescriptions', Rights.READ)
 
 		# Verify minimum fields
 		try: DictHelper.eval(data, ['customer_id'])
@@ -170,59 +262,183 @@ class Providers(Services.Service):
 		"""
 
 		# Make sure the user has the proper permission to do this
-		oResponse = Services.read('auth', 'rights/verify', {
-			"name": "prescriptions",
-			"right": Rights.CREATE
-		}, sesh)
-		if not oResponse.data:
-			return Services.Response(error=Rights.INVALID)
+		Rights.check(sesh, 'prescriptions', Rights.CREATE)
 
 		# Verify minimum fields
 		try: DictHelper.eval(data, ['customer_id', 'products'])
 		except ValueError as e: return Services.Response(error=(1001, [(f, 'missing') for f in e.args]))
 
+		# Possible errors
+		lErrors = []
+
 		# Make sure the customer ID is an int
 		try: data['customer_id'] = int(data['customer_id'])
-		except ValueError as e: lErrors.append(('customer_id', 'invalid'))
+		except ValueError as e: lErrors.append(('customer_id', 'not an int'))
 
-		# Make sure products is a list
+		# If the products are not a list
 		if not isinstance(data['products'], list):
-			return Services.Response(error=(1001, [('products', 'invalid')]))
+			lErrors.append(('products', 'not a list'))
+		else:
 
-		# Go through each one and make sure the keys are available, valid, and
-		#	not duplicates
-		lErrors = []
-		lDsIds = []
-		for i in range(len(data['products'])):
+			# Go through each one and make sure the keys are available, valid, and
+			#	not duplicates
+			lDsIds = []
+			for i in range(len(data['products'])):
 
-			# Make sure keys exist
-			try: DictHelper.eval(data['products'][i], ['product_id', 'ds_id'])
-			except ValueError as e: lErrors.extend([('%d.%s' % (i, f), 'missing') for f in e.args])
+				# Set the approved flag
+				data['products'][i]['approved'] = True
 
-			# Make sure the product ID is an int
-			try: data['products'][i]['product_id'] = int(data['products'][i]['product_id'])
-			except ValueError as e: lErrors.append(('%d.product_id' % f, 'invalid'))
+				# Make sure keys exist
+				try: DictHelper.eval(data['products'][i], ['product_id', 'ds_id'])
+				except ValueError as e: lErrors.extend([('%d.%s' % (i, f), 'missing') for f in e.args])
 
-			# Make sure the dosespot ID is an int
-			try: data['products'][i]['ds_id'] = int(data['products'][i]['ds_id'])
-			except ValueError as e: lErrors.append(('%d.ds_id' % f, 'invalid'))
+				# Make sure the product ID is an int
+				try: data['products'][i]['product_id'] = int(data['products'][i]['product_id'])
+				except ValueError as e: lErrors.append(('%d.product_id' % i, 'not an int'))
 
-			# Make sure we don't have the prescription already
-			if data['products'][i]['ds_id'] in lDsIds:
-				return Services.Response(error=(1101, data['products'][i]['ds_id']))
+				# Make sure the dosespot ID is an int
+				try: data['products'][i]['ds_id'] = int(data['products'][i]['ds_id'])
+				except ValueError as e: lErrors.append(('%d.ds_id' % i, 'not an int'))
 
-			# Add the prescription to the list
-			lDsIds.append(data['products'][i]['ds_id'])
+				# Make sure we don't have the prescription already
+				if data['products'][i]['ds_id'] in lDsIds:
+					return Services.Response(error=(1101, data['products'][i]['ds_id']))
+
+				# Add the prescription to the list
+				lDsIds.append(data['products'][i]['ds_id'])
 
 		# If we have any errors
 		if lErrors:
 			return Services.Response(error=(1001, lErrors))
 
-		print(sesh)
-
 		# Try to create the records
 		try:
 			ProductToRx.updateCustomer(data['customer_id'], data['products'], sesh['memo_id'])
+		except Record_MySQL.DuplicateException as e:
+			return Services.Response(error=1101)
+
+		# Return OK
+		return Services.Response(True)
+
+	def prescriptions_create(self, data, sesh):
+		"""Prescriptions Create
+
+		Sends the prescription requests to the prescription service, then stores
+		the IDs to the asociated order items as un-approved
+
+		Arguments:
+			data (mixed): Data sent with the request
+			sesh (Sesh._Session): The session associated with the request
+
+		Returns:
+			Services.Response
+		"""
+
+		# Verify minimum fields
+		try: DictHelper.eval(data, ['clinician_id', 'customer_id', 'patient_id', 'products',])
+		except ValueError as e: return Services.Error(1001, [(f, 'missing') for f in e.args])
+
+		# Possible errors
+		lErrors = []
+
+		# Make sure the fields are all ints
+		for f in ['clinician_id', 'customer_id', 'patient_id']:
+			try: data[f] = int(data[f])
+			except ValueError as e: lErrors.append((f, 'not an int'))
+
+		# If the products are not a list
+		if not isinstance(data['products'], list):
+			lErrors.append(('products', 'not a list'))
+		else:
+
+			# Go through each one and make sure the keys are available, valid,
+			#	and not duplicates
+			for i in range(len(data['products'])):
+
+				# Make sure keys exist
+				try: DictHelper.eval(data['products'][i], ['item_id', 'product_id', 'refills'])
+				except ValueError as e: lErrors.extend([('%d.%s' % (i, f), 'missing') for f in e.args])
+
+				# Make sure the values are all ints
+				for f in ['item_id', 'refills']:
+					try: data['products'][i][f] = int(data['products'][i][f])
+					except ValueError as e: lErrors.append(('%d.%s' % (i, f), 'not an int'))
+
+		# If we have any errors
+		if lErrors:
+			return Services.Response(error=(1001, lErrors))
+
+		# Go through each product
+		lProductToRX = []
+		for o in data['products']:
+
+			# Send the request to generate a prescription from the product
+			oResponse = Services.create('prescriptions', 'patient/prescription', {
+				"clinician_id": data['clinician_id'],
+				"effective": o['effective'],
+				"patient_id": data['patient_id'],
+				"product_id": o['product_id'],
+				"refills": o['refills']
+			}, sesh)
+			if oResponse.errorExists():
+				return oResponse
+
+			# Add a new dict to the list of products to RXs
+			lProductToRX.append({
+				"product_id": o['item_id'],
+				"ds_id": oResponse.data,
+				"approved": False
+			})
+
+		# Try to create the new product to RX records
+		try:
+			ProductToRx.updateCustomer(data['customer_id'], lProductToRX, sesh['memo_id'])
+		except Record_MySQL.DuplicateException as e:
+			return Services.Response(error=1101)
+
+		# Return OK
+		return Services.Response(True)
+
+	def productToRx_create(self, data, sesh):
+		"""Product To RX
+
+		Creates a new record of an unnaproved prescription
+
+		Arguments:
+			data (mixed): Data sent with the request
+			sesh (Sesh._Session): The session associated with the request
+
+		Returns:
+			Services.Response
+		"""
+
+		# Make sure the user has the proper permission to do this
+		Rights.check(sesh, 'prescriptions', Rights.CREATE)
+
+		# Verify minimum fields
+		try: DictHelper.eval(data, ['customer_id', 'product_id', 'ds_id',])
+		except ValueError as e: return Services.Error(1001, [(f, 'missing') for f in e.args])
+
+		# Make sure the IDs are ints
+		lErrors = []
+		for k in ['customer_id', 'product_id', 'ds_id']:
+			try: data[k] = int(data[k])
+			except ValueError as e: lErrors.append((k, 'invalid'))
+		if lErrors:
+			return Services.Error(1001, lErrors)
+
+		# If approved not sent, assume false
+		if 'approved' not in data:
+			data['approved'] = False
+
+		# Try to create the records
+		try:
+			lProducts = [{
+				"product_id": data['product_id'],
+				"ds_id": data['ds_id'],
+				"approved": data['approved']
+			}]
+			ProductToRx.updateCustomer(data['customer_id'], lProducts, sesh['memo_id'])
 		except Record_MySQL.DuplicateException as e:
 			return Services.Response(error=1101)
 
@@ -244,12 +460,7 @@ class Providers(Services.Service):
 		"""
 
 		# Make sure the user has the proper permission to do this
-		oResponse = Services.read('auth', 'rights/verify', {
-			"name": "providers",
-			"right": Rights.CREATE
-		}, sesh)
-		if not oResponse.data:
-			return Services.Response(error=Rights.INVALID)
+		Rights.check(sesh, 'providers', Rights.CREATE)
 
 		# Verify minimum fields
 		try: DictHelper.eval(data, ['userName', 'firstName', 'lastName', 'password'])
@@ -291,12 +502,7 @@ class Providers(Services.Service):
 		except ValueError as e: return Services.Response(error=(1001, [(f, 'missing') for f in e.args]))
 
 		# Make sure the user has the proper permission to do this
-		oResponse = Services.read('auth', 'rights/verify', {
-			"name": "providers",
-			"right": Rights.DELETE
-		}, sesh)
-		if not oResponse.data:
-			return Services.Response(error=Rights.INVALID)
+		Rights.check(sesh, 'providers', Rights.DELETE)
 
 		# Find the Provider
 		oProvider = Provider.get(data['_id'])
@@ -354,12 +560,7 @@ class Providers(Services.Service):
 		except ValueError as e: return Services.Response(error=(1001, [(f, 'missing') for f in e.args]))
 
 		# Make sure the user has the proper permission to do this
-		oResponse = Services.read('auth', 'rights/verify', {
-			"name": "providers",
-			"right": Rights.UPDATE
-		}, sesh)
-		if not oResponse.data:
-			return Services.Response(error=Rights.INVALID)
+		Rights.check(sesh, 'providers', Rights.UPDATE)
 
 		# Find the provider
 		oProvider = Provider.get(data['_id'])
@@ -454,13 +655,7 @@ class Providers(Services.Service):
 		except ValueError as e: return Services.Response(error=(1001, [(f, 'missing') for f in e.args]))
 
 		# Make sure the user has the proper permission to do this
-		oResponse = Services.read('auth', 'rights/verify', {
-			"name": "providers",
-			"right": Rights.UPDATE,
-			"ident": data['provider_id']
-		}, sesh)
-		if not oResponse.data:
-			return Services.Response(error=Rights.INVALID)
+		Rights.check(sesh, 'providers', Rights.UPDATE, data['provider_id'])
 
 		# Find the Provider
 		dProvider = Provider.get(data['provider_id'], raw=['memo_id'])
@@ -495,13 +690,7 @@ class Providers(Services.Service):
 		except ValueError as e: return Services.Response(error=(1001, [(f, 'missing') for f in e.args]))
 
 		# Make sure the user has the proper permission to do this
-		oResponse = Services.read('auth', 'rights/verify', {
-			"name": "providers",
-			"right": Rights.READ,
-			"ident": data['provider_id']
-		}, sesh)
-		if not oResponse.data:
-			return Services.Response(error=Rights.INVALID)
+		Rights.check(sesh, 'providers', Rights.READ, data['provider_id'])
 
 		# Fetch the permissions from the auth service
 		oResponse = Services.read('auth', 'permissions', {
@@ -530,13 +719,7 @@ class Providers(Services.Service):
 		except ValueError as e: return Services.Response(error=(1001, [(f, 'missing') for f in e.args]))
 
 		# Make sure the user has the proper permission to do this
-		oResponse = Services.read('auth', 'rights/verify', {
-			"name": "providers",
-			"right": Rights.READ,
-			"ident": data['provider_id']
-		}, sesh)
-		if not oResponse.data:
-			return Services.Response(error=Rights.INVALID)
+		Rights.check(sesh, 'providers', Rights.READ, data['provider_id'])
 
 		# Fetch the permissions from the auth service
 		oResponse = Services.update('auth', 'permissions', {
@@ -563,12 +746,7 @@ class Providers(Services.Service):
 		"""
 
 		# Make sure the user has the proper permission to do this
-		oResponse = Services.read('auth', 'rights/verify', {
-			"name": "providers",
-			"right": Rights.CREATE
-		}, sesh)
-		if not oResponse.data:
-			return Services.Response(error=Rights.INVALID)
+		Rights.check(sesh, 'providers', Rights.CREATE)
 
 		# Verify minimum fields
 		try: DictHelper.eval(data, ['userName'])
@@ -629,12 +807,7 @@ class Providers(Services.Service):
 		"""
 
 		# Make sure the user has the proper permission to do this
-		oResponse = Services.read('auth', 'rights/verify', {
-			"name": "providers",
-			"right": Rights.READ
-		}, sesh)
-		if not oResponse.data:
-			return Services.Response(error=Rights.INVALID)
+		Rights.check(sesh, 'providers', Rights.READ)
 
 		# Fetch all the providers
 		lProviders = Provider.get(raw=True)
