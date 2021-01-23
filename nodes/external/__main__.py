@@ -36,6 +36,36 @@ dServices = {k:None for k in Conf.get(('rest', 'services'))}
 # Register all services
 Services.register(dServices, oRestConf, Conf.get(('services', 'salt')))
 
+def emailError(subject, error):
+	"""Email Error
+
+	Send out an email with an error message
+
+	Arguments:
+		error (str): The error to email
+
+	Returns:
+		bool
+	"""
+
+	# For debugging
+	print('Emailing: %s, %s' % (subject, error))
+
+	# Send the email
+	oResponse = Services.create('communications', 'email', {
+		"_internal_": Services.internalKey(),
+		"text_body": error,
+		"subject": subject,
+		"to": Conf.get(('developer', 'emails'))
+	})
+	if oResponse.errorExists():
+		print(oResponse.error)
+		return False
+
+	# Return OK
+	return True
+
+
 @bottle.post('/calendly/created')
 def calendlyCreate():
 	"""Calendly Create
@@ -53,10 +83,20 @@ def calendlyCreate():
 	if dData['payload']['tracking']['utm_source']:
 
 		# Notify the providers service that the key was used
-		Services.delete('providers', 'calendly/single', {
+		oResponse = Services.delete('providers', 'calendly/single', {
 			"_internal_": Services.internalKey(),
 			"_key": dData['payload']['tracking']['utm_source']
 		})
+
+		# If we got any sort of error
+		if oResponse.errorExists():
+			emailError(
+				'Calendly Create Failed',
+				'Error: %s\n\nSent: %s' % (
+					str(oResponse.error),
+					str(dData)
+				)
+			)
 
 	# Return OK
 	return  resJSON(True)
@@ -75,7 +115,7 @@ def calendlyCancelled():
 	#dData = reqJSON()
 
 	# Return OK
-	return  resJSON(True)
+	return resJSON(True)
 
 def show500():
 	"""Show 500
