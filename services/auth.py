@@ -659,7 +659,7 @@ class Auth(Services.Service):
 		except ValueError as e: return Services.Response(error=(1001, [(f, 'missing') for f in e.args]))
 
 		# If the id is passed
-		if '_id' in data:
+		if '_id' in data and data['_id'] is not None:
 
 			# If it doesn't match the logged in user
 			if data['_id'] != sesh['user_id']:
@@ -687,6 +687,8 @@ class Auth(Services.Service):
 		oUser = User.get(data['_id'])
 		if not oUser:
 			return Services.Response(error=1104)
+
+		print(oUser)
 
 		# If we have an old password
 		if 'passwd' in data:
