@@ -1920,7 +1920,7 @@ class Monolith(Services.Service):
 			except Record_MySQL.DuplicateException as e:
 
 				# Find the existing claim
-				oOldClaim = KtOrderClaim.get(oClaim['customerId'])
+				oOldClaim = KtOrderClaim.get(dDetails['customerId'])
 
 				# Save instead of create
 				oOrderClaim.save()
