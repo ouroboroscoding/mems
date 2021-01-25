@@ -88,15 +88,20 @@ def calendlyCreate():
 			"_key": dData['payload']['tracking']['utm_source']
 		})
 
-		# If we got any sort of error
+		# If we got an error
 		if oResponse.errorExists():
-			emailError(
-				'Calendly Create Failed',
-				'Error: %s\n\nSent: %s' % (
-					str(oResponse.error),
-					str(dData)
+
+			# If it's anything other than 1104 (Key doesn't exist)
+			if oResponse.error['code'] != 1104:
+
+				# Notify a developer of the error
+				emailError(
+					'Calendly Create Failed',
+					'Error: %s\n\nSent: %s' % (
+						str(oResponse.error),
+						str(dData)
+					)
 				)
-			)
 
 	# Return OK
 	return  resJSON(True)
