@@ -152,6 +152,13 @@ def _stepOne():
 				"purchaseId": o['crm_purchase']
 			});
 
+			# If we got nothing, or the status is already cancelled
+			if not lPurchases or lPurchases[0]['status'] == 'CANCELLED':
+
+				# Delete it
+				o.delete()
+				continue
+
 			# Process the template
 			sContent = SMSWorkflow.processTemplate(sTemplate, lPurchases[0], {
 				"mip_link": '%s%s' % (dMIP['domain'], dMIP['ced'] % {"customerId": o['crm_id']})
@@ -223,6 +230,13 @@ def _stepTwo():
 			lPurchases = oKNK._request('purchase/query', {
 				"purchaseId": o['crm_purchase']
 			});
+
+			# If we got nothing, or the status is already cancelled
+			if not lPurchases or lPurchases[0]['status'] == 'CANCELLED':
+
+				# Delete it
+				o.delete()
+				continue
 
 			# Process the template
 			sContent = SMSWorkflow.processTemplate(sTemplate, lPurchases[0], {
