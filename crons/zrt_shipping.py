@@ -28,7 +28,7 @@ from records.monolith import KtCustomer, ShippingInfo, SMSTemplate
 from . import isRunning, emailError
 
 reContent = re.compile(
-	r'Tracking Number:\s+([A-Z0-9]+)\s+(http:\/\/.*?datesent=([0-9]{8}).*)\s+Ship To:\s+([^\n]+)\s+([^\n]+)\s+([^,]+),\s+([A-Z]{2})\s+([0-9]{5}(?:-[0-9]{4})?)\s+US',
+	r'Tracking Number:\s+([A-Z0-9]+)\s+(https?:\/\/.*?datesent=([0-9]{8}).*)\s+Ship To:\s+([^\n]+)\s+([^\n]+)\s+([^,]+),\s+([A-Z]{2})\s+([0-9]{5}(?:-[0-9]{4})?)\s+US',
 	re.M | re.U
 )
 
