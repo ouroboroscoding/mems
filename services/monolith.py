@@ -1643,10 +1643,11 @@ class Monolith(Services.Service):
 		# Search based on the data passed
 		lRecords = KtCustomer.search(data['filter'], raw=('fields' in data and data['fields'] or True))
 
+		# Get list of customer IDs
+		lIDs = [d['customerId'] for d in lRecords]
+
 		# Get a list of all PENDING orders associated with the customers found
-		lOrders = KtOrder.pendingByCustomers([
-			d['customerId'] for d in lRecords
-		])
+		lOrders = KtOrder.pendingByCustomers(lIDs)
 
 		# Create a dictionary of customer ID to orders
 		dOrders = {}
@@ -1658,6 +1659,20 @@ class Monolith(Services.Service):
 		# Go through each record and add an orders list
 		for d in lRecords:
 			d['orders'] = d['customerId'] in dOrders and dOrders[d['customerId']] or False
+
+		# Get a list of all PENDING continuous orders associated with the customers found
+		lOrdersCont = KtOrderContinuous.pendingByCustomers(lIDs)
+
+		# Create a dictionary of customer ID to orders
+		dOrdersCont = {}
+		for d in lOrdersCont:
+			if d['customerId'] not in dOrdersCont:
+				dOrdersCont[d['customerId']] = []
+			dOrdersCont[d['customerId']].append(d)
+
+		# Go through each record and add a continuous list
+		for d in lRecords:
+			d['continuous'] = d['customerId'] in dOrdersCont and dOrdersCont[d['customerId']] or False
 
 		# Return the results
 		return Services.Response(lRecords)
@@ -3830,7 +3845,39 @@ class Monolith(Services.Service):
 			data['new_only']
 		)
 
-		print(lAppts)
+		# Get a list of customer IDs for ED orders only
+		lIDs = set()
+		for d in lAppts:
+			if d['customerId']:
+				lIDs.add(d['customerId'])
+
+		# Get a list of all PENDING orders associated with the customers found
+		lOrders = KtOrder.pendingByCustomers(lIDs)
+
+		# Create a dictionary of customer ID to orders
+		dOrders = {}
+		for d in lOrders:
+			if d['customerId'] not in dOrders:
+				dOrders[d['customerId']] = []
+			dOrders[d['customerId']].append(d)
+
+		# Go through each record and add an orders list if it's ED
+		for d in lAppts:
+			d['orders'] = d['customerId'] in dOrders and dOrders[d['customerId']] or False
+
+		# Get a list of all PENDING continuous orders associated with the customers found
+		lOrdersCont = KtOrderContinuous.pendingByCustomers(lIDs)
+
+		# Create a dictionary of customer ID to orders
+		dOrdersCont = {}
+		for d in lOrdersCont:
+			if d['customerId'] not in dOrdersCont:
+				dOrdersCont[d['customerId']] = []
+			dOrdersCont[d['customerId']].append(d)
+
+		# Go through each record and add an orders list if it's ED
+		for d in lAppts:
+			d['continuous'] = d['customerId'] in dOrdersCont and dOrdersCont[d['customerId']] or False
 
 		# Return anything found
 		return Services.Response(lAppts)

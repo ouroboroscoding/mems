@@ -158,6 +158,7 @@ class Calendly(Record_MySQL.Record):
 		# Generate SQL
 		sSQL = "SELECT\n" \
 				"	`cal`.`customerId`,\n" \
+				"	`cal`.`event`,\n" \
 				"	`cal`.`pat_name` as `name`,\n" \
 				"	`cal`.`pat_emailAddress` as `emailAddress`,\n" \
 				"	`cal`.`pat_phoneNumber` as `phoneNumber`,\n" \
@@ -757,8 +758,6 @@ class CustomerMsgPhone(Record_MySQL.Record):
 			"customer_id": customer_id
 		}
 
-		print(sSQL)
-
 		# Run the query and return the result
 		return Record_MySQL.Commands.select(
 			dStruct['host'],
@@ -1173,64 +1172,6 @@ class KtOrder(Record_MySQL.Record):
 	"""Configuration"""
 
 	@classmethod
-	def pendingByCustomers(cls, customer_ids, custom={}):
-		"""Pending By Customers
-
-		Returns all the PENDING orders by a set of customers
-
-		Arguments:
-			customers_id (uint[]): The IDs of the customers
-			custom (dict): Custom Host and DB info
-				'host' the name of the host to get/set data on
-				'append' optional postfix for dynamic DBs
-
-		Returns:
-			list
-		"""
-
-		# Fetch the record structure
-		dStruct = cls.struct(custom)
-
-		# Generate the SQL
-		sSQL = "SELECT\n" \
-				"	`kto`.`customerId`,\n" \
-				"	`kto`.`orderId`,\n" \
-				"	`cmp`.`type`,\n" \
-				"	`kto`.`shipCity`,\n" \
-				"	IFNULL(`ss`.`name`, '[state missing]') as `shipState`,\n" \
-				"	IFNULL(`ss`.`legalEncounterType`, '') as `encounter`,\n" \
-				"	`kto`.`dateCreated`,\n" \
-				"	`kto`.`dateUpdated`,\n" \
-				"	IFNULL(`os`.`attentionRole`, 'Not Assigned') as `attentionRole`,\n" \
-				"	IFNULL(`os`.`orderLabel`, 'Not Labeled') as `orderLabel`,\n" \
-				"	`ktoc`.`user` as `claimedUser`,\n" \
-				"	CONCAT(`user`.`firstName`, ' ', `user`.`lastName`) as `claimedName`\n" \
-				"FROM `%(db)s`.`%(table)s` as `kto`\n" \
-				"JOIN `%(db)s`.`campaign` as `cmp` ON `cmp`.`id` = CONVERT(`kto`.`campaignId`, UNSIGNED)\n" \
-				"LEFT JOIN `%(db)s`.`smp_state` as `ss` ON `ss`.`abbreviation` = `kto`.`shipState`\n" \
-				"LEFT JOIN `%(db)s`.`smp_order_status` as `os` ON `os`.`orderId` = `kto`.`orderId`\n" \
-				"LEFT JOIN `%(db)s`.`kt_order_claim` as `ktoc` ON `ktoc`.`customerId` = CONVERT(`kto`.`customerId`, UNSIGNED)\n" \
-				"LEFT JOIN `%(db)s`.`user` ON `user`.`id` = `ktoc`.`user`\n" \
-				"WHERE `kto`.`customerId` IN (%(customer_ids)s)\n" \
-				"AND `kto`.`orderStatus` = 'PENDING'\n" \
-				"AND IFNULL(`kto`.`cardType`, '') <> 'TESTCARD'\n" \
-				"AND (`os`.`attentionRole` = 'Doctor' OR `os`.`attentionRole` IS NULL)\n" \
-				"ORDER BY `kto`.`dateUpdated` ASC" % {
-			"db": dStruct['db'],
-			"table": dStruct['table'],
-			"customer_ids": "'%s'" % "','".join(customer_ids)
-		}
-
-		print(sSQL)
-
-		# Fetch and return the data
-		return Record_MySQL.Commands.select(
-			dStruct['host'],
-			sSQL,
-			Record_MySQL.ESelect.ALL
-		)
-
-	@classmethod
 	def config(cls):
 		"""Config
 
@@ -1357,6 +1298,62 @@ class KtOrder(Record_MySQL.Record):
 				"phone": Record_MySQL.Commands.escape(dStruct['host'], phone)
 			},
 			Record_MySQL.ESelect.COLUMN
+		)
+
+	@classmethod
+	def pendingByCustomers(cls, customer_ids, custom={}):
+		"""Pending By Customers
+
+		Returns all the PENDING orders by a set of customers
+
+		Arguments:
+			customers_id (uint[]): The IDs of the customers
+			custom (dict): Custom Host and DB info
+				'host' the name of the host to get/set data on
+				'append' optional postfix for dynamic DBs
+
+		Returns:
+			list
+		"""
+
+		# Fetch the record structure
+		dStruct = cls.struct(custom)
+
+		# Generate the SQL
+		sSQL = "SELECT\n" \
+				"	`kto`.`customerId`,\n" \
+				"	`kto`.`orderId`,\n" \
+				"	`cmp`.`type`,\n" \
+				"	`kto`.`shipCity`,\n" \
+				"	IFNULL(`ss`.`name`, '[state missing]') as `shipState`,\n" \
+				"	IFNULL(`ss`.`legalEncounterType`, '') as `encounter`,\n" \
+				"	`kto`.`dateCreated`,\n" \
+				"	`kto`.`dateUpdated`,\n" \
+				"	IFNULL(`os`.`attentionRole`, 'Not Assigned') as `attentionRole`,\n" \
+				"	IFNULL(`os`.`orderLabel`, 'Not Labeled') as `orderLabel`,\n" \
+				"	`ktoc`.`user` as `claimedUser`,\n" \
+				"	CONCAT(`user`.`firstName`, ' ', `user`.`lastName`) as `claimedName`\n" \
+				"FROM `%(db)s`.`%(table)s` as `kto`\n" \
+				"JOIN `%(db)s`.`campaign` as `cmp` ON `cmp`.`id` = CONVERT(`kto`.`campaignId`, UNSIGNED)\n" \
+				"LEFT JOIN `%(db)s`.`smp_state` as `ss` ON `ss`.`abbreviation` = `kto`.`shipState`\n" \
+				"LEFT JOIN `%(db)s`.`smp_order_status` as `os` ON `os`.`orderId` = `kto`.`orderId`\n" \
+				"LEFT JOIN `%(db)s`.`kt_order_claim` as `ktoc` ON `ktoc`.`customerId` = CONVERT(`kto`.`customerId`, UNSIGNED)\n" \
+				"LEFT JOIN `%(db)s`.`user` ON `user`.`id` = `ktoc`.`user`\n" \
+				"WHERE `kto`.`customerId` IN (%(customer_ids)s)\n" \
+				"AND `kto`.`orderStatus` = 'PENDING'\n" \
+				"AND IFNULL(`kto`.`cardType`, '') <> 'TESTCARD'\n" \
+				"AND (`os`.`attentionRole` = 'Doctor' OR `os`.`attentionRole` IS NULL)\n" \
+				"ORDER BY `kto`.`dateUpdated` ASC" % {
+			"db": dStruct['db'],
+			"table": dStruct['table'],
+			"customer_ids": "'%s'" % "','".join(customer_ids)
+		}
+
+		# Fetch and return the data
+		return Record_MySQL.Commands.select(
+			dStruct['host'],
+			sSQL,
+			Record_MySQL.ESelect.ALL
 		)
 
 	@classmethod
@@ -1741,6 +1738,63 @@ class KtOrderContinuous(Record_MySQL.Record):
 		return cls._conf
 
 	@classmethod
+	def pendingByCustomers(cls, customer_ids, custom={}):
+		"""Pending By Customers
+
+		Returns all the PENDING orders by a set of customers
+
+		Arguments:
+			customers_id (uint[]): The IDs of the customers
+			custom (dict): Custom Host and DB info
+				'host' the name of the host to get/set data on
+				'append' optional postfix for dynamic DBs
+
+		Returns:
+			list
+		"""
+
+		# Fetch the record structure
+		dStruct = cls.struct(custom)
+
+		# Generate the SQL
+		sSQL = "SELECT\n" \
+				"	`kto`.`customerId`,\n" \
+				"	`cont`.`orderId`,\n" \
+				"	`cmp`.`type`,\n" \
+				"	`kto`.`shipCity`,\n" \
+				"	IFNULL(`ss`.`name`, '[state missing]') as `shipState`,\n" \
+				"	IFNULL(`ss`.`legalEncounterType`, '') as `encounter`,\n" \
+				"	`cont`.`createdAt` as `dateCreated`,\n" \
+				"	`cont`.`updatedAt` as `dateUpdated`,\n" \
+				"	IFNULL(`os`.`attentionRole`, 'Not Assigned') as `attentionRole`,\n" \
+				"	IFNULL(`os`.`orderLabel`, 'Not Labeled') as `orderLabel`,\n" \
+				"	`claim`.`user` as `claimedUser`,\n" \
+				"	CONCAT(`user`.`firstName`, ' ', `user`.`lastName`) as `claimedName`\n" \
+				"FROM `%(db)s`.`%(table)s` as `cont`\n" \
+				"JOIN `%(db)s`.`kt_order` as `kto` ON `kto`.`orderId` = `cont`.`orderId` \n" \
+				"JOIN `%(db)s`.`campaign` as `cmp` ON `cmp`.`id` = CONVERT(`kto`.`campaignId`, UNSIGNED)\n" \
+				"LEFT JOIN `%(db)s`.`smp_state` as `ss` ON `ss`.`abbreviation` = `kto`.`shipState`\n" \
+				"LEFT JOIN `%(db)s`.`smp_order_status` as `os` ON `os`.`orderId` = `kto`.`orderId`\n" \
+				"LEFT JOIN `%(db)s`.`kt_order_claim` as `claim` ON `claim`.`customerId` = CONVERT(`kto`.`customerId`, UNSIGNED)\n" \
+				"LEFT JOIN `%(db)s`.`user` ON `user`.`id` = `claim`.`user`\n" \
+				"WHERE `cont`.`customerId` IN (%(customer_ids)s)\n" \
+				"AND `cont`.`status` = 'PENDING'\n" \
+				"AND IFNULL(`kto`.`cardType`, '') <> 'TESTCARD'\n" \
+				"AND (`os`.`attentionRole` = 'Doctor' OR `os`.`attentionRole` IS NULL)\n" \
+				"ORDER BY `cont`.`updatedAt` ASC" % {
+			"db": dStruct['db'],
+			"table": dStruct['table'],
+			"customer_ids": "'%s'" % "','".join(customer_ids)
+		}
+
+		# Fetch and return the data
+		return Record_MySQL.Commands.select(
+			dStruct['host'],
+			sSQL,
+			Record_MySQL.ESelect.ALL
+		)
+
+	@classmethod
 	def queue(cls, group, states, custom={}):
 		"""Queue
 
@@ -1792,8 +1846,6 @@ class KtOrderContinuous(Record_MySQL.Record):
 			"group": group,
 			"states": "'%s'" % "','".join(states)
 		}
-
-		print(sSQL)
 
 		# Fetch and return the data
 		return Record_MySQL.Commands.select(
