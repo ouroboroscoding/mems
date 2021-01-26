@@ -3808,16 +3808,15 @@ class Monolith(Services.Service):
 		"""
 
 		# Make sure the user has the proper permission to do this
-		oResponse = Services.read('auth', 'rights/verify', {
-			"name": "calendly",
-			"right": Rights.READ
-		}, sesh)
-		if not oResponse.data:
-			return Services.Response(error=Rights.INVALID)
+		Rights.check(sesh, 'calendly', Rights.READ)
 
 		# Check for meme_id in session
 		if 'memo_id' not in sesh:
 			return Services.Response(error=1507)
+
+		# If 'new_only' not passed, assume true
+		if 'new_only' not in data:
+			data['new_only'] = True
 
 		# Get the emails for the user
 		dUser = User.get(sesh['memo_id'], raw=['email', 'calendlyEmail'])
@@ -3826,10 +3825,12 @@ class Monolith(Services.Service):
 
 		# Find all calendly appointments in progress or in the future associated
 		#	with the user
-		lAppts = Calendly.filter({
-			"prov_emailAddress": [dUser['email'], dUser['calendlyEmail']],
-			"end": {"gte": Record_MySQL.Literal('CURRENT_TIMESTAMP')}
-		}, orderby='start', raw=True)
+		lAppts = Calendly.byProvider(
+			[dUser['email'], dUser['calendlyEmail']],
+			data['new_only']
+		)
+
+		print(lAppts)
 
 		# Return anything found
 		return Services.Response(lAppts)

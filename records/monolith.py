@@ -121,6 +121,65 @@ class Calendly(Record_MySQL.Record):
 			Record_MySQL.ESelect.ALL
 		)
 
+	@classmethod
+	def byProvider(cls, email, new_only=True, custom={}):
+		"""By Provider
+
+		Finds Calendly appointments based on the providers email address
+
+		Arguments:
+			customer_id (int): The unique ID of the customer
+			custom (dict): Custom Host and DB info
+				'host' the name of the host to get/set data on
+				'append' optional postfix for dynamic DBs
+
+		Returns:
+			list
+		"""
+
+		# Fetch the record structure
+		dStruct = cls.struct(custom)
+
+		# If we got a list of emails
+		if isinstance(email, list):
+			for i in range(len(email)):
+				email[i] = Record_MySQL.Commands.escape(dStruct['host'], email[i])
+			email = "IN ('%s')" % "','".join(email)
+		else:
+			email = "= '%s'" % Record_MySQL.Commands.escape(dStruct['host'], email)
+
+		# Init WHERE statements
+		lWhere = ["`prov_emailAddress` %s" % email]
+
+		# If we only want future dates
+		if new_only:
+			lWhere.append('`end` >= CURDATE()')
+
+		# Generate SQL
+		sSQL = "SELECT\n" \
+				"	`cal`.`customerId`,\n" \
+				"	`cal`.`pat_name` as `name`,\n" \
+				"	`cal`.`pat_emailAddress` as `emailAddress`,\n" \
+				"	`cal`.`pat_phoneNumber` as `phoneNumber`,\n" \
+				"	`cal`.`start`, \n" \
+				"	`cal`.`end`,\n" \
+				"	`ev`.`type`\n" \
+				"FROM `%(db)s`.`%(table)s` as `cal`\n" \
+				"INNER JOIN `%(db)s`.`calendly_event` as `ev` ON `cal`.`event` = `ev`.`name`\n" \
+				"WHERE %(where)s\n" \
+				"ORDER BY `start`" % {
+			"db": dStruct['db'],
+			"table": dStruct['table'],
+			"where": '\nAND '.join(lWhere)
+		}
+
+		# Execute and return the select
+		return Record_MySQL.Commands.select(
+			dStruct['host'],
+			sSQL,
+			Record_MySQL.ESelect.ALL
+		)
+
 # CalendlyEvent class
 class CalendlyEvent(Record_MySQL.Record):
 	"""Calendly Event
