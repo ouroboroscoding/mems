@@ -1487,7 +1487,7 @@ class KtOrder(Record_MySQL.Record):
 				"WHERE `kto`.`orderStatus` = 'PENDING'\n" \
 				"AND IFNULL(`kto`.`cardType`, '') <> 'TESTCARD'\n" \
 				"AND `kto`.`shipState` IN (%(states)s)\n" \
-				"AND `ss`.`legalEncounterType` == 'AS'\n" \
+				"AND `ss`.`legalEncounterType` = 'AS'\n" \
 				"AND `ktoc`.`user` IS NULL\n" \
 				"AND `cmp`.`type` = '%(group)s'\n" \
 				"AND (`os`.`attentionRole` = 'Doctor' OR `os`.`attentionRole` IS NULL)\n" \
@@ -1839,7 +1839,7 @@ class KtOrderContinuous(Record_MySQL.Record):
 				"WHERE `cont`.`status` = 'PENDING'\n" \
 				"AND `cont`.`active` = 1\n" \
 				"AND `kto`.`shipState` IN (%(states)s)\n" \
-				"AND `ss`.`legalEncounterType` == 'AS'\n" \
+				"AND `ss`.`legalEncounterType` = 'AS'\n" \
 				"AND `ktoc`.`user` IS NULL\n" \
 				"AND `cmp`.`type` = '%(group)s'\n" \
 				"AND (`os`.`attentionRole` = 'Doctor' OR `os`.`attentionRole` IS NULL)\n" \
