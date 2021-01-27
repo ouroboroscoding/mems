@@ -1643,10 +1643,11 @@ class Monolith(Services.Service):
 		# Search based on the data passed
 		lRecords = KtCustomer.search(data['filter'], raw=('fields' in data and data['fields'] or True))
 
+		# Get list of customer IDs
+		lIDs = [d['customerId'] for d in lRecords]
+
 		# Get a list of all PENDING orders associated with the customers found
-		lOrders = KtOrder.pendingByCustomers([
-			d['customerId'] for d in lRecords
-		])
+		lOrders = KtOrder.pendingByCustomers(lIDs)
 
 		# Create a dictionary of customer ID to orders
 		dOrders = {}
@@ -1658,6 +1659,20 @@ class Monolith(Services.Service):
 		# Go through each record and add an orders list
 		for d in lRecords:
 			d['orders'] = d['customerId'] in dOrders and dOrders[d['customerId']] or False
+
+		# Get a list of all PENDING continuous orders associated with the customers found
+		lOrdersCont = KtOrderContinuous.pendingByCustomers(lIDs)
+
+		# Create a dictionary of customer ID to orders
+		dOrdersCont = {}
+		for d in lOrdersCont:
+			if d['customerId'] not in dOrdersCont:
+				dOrdersCont[d['customerId']] = []
+			dOrdersCont[d['customerId']].append(d)
+
+		# Go through each record and add a continuous list
+		for d in lRecords:
+			d['continuous'] = d['customerId'] in dOrdersCont and dOrdersCont[d['customerId']] or False
 
 		# Return the results
 		return Services.Response(lRecords)
@@ -1939,11 +1954,9 @@ class Monolith(Services.Service):
 		# If there's a provider
 		if oClaim['provider']:
 
-			print('Provider set');
-
 			# Generate the data for the record and the WS message
 			dData = {
-				"customerId": dDetails['customerId'],
+				"customerId": int(dDetails['customerId']),
 				"orderId": oClaim['orderId'],
 				"continuous": oClaim['continuous'],
 				"user": oClaim['provider'],
@@ -1957,8 +1970,6 @@ class Monolith(Services.Service):
 			# Add the extra details
 			dData['customerName'] = dDetails['customerName']
 			dData['type'] = dDetails['type']
-
-			print(dData)
 
 			# Create the record in the DB
 			try:
@@ -1974,17 +1985,11 @@ class Monolith(Services.Service):
 			# If there's somehow a claim already
 			except Record_MySQL.DuplicateException as e:
 
-				print('Duplicate exception');
-
 				# Find the existing claim
 				oOldClaim = KtOrderClaim.get(dDetails['customerId'])
 
-				print(oOldClaim)
-
 				# Save instead of create
 				oOrderClaim.save()
-
-				print('Record saved')
 
 				# Notify the old provider they lost the claim
 				Sync.push('monolith', 'user-%s' % str(oOldClaim['user']), {
@@ -3865,28 +3870,63 @@ class Monolith(Services.Service):
 		"""
 
 		# Make sure the user has the proper permission to do this
-		oResponse = Services.read('auth', 'rights/verify', {
-			"name": "calendly",
-			"right": Rights.READ
-		}, sesh)
-		if not oResponse.data:
-			return Services.Response(error=Rights.INVALID)
+		Rights.check(sesh, 'calendly', Rights.READ)
 
 		# Check for meme_id in session
 		if 'memo_id' not in sesh:
 			return Services.Response(error=1507)
+
+		# If 'new_only' not passed, assume true
+		if 'new_only' not in data:
+			data['new_only'] = True
 
 		# Get the emails for the user
 		dUser = User.get(sesh['memo_id'], raw=['email', 'calendlyEmail'])
 		if not dUser:
 			return Services.Response(error=(1104, 'user'))
 
+		# Get the list of emails to lookup
+		lEmails = []
+		if dUser['email']: lEmails.append(dUser['email'])
+		if dUser['calendlyEmail']: lEmails.append(dUser['calendlyEmail'])
+
 		# Find all calendly appointments in progress or in the future associated
 		#	with the user
-		lAppts = Calendly.filter({
-			"prov_emailAddress": [dUser['email'], dUser['calendlyEmail']],
-			"end": {"gte": Record_MySQL.Literal('CURRENT_TIMESTAMP')}
-		}, orderby='start', raw=True)
+		lAppts = Calendly.byProvider(lEmails, data['new_only'])
+
+		# Get a list of customer IDs for ED orders only
+		lIDs = set()
+		for d in lAppts:
+			if d['customerId']:
+				lIDs.add(d['customerId'])
+
+		# Get a list of all PENDING orders associated with the customers found
+		lOrders = KtOrder.pendingByCustomers(lIDs)
+
+		# Create a dictionary of customer ID to orders
+		dOrders = {}
+		for d in lOrders:
+			if d['customerId'] not in dOrders:
+				dOrders[d['customerId']] = []
+			dOrders[d['customerId']].append(d)
+
+		# Go through each record and add an orders list if it's ED
+		for d in lAppts:
+			d['orders'] = d['customerId'] in dOrders and dOrders[d['customerId']] or False
+
+		# Get a list of all PENDING continuous orders associated with the customers found
+		lOrdersCont = KtOrderContinuous.pendingByCustomers(lIDs)
+
+		# Create a dictionary of customer ID to orders
+		dOrdersCont = {}
+		for d in lOrdersCont:
+			if d['customerId'] not in dOrdersCont:
+				dOrdersCont[d['customerId']] = []
+			dOrdersCont[d['customerId']].append(d)
+
+		# Go through each record and add an orders list if it's ED
+		for d in lAppts:
+			d['continuous'] = d['customerId'] in dOrdersCont and dOrdersCont[d['customerId']] or False
 
 		# Return anything found
 		return Services.Response(lAppts)

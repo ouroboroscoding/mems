@@ -47,11 +47,8 @@ class Record(Record_MySQL.Record):
 		# Go through each field passed
 		for k,d in fields.items():
 
-			print('%s,%s' % (k,str(d)))
-
 			# If we got a string
 			if isinstance(d, str):
-				print('Got a string')
 				d = {"value": d, "type": 'exact'}
 
 			elif not isinstance(d, dict):
@@ -62,41 +59,31 @@ class Record(Record_MySQL.Record):
 
 			# If we're looking for an exact match
 			if d['type'] == 'exact':
-				print('exact')
 				dFields[k] = d['value']
 
 			# If it starts with
 			elif d['type'] == 'start':
-				print('start')
 				dFields[k] = {"like": '%s%%' % d['value']}
 
 			# If it ends with
 			elif d['type'] == 'end':
-				print('end')
 				dFields[k] = {"like": '%%%s' % d['value']}
 
 			# If it's a custom lookup
 			elif d['type'] == 'asterisk':
-				print('asterisk')
 				dFields[k] = {"like": d['value'].replace('*', '%')}
 
 			# If it's greater than
 			elif d['type'] == 'greater':
-				print('greater')
 				dFields[k] = {"gte": d['value']}
 
 			# If it's less than
 			elif d['type'] == 'less':
-				print('less')
 				dFields[k] = {"lte": d['value']}
 
 			# Else
 			else:
 				raise ValueError(k, 'invalid type')
-
-			print('------------')
-
-		print(dFields);
 
 		# Pass the newly generate fields to filter and return the result
 		return cls.filter(dFields, raw, orderby, limit, custom)
