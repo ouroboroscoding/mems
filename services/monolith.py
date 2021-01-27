@@ -1954,8 +1954,6 @@ class Monolith(Services.Service):
 		# If there's a provider
 		if oClaim['provider']:
 
-			print('Provider set');
-
 			# Generate the data for the record and the WS message
 			dData = {
 				"customerId": dDetails['customerId'],
@@ -1973,8 +1971,6 @@ class Monolith(Services.Service):
 			dData['customerName'] = dDetails['customerName']
 			dData['type'] = dDetails['type']
 
-			print(dData)
-
 			# Create the record in the DB
 			try:
 				if not oOrderClaim.create():
@@ -1989,17 +1985,11 @@ class Monolith(Services.Service):
 			# If there's somehow a claim already
 			except Record_MySQL.DuplicateException as e:
 
-				print('Duplicate exception');
-
 				# Find the existing claim
 				oOldClaim = KtOrderClaim.get(dDetails['customerId'])
 
-				print(oOldClaim)
-
 				# Save instead of create
 				oOrderClaim.save()
-
-				print('Record saved')
 
 				# Notify the old provider they lost the claim
 				Sync.push('monolith', 'user-%s' % str(oOldClaim['user']), {
