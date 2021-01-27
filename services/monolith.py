@@ -3885,12 +3885,14 @@ class Monolith(Services.Service):
 		if not dUser:
 			return Services.Response(error=(1104, 'user'))
 
+		# Get the list of emails to lookup
+		lEmails = []
+		if dUser['email']: lEmails.append(dUser['email'])
+		if dUser['calendlyEmail']: lEmails.append(dUser['calendlyEmail'])
+
 		# Find all calendly appointments in progress or in the future associated
 		#	with the user
-		lAppts = Calendly.byProvider(
-			[dUser['email'], dUser['calendlyEmail']],
-			data['new_only']
-		)
+		lAppts = Calendly.byProvider(lEmails, data['new_only'])
 
 		# Get a list of customer IDs for ED orders only
 		lIDs = set()
