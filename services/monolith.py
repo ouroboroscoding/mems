@@ -1956,7 +1956,7 @@ class Monolith(Services.Service):
 
 			# Generate the data for the record and the WS message
 			dData = {
-				"customerId": dDetails['customerId'],
+				"customerId": int(dDetails['customerId']),
 				"orderId": oClaim['orderId'],
 				"continuous": oClaim['continuous'],
 				"user": oClaim['provider'],
