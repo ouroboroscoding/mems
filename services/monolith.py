@@ -1954,11 +1954,9 @@ class Monolith(Services.Service):
 		# If there's a provider
 		if oClaim['provider']:
 
-			print('Provider set');
-
 			# Generate the data for the record and the WS message
 			dData = {
-				"customerId": dDetails['customerId'],
+				"customerId": int(dDetails['customerId']),
 				"orderId": oClaim['orderId'],
 				"continuous": oClaim['continuous'],
 				"user": oClaim['provider'],
@@ -1972,8 +1970,6 @@ class Monolith(Services.Service):
 			# Add the extra details
 			dData['customerName'] = dDetails['customerName']
 			dData['type'] = dDetails['type']
-
-			print(dData)
 
 			# Create the record in the DB
 			try:
@@ -1989,17 +1985,11 @@ class Monolith(Services.Service):
 			# If there's somehow a claim already
 			except Record_MySQL.DuplicateException as e:
 
-				print('Duplicate exception');
-
 				# Find the existing claim
 				oOldClaim = KtOrderClaim.get(dDetails['customerId'])
 
-				print(oOldClaim)
-
 				# Save instead of create
 				oOrderClaim.save()
-
-				print('Record saved')
 
 				# Notify the old provider they lost the claim
 				Sync.push('monolith', 'user-%s' % str(oOldClaim['user']), {
@@ -3895,12 +3885,14 @@ class Monolith(Services.Service):
 		if not dUser:
 			return Services.Response(error=(1104, 'user'))
 
+		# Get the list of emails to lookup
+		lEmails = []
+		if dUser['email']: lEmails.append(dUser['email'])
+		if dUser['calendlyEmail']: lEmails.append(dUser['calendlyEmail'])
+
 		# Find all calendly appointments in progress or in the future associated
 		#	with the user
-		lAppts = Calendly.byProvider(
-			[dUser['email'], dUser['calendlyEmail']],
-			data['new_only']
-		)
+		lAppts = Calendly.byProvider(lEmails, data['new_only'])
 
 		# Get a list of customer IDs for ED orders only
 		lIDs = set()
