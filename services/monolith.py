@@ -1880,13 +1880,66 @@ class Monolith(Services.Service):
 		# Get current date/time
 		sDT = arrow.get().format('YYYY-MM-DD HH:mm:ss')
 
-		# If there's a provider and an order ID
-		if oClaim['provider'] and oClaim['orderId']:
+		# Init shared note fields
+		dNote = {
+			"action": 'Agent Transfer',
+			"createdBy": sesh['memo_id'],
+			"note": data['note'],
+			"createdAt": sDT,
+			"updatedAt": sDT
+		}
+
+		# If there's an order
+		if oClaim['orderId']:
 
 			# Get the extra claim details
 			dDetails = KtOrder.claimDetails(oClaim['orderId'])
 			if not dDetails:
 				return Services.Response(error=(1104, 'order'))
+
+			# Find the order status (fuck this is fucking stupid as fuck, fuck memo)
+			oStatus = SmpOrderStatus.filter({
+				"orderId": oClaim['orderId']
+			}, limit=1)
+			if oStatus:
+				oStatus['modifiedBy'] = sesh['memo_id']
+				oStatus['attentionRole'] = 'Doctor'
+				oStatus['orderLabel'] = 'Provider - Agent Transfer'
+				oStatus['updatedAt'] = sDT
+				oStatus.save()
+
+			# Set note fields
+			dNote['parentTable'] = 'kt_order'
+			dNote['parentColumn'] = 'orderId'
+			dNote['columnValue'] = oClaim['orderId']
+
+		# Else, there's no order
+		else:
+
+			# Find customer by phone number
+			dDetails = KtCustomer.filter(
+				{"phoneNumber": data['phoneNumber']},
+				raw=['customerId', 'firstName', 'lastName'],
+				limit=1,
+				orderby=[['createdAt', 'DESC']]
+			)
+
+			# Set the type to view
+			dDetails['type'] = 'view'
+			dDetails['customerName'] = '%s %s' % (
+				dDetails['firstName'],
+				dDetails['lastName']
+			)
+
+			# Set the note fields
+			dNote['parentTable'] = 'kt_customer'
+			dNote['parentColumn'] = 'customerId'
+			dNote['columnValue'] = dDetails['customerId']
+
+		# If there's a provider
+		if oClaim['provider']:
+
+			print('Provider set');
 
 			# Generate the data for the record and the WS message
 			dData = {
@@ -1905,6 +1958,8 @@ class Monolith(Services.Service):
 			dData['customerName'] = dDetails['customerName']
 			dData['type'] = dDetails['type']
 
+			print(dData)
+
 			# Create the record in the DB
 			try:
 				if not oOrderClaim.create():
@@ -1919,11 +1974,17 @@ class Monolith(Services.Service):
 			# If there's somehow a claim already
 			except Record_MySQL.DuplicateException as e:
 
+				print('Duplicate exception');
+
 				# Find the existing claim
 				oOldClaim = KtOrderClaim.get(dDetails['customerId'])
 
+				print(oOldClaim)
+
 				# Save instead of create
 				oOrderClaim.save()
+
+				print('Record saved')
 
 				# Notify the old provider they lost the claim
 				Sync.push('monolith', 'user-%s' % str(oOldClaim['user']), {
@@ -1937,28 +1998,8 @@ class Monolith(Services.Service):
 					"claim": dData
 				})
 
-			# Find the order status (fuck this is fucking stupid as fuck, fuck memo)
-			oStatus = SmpOrderStatus.filter({
-				"orderId": oOrderClaim['orderId']
-			}, limit=1)
-			if oStatus:
-				oStatus['modifiedBy'] = sesh['memo_id']
-				oStatus['attentionRole'] = 'Doctor'
-				oStatus['orderLabel'] = 'Provider - Agent Transfer'
-				oStatus['updatedAt'] = sDT
-				oStatus.save()
-
 		# Store transfer note
-		oSmpNote = SmpNote({
-			"action": 'Agent Transfer',
-			"createdBy": sesh['memo_id'],
-			"note": data['note'],
-			"parentTable": 'kt_order',
-			"parentColumn": 'orderId',
-			"columnValue": oClaim['orderId'],
-			"createdAt": sDT,
-			"updatedAt": sDT
-		})
+		oSmpNote = SmpNote(dNote)
 		oSmpNote.create()
 
 		# Return OK
@@ -3265,15 +3306,15 @@ class Monolith(Services.Service):
 				data['agent'] = lCounts[0]['user']
 
 		# Find the order associated with the claim
-		dKtOrder = KtOrder.filter({
-			"orderId": oOrderClaim['orderId']
+		dKtCustomer = KtCustomer.filter({
+			"customerId": str(oOrderClaim['customerId'])
 		}, raw=['phoneNumber'], limit=1)
-		if not dKtOrder:
+		if not dKtCustomer:
 			return Services.Response(error=1104)
 
 		# Generate the data for the record and the WS message
 		dData = {
-			"phoneNumber": dKtOrder['phoneNumber'],
+			"phoneNumber": dKtCustomer['phoneNumber'],
 			"user": data['agent'],
 			"transferredBy": sesh['memo_id'],
 			"provider": sesh['memo_id'],
@@ -3297,7 +3338,7 @@ class Monolith(Services.Service):
 		except Record_MySQL.DuplicateException as e:
 
 			# Find the existing claim
-			dOldClaim = CustomerClaimed.get(dKtOrder['phoneNumber'], raw=['user'])
+			dOldClaim = CustomerClaimed.get(dKtCustomer['phoneNumber'], raw=['user'])
 
 			# If we had a specific agent requested
 			if bAgent or dOldClaim['user'] == data['agent']:
@@ -3308,7 +3349,7 @@ class Monolith(Services.Service):
 				# Notify the old agent they lost the claim
 				Sync.push('monolith', 'user-%s' % str(dOldClaim['user']), {
 					"type": 'claim_removed',
-					"phoneNumber": dKtOrder['phoneNumber']
+					"phoneNumber": dKtCustomer['phoneNumber']
 				})
 
 				# Notify the new agent they gained a claim
@@ -3334,28 +3375,44 @@ class Monolith(Services.Service):
 		# Get current date/time
 		sDT = arrow.get().format('YYYY-MM-DD HH:mm:ss')
 
-		# Find the order status (fuck this is fucking stupid as fuck, fuck memo)
-		oStatus = SmpOrderStatus.filter({
-			"orderId": oOrderClaim['orderId']
-		}, limit=1)
-		if oStatus:
-			oStatus['modifiedBy'] = sesh['memo_id']
-			oStatus['attentionRole'] = 'CSR'
-			oStatus['orderLabel'] = 'CSR - Provider Transfer'
-			oStatus['updatedAt'] = sDT
-			oStatus.save()
-
-		# Store transfer note
-		oSmpNote = SmpNote({
+		# Init shared note fields
+		dNote = {
 			"action": 'Provider Transfer',
 			"createdBy": sesh['memo_id'],
 			"note": data['note'],
-			"parentTable": 'kt_order',
-			"parentColumn": 'orderId',
-			"columnValue": oOrderClaim['orderId'],
 			"createdAt": sDT,
 			"updatedAt": sDT
-		})
+		}
+
+		# If we have an order ID
+		if oOrderClaim['orderId']:
+
+			# Find the order status (fuck this is fucking stupid as fuck, fuck memo)
+			oStatus = SmpOrderStatus.filter({
+				"orderId": oOrderClaim['orderId']
+			}, limit=1)
+			if oStatus:
+				oStatus['modifiedBy'] = sesh['memo_id']
+				oStatus['attentionRole'] = 'CSR'
+				oStatus['orderLabel'] = 'CSR - Provider Transfer'
+				oStatus['updatedAt'] = sDT
+				oStatus.save()
+
+			# Set note fields
+			dNote['parentTable'] = 'kt_order'
+			dNote['parentColumn'] = 'orderId'
+			dNote['columnValue'] = oOrderClaim['orderId']
+
+		# Else
+		else:
+
+			# Set note fields
+			dNote['parentTable'] = 'kt_customer'
+			dNote['parentColumn'] = 'customerId'
+			dNote['columnValue'] = str(oOrderClaim['customerId'])
+
+		# Store transfer note
+		oSmpNote = SmpNote(dNote)
 		oSmpNote.create()
 
 		# See if we have a customer msg summary
