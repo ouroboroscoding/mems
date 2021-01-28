@@ -117,12 +117,7 @@ class Patient(Services.Service):
 		if '_id' in data:
 
 			# Make sure the user has the proper permission to do this
-			oResponse = Services.read('auth', 'rights/verify', {
-				"name": "patient_account",
-				"right": Rights.READ
-			}, sesh)
-			if not oResponse.data:
-				return Services.Response(error=Rights.INVALID)
+			Rights.check(sesh, 'patient_account', Rights.READ)
 
 		# Else, assume the signed in user's Record
 		else:
@@ -156,7 +151,7 @@ class Patient(Services.Service):
 		"""
 
 		# Make sure the user has the proper permission to do this
-		Rights(sesh, 'patient_account', Rights.READ)
+		Rights.check(sesh, 'patient_account', Rights.READ)
 
 		# Verify fields
 		try: DictHelper.eval(data, ['crm_type', 'crm_id'])
@@ -221,12 +216,7 @@ class Patient(Services.Service):
 		if '_id' in data:
 
 			# Make sure the user has the proper permission to do this
-			oResponse = Services.read('auth', 'rights/verify', {
-				"name": "patient_account",
-				"right": Rights.UPDATE
-			}, sesh)
-			if not oResponse.data:
-				return Services.Response(error=Rights.INVALID)
+			Rights.check(sesh, 'patient_account', Rights.UPDATE)
 
 		# Else, assume the signed in user's Record
 		else:
@@ -623,7 +613,7 @@ class Patient(Services.Service):
 		"""
 
 		# Make sure the user has the proper permission to do this
-		Rights(sesh, 'patient_account', Rights.READ)
+		Rights.check(sesh, 'patient_account', Rights.READ)
 
 		# Verify fields
 		try: DictHelper.eval(data, ['key'])
@@ -653,7 +643,7 @@ class Patient(Services.Service):
 		"""
 
 		# Make sure the user has the proper permission to do this
-		Rights(sesh, 'patient_account', Rights.CREATE)
+		Rights.check(sesh, 'patient_account', Rights.CREATE)
 
 		# Verify fields
 		try: DictHelper.eval(data, ['key'])
@@ -688,7 +678,7 @@ class Patient(Services.Service):
 		"""
 
 		# Make sure the user has the proper permission to do this
-		Rights(sesh, 'patient_account', Rights.CREATE)
+		Rights.check(sesh, 'patient_account', Rights.CREATE)
 
 		# Verify fields
 		try: DictHelper.eval(data, ['dob', 'crm_type', 'crm_id', 'url'])
@@ -797,7 +787,7 @@ class Patient(Services.Service):
 		except ValueError as e: return Services.Response(error=(1001, [(f, 'missing') for f in e.args]))
 
 		# Make sure the user has the proper permission to do this
-		Rights(sesh, 'patient_account', Rights.UPDATE)
+		Rights.check(sesh, 'patient_account', Rights.UPDATE)
 
 		# Try to find the record in the account setup table
 		oSetup = AccountSetup.get(data['_id'])
