@@ -725,17 +725,27 @@ class Monolith(Services.Service):
 		if not dCustomer:
 			return Services.Response(error=1104)
 
-		# Try to find the landing based on customer details
-		lLandings = TfLanding.find(
-			dCustomer['lastName'],
-			dCustomer['emailAddress'] or '',
-			dCustomer['phoneNumber'],
-			['MIP-A1', 'MIP-A2', 'MIP-H1', 'MIP-H2']
-		)
+		# Look for a landing by customerId
+		dLanding = TfLanding.filter({
+			"ktCustomerId": str(data['customerId']),
+			"formId": ['MIP-A1', 'MIP-A2', 'MIP-H1', 'MIP-H2']
+		}, raw=['landing_id'], limit=1, orderby=[['submitted_at', 'DESC']])
 
-		# If there's no mip
-		if not lLandings:
-			return Services.Response(False)
+		# If there's no landing
+		if not dLanding:
+
+			# Get the latest landing
+			lLandings = TfLanding.find(
+				dCustomer['shipping']['lastName'],
+				dCustomer['email'] or '',
+				dCustomer['phone'],
+				['MIP-A1', 'MIP-A2', 'MIP-H1', 'MIP-H2']
+			)
+			if not lLandings:
+				return Services.Response(False)
+
+			# Store the latest one
+			dLanding = lLandings[0]
 
 		# Find the dob
 		sDOB = TfAnswer.dob(lLandings[0]['landing_id'])
