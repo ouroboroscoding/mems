@@ -3697,13 +3697,19 @@ class Monolith(Services.Service):
 			Services.Response
 		"""
 
-		# Make sure the user has the proper permission to do this
-		oResponse = Services.read('auth', 'rights/verify', {
-			"name": "customers",
-			"right": Rights.UPDATE
-		}, sesh)
-		if not oResponse.data:
-			return Services.Response(error=Rights.INVALID)
+		# If an internal key was sent
+		if '_internal_' in data:
+
+			# Verify the key, remove it if it's ok
+			if not Services.internalKey(data['_internal_']):
+				return Services.Response(error=Errors.SERVICE_INTERNAL_KEY)
+			del data['_internal_']
+
+		# Else
+		else:
+
+			# Make sure the user has the proper permission to do this
+			Rights.check(sesh, 'customers', Rights.UPDATE)
 
 		# Verify fields
 		try: DictHelper.eval(data, ['old', 'new'])

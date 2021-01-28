@@ -156,12 +156,7 @@ class Patient(Services.Service):
 		"""
 
 		# Make sure the user has the proper permission to do this
-		oResponse = Services.read('auth', 'rights/verify', {
-			"name": "patient_account",
-			"right": Rights.READ
-		}, sesh)
-		if not oResponse.data:
-			return Services.Response(error=Rights.INVALID)
+		Rights(sesh, 'patient_account', Rights.READ)
 
 		# Verify fields
 		try: DictHelper.eval(data, ['crm_type', 'crm_id'])
@@ -422,6 +417,66 @@ class Patient(Services.Service):
 		# Return OK
 		return Services.Response(True)
 
+	def accountPhone_update(self, data, sesh):
+		"""Account Phone Update
+
+		Handles the patient changing their phone number
+
+		Arguments:
+			data (dict): Data sent with the request
+			sesh (Sesh._Session): The session associated with the request
+
+		Returns:
+			Services.Response
+		"""
+
+		# Verify fields
+		try: DictHelper.eval(data, ['phone'])
+		except ValueError as e: return Services.Response(error=(1001, [(f, 'missing') for f in e.args]))
+
+		# If there's an ID, check permissions
+		if '_id' in data:
+
+			# Make sure the user has the proper permission to do this
+			Rights.check(sesh, 'patient_account', Rights.UPDATE)
+
+		# Else, assume the signed in user's Record
+		else:
+			data['_id'] = sesh['user_id']
+
+		# Convert the phone to only digits
+		data['phone'] = StrHelper.digits(data['phone'])
+
+		# Find the account
+		oAccount = Account.get(data['_id'])
+		if not oAccount:
+			return Services.Response(error=1104)
+
+		# If they're KNK
+		if oAccount['crm_type'] == 'knk':
+
+			# Find the customer in Konnektive
+			oResponse = Services.read('konnektive', 'customer', {
+				"customerId": oAccount['crm_id']
+			}, sesh)
+			if oResponse.errorExists():
+				return oResponse
+
+			# Store the old phone number
+			sOldPhone = oResponse.data['phone']
+
+		# Update monolith so all phone records are updated
+		oResponse = Services.update('monolith', 'phone/change', {
+			"_internal_": Services.internalKey(),
+			"old": sOldPhone,
+			"new": data['phone']
+		}, sesh)
+		if oResponse.errorExists():
+			return oResponse
+
+		# Return OK
+		return Services.Response(True)
+
 	def accountRx_update(self, data, sesh):
 		"""Account RX Update
 
@@ -440,12 +495,7 @@ class Patient(Services.Service):
 		except ValueError as e: return Services.Response(error=(1001, [(f, 'missing') for f in e.args]))
 
 		# Make sure the user has the proper rights
-		oResponse = Services.read('auth', 'rights/verify', {
-			"name": "patient_account",
-			"right": Rights.UPDATE
-		}, sesh)
-		if not oResponse.data:
-			return Services.Response(error=Rights.INVALID)
+		Rights.check(sesh, 'patient_account', Rights.UPDATE)
 
 		# Assume no real account
 		bAccount = False
@@ -573,12 +623,7 @@ class Patient(Services.Service):
 		"""
 
 		# Make sure the user has the proper permission to do this
-		oResponse = Services.read('auth', 'rights/verify', {
-			"name": "patient_account",
-			"right": Rights.READ
-		}, sesh)
-		if not oResponse.data:
-			return Services.Response(error=Rights.INVALID)
+		Rights(sesh, 'patient_account', Rights.READ)
 
 		# Verify fields
 		try: DictHelper.eval(data, ['key'])
@@ -608,12 +653,7 @@ class Patient(Services.Service):
 		"""
 
 		# Make sure the user has the proper permission to do this
-		oResponse = Services.read('auth', 'rights/verify', {
-			"name": "patient_account",
-			"right": Rights.CREATE
-		}, sesh)
-		if not oResponse.data:
-			return Services.Response(error=Rights.INVALID)
+		Rights(sesh, 'patient_account', Rights.CREATE)
 
 		# Verify fields
 		try: DictHelper.eval(data, ['key'])
@@ -648,12 +688,7 @@ class Patient(Services.Service):
 		"""
 
 		# Make sure the user has the proper permission to do this
-		oResponse = Services.read('auth', 'rights/verify', {
-			"name": "patient_account",
-			"right": Rights.CREATE
-		}, sesh)
-		if not oResponse.data:
-			return Services.Response(error=Rights.INVALID)
+		Rights(sesh, 'patient_account', Rights.CREATE)
 
 		# Verify fields
 		try: DictHelper.eval(data, ['dob', 'crm_type', 'crm_id', 'url'])
@@ -762,12 +797,7 @@ class Patient(Services.Service):
 		except ValueError as e: return Services.Response(error=(1001, [(f, 'missing') for f in e.args]))
 
 		# Make sure the user has the proper permission to do this
-		oResponse = Services.read('auth', 'rights/verify', {
-			"name": "patient_account",
-			"right": Rights.UPDATE
-		}, sesh)
-		if not oResponse.data:
-			return Services.Response(error=Rights.INVALID)
+		Rights(sesh, 'patient_account', Rights.UPDATE)
 
 		# Try to find the record in the account setup table
 		oSetup = AccountSetup.get(data['_id'])
