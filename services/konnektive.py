@@ -18,31 +18,11 @@ import urllib.parse
 
 # Pip imports
 import requests
-from RestOC import Conf, DictHelper, JSON, Services
+from RestOC import Conf, DictHelper, JSON, Services, StrHelper
 import xmltodict
 
 # Shared imports
 from shared import Rights, USPS
-
-def extractPhone(val):
-	"""Extract Phone Number
-
-	Takes a string and extracts the digits of the phone number
-
-	Args:
-		val {str} -- String to extract
-
-	Returns:
-		str
-	"""
-
-	phoneNumber = ""
-
-	for character in val:
-		if character.isdigit():
-			phoneNumber = phoneNumber + character
-
-	return phoneNumber
 
 class Konnektive(Services.Service):
 	"""Konnektive Service class
@@ -309,7 +289,7 @@ class Konnektive(Services.Service):
 
 		# If the phone was passed
 		if 'phone' in data:
-			dQuery['phoneNumber'] = extractPhone(data['phone'])
+			dQuery['phoneNumber'] = StrHelper.digits(data['phone'])
 
 		# If we got billing info
 		if 'billing' in data:
