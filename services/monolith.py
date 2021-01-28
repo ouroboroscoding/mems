@@ -748,7 +748,7 @@ class Monolith(Services.Service):
 			dLanding = lLandings[0]
 
 		# Find the dob
-		sDOB = TfAnswer.dob(lLandings[0]['landing_id'])
+		sDOB = TfAnswer.dob(dLanding['landing_id'])
 
 		# If it's not found
 		if not sDOB:
