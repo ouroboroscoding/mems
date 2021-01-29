@@ -6,6 +6,9 @@ apt-get -qq install python-pip
 mkdir -p /root/venvs/certbot
 virtualenv -p /usr/bin/python3 /root/venvs/certbot
 
+# AWS dns authenticator
+/root/venvs/certbot/bin/pip install certbot_dns_route53
+
 # Custom cpanel dns authenticator
 /root/venvs/certbot/bin/pip install certbot-cpanel
 
