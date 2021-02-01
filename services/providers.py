@@ -950,6 +950,7 @@ class Providers(Services.Service):
 		# Look for a pre-existing signin with no sign out
 		oPrevTrack = Tracking.filter({
 			"memo_id": oSesh['memo_id'],
+			"action": 'signin',
 			"end": None
 		}, limit=1, orderby=[['_updated', 'DESC']])
 		if oPrevTrack:
