@@ -148,11 +148,6 @@ If you plan to connect to an external server to get MySQL/Redis access, then you
 * `./install.sh`
 * `reboot`
 
-## Install MySQL Tables
-If you said yes to the first part of the install and have installed MySQL locally for development, or you are connecting to an external MySQL that hasn't been setup yet, you will need to install the schemas and tables.
-* `src_mems`
-* `python install.py`
-
 ## Add Hostname
 In order to be able to access the services via Postman or a browser, you will need to add the hostname to your hosts file. This location of this file is different depending on your OS, I suggest [the following article](https://www.howtogeek.com/howto/27350/beginner-geek-how-to-edit-your-hosts-file/) for finding and editting your hosts file. Once you've found it, add the following line to it
 > 192.168.56.30 mems.local

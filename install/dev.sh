@@ -10,4 +10,7 @@ sed -i 's/environment=VERBOSE=0/environment=VERBOSE=1/' /etc/supervisor/supervis
 
 # Change nginx info
 sed -i 's/meutils.com/mems.local/g' /etc/nginx/sites-available/*.conf
-sed -i 's/meutils.com/mems.local/g' /etc/nginx/ssl_params
+sed -i 's/mems.com/mems.local/g' /etc/nginx/ssl_params
+
+# Reboot nginx
+/usr/sbin/nginx -s reload
