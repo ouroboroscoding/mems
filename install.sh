@@ -4,12 +4,12 @@
 #	it doesn't already
 DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 DIR="$( dirname "${DIR}" )"
-if [ ! -d "/mems" ];  then
-	ln -sf ${DIR} /mems
+if [ ! -d "/me/mems" ];  then
+	ln -sf ${DIR} /me/mems
 fi
 
 # Install log
-LOGFILE=/mems/install/install.log
+LOGFILE=/me/mems/install/install.log
 
 # Clear the install log
 echo '' > $LOGFILE
