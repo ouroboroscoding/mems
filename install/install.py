@@ -13,7 +13,7 @@ from RestOC import Conf, Record_MySQL
 # Services
 from records.auth import Permission, User
 from services import auth, csr, customers, patient, payment, prescriptions, \
-					reports, welldyne
+					providers, reports, welldyne
 
 # Only run if called directly
 if __name__ == "__main__":
@@ -37,6 +37,7 @@ if __name__ == "__main__":
 	patient.Patient.install()
 	payment.Payment.install()
 	prescriptions.Prescriptions.install()
+	providers.Providers.install()
 	reports.Reports.install()
 	welldyne.WellDyne.install()
 

@@ -37,10 +37,11 @@ echo -e "${G}Making folders, copying server config files, and creating aliases..
 # log directory
 mkdir -p /var/log/mems  &>> $LOGFILE
 # copy etc files
-cp -R /mems/install/services/* / &>> $LOGFILE
+cp -R /me/mems/install/services/* / &>> $LOGFILE
 # nginx fix
 cd /etc/nginx/sites-enabled
-ln -sf ../sites-available/www.conf .
+ln -sf ../sites-available/rest.conf .
+ln -sf ../sites-available/external.conf .
 # Aliases
 echo "alias lf='ls -aCF'" >> ~/.bashrc
 echo "alias src_mems='source /root/venvs/mems/bin/activate; cd /mems'" >> ~/.bashrc

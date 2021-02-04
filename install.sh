@@ -4,24 +4,24 @@
 #	it doesn't already
 DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 DIR="$( dirname "${DIR}" )"
-if [ ! -d "/mems" ];  then
-	ln -sf ${DIR} /mems
+if [ ! -d "/me/mems" ];  then
+	ln -sf ${DIR} /me/mems
 fi
 
 # Install log
-LOGFILE=/mems/install/install.log
+LOGFILE=/me/mems/install/install.log
 
 # Clear the install log
 echo '' > $LOGFILE
 
 # Ask about databases
-echo "Do you want to install DB/Cache software locally?"
-select yn in "Yes" "No"; do
-    case $yn in
-        Yes ) install/databases.sh $LOGFILE; break;;
-        No ) break;;
-    esac
-done
+#echo "Do you want to install DB/Cache software locally?"
+#select yn in "Yes" "No"; do
+#    case $yn in
+#        Yes ) install/databases.sh $LOGFILE; break;;
+#        No ) break;;
+#    esac
+#done
 
 # Run the services install
 install/services.sh $LOGFILE
