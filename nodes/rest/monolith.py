@@ -44,6 +44,7 @@ REST.Server({
 	"/customer/exists": {"methods": REST.READ, "session": True},
 	"/customer/hide": {"methods": REST.UPDATE, "session": True},
 	"/customer/hrtLabs": {"methods": REST.READ, "session": True},
+	"/customer/hrt": {"methods": REST.READ | REST.UPDATE, "session": True},
 	"/customer/id/byPhone": {"methods": REST.READ, "session": True},
 	"/customer/messages": {"methods": REST.READ, "session": True},
 	"/customer/mip": {"methods": REST.READ, "session": True},
@@ -59,6 +60,9 @@ REST.Server({
 	"/customer/transfer": {"methods": REST.UPDATE, "session": True},
 
 	"/encounter": {"methods": REST.READ},
+
+	"/hrt/stats": {"methods": REST.READ, "session": True},
+	"/hrt/patients": {"methods": REST.READ, "session": True},
 
 	"/message/incoming": {"methods": REST.CREATE},
 	"/message/outgoing": {"methods": REST.CREATE},
