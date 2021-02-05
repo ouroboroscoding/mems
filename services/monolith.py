@@ -33,7 +33,7 @@ from records.monolith import \
 	CustomerCommunication, CustomerMsgPhone, \
 	DsPatient, \
 	Forgot, \
-	HrtLabResultTests, \
+	HrtLabResultTests, HrtPatient, \
 	KtCustomer, KtOrder, KtOrderClaim, KtOrderClaimLast, KtOrderContinuous, \
 	ShippingInfo, \
 	SmpNote, SmpOrderStatus, SmpState, \
@@ -1086,15 +1086,11 @@ class Monolith(Services.Service):
 		Returns:
 			Services.Response
 		"""
-		# Make sure the user has the proper permission to do this
-		oResponse = Services.read('auth', 'rights/verify', {
-			"name": "memo_mips",
-			"right": Rights.READ
-		}, sesh)
-		if not oResponse.data:
-			return Services.Response(error=Rights.INVALID)
 
-			# Verify fields
+		# Make sure the user has the proper permission to do this
+		Rights.check(sesh, 'memo_mips', Rights.READ)
+
+		# Verify fields
 		try: DictHelper.eval(data, ['customerId'])
 		except ValueError as e: return Services.Response(error=(1001, [(f, 'missing') for f in e.args]))
 
@@ -1103,6 +1099,84 @@ class Monolith(Services.Service):
 			HrtLabResultTests.filter({
 				"customerId": data['customerId']
 			}, raw=True)
+		)
+
+	def customerHrt_read(self, data, sesh):
+		"""Customer HRT Read
+
+		Returns current HRT status of the customer if there is one
+
+		Arguments:
+			data (dict): Data sent with the request
+			sesh (Sesh._Session): The session associated with the request
+
+		Returns:
+			Services.Response
+		"""
+
+		# Make sure the user has the proper permission to do this
+		Rights.check(sesh, 'customers', Rights.READ)
+
+		# Verify fields
+		try: DictHelper.eval(data, ['customerId'])
+		except ValueError as e: return Services.Response(error=(1001, [(f, 'missing') for f in e.args]))
+
+		# Attempt to find the record
+		dPatient = HrtPatient.filter({
+			"ktCustomerId": str(data['customerId'])
+		}, raw=True, limit=1)
+		if not dPatient:
+			return Services.Error(1104)
+
+		# Return whatever's found
+		return Services.Response(dPatient)
+
+	def customerHrt_update(self, data, sesh):
+		"""Customer HRT Updates
+
+		Updates fields in HrtPatient if there is one
+
+		Arguments:
+			data (dict): Data sent with the request
+			sesh (Sesh._Session): The session associated with the request
+
+		Returns:
+			Services.Response
+		"""
+
+		# Make sure the user has the proper permission to do this
+		Rights.check(sesh, 'customers', Rights.UPDATE)
+
+		# Verify fields
+		try: DictHelper.eval(data, ['customerId'])
+		except ValueError as e: return Services.Response(error=(1001, [(f, 'missing') for f in e.args]))
+
+		# Try to find the record
+		oHrtPatient = HrtPatient.filter({
+			"ktCustomerId": data['customerId']
+		}, limit=1)
+		if not oHrtPatient:
+			return Services.Error(1104)
+
+		# Delete any fields that can't be changed
+		del data['customerId']
+		if 'id' in data: del data['id']
+		if 'createdAt' in data: del data['createdAt']
+		if 'updatedAt' in data: del data['updatedAt']
+
+		# Update what's left
+		lErrors = []
+		for f in data:
+			try: oHrtPatient[f] = data[f]
+			except ValueError as e: lErrors.append(e.args[0])
+
+		# If there's any errors
+		if lErrors:
+			return Services.Error(1001, lErrors)
+
+		# Save the record and return the result
+		Services.Response(
+			oHrtPatient.save()
 		)
 
 	def customerIdByPhone_read(self, data, sesh):
@@ -2045,6 +2119,66 @@ class Monolith(Services.Service):
 
 		# Return the encounter
 		return Services.Response(dState['legalEncounterType'])
+
+	def hrtStats_read(self, data, sesh):
+		"""HRT Stats
+
+		Returns the breakdown of buckets to patients
+
+		Arguments:
+			data (dict): Data sent with the request
+			sesh (Sesh._Session): The session associated with the request
+
+		Returns:
+			Services.Response
+		"""
+
+		# Make sure the user has the proper permission to do this
+		Rights.check(sesh, 'customers', Rights.READ)
+
+		# Fetch and return the breakdown
+		return Services.Response(
+			HrtPatient.stats()
+		)
+
+	def hrtPatients_read(self, data, sesh):
+		"""HRT Stats
+
+		Returns the breakdown of buckets to patients
+
+		Arguments:
+			data (dict): Data sent with the request
+			sesh (Sesh._Session): The session associated with the request
+
+		Returns:
+			Services.Response
+		"""
+
+		# Make sure the user has the proper permission to do this
+		Rights.check(sesh, 'customers', Rights.READ)
+
+		# Verify fields
+		try: DictHelper.eval(data, ['stage', 'processStatus'])
+		except ValueError as e: return Services.Response(error=(1001, [(f, 'missing') for f in e.args]))
+
+		# Find all the customer IDs of the given stage/status
+		lPatients = HrtPatient.filter({
+			"stage": data['stage'],
+			"processStatus": data['processStatus']
+		}, raw=['ktCustomerId'])
+
+		# If we got nothing
+		if not lPatients:
+			return Services.Response([])
+
+		# Fetch and return all customers associated with the returned IDs
+		return Services.Response(
+			KtCustomer.filter(
+				{"customerId": [d['ktCustomerId'] for d in lPatients]},
+				raw=['customerId', 'phoneNumber', 'firstName', 'lastName', 'campaignName'],
+				orderby='lastName'
+			)
+		)
 
 	def messageIncoming_create(self, data):
 		"""Message Incoming

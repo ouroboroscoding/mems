@@ -1050,6 +1050,70 @@ class HrtLabResultTests(Record_MySQL.Record):
 		# Return the config
 		return cls._conf
 
+# HrtPatient class
+class HrtPatient(Record_MySQL.Record):
+	""""HRT Patient
+
+	Represents the status of an HRT patient
+	"""
+
+	_conf = None
+	"""Configuration"""
+
+	@classmethod
+	def config(cls):
+		"""Config
+
+		Returns the configuration data associated with the record type
+
+		Returns:
+			dict
+		"""
+
+		# If we haven loaded the config yet
+		if not cls._conf:
+			cls._conf = Record_MySQL.Record.generateConfig(
+				Tree.fromFile('definitions/monolith/hrt_patient.json'),
+				'mysql'
+			)
+
+		# Return the config
+		return cls._conf
+
+	@classmethod
+	def stats(cls, custom={}):
+		"""Stats
+
+		Returns the breakdown of patients in each bucket
+
+		Arguments:
+			custom (dict): Custom Host and DB info
+				'host' the name of the host to get/set data on
+				'append' optional postfix for dynamic DBs
+
+		Returns:
+			list
+		"""
+
+		# Fetch the record structure
+		dStruct = cls.struct(custom)
+
+		# Generate SQL
+		sSQL = "SELECT `stage`, `processStatus`, count(*) as `count` " \
+				"FROM `%(db)s`.`%(table)s` " \
+				"GROUP BY `stage`, `processStatus` " \
+				"ORDER BY `stage`, `processStatus`" % {
+			"db": dStruct['db'],
+			"table": dStruct['table']
+		}
+
+		# Execute and return the select
+		return Record_MySQL.Commands.select(
+			dStruct['host'],
+			sSQL,
+			Record_MySQL.ESelect.ALL
+		)
+
 # KtCustomer class
 class KtCustomer(Record_MySQLSearch.Record):
 	"""KtCustomer
