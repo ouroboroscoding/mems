@@ -124,7 +124,7 @@
 	},
 
 	"rest": {
-		"allowed": "(?:admin|crm|cs|mp|pp).mems.local",
+		"allowed": "(?:admin|crm|cs|docs|mp|pp).mems.local",
 		"default": {
 			"domain": "localhost",
 			"host": "0.0.0.0",
@@ -137,6 +137,7 @@
 			"communications": {"port": 4},
 			"csr": {"port": 9},
 			"customers": {"port": 12},
+			"docs": {"port": 18},
 			"external": {"port": 100},
 			"hubspot": {"port": 17},
 			"konnektive": {"port": 7},
