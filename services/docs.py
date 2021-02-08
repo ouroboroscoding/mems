@@ -395,7 +395,7 @@ class Docs(Services.Service):
 
 		# Find the record
 		oService = ServiceRecord.get(data['_id'])
-		if not oError:
+		if not oService:
 			return Services.Error(1104)
 
 		# Delete the record and return the result
@@ -420,7 +420,7 @@ class Docs(Services.Service):
 		if '_id' in data:
 
 			# Find the service by primary key
-			dService = Service.get(data['_id'], raw=True)
+			dService = ServiceRecord.get(data['_id'], raw=True)
 
 		# Else, if we got a 'name'
 		elif 'name' in data:
@@ -437,6 +437,14 @@ class Docs(Services.Service):
 		# If the record doesn't exist
 		if not dService:
 			return Services.Error(1104)
+
+		# If we want the nouns as well
+		if 'nouns' in data and data['nouns']:
+
+			# Find all nouns associated with the service
+			dService['nouns'] = NounRecord.filter({
+				"service": dService['_id']
+			}, raw=True, orderby='title')
 
 		# Return the service
 		return Services.Response(dService)
