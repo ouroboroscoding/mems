@@ -33,7 +33,7 @@ from records.monolith import \
 	CustomerCommunication, CustomerMsgPhone, \
 	DsPatient, \
 	Forgot, \
-	HrtLabResultTests, HrtPatient, \
+	HrtLabResultTests, HrtPatient, HrtPatientDroppedReason, \
 	KtCustomer, KtOrder, KtOrderClaim, KtOrderClaimLast, KtOrderContinuous, \
 	ShippingInfo, \
 	SmpNote, SmpOrderStatus, SmpState, \
@@ -1128,6 +1128,18 @@ class Monolith(Services.Service):
 		if not dPatient:
 			return Services.Error(1104)
 
+		# If they're dropped
+		if dPatient['stage'] == 'Dropped':
+
+			# If the reason is null or 0
+			if not dPatient['dropped_reason']:
+				dPatient['reason'] = 'N/A';
+
+			# Else, find the reason and add it to the patient
+			else:
+				dReason = HrtPatientDroppedReason.get(dPatient['dropped_reason'], raw=True)
+				dPatient['reason'] = dReason and dReason['name'] or 'N/A'
+
 		# Return whatever's found
 		return Services.Response(dPatient)
 
@@ -1175,7 +1187,7 @@ class Monolith(Services.Service):
 			return Services.Error(1001, lErrors)
 
 		# Save the record and return the result
-		Services.Response(
+		return Services.Response(
 			oHrtPatient.save()
 		)
 
@@ -2119,6 +2131,24 @@ class Monolith(Services.Service):
 
 		# Return the encounter
 		return Services.Response(dState['legalEncounterType'])
+
+	def hrtDroppedReasons_read(self, data, sesh):
+		"""HRT Dropped Reasons
+
+		Returns all the available reasons for dropping an HRT patient
+
+		Arguments:
+			data (dict): Data sent with the request
+			sesh (Sesh._Session): The session associated with the request
+
+		Returns:
+			Services.Response
+		"""
+
+		# Fetch and return the reasons
+		return Services.Response(
+			HrtPatientDroppedReason.get(raw=['id', 'name'], orderby='name')
+		)
 
 	def hrtStats_read(self, data, sesh):
 		"""HRT Stats
