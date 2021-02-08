@@ -61,6 +61,7 @@ REST.Server({
 
 	"/encounter": {"methods": REST.READ},
 
+	"/hrt/dropped/reasons": {"methods": REST.READ, "session": True},
 	"/hrt/stats": {"methods": REST.READ, "session": True},
 	"/hrt/patients": {"methods": REST.READ, "session": True},
 

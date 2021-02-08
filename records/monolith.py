@@ -1114,6 +1114,36 @@ class HrtPatient(Record_MySQL.Record):
 			Record_MySQL.ESelect.ALL
 		)
 
+# HrtPatientDroppedReason class
+class HrtPatientDroppedReason(Record_MySQL.Record):
+	""""HRT Patient Dropped Reason
+
+	Represents the specific reason an HRT patient was dropped
+	"""
+
+	_conf = None
+	"""Configuration"""
+
+	@classmethod
+	def config(cls):
+		"""Config
+
+		Returns the configuration data associated with the record type
+
+		Returns:
+			dict
+		"""
+
+		# If we haven loaded the config yet
+		if not cls._conf:
+			cls._conf = Record_MySQL.Record.generateConfig(
+				Tree.fromFile('definitions/monolith/hrt_patient_dropped_reason.json'),
+				'mysql'
+			)
+
+		# Return the config
+		return cls._conf
+
 # KtCustomer class
 class KtCustomer(Record_MySQLSearch.Record):
 	"""KtCustomer
