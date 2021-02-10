@@ -960,6 +960,36 @@ class CustomerMsgPhone(Record_MySQL.Record):
 			Record_MySQL.ESelect.CELL
 		)
 
+# DsApproved class
+class DsApproved(Record_MySQL.Record):
+	"""DsApproved
+
+	Represents a an approved order and whether there's a prescription for it
+	"""
+
+	_conf = None
+	"""Configuration"""
+
+	@classmethod
+	def config(cls):
+		"""Config
+
+		Returns the configuration data associated with the record type
+
+		Returns:
+			dict
+		"""
+
+		# If we haven loaded the config yet
+		if not cls._conf:
+			cls._conf = Record_MySQL.Record.generateConfig(
+				Tree.fromFile('definitions/monolith/ds_approved.json'),
+				'mysql'
+			)
+
+		# Return the config
+		return cls._conf
+
 # DsPatient class
 class DsPatient(Record_MySQL.Record):
 	"""DsPatient
