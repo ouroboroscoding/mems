@@ -1173,6 +1173,7 @@ class Monolith(Services.Service):
 		# Delete any fields that can't be changed
 		del data['customerId']
 		if 'id' in data: del data['id']
+		if 'joinDate' in data: del data['joinDate']
 		if 'createdAt' in data: del data['createdAt']
 		if 'updatedAt' in data: del data['updatedAt']
 
@@ -2166,10 +2167,22 @@ class Monolith(Services.Service):
 		# Make sure the user has the proper permission to do this
 		Rights.check(sesh, 'customers', Rights.READ)
 
-		# Fetch and return the breakdown
-		return Services.Response(
-			HrtPatient.stats()
-		)
+		# Get all dropped reasons
+		dReasons = {
+			d['id']:d['name']
+			for d in HrtPatientDroppedReason.get(raw=['id', 'name'])
+		}
+
+		# Get all the stats
+		lStats = HrtPatient.stats()
+
+		# Go through each and add the name of the dropped reason if necessary
+		for d in lStats:
+			if d['dropped_reason']:
+				d['reason'] = dReasons[d['dropped_reason']]
+
+		# Return the breakdown
+		return Services.Response(lStats)
 
 	def hrtPatients_read(self, data, sesh):
 		"""HRT Stats
@@ -2188,27 +2201,18 @@ class Monolith(Services.Service):
 		Rights.check(sesh, 'customers', Rights.READ)
 
 		# Verify fields
-		try: DictHelper.eval(data, ['stage', 'processStatus'])
+		try: DictHelper.eval(data, ['stage', 'processStatus', 'droppedReason'])
 		except ValueError as e: return Services.Response(error=(1001, [(f, 'missing') for f in e.args]))
 
 		# Find all the customer IDs of the given stage/status
-		lPatients = HrtPatient.filter({
-			"stage": data['stage'],
-			"processStatus": data['processStatus']
-		}, raw=['ktCustomerId'])
-
-		# If we got nothing
-		if not lPatients:
-			return Services.Response([])
-
-		# Fetch and return all customers associated with the returned IDs
-		return Services.Response(
-			KtCustomer.filter(
-				{"customerId": [d['ktCustomerId'] for d in lPatients]},
-				raw=['customerId', 'phoneNumber', 'firstName', 'lastName', 'campaignName'],
-				orderby='lastName'
-			)
+		lPatients = HrtPatient.customers(
+			data['stage'],
+			data['processStatus'],
+			data['droppedReason']
 		)
+
+		# Return all customers
+		return Services.Response(lPatients)
 
 	def messageIncoming_create(self, data):
 		"""Message Incoming

@@ -1081,6 +1081,52 @@ class HrtPatient(Record_MySQL.Record):
 		return cls._conf
 
 	@classmethod
+	def customers(cls, stage, status, dropped, custom={}):
+		"""Customers
+
+		Returns the customer information associated with the hrt patients in
+		the given stage/status
+
+		Arguments:
+			stage (str): The stage to check
+			status (str): The processStage to check
+			dropped (int): The dropped_reason to check
+			custom (dict): Custom Host and DB info
+				'host' the name of the host to get/set data on
+				'append' optional postfix for dynamic DBs
+
+		Returns:
+			list
+		"""
+
+		# Fetch the record structure
+		dStruct = cls.struct(custom)
+
+		print(dropped)
+
+		# Generate SQL
+		sSQL = "SELECT `joinDate`, `customerId`, `phoneNumber`, `firstName`, `lastName` " \
+				"FROM `%(db)s`.`%(table)s` as `hrt`" \
+				"LEFT JOIN `%(db)s`.`kt_customer` as `kt` ON `hrt`.`ktCustomerId` = `kt`.`customerId` " \
+				"WHERE `hrt`.`stage` = '%(stage)s' " \
+				"AND `hrt`.`processStatus` = '%(status)s' " \
+				"AND `hrt`.`dropped_reason` %(dropped)s " \
+				"ORDER BY `joinDate`" % {
+			"db": dStruct['db'],
+			"table": dStruct['table'],
+			"stage": Record_MySQL.Commands.escape(dStruct['host'], stage),
+			"status": Record_MySQL.Commands.escape(dStruct['host'], status),
+			"dropped": dropped is None and 'is null' or (' = %d' % int(dropped))
+		}
+
+		# Execute and return the select
+		return Record_MySQL.Commands.select(
+			dStruct['host'],
+			sSQL,
+			Record_MySQL.ESelect.ALL
+		)
+
+	@classmethod
 	def stats(cls, custom={}):
 		"""Stats
 
@@ -1099,10 +1145,10 @@ class HrtPatient(Record_MySQL.Record):
 		dStruct = cls.struct(custom)
 
 		# Generate SQL
-		sSQL = "SELECT `stage`, `processStatus`, count(*) as `count` " \
+		sSQL = "SELECT `stage`, `processStatus`, `dropped_reason`, count(*) as `count` " \
 				"FROM `%(db)s`.`%(table)s` " \
-				"GROUP BY `stage`, `processStatus` " \
-				"ORDER BY `stage`, `processStatus`" % {
+				"GROUP BY `stage`, `processStatus`, `dropped_reason` " \
+				"ORDER BY `stage`, `processStatus`, `dropped_reason`" % {
 			"db": dStruct['db'],
 			"table": dStruct['table']
 		}
