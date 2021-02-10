@@ -31,7 +31,7 @@ from records.monolith import \
 	Campaign, \
 	CustomerClaimed, CustomerClaimedLast, \
 	CustomerCommunication, CustomerMsgPhone, \
-	DsPatient, \
+	DsApproved, DsPatient, \
 	Forgot, \
 	HrtLabResultTests, HrtPatient, HrtPatientDroppedReason, \
 	KtCustomer, KtOrder, KtOrderClaim, KtOrderClaimLast, KtOrderContinuous, \
@@ -41,6 +41,9 @@ from records.monolith import \
 	TfAnswer, TfLanding, TfQuestion, TfQuestionOption, \
 	User, \
 	init as recInit
+
+# Service imports
+from . import emailError
 
 # Regex for validating email
 _emailRegex = re.compile(r"[^@\s]+@[^@\s]+\.[a-zA-Z0-9]{2,}$")
@@ -2729,7 +2732,7 @@ class Monolith(Services.Service):
 		"""
 
 		# Verify minimum fields
-		try: DictHelper.eval(data, ['orderId'])
+		try: DictHelper.eval(data, ['customerId', 'orderId'])
 		except ValueError as e: return Services.Response(error=(1001, [(f, 'missing') for f in e.args]))
 
 		# Send the request to Konnektive
@@ -2753,6 +2756,24 @@ class Monolith(Services.Service):
 
 		# Get current date/time
 		sDT = arrow.get().format('YYYY-MM-DD HH:mm:ss')
+
+		# Add the customer/order to the approved table
+		try:
+			oDsApproved = DsApproved({
+				"customerId": int(data['customerId']),
+				"orderId": data['orderId'],
+				"userId": sesh['memo_id'],
+				"checks": 0,
+				"createdAt": sDT,
+				"updatedAt": sDT
+			})
+			oDsApproved.create()
+		except Exception as e:
+			emailError('DsApproved Failure', 'Sent: %s\n\n DB: %s\n\nException: %s' % (
+				str(data),
+				str(oDsApproved.record()),
+				str(e.args)
+			))
 
 		# Store SOAP notes
 		oSmpNote = SmpNote({
