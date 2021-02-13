@@ -31,9 +31,9 @@ from records.monolith import \
 	Campaign, \
 	CustomerClaimed, CustomerClaimedLast, \
 	CustomerCommunication, CustomerMsgPhone, \
-	DsPatient, \
+	DsApproved, DsPatient, \
 	Forgot, \
-	HrtLabResultTests, HrtPatient, \
+	HrtLabResultTests, HrtPatient, HrtPatientDroppedReason, \
 	KtCustomer, KtOrder, KtOrderClaim, KtOrderClaimLast, KtOrderContinuous, \
 	ShippingInfo, \
 	SmpNote, SmpOrderStatus, SmpState, \
@@ -41,6 +41,9 @@ from records.monolith import \
 	TfAnswer, TfLanding, TfQuestion, TfQuestionOption, \
 	User, \
 	init as recInit
+
+# Service imports
+from . import emailError
 
 # Regex for validating email
 _emailRegex = re.compile(r"[^@\s]+@[^@\s]+\.[a-zA-Z0-9]{2,}$")
@@ -1128,6 +1131,18 @@ class Monolith(Services.Service):
 		if not dPatient:
 			return Services.Error(1104)
 
+		# If they're dropped
+		if dPatient['stage'] == 'Dropped':
+
+			# If the reason is null or 0
+			if not dPatient['dropped_reason']:
+				dPatient['reason'] = 'N/A';
+
+			# Else, find the reason and add it to the patient
+			else:
+				dReason = HrtPatientDroppedReason.get(dPatient['dropped_reason'], raw=True)
+				dPatient['reason'] = dReason and dReason['name'] or 'N/A'
+
 		# Return whatever's found
 		return Services.Response(dPatient)
 
@@ -1161,6 +1176,7 @@ class Monolith(Services.Service):
 		# Delete any fields that can't be changed
 		del data['customerId']
 		if 'id' in data: del data['id']
+		if 'joinDate' in data: del data['joinDate']
 		if 'createdAt' in data: del data['createdAt']
 		if 'updatedAt' in data: del data['updatedAt']
 
@@ -1175,7 +1191,7 @@ class Monolith(Services.Service):
 			return Services.Error(1001, lErrors)
 
 		# Save the record and return the result
-		Services.Response(
+		return Services.Response(
 			oHrtPatient.save()
 		)
 
@@ -2120,6 +2136,24 @@ class Monolith(Services.Service):
 		# Return the encounter
 		return Services.Response(dState['legalEncounterType'])
 
+	def hrtDroppedReasons_read(self, data, sesh):
+		"""HRT Dropped Reasons
+
+		Returns all the available reasons for dropping an HRT patient
+
+		Arguments:
+			data (dict): Data sent with the request
+			sesh (Sesh._Session): The session associated with the request
+
+		Returns:
+			Services.Response
+		"""
+
+		# Fetch and return the reasons
+		return Services.Response(
+			HrtPatientDroppedReason.get(raw=['id', 'name'], orderby='name')
+		)
+
 	def hrtStats_read(self, data, sesh):
 		"""HRT Stats
 
@@ -2136,10 +2170,22 @@ class Monolith(Services.Service):
 		# Make sure the user has the proper permission to do this
 		Rights.check(sesh, 'customers', Rights.READ)
 
-		# Fetch and return the breakdown
-		return Services.Response(
-			HrtPatient.stats()
-		)
+		# Get all dropped reasons
+		dReasons = {
+			d['id']:d['name']
+			for d in HrtPatientDroppedReason.get(raw=['id', 'name'])
+		}
+
+		# Get all the stats
+		lStats = HrtPatient.stats()
+
+		# Go through each and add the name of the dropped reason if necessary
+		for d in lStats:
+			if d['dropped_reason']:
+				d['reason'] = dReasons[d['dropped_reason']]
+
+		# Return the breakdown
+		return Services.Response(lStats)
 
 	def hrtPatients_read(self, data, sesh):
 		"""HRT Stats
@@ -2158,27 +2204,18 @@ class Monolith(Services.Service):
 		Rights.check(sesh, 'customers', Rights.READ)
 
 		# Verify fields
-		try: DictHelper.eval(data, ['stage', 'processStatus'])
+		try: DictHelper.eval(data, ['stage', 'processStatus', 'droppedReason'])
 		except ValueError as e: return Services.Response(error=(1001, [(f, 'missing') for f in e.args]))
 
 		# Find all the customer IDs of the given stage/status
-		lPatients = HrtPatient.filter({
-			"stage": data['stage'],
-			"processStatus": data['processStatus']
-		}, raw=['ktCustomerId'])
-
-		# If we got nothing
-		if not lPatients:
-			return Services.Response([])
-
-		# Fetch and return all customers associated with the returned IDs
-		return Services.Response(
-			KtCustomer.filter(
-				{"customerId": [d['ktCustomerId'] for d in lPatients]},
-				raw=['customerId', 'phoneNumber', 'firstName', 'lastName', 'campaignName'],
-				orderby='lastName'
-			)
+		lPatients = HrtPatient.customers(
+			data['stage'],
+			data['processStatus'],
+			data['droppedReason']
 		)
+
+		# Return all customers
+		return Services.Response(lPatients)
 
 	def messageIncoming_create(self, data):
 		"""Message Incoming
@@ -2695,7 +2732,7 @@ class Monolith(Services.Service):
 		"""
 
 		# Verify minimum fields
-		try: DictHelper.eval(data, ['orderId'])
+		try: DictHelper.eval(data, ['customerId', 'orderId'])
 		except ValueError as e: return Services.Response(error=(1001, [(f, 'missing') for f in e.args]))
 
 		# Send the request to Konnektive
@@ -2719,6 +2756,24 @@ class Monolith(Services.Service):
 
 		# Get current date/time
 		sDT = arrow.get().format('YYYY-MM-DD HH:mm:ss')
+
+		# Add the customer/order to the approved table
+		try:
+			oDsApproved = DsApproved({
+				"customerId": int(data['customerId']),
+				"orderId": data['orderId'],
+				"userId": sesh['memo_id'],
+				"checks": 0,
+				"createdAt": sDT,
+				"updatedAt": sDT
+			})
+			oDsApproved.create()
+		except Exception as e:
+			emailError('DsApproved Failure', 'Sent: %s\n\n DB: %s\n\nException: %s' % (
+				str(data),
+				str(oDsApproved.record()),
+				str(e.args)
+			))
 
 		# Store SOAP notes
 		oSmpNote = SmpNote({
