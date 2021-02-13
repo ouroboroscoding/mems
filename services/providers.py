@@ -12,10 +12,12 @@ __email__		= "chris@fuelforthefire.ca"
 __created__		= "2020-10-15"
 
 # Python imports
+from datetime import timedelta
 from time import time
 import uuid
 
 # Pip imports
+import arrow
 from FormatOC import Node
 from RestOC import Conf, DictHelper, Errors, Record_MySQL, Services, Sesh, \
 					StrHelper
@@ -319,6 +321,105 @@ class Providers(Services.Service):
 
 		# Return OK
 		return Services.Response(True)
+
+	def hours_read(self, data, sesh):
+		"""Hours
+
+		Returns breakdown of hours worked by provider
+
+		Arguments:
+			data (mixed): Data sent with the request
+			sesh (Sesh._Session): The session associated with the request
+
+		Returns:
+			Services.Response
+		"""
+
+		# Make sure the user has the proper permission to do this
+		Rights.check(sesh, 'prov_hours', Rights.READ)
+
+		# Verify minimum fields
+		try: DictHelper.eval(data, ['start', 'end',])
+		except ValueError as e: return Services.Error(1001, [(f, 'missing') for f in e.args])
+
+		# Fetch all records in the given time period
+		lTracking = Tracking.range(data['start'], data['end'])
+
+		print(lTracking)
+
+		# If we got nothing
+		if not lTracking:
+			return Services.Response([])
+
+		# Init the dictionary of providers
+		dProviders = {}
+
+		# Go through each record
+		for d in lTracking:
+
+			# If we don't have the provider yet
+			if d['memo_id'] not in dProviders:
+				dProviders[d['memo_id']] = {
+					"seconds": 0,
+					"approvals": 0,
+					"declines": 0
+				}
+
+			# If the action is signin
+			if d['action'] == 'signin':
+				print('%d - %d = %d' % (d['resolution_ts'], d['action_ts'], (d['resolution_ts'] - d['action_ts'])))
+				dProviders[d['memo_id']]['seconds'] += (d['resolution_ts'] - d['action_ts'])
+
+			# Else, if the action is viewed
+			elif d['action'] == 'viewed':
+				if d['resolution'] == 'approved':
+					dProviders[d['memo_id']]['approvals'] += 1
+				elif d['resolution'] == 'declined':
+					dProviders[d['memo_id']]['declines'] += 1
+
+		# Get the provider names for all the IDs
+		oResponse = Services.read('monolith', 'users', {
+			"_internal_": Services.internalKey(),
+			"id": list(dProviders.keys()),
+			"fields": ['id', 'firstName', 'lastName']
+		}, sesh)
+
+		# If there's none
+		if not oResponse.data:
+			dUsers = {}
+
+		# Else, turn it into a dictionary
+		else:
+			dUsers = {
+				d['id']: {'firstName': d['firstName'], 'lastName': d['lastName']}
+				for d in oResponse.data
+			}
+
+		# Init the return value
+		lRet = []
+
+		# Generate the final stats
+		for iID in dProviders:
+
+			# Calculate hours
+			iHours, iRemainder = divmod(dProviders[iID]['seconds'], 3600)
+			iMinutes, iSeconds = divmod(iRemainder, 60)
+			sHours = '{:0}:{:02}:{:02}'.format(iHours, iMinutes, iSeconds)
+
+			# Add new row
+			lRet.append({
+				"memoId": iID,
+				"firstName": iID in dUsers and dUsers[iID]['firstName'] or '',
+				"lastName": iID in dUsers and dUsers[iID]['lastName'] or '',
+				"hours": sHours,
+				"approvals": dProviders[iID]['approvals'],
+				"declines": dProviders[iID]['declines']
+			})
+
+		# Return the list sorted by last name
+		return Services.Response(
+			sorted(lRet, key=lambda d: d['lastName'])
+		)
 
 	def prescriptions_create(self, data, sesh):
 		"""Prescriptions Create
@@ -951,19 +1052,41 @@ class Providers(Services.Service):
 		oPrevTrack = Tracking.filter({
 			"memo_id": oSesh['memo_id'],
 			"action": 'signin',
-			"end": None
+			"resolution": None
 		}, limit=1, orderby=[['_updated', 'DESC']])
 		if oPrevTrack:
+
+			# Look for the oldest viewed in the same session
+			dViewed = Tracking.filter({
+				"memo_id": oPrevTrack['memo_id'],
+				"action": 'viewed',
+				"resolution_sesh": oPrevTrack['action_sesh']
+			}, orderby=[['resolution_ts', 'DESC']], limit=1)
+
+			# If there's none or it's not complete
+			if not dViewed:
+
+				# Set end to 15 minutes past the start
+				oEnd = arrow.get(oPrevTrack['action_ts'])
+				oEnd = oEnd.shift(minutes=15)
+				oPrevTrack['resolution_ts'] = oEnd.timestamp
+
+			# Else, if there's one
+			else:
+
+				# Set the end time to its end time
+				oPrevTrack['resolution_ts'] = dViewed['resolution_ts']
+
+			# Set the resolution and save
 			oPrevTrack['resolution'] = 'new_signin'
-			oPrevTrack['end'] = int(time())
 			oPrevTrack.save()
 
 		# Create the sign in tracking
 		oTracking = Tracking({
 			"memo_id": oSesh['memo_id'],
-			"sesh": sUUID,
 			"action": 'signin',
-			"start": int(time())
+			"action_sesh": sUUID,
+			"action_ts": int(time())
 		})
 		oTracking.create()
 
@@ -999,15 +1122,16 @@ class Providers(Services.Service):
 			# Find the previous sign in
 			oTracking = Tracking.filter({
 				"memo_id": sesh['memo_id'],
-				"sesh": sSeshID[5:],
 				"action": 'signin',
-				"end": None
+				"action_sesh": sSeshID[5:],
+				"resolution" : None
 			}, limit=1)
 
 			# If we found one, end it
 			if oTracking:
 				oTracking['resolution'] = 'signout'
-				oTracking['end'] = int(time())
+				oTracking['resolution_sesh'] = sSeshID[5:],
+				oTracking['resolution_ts'] = int(time())
 				oTracking.save()
 
 		# Close the session so it can no longer be found/used

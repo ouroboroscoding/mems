@@ -243,3 +243,40 @@ class Tracking(Record_MySQL.Record):
 
 		# Return the config
 		return cls._conf
+
+	@classmethod
+	def range(cls, start, end, custom={}):
+		"""Range
+
+		Returns the tracking records within the given range
+
+		Arguments:
+			start (uint): The start timestamp
+			end (uint): The end timestamp
+
+		Returns:
+			list
+		"""
+
+		# Fetch the record structure
+		dStruct = cls.struct(custom)
+
+		# Generate SQL
+		sSQL = "SELECT *\n" \
+				"FROM `%(db)s`.`%(table)s`\n" \
+				"WHERE `action_ts` BETWEEN FROM_UNIXTIME(%(start)d) AND FROM_UNIXTIME(%(end)d)\n" \
+				"AND `resolution_ts` IS NOT NULL" % {
+			"db": dStruct['db'],
+			"table": dStruct['table'],
+			"start": int(start),
+			"end": int(end)
+		}
+
+		print(sSQL)
+
+		# Fetch and return all records
+		return Record_MySQL.Commands.select(
+			dStruct['host'],
+			sSQL,
+			Record_MySQL.ESelect.ALL
+		)

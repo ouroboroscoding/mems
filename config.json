@@ -171,7 +171,7 @@
 			"support_email": "bast@maleexcel.com"
 		},
 		"providers": {
-			"sesh_ttl": 7200
+			"sesh_ttl": 900
 		},
 		"queue": {
 			"key": null

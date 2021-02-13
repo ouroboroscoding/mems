@@ -33,6 +33,8 @@ REST.Server([
 	{"uri": "/calendly/single", "methods": REST.READ | REST.DELETE, "session": False},
 	{"uri": "/calendly/single", "methods": REST.CREATE, "session": True},
 
+	{"uri": "/hours", "methods": REST.READ, "session": True},
+
 	{"uri": "/product/to/rx", "methods": REST.CREATE, "session": True},
 	{"uri": "/customer/to/rx", "methods": REST.UPDATE | REST.READ, "session": True},
 
