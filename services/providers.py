@@ -1114,6 +1114,7 @@ class Providers(Services.Service):
 
 			# Set the resolution and save
 			oPrevTrack['resolution'] = 'new_signin'
+			oPrevTrack['resolution_sesh'] = sUUID
 			oPrevTrack.save()
 
 		# Create the sign in tracking
