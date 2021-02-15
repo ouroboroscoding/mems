@@ -12,7 +12,7 @@ __email__		= "chris@fuelforthefire.ca"
 __created__		= "2021-02-06"
 
 # Pip imports
-from RestOC import Conf, DictHelper, Errors, Record_MySQL, Services
+from RestOC import Conf, DictHelper, Errors, JSON, Record_MySQL, Services
 
 # Shared imports
 from shared import Rights
@@ -123,7 +123,7 @@ class Docs(Services.Service):
 			oError.delete()
 		)
 
-	def error_update(self, data):
+	def error_update(self, data, sesh):
 		"""Error Update
 
 		Updates an existing Error record
@@ -206,19 +206,31 @@ class Docs(Services.Service):
 		# Make sure the user has the proper rights
 		Rights.check(sesh, 'documentation', Rights.CREATE)
 
+		# Try to convert request and response data into JSON
+		lErrors = []
+		for k in ['data', 'response']:
+			if k not in data: lErrors.append([k, 'missing'])
+			else:
+				try: data[k] = JSON.encode(data[k])
+				except ValueError: lErrors.push([[k, 'invalid']])
+
+		# If there's any JSON errors
+		if lErrors:
+			return Services.Error(1001, lErrors)
+
 		# Try to create a new instance
 		try:
-			oError = ServiceRecord(data)
+			oNoun = NounRecord(data)
 		except ValueError as e:
 			return Services.Error(1001, e.args[0])
 
 		# Make sure the service exists
 		if not ServiceRecord.exists(data['service']):
-			return Services.Error(1001, [['service', 'invalid']])
+			return Services.Error(1104, 'service')
 
 		# Try to store the new record
 		try:
-			sID = oError.create()
+			sID = oNoun.create()
 		except Record_MySQL.DuplicateException:
 			return Services.Error(1101)
 
@@ -289,6 +301,10 @@ class Docs(Services.Service):
 		# If the record doesn't exist
 		if not dNoun:
 			return Nouns.Error(1104)
+
+		# Decode the data and response fields
+		for k in ['data', 'response']:
+			dNoun[k] = JSON.decode(dNoun[k])
 
 		# Return the service
 		return Services.Response(dNoun)
@@ -445,6 +461,11 @@ class Docs(Services.Service):
 			dService['nouns'] = NounRecord.filter({
 				"service": dService['_id']
 			}, raw=True, orderby='title')
+
+			# Go through each noun and decode JSON
+			for o in dService['nouns']:
+				for k in ['data', 'response']:
+					o[k] = JSON.decode(o[k])
 
 		# Return the service
 		return Services.Response(dService)
