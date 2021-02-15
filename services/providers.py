@@ -1165,7 +1165,7 @@ class Providers(Services.Service):
 			# If we found one, end it
 			if oTracking:
 				oTracking['resolution'] = 'signout'
-				oTracking['resolution_sesh'] = sSeshID[5:],
+				oTracking['resolution_sesh'] = sSeshID[5:]
 				oTracking['resolution_ts'] = int(time())
 				oTracking.save()
 
@@ -1388,7 +1388,8 @@ class Providers(Services.Service):
 			# Look for an existing viewed tracking
 			oTracking = Tracking.filter({
 				"memo_id": sesh['memo_id'],
-				"end": None,
+				"action": "viewed",
+				"resolution": None,
 				"crm_type": data['crm_type'],
 				"crm_id": str(data['crm_id'])
 			}, limit=1, orderby=[['_created', 'DESC']])
@@ -1396,7 +1397,8 @@ class Providers(Services.Service):
 			# If we found one
 			if oTracking:
 				oTracking['resolution'] = data['resolution']
-				oTracking['end'] = int(time())
+				oTracking['resolution_sesh'] = sesh.id()[5:]
+				oTracking['resolution_ts'] = int(time())
 				oTracking.save()
 
 			# Return

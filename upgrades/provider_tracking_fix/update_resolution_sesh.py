@@ -11,7 +11,7 @@ import arrow
 from records.providers import Tracking
 
 def run():
-	"""
+
 	# Finds all the signins with a signout
 	l = Tracking.filter({
 		"action": "signin",
@@ -22,7 +22,7 @@ def run():
 	for o in l:
 		o['resolution_sesh'] = o['action_sesh']
 		o.save()
-	"""
+
 	# Find all signins with new_signin
 	l = Tracking.filter({
 		"action": "signin",
