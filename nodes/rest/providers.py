@@ -47,7 +47,7 @@ REST.Server([
 	{"uri": "/provider/names", "methods": REST.READ, "session": True},
 	{"uri": "/provider/passwd", "methods": REST.UPDATE, "session": True},
 	{"uri": "/provider/permissions", "methods": REST.READ | REST.UPDATE, "session": True},
-
+	{"uri": "/provider/tracking", "methods": REST.READ, "session": True},
 	{"uri": "/roundrobin", "methods": REST.READ, "session": True},
 
 	{"uri": "/session", "methods": REST.READ, "session": True},
@@ -58,6 +58,7 @@ REST.Server([
 	{"uri": "/templates", "methods": REST.READ, "session": True},
 
 	{"uri": "/tracking", "methods": REST.CREATE, "session": True}
+
 
 ], 'providers', "https?://(.*\\.)?%s" % Conf.get(("rest","allowed")).replace('.', '\\.')).run(
 	host=oRestConf['providers']['host'],

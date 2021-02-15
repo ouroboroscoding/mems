@@ -336,7 +336,7 @@ class Providers(Services.Service):
 		"""
 
 		# Make sure the user has the proper permission to do this
-		Rights.check(sesh, 'prov_hours', Rights.READ)
+		Rights.check(sesh, 'prov_stats', Rights.READ)
 
 		# Verify minimum fields
 		try: DictHelper.eval(data, ['start', 'end',])
@@ -344,8 +344,6 @@ class Providers(Services.Service):
 
 		# Fetch all records in the given time period
 		lTracking = Tracking.range(data['start'], data['end'])
-
-		print(lTracking)
 
 		# If we got nothing
 		if not lTracking:
@@ -868,6 +866,43 @@ class Providers(Services.Service):
 			"claims_timeout": 48
 		}, sesh)
 
+	def providerTracking_read(self, data, sesh):
+		"""Provider Tracking
+
+		Returns all tracking records related to a specfic provider in the given
+		timeframe
+
+		Arguments:
+			data (mixed): Data sent with the request
+			sesh (Sesh._Session): The session associated with the request
+
+		Returns:
+			Services.Response
+		"""
+
+		# Make sure the user has the proper permission to do this
+		Rights.check(sesh, 'prov_stats', Rights.READ)
+
+		# Verify minimum fields
+		try: DictHelper.eval(data, ['start', 'end', 'memo_id'])
+		except ValueError as e: return Services.Error(1001, [(f, 'missing') for f in e.args])
+
+		# Fetch all records in the given time period
+		lTracking = Tracking.range(data['start'], data['end'], data['memo_id'])
+
+		# Go through each record found
+		for d in lTracking:
+
+			# Calculate the hours, minutes, and seconds
+			iHours, iRemainder = divmod(d['resolution_ts'] - d['action_ts'], 3600)
+			iMinutes, iSeconds = divmod(iRemainder, 60)
+
+			# Add the time to the record
+			d['time'] = '{:0}:{:02}:{:02}'.format(iHours, iMinutes, iSeconds)
+
+		# Return the records
+		return Services.Response(lTracking)
+
 	def providerNames_read(self, data, sesh):
 		"""Provider Names
 
@@ -1154,12 +1189,7 @@ class Providers(Services.Service):
 		"""
 
 		# Make sure the user has the proper permission to do this
-		oResponse = Services.read('auth', 'rights/verify', {
-			"name": "prov_templates",
-			"right": Rights.CREATE
-		}, sesh)
-		if not oResponse.data:
-			return Services.Response(error=Rights.INVALID)
+		Rights.check(sesh, 'prov_templates', Rights.CREATE)
 
 		# Verify minimum fields
 		try: DictHelper.eval(data, ['title', 'type', 'content'])
@@ -1194,13 +1224,7 @@ class Providers(Services.Service):
 		except ValueError as e: return Services.Response(error=(1001, [(f, 'missing') for f in e.args]))
 
 		# Make sure the user has the proper permission to do this
-		oResponse = Services.read('auth', 'rights/verify', {
-			"name": "prov_templates",
-			"right": Rights.DELETE,
-			"ident": data['_id']
-		}, sesh)
-		if not oResponse.data:
-			return Services.Response(error=Rights.INVALID)
+		Rights.check(sesh, 'prov_templates', Rights.DELETE, data['_id'])
 
 		# If the record does not exist
 		if not Template.exists(data['_id']):
@@ -1231,13 +1255,7 @@ class Providers(Services.Service):
 		except ValueError as e: return Services.Response(error=(1001, [(f, 'missing') for f in e.args]))
 
 		# Make sure the user has the proper permission to do this
-		oResponse = Services.read('auth', 'rights/verify', {
-			"name": "prov_templates",
-			"right": Rights.READ,
-			"ident": data['_id']
-		}, sesh)
-		if not oResponse.data:
-			return Services.Response(error=Rights.INVALID)
+		Rights.check(sesh, 'prov_templates', Rights.READ, data['_id'])
 
 		# Look for the template
 		dTemplate = Template.get(data['_id'], raw=True)
@@ -1267,13 +1285,7 @@ class Providers(Services.Service):
 		except ValueError as e: return Services.Response(error=(1001, [(f, 'missing') for f in e.args]))
 
 		# Make sure the user has the proper permission to do this
-		oResponse = Services.read('auth', 'rights/verify', {
-			"name": "prov_templates",
-			"right": Rights.UPDATE,
-			"ident": data['_id']
-		}, sesh)
-		if not oResponse.data:
-			return Services.Response(error=Rights.INVALID)
+		Rights.check(sesh, 'prov_templates', Rights.UPDATE, data['_id'])
 
 		# Fetch the template
 		oTemplate = Template.get(data['_id'])
@@ -1315,12 +1327,7 @@ class Providers(Services.Service):
 		"""
 
 		# Make sure the user has the proper permission to do this
-		oResponse = Services.read('auth', 'rights/verify', {
-			"name": "prov_templates",
-			"right": Rights.READ
-		}, sesh)
-		if not oResponse.data:
-			return Services.Response(error=Rights.INVALID)
+		Rights.check(sesh, 'prov_templates', Rights.READ)
 
 		# Fetch and return the templates
 		return Services.Response(
