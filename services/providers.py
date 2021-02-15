@@ -1368,9 +1368,9 @@ class Providers(Services.Service):
 			# Create a new tracking instance
 			oTracking = Tracking({
 				"memo_id": sesh['memo_id'],
-				"sesh": sesh.id()[5:],
 				"action": data['action'],
-				"start": int(time()),
+				"action_sesh": sesh.id()[5:],
+				"action_ts": int(time()),
 				"crm_type": data['crm_type'],
 				"crm_id": str(data['crm_id'])
 			})
