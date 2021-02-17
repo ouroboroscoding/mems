@@ -1151,11 +1151,13 @@ class Providers(Services.Service):
 		# If it starts with the proper prefix
 		if sSeshID[0:5] == self._seshPre:
 
+			sSeshID = sSeshID[0:5]
+
 			# Find the previous sign in
 			oTracking = Tracking.filter({
 				"memo_id": sesh['memo_id'],
 				"action": 'signin',
-				"action_sesh": sSeshID[5:],
+				"action_sesh": sSeshID,
 				"resolution" : None
 			}, limit=1)
 
@@ -1175,7 +1177,7 @@ class Providers(Services.Service):
 
 				# End it
 				oTracking['resolution'] = 'signout'
-				oTracking['resolution_sesh'] = sSeshID[5:]
+				oTracking['resolution_sesh'] = sSeshID
 				oTracking['resolution_ts'] = iTS
 				oTracking.save()
 
