@@ -1162,16 +1162,18 @@ class Providers(Services.Service):
 			# Get the current timestamp
 			iTS = int(time())
 
-			# If it was a timeout
-			if 'timeout' in data and data['timeout']:
-				try:
-					data['timeout'] = int(data['timeout'])
-					iTS -= data['timeout']
-				except ValueError:
-					return Services.Error(1001, [('timeout', 'not an integer')])
-
-			# If we found one, end it
+			# If we found one
 			if oTracking:
+
+				# If it was a timeout
+				if 'timeout' in data and data['timeout']:
+					try:
+						data['timeout'] = int(data['timeout'])
+						iTS -= data['timeout']
+					except ValueError:
+						return Services.Error(1001, [('timeout', 'not an integer')])
+
+				# End it
 				oTracking['resolution'] = 'signout'
 				oTracking['resolution_sesh'] = sSeshID[5:]
 				oTracking['resolution_ts'] = iTS
