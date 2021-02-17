@@ -1151,6 +1151,7 @@ class Providers(Services.Service):
 		# If it starts with the proper prefix
 		if sSeshID[0:5] == self._seshPre:
 
+			# Trim the session ID
 			sSeshID = sSeshID[0:5]
 
 			# Find the previous sign in
@@ -1161,11 +1162,11 @@ class Providers(Services.Service):
 				"resolution" : None
 			}, limit=1)
 
-			# Get the current timestamp
-			iTS = int(time())
-
 			# If we found one
 			if oTracking:
+
+				# Get the current timestamp
+				iTS = int(time())
 
 				# If it was a timeout
 				if 'timeout' in data and data['timeout']:
