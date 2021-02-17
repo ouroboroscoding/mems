@@ -1152,7 +1152,7 @@ class Providers(Services.Service):
 		if sSeshID[0:5] == self._seshPre:
 
 			# Trim the session ID
-			sSeshID = sSeshID[0:5]
+			sSeshID = sSeshID[5:]
 
 			# Find the previous sign in
 			oTracking = Tracking.filter({
