@@ -1151,29 +1151,34 @@ class Providers(Services.Service):
 		# If it starts with the proper prefix
 		if sSeshID[0:5] == self._seshPre:
 
+			# Trim the session ID
+			sSeshID = sSeshID[5:]
+
 			# Find the previous sign in
 			oTracking = Tracking.filter({
 				"memo_id": sesh['memo_id'],
 				"action": 'signin',
-				"action_sesh": sSeshID[5:],
+				"action_sesh": sSeshID,
 				"resolution" : None
 			}, limit=1)
 
-			# Get the current timestamp
-			iTS = int(time())
-
-			# If it was a timeout
-			if 'timeout' in data and data['timeout']:
-				try:
-					data['timeout'] = int(data['timeout'])
-					iTS -= data['timeout']
-				except ValueError:
-					return Services.Error(1001, [('timeout', 'not an integer')])
-
-			# If we found one, end it
+			# If we found one
 			if oTracking:
+
+				# Get the current timestamp
+				iTS = int(time())
+
+				# If it was a timeout
+				if 'timeout' in data and data['timeout']:
+					try:
+						data['timeout'] = int(data['timeout'])
+						iTS -= data['timeout']
+					except ValueError:
+						return Services.Error(1001, [('timeout', 'not an integer')])
+
+				# End it
 				oTracking['resolution'] = 'signout'
-				oTracking['resolution_sesh'] = sSeshID[5:]
+				oTracking['resolution_sesh'] = sSeshID
 				oTracking['resolution_ts'] = iTS
 				oTracking.save()
 
