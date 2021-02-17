@@ -1098,24 +1098,20 @@ class Providers(Services.Service):
 				"resolution_sesh": oPrevTrack['action_sesh']
 			}, orderby=[['resolution_ts', 'DESC']], limit=1)
 
-			# If there's none or it's not complete
+			# If there's none
 			if not dViewed:
 
-				# Set end to 15 minutes past the start
-				oEnd = arrow.get(oPrevTrack['action_ts'])
-				oEnd = oEnd.shift(minutes=15)
-				oPrevTrack['resolution_ts'] = oEnd.timestamp
+				# Delete the previous signin
+				oPrevTrack.delete()
 
 			# Else, if there's one
 			else:
 
-				# Set the end time to its end time
+				# Set the end time to the last viewed's end time
+				oPrevTrack['resolution'] = 'new_signin'
+				oPrevTrack['resolution_sesh'] = sUUID
 				oPrevTrack['resolution_ts'] = dViewed['resolution_ts']
-
-			# Set the resolution and save
-			oPrevTrack['resolution'] = 'new_signin'
-			oPrevTrack['resolution_sesh'] = sUUID
-			oPrevTrack.save()
+				oPrevTrack.save()
 
 		# Create the sign in tracking
 		oTracking = Tracking({
@@ -1163,11 +1159,22 @@ class Providers(Services.Service):
 				"resolution" : None
 			}, limit=1)
 
+			# Get the current timestamp
+			iTS = int(time())
+
+			# If it was a timeout
+			if 'timeout' in data and data['timeout']:
+				try:
+					data['timeout'] = int(data['timeout'])
+					iTS -= data['timeout']
+				except ValueError:
+					return Services.Error(1001, [('timeout', 'not an integer')])
+
 			# If we found one, end it
 			if oTracking:
 				oTracking['resolution'] = 'signout'
 				oTracking['resolution_sesh'] = sSeshID[5:]
-				oTracking['resolution_ts'] = int(time())
+				oTracking['resolution_ts'] = iTS
 				oTracking.save()
 
 		# Close the session so it can no longer be found/used
