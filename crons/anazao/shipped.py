@@ -16,10 +16,10 @@ import re
 import traceback
 
 # Shared imports
-from shared import Email, Memo
+from shared import Email, SMSWorkflow
 
 # Service imports
-from records.monolith import KtCustomer
+from records.monolith import KtCustomer, ShippingInfo
 
 # Cron imports
 from crons import isRunning, emailError
@@ -107,13 +107,31 @@ def run():
 				emailError('Anazao Shipping Error', 'No customer found for:\n\n%s' % str(lMatches))
 				continue
 
-			# Add it to the list
-			lCodes.append({
-				"code": lMatches[3],
-				"type": 'FDX',
-				"date": convert_date(lMatches[0]),
-				"customerId": dKtCustomer['customerId']
-			})
+			# Get the date/time
+			sDT = arrow.get().format('YYYY-MM-DD HH:mm:ss')
+
+			# Create the shipping info
+			try:
+				dShipInfo = {
+					"code": lMatches[3],
+					"customerId": dKtCustomer['customerId'],
+					"date": convert_date(lMatches[0]),
+					"type": 'FDX',
+					"createdAt": sDT,
+					"updatedAt": sDT
+				}
+				oShippingInfo = ShippingInfo(dShipInfo)
+				bCreated = oShippingInfo.create(conflict="ignore")
+
+				# If the record didn't exist, send an SMS
+				if bCreated:
+					SMSWorkflow.shipping(oShippingInfo.record())
+			except ValueError as e:
+				emailError('Welldyne Incoming Failed', 'Invalid shipping info: %s\n\n%s' % (
+					str(e.args[0]),
+					str(dShipInfo)
+				))
+				continue
 
 		except Exception as e:
 			# Generate the body of the email
