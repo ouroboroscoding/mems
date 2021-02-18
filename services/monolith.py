@@ -33,6 +33,7 @@ from records.monolith import \
 	CustomerCommunication, CustomerMsgPhone, \
 	DsApproved, DsPatient, \
 	Forgot, \
+	HormonalCategoryScore, HormonalSympCategories, \
 	HrtLabResultTests, HrtPatient, HrtPatientDroppedReason, \
 	KtCustomer, KtOrder, KtOrderClaim, KtOrderClaimLast, KtOrderContinuous, \
 	ShippingInfo, \
@@ -1091,7 +1092,7 @@ class Monolith(Services.Service):
 		"""
 
 		# Make sure the user has the proper permission to do this
-		Rights.check(sesh, 'memo_mips', Rights.READ)
+		Rights.check(sesh, 'memo_mips', Rights.READ, data['customerId'])
 
 		# Verify fields
 		try: DictHelper.eval(data, ['customerId'])
@@ -1118,7 +1119,7 @@ class Monolith(Services.Service):
 		"""
 
 		# Make sure the user has the proper permission to do this
-		Rights.check(sesh, 'customers', Rights.READ)
+		Rights.check(sesh, 'customers', Rights.READ, data['customerId'])
 
 		# Verify fields
 		try: DictHelper.eval(data, ['customerId'])
@@ -1160,7 +1161,7 @@ class Monolith(Services.Service):
 		"""
 
 		# Make sure the user has the proper permission to do this
-		Rights.check(sesh, 'customers', Rights.UPDATE)
+		Rights.check(sesh, 'customers', Rights.UPDATE, data['customerId'])
 
 		# Verify fields
 		try: DictHelper.eval(data, ['customerId'])

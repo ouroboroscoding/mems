@@ -1050,6 +1050,66 @@ class Forgot(Record_MySQL.Record):
 		# Return the config
 		return cls._conf
 
+# HormonalCategoryScore class
+class HormonalCategoryScore(Record_MySQL.Record):
+	"""Hormonal Category Score
+
+	Represents a single hormonal score
+	"""
+
+	_conf = None
+	"""Configuration"""
+
+	@classmethod
+	def config(cls):
+		"""Config
+
+		Returns the configuration data associated with the record type
+
+		Returns:
+			dict
+		"""
+
+		# If we haven loaded the config yet
+		if not cls._conf:
+			cls._conf = Record_MySQL.Record.generateConfig(
+				Tree.fromFile('definitions/monolith/hormonal_category_score.json'),
+				'mysql'
+			)
+
+		# Return the config
+		return cls._conf
+
+# HormonalSympCategories class
+class HormonalSympCategories(Record_MySQL.Record):
+	"""Hormonal Symptom Category
+
+	Represents a category of hormonal symptom
+	"""
+
+	_conf = None
+	"""Configuration"""
+
+	@classmethod
+	def config(cls):
+		"""Config
+
+		Returns the configuration data associated with the record type
+
+		Returns:
+			dict
+		"""
+
+		# If we haven loaded the config yet
+		if not cls._conf:
+			cls._conf = Record_MySQL.Record.generateConfig(
+				Tree.fromFile('definitions/monolith/hormonal_symp_categories.json'),
+				'mysql'
+			)
+
+		# Return the config
+		return cls._conf
+
 # HrtLabResultTests class
 class HrtLabResultTests(Record_MySQL.Record):
 	""""HRT Lab Result Tests
