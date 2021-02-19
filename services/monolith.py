@@ -33,6 +33,7 @@ from records.monolith import \
 	CustomerCommunication, CustomerMsgPhone, \
 	DsApproved, DsPatient, \
 	Forgot, \
+	HormonalCategoryScore, HormonalSympCategories, \
 	HrtLabResultTests, HrtPatient, HrtPatientDroppedReason, \
 	KtCustomer, KtOrder, KtOrderClaim, KtOrderClaimLast, KtOrderContinuous, \
 	ShippingInfo, \
@@ -1060,12 +1061,7 @@ class Monolith(Services.Service):
 		"""
 
 		# Make sure the user has the proper permission to do this
-		oResponse = Services.read('auth', 'rights/verify', {
-			"name": "csr_messaging",
-			"right": Rights.CREATE
-		}, sesh)
-		if not oResponse.data:
-			return Services.Response(error=Rights.INVALID)
+		Rights.check(sesh, 'csr_messaging', Rights.CREATE)
 
 		# Verify fields
 		try: DictHelper.eval(data, ['customerPhone'])
@@ -1090,12 +1086,12 @@ class Monolith(Services.Service):
 			Services.Response
 		"""
 
-		# Make sure the user has the proper permission to do this
-		Rights.check(sesh, 'memo_mips', Rights.READ)
-
 		# Verify fields
 		try: DictHelper.eval(data, ['customerId'])
 		except ValueError as e: return Services.Response(error=(1001, [(f, 'missing') for f in e.args]))
+
+		# Make sure the user has the proper permission to do this
+		Rights.check(sesh, 'memo_mips', Rights.READ, data['customerId'])
 
 		# Fetch and return the customer's HRT lab test results
 		return Services.Response(
@@ -1117,12 +1113,12 @@ class Monolith(Services.Service):
 			Services.Response
 		"""
 
-		# Make sure the user has the proper permission to do this
-		Rights.check(sesh, 'customers', Rights.READ)
-
 		# Verify fields
 		try: DictHelper.eval(data, ['customerId'])
 		except ValueError as e: return Services.Response(error=(1001, [(f, 'missing') for f in e.args]))
+
+		# Make sure the user has the proper permission to do this
+		Rights.check(sesh, 'customers', Rights.READ, data['customerId'])
 
 		# Attempt to find the record
 		dPatient = HrtPatient.filter({
@@ -1159,12 +1155,12 @@ class Monolith(Services.Service):
 			Services.Response
 		"""
 
-		# Make sure the user has the proper permission to do this
-		Rights.check(sesh, 'customers', Rights.UPDATE)
-
 		# Verify fields
 		try: DictHelper.eval(data, ['customerId'])
 		except ValueError as e: return Services.Response(error=(1001, [(f, 'missing') for f in e.args]))
+
+		# Make sure the user has the proper permission to do this
+		Rights.check(sesh, 'customers', Rights.UPDATE, data['customerId'])
 
 		# Try to find the record
 		oHrtPatient = HrtPatient.filter({
@@ -1194,6 +1190,112 @@ class Monolith(Services.Service):
 		return Services.Response(
 			oHrtPatient.save()
 		)
+
+	def customerHrtSymptoms_read(self, data, sesh):
+		"""Customer HRT Symptoms
+
+		Returns the HRT symptoms data formatted by category and date
+
+		Arguments:
+			data (dict): Data sent with the request
+			sesh (Sesh._Session): The session associated with the request
+
+		Returns:
+			Services.Response
+		"""
+
+		# Verify fields
+		try: DictHelper.eval(data, ['customerId'])
+		except ValueError as e: return Services.Response(error=(1001, [(f, 'missing') for f in e.args]))
+
+		# Make sure the user has the proper permission to do this
+		Rights.check(sesh, 'customers', Rights.READ, data['customerId'])
+
+		# Find all H1/H2 landing IDs associated with the given customer
+		dLandings = TfLanding.filter({
+			"ktCustomerId": str(data['customerId']),
+			"formId": ['MIP-H1', 'MIP-H2']
+		}, raw=['landing_id', 'submitted_at'], orderby=[['submitted_at', 'DESC']])
+
+		# If there's none, return nothing
+		if not dLandings:
+			return Services.Response([])
+
+		# Generate a list of the dates
+		dDates = {
+			d['landing_id']:d['submitted_at'][0:10]
+			for d in dLandings
+		}
+
+		# Fetch all the categories
+		lCats = HormonalSympCategories.withQuestions()
+
+		# Init the list of titles by question
+		dTitles = {}
+
+		# Init the list of unique questions and their categories
+		dQuestions = {}
+
+		# Init the list of unique categories, their questions, and the dates
+		#	associated
+		dCategories = {}
+
+		# Go through all the question to categories we found to find the unique
+		#	titles
+		for d in lCats:
+			if d['questionRef'] not in dTitles:
+				dTitles[d['questionRef']] = d['title']
+
+		# Go through all the questions again to generate the categories
+		for d in lCats:
+
+			# If we don't have the question
+			if d['questionRef'] not in dQuestions:
+				dQuestions[d['questionRef']] = []
+
+			# Add the category to the question
+			dQuestions[d['questionRef']].append(d['category'])
+
+			# If we don't have the category
+			if d['category'] not in dCategories:
+				dCategories[d['category']] = {
+					"score": {s:0 for s in dDates.values()},
+					"questions": {}
+				}
+
+			# Add the list of dates by category
+			dCategories[d['category']]['questions'][d['questionRef']] = {
+				"title": dTitles[d['questionRef']],
+				"dates": {s:None for s in dDates.values()}
+			}
+
+		# Find all the answers by landing IDs and question refs
+		lAnswers = TfAnswer.filter({
+			"landing_id": [d['landing_id'] for d in dLandings],
+			"ref": list(dQuestions.keys())
+		}, raw=['landing_id', 'ref', 'value'])
+
+		# Go through each answer
+		for d in lAnswers:
+
+			# Get the date associated with the landing
+			sDate = dDates[d['landing_id']]
+
+			# Go through each category for the associated question
+			for s in dQuestions[d['ref']]:
+
+				# Add the score to the associated category / date
+				dCategories[s]['score'][sDate] += int(d['value'])
+
+				# Set the score to in the associated question in the category /
+				#	date
+				dCategories[s]['questions'][d['ref']]['dates'][sDate] = int(d['value'])
+
+		# Return the structure
+		return Services.Response({
+			"dates": sorted(dDates.values(), reverse=True),
+			"categories": dCategories
+		})
 
 	def customerIdByPhone_read(self, data, sesh):
 		"""Customer ID By Phone

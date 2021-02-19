@@ -1050,6 +1050,101 @@ class Forgot(Record_MySQL.Record):
 		# Return the config
 		return cls._conf
 
+# HormonalCategoryScore class
+class HormonalCategoryScore(Record_MySQL.Record):
+	"""Hormonal Category Score
+
+	Represents a single hormonal score
+	"""
+
+	_conf = None
+	"""Configuration"""
+
+	@classmethod
+	def config(cls):
+		"""Config
+
+		Returns the configuration data associated with the record type
+
+		Returns:
+			dict
+		"""
+
+		# If we haven loaded the config yet
+		if not cls._conf:
+			cls._conf = Record_MySQL.Record.generateConfig(
+				Tree.fromFile('definitions/monolith/hormonal_category_score.json'),
+				'mysql'
+			)
+
+		# Return the config
+		return cls._conf
+
+# HormonalSympCategories class
+class HormonalSympCategories(Record_MySQL.Record):
+	"""Hormonal Symptom Category
+
+	Represents a category of hormonal symptom
+	"""
+
+	_conf = None
+	"""Configuration"""
+
+	@classmethod
+	def config(cls):
+		"""Config
+
+		Returns the configuration data associated with the record type
+
+		Returns:
+			dict
+		"""
+
+		# If we haven loaded the config yet
+		if not cls._conf:
+			cls._conf = Record_MySQL.Record.generateConfig(
+				Tree.fromFile('definitions/monolith/hormonal_symp_categories.json'),
+				'mysql'
+			)
+
+		# Return the config
+		return cls._conf
+
+	@classmethod
+	def withQuestions(cls, custom={}):
+		"""With Questions
+
+		Returns the set of categories with their associated question title
+
+		Arguments:
+			custom (dict): Custom Host and DB info
+				'host' the name of the host to get/set data on
+				'append' optional postfix for dynamic DBs
+
+		Returns:
+			list
+		"""
+
+		# Fetch the record structure
+		dStruct = cls.struct(custom)
+
+		# Generate SQL
+		sSQL = "SELECT DISTINCT `hsc`.`category`, `hsc`.`questionRef`, `tfq`.`title` " \
+				"FROM `%(db)s`.`%(table)s` as `hsc` " \
+				"JOIN `%(db)s`.`tf_question` as `tfq` ON `hsc`.`questionRef` = `tfq`.`ref` " \
+				"WHERE `tfq`.`activeFlag` = 'Y' " \
+				"ORDER BY `category`, `questionRef`" % {
+			"db": dStruct['db'],
+			"table": dStruct['table']
+		}
+
+		# Execute and return the select
+		return Record_MySQL.Commands.select(
+			dStruct['host'],
+			sSQL,
+			Record_MySQL.ESelect.ALL
+		)
+
 # HrtLabResultTests class
 class HrtLabResultTests(Record_MySQL.Record):
 	""""HRT Lab Result Tests
@@ -1131,8 +1226,6 @@ class HrtPatient(Record_MySQL.Record):
 
 		# Fetch the record structure
 		dStruct = cls.struct(custom)
-
-		print(dropped)
 
 		# Generate SQL
 		sSQL = "SELECT `joinDate`, `customerId`, `phoneNumber`, `firstName`, `lastName` " \

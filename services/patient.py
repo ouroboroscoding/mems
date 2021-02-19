@@ -226,7 +226,6 @@ class Patient(Services.Service):
 		# Return the ID
 		return Services.Response(oAccount['_id'], warning=sWarning)
 
-
 	def account_read(self, data, sesh):
 		"""Account Read
 
@@ -259,6 +258,22 @@ class Patient(Services.Service):
 
 		# Remove the passwd
 		del dAccount['passwd']
+
+		# Assume no HRT data
+		dAccount['hrt'] = False
+
+		# If it's a KNK customer
+		if dAccount['crm_type'] == 'knk':
+
+			# Check for HRT data
+			oResponse = Services.read('monolith', 'customer/hrt', {
+				"customerId": dAccount['crm_id']
+			}, sesh)
+			if oResponse.errorExists():
+				if oResponse.error['code'] != 1104:
+					return oResponse
+			elif oResponse.dataExists():
+				dAccount['hrt'] = True
 
 		# Return the user data
 		return Services.Response(dAccount)
