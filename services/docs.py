@@ -218,6 +218,10 @@ class Docs(Services.Service):
 		if lErrors:
 			return Services.Error(1001, lErrors)
 
+		# If the session field is missing, set it to false
+		if 'session' not in data:
+			data['session'] = False
+
 		# Try to create a new instance
 		try:
 			oNoun = NounRecord(data)
@@ -280,23 +284,12 @@ class Docs(Services.Service):
 			Services.Response
 		"""
 
-		# If we got an '_id'
-		if '_id' in data:
+		# If the ID is missing
+		if '_id' not in data:
+			return Services.Error(1001, [['_id', 'missing']])
 
-			# Find the service by primary key
-			dNoun = Noun.get(data['_id'], raw=True)
-
-		# Else, if we got a 'uri'
-		elif 'uri' in data:
-
-			# Find the service by uri
-			dNoun = NounRecord.filter({
-				"uri": data['uri']
-			}, raw=True, limit=1)
-
-		# Else, invalid request
-		else:
-			return Nouns.Error(1001, [['_id', 'missing']])
+		# Find the service by primary key
+		dNoun = NounRecord.get(data['_id'], raw=True)
 
 		# If the record doesn't exist
 		if not dNoun:
@@ -432,23 +425,12 @@ class Docs(Services.Service):
 			Services.Response
 		"""
 
-		# If we got an '_id'
-		if '_id' in data:
-
-			# Find the service by primary key
-			dService = ServiceRecord.get(data['_id'], raw=True)
-
-		# Else, if we got a 'name'
-		elif 'name' in data:
-
-			# Find the service by name
-			dService = ServiceRecord.filter({
-				"name": data['name']
-			}, raw=True, limit=1)
-
-		# Else, invalid request
-		else:
+		# If the ID is missing
+		if '_id' not in data:
 			return Services.Error(1001, [['_id', 'missing']])
+
+		# Find the service by primary key
+		dService = ServiceRecord.get(data['_id'], raw=True)
 
 		# If the record doesn't exist
 		if not dService:
@@ -532,7 +514,30 @@ class Docs(Services.Service):
 			Services.Response
 		"""
 
+		# Get all the services alphabetically
+		lServices = ServiceRecord.get(raw=True, orderby='title')
+
+		# If we want the nouns as well
+		if 'nouns' in data and data['nouns']:
+
+			# If service not in fields
+			if data['nouns'] is not True and 'service' not in data['nouns']:
+				data['nouns'].append('service')
+
+			# Get them all
+			lNouns = NounRecord.get(raw=data['nouns'], orderby='title')
+
+			# Create a dictionary of nouns to services
+			dServices = {}
+			for d in lNouns:
+				if d['service'] not in dServices:
+					dServices[d['service']] = []
+				sService = d.pop('service')
+				dServices[sService].append(d)
+
+			# Go through each service and add the nouns
+			for d in lServices:
+				d['nouns'] = d['_id'] in dServices and dServices[d['_id']] or []
+
 		# Fetch and return all services alphabetically
-		return Services.Response(
-			ServiceRecord.get(raw=True, orderby='title')
-		)
+		return Services.Response(lServices)

@@ -137,7 +137,7 @@
 			"communications": {"port": 4},
 			"csr": {"port": 9},
 			"customers": {"port": 12},
-			"docs": {"port": 18},
+			"docs": {"port": 18, "workers": 1},
 			"external": {"port": 100},
 			"hubspot": {"port": 17},
 			"konnektive": {"port": 7},
