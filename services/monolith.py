@@ -2570,20 +2570,28 @@ class Monolith(Services.Service):
 		# Look up the customer IDs by phone number
 		lCustomers = KtCustomer.filter(
 			{"phoneNumber": lNumbers},
-			raw=['customerId', 'phoneNumber'],
+			raw=['customerId', 'phoneNumber', 'firstName', 'lastName'],
 			orderby=[('updatedAt', 'ASC')],
 		)
 
 		# Create a map of customers by phone number
 		dCustomers = {}
 		for d in lCustomers:
-			dCustomers[d['phoneNumber'][-10:]] = d['customerId']
+			dCustomers[d['phoneNumber'][-10:]] = {
+				"customerId": d['customerId'],
+				"customerName": '%s %s' % (
+					d['firstName'],
+					d['lastName']
+				)
+			}
 
 		# Go through each claimed and associate the correct customer ID
 		for d in lClaimed:
-			d['customerId'] = d['customerPhone'] in dCustomers and \
-								dCustomers[d['customerPhone']] or \
-								0
+			if d['customerPhone'] in dCustomers:
+				d['customerId'] = dCustomers[d['customerPhone']]['customerId']
+				d['customerName'] = dCustomers[d['customerPhone']]['customerName']
+			else:
+				d['customerId'] = 0
 
 		# Return the data
 		return Services.Response(lClaimed)
