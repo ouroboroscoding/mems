@@ -69,7 +69,8 @@ class Monolith(Services.Service):
 		'Medical': 'Order declined for medical reasons.',
 		'Duplicate Order': 'Order declined due to duplicate.',
 		'Current Customer': 'Order declined at customer\'s request.',
-		'Contact Attempt': 'Order declined because customer can not be reached.'
+		'Contact Attempt': 'Order declined because customer can not be reached.',
+		'Medication Switch': 'Customer requested a different medication.'
 	}
 	"""Decline Notes"""
 
@@ -2130,6 +2131,23 @@ class Monolith(Services.Service):
 			dNote['parentColumn'] = 'orderId'
 			dNote['columnValue'] = oClaim['orderId']
 
+			# If it's a continuous order
+			if oClaim['continuous']:
+
+				# Find the continuous order
+				oContOrder = KtOrderContinuous.filter({
+					"customerId": int(dDetails['customerId']),
+					"orderId": oClaim['orderId']
+				}, limit=1)
+
+				# If we found it
+				if oContOrder:
+
+					# Clear the medsNotWorking flag and mark it active
+					oContOrder['active'] = True;
+					oContOrder['medsNotWorking'] = False;
+					oContOrder.save()
+
 		# Else, there's no order
 		else:
 
@@ -3241,12 +3259,7 @@ class Monolith(Services.Service):
 		"""
 
 		# Validate rights
-		oResponse = Services.read('auth', 'rights/verify', {
-			"name": "orders",
-			"right": Rights.UPDATE
-		}, sesh)
-		if not oResponse.data:
-			return Services.Response(error=Rights.INVALID)
+		Rights.check(sesh, 'orders', Rights.UPDATE)
 
 		# Verify fields
 		try: DictHelper.eval(data, ['customerId', 'orderId', 'soap'])
@@ -3291,6 +3304,73 @@ class Monolith(Services.Service):
 		# Return OK
 		return Services.Response(True)
 
+	def orderContinuousCancel_update(self, data, sesh):
+		"""Order Continuous Cancel
+
+		Remove a continuous order completely, most likely because the patient
+		doesn't actually want more medication, or because their prescription
+		has changed
+
+		Arguments:
+			data (dict): Data sent with the request
+			sesh (Sesh._Session): The session associated with the request
+
+		Returns:
+			Services.Response
+		"""
+
+		# Validate rights
+		Rights.check(sesh, 'orders', Rights.UPDATE)
+
+		# Verify fields
+		try: DictHelper.eval(data, ['customerId', 'orderId', 'reason'])
+		except ValueError as e: return Services.Response(error=(1001, [(f, 'missing') for f in e.args]))
+
+		# Make sure customer ID is an int
+		try: data['customerId'] = int(data['customerId'])
+		except ValueError: return Services.Response(error=(1001, [('customerId', 'not an int')]))
+
+		# Find the order
+		oOrder = KtOrderContinuous.filter({
+			"customerId": data['customerId'],
+			"orderId": data['orderId']
+		}, limit=1)
+		if not oOrder:
+			return Services.Response(error=1104)
+
+		# If the order is not pending
+		if oOrder['status'] != 'PENDING':
+			return Services.Response(error=1515)
+
+		# Cancel the purchase in Konnektive
+		oResponse = Services.update('konnektive', 'purchase/cancel', {
+			"purchaseId": oOrder['purchaseId'],
+			"reason": data['reason']
+		}, sesh)
+		if oResponse.errorExists(): return oResponse
+
+		# Delete the continuous order
+		oOrder.delete()
+
+		# Get current date/time
+		sDT = arrow.get().format('YYYY-MM-DD HH:mm:ss')
+
+		# Store Decline note
+		oSmpNote = SmpNote({
+			"parentTable": 'kt_customer',
+			"parentColumn": 'customerId',
+			"columnValue": str(data['customerId']),
+			"action": 'Cancel Continuous Order',
+			"createdBy": sesh['memo_id'],
+			"note": self._DECLINE_NOTES[data['reason']],
+			"createdAt": sDT,
+			"updatedAt": sDT
+		})
+		oSmpNote.create()
+
+		# Return OK
+		return Services.Response(True)
+
 	def orderContinuousDecline_update(self, data, sesh):
 		"""Order Continuous Decline
 
@@ -3305,12 +3385,7 @@ class Monolith(Services.Service):
 		"""
 
 		# Validate rights
-		oResponse = Services.read('auth', 'rights/verify', {
-			"name": "orders",
-			"right": Rights.UPDATE
-		}, sesh)
-		if not oResponse.data:
-			return Services.Response(error=Rights.INVALID)
+		Rights.check(sesh, 'orders', Rights.UPDATE)
 
 		# Verify fields
 		try: DictHelper.eval(data, ['customerId', 'orderId', 'reason'])
@@ -3773,10 +3848,14 @@ class Monolith(Services.Service):
 		if not oResponse.data:
 			return Services.Response(error=Rights.INVALID)
 
+		# Get the pending orders
+		lPending = KtOrder.queueCsr() + KtOrderContinuous.queueCsr()
+
+		# Sort them by date
+		lPending.sort(key=lambda d: d['updatedAt'])
+
 		# Fetch and return the unclaimed CSR orders
-		return Services.Response(
-			KtOrder.queueCsr()
-		)
+		return Services.Response(lPending)
 
 	def ordersPendingCsrCount_read(self, data, sesh):
 		"""Orders Pending CSR Count
@@ -3793,7 +3872,7 @@ class Monolith(Services.Service):
 
 		# Fetch and return the data
 		return Services.Response(
-			KtOrder.queueCsrCount()
+			KtOrder.queueCsrCount() + KtOrderContinuous.queueCsrCount()
 		)
 
 	def ordersPendingProviderEd_read(self, data, sesh):

@@ -145,6 +145,7 @@ class Konnektive(Services.Service):
 		self._pass = Conf.get(('konnektive', 'pass'))
 		self._host = Conf.get(('konnektive', 'host'))
 		self._allowQaUpdate = Conf.get(('konnektive', 'allow_qa_update'))
+		self._allowPurchaseCancel = Conf.get(('konnektive', 'allow_purchase_cancel'))
 
 		# Store encounter types
 		self._encounters = JSON.load('definitions/encounter_by_state.json');
@@ -891,12 +892,15 @@ class Konnektive(Services.Service):
 		if 'reason' in data:
 			dData['reason'] = data['reason']
 
-		# Cancel the purchase
-		bRes = oKNK._post('purchase/cancel', dData)
+		# If Purchase cancellation's are allowed
+		if self._allowPurchaseCancel:
 
-		# If we failed
-		if not bRes:
-			return Services.Response(error=1103)
+			# Cancel the purchase
+			bRes = oKNK._post('purchase/cancel', dData)
+
+			# If we failed
+			if not bRes:
+				return Services.Response(error=1103)
 
 		# Return OK
 		return Services.Response(True)
