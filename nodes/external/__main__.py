@@ -153,41 +153,11 @@ def justCallWebhook():
 	dData = reqJSON()
 	dData = dData['data']
 
-	# Do we send this?
-	bSend = False
-
 	# If the subject starts with 'Voicemail from ''
 	if dData['subject'][0:15] == 'Voicemail from ':
 
-		print('----------------------------------------')
-		print('JustCall Voicemail')
-		pprint.pprint(dData)
-
-		# Send it
-		bSend = True
-
-		# Header
-		sHeader = 'VOICEMAIL'
-
-	# Else, if the subject starts with 'Missed call from '
-	elif dData['subject'][0:17] == 'Missed call from ':
-
-		print('----------------------------------------')
-		print('JustCall Missed Call')
-		pprint.pprint(dData)
-
-		# Send it
-		bSend = True
-
-		# Header
-		sHeader = 'MISSED CALL'
-
-	# If we send it
-	if bSend:
-
 		# Generate content
-		sContent = "%s:\nSent to %s (%s)\n%s" % (
-			sHeader,
+		sContent = "VOICEMAIL:\nSent to %s (%s)\n%s" % (
 			dData['agent_name'],
 			dData['called_via'][-10:],
 			dData['recording_url'] and \
