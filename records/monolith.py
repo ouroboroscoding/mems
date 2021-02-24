@@ -2093,8 +2093,8 @@ class KtOrderContinuous(Record_MySQL.Record):
 				"	IFNULL(`ss`.`name`, '[state missing]') as `shipState`,\n" \
 				"	IFNULL(`ss`.`legalEncounterType`, '') as `encounter`,\n" \
 				"	CONVERT(`kto`.`customerId`, UNSIGNED) as `customerId`,\n" \
-				"	`cont`.`dateCreated`,\n" \
-				"	`cont`.`dateUpdated`,\n" \
+				"	`cont`.`createdAt` as `dateCreated`,\n" \
+				"	`cont`.`updatedAt` as `dateUpdated`,\n" \
 				"	IFNULL(`os`.`attentionRole`, 'Not Assigned') as `attentionRole`,\n" \
 				"	IFNULL(`os`.`orderLabel`, 'Not Labeled') as `orderLabel`\n" \
 				"FROM `%(db)s`.`%(table)s` as `cont`\n" \
