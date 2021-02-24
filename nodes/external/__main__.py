@@ -17,7 +17,7 @@ import os, platform, pprint
 # Pip imports
 import bottle
 import requests
-from RestOC import Conf, REST, Services
+from RestOC import Conf, REST, Services, StrHelper
 
 # Shared imports
 from shared import GSheets
@@ -190,6 +190,7 @@ def contactForm():
 	# Get the config data
 	dConf = Conf.get(('contact_form'))
 
+	# Insert the data at the top of the gdrive sheet
 	GSheets.insert(
 		'sg',
 		dConf['key'],
@@ -202,7 +203,7 @@ def contactForm():
 			bottle.request.forms.get('phone'),
 			bottle.request.forms.get('message'),
 			customerIds(
-				bottle.request.forms.get('phone'),
+				StrHelper.digits(bottle.request.forms.get('phone'))[-10:],
 				bottle.request.forms.get('email')
 			)
 		],
