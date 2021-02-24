@@ -151,10 +151,62 @@ def justCallWebhook():
 
 	# Get the body
 	dData = reqJSON()
+	dData = dData['data']
 
-	print('----------------------------------------')
-	print('JustCall Webhook')
-	pprint.pprint(dData)
+	# Do we send this?
+	bSend = False
+
+	# If the subject starts with 'Voicemail from ''
+	if dData['subject'][0:15] == 'Voicemail from ':
+
+		print('----------------------------------------')
+		print('JustCall Voicemail')
+		pprint.pprint(dData)
+
+		# Send it
+		bSend = True
+
+		# Header
+		sHeader = 'VOICEMAIL'
+
+	# Else, if the subject starts with 'Missed call from '
+	elif dData['subject'][0:17] == 'Missed call from ':
+
+		print('----------------------------------------')
+		print('JustCall Missed Call')
+		pprint.pprint(dData)
+
+		# Send it
+		bSend = True
+
+		# Header
+		sHeader = 'MISSED CALL'
+
+	# If we send it
+	if bSend:
+
+		# Generate content
+		sContent = "%s:\nSent to %s (%s)\n" % (
+			sHeader,
+			dData['agent_name'],
+			dData['called_via'][-10:],
+			dData['recording_url'] and \
+				'[url=Click to listen|%s]' % dData['recording_url'] or \
+				'no recording found'
+		)
+
+		# Add the request as an incoming SMS
+		oResponse = Services.create('monolith', 'message/incoming', {
+			"_internal_": Services.internalKey(),
+			"customerPhone": dData['contact_number'][-10:],
+			"recvPhone": "0000000000",
+			"content":
+		})
+		if oResponse.errorExists():
+			emailError('JustCall Webhook Request Failed', 'Failed to add SMS\n\n%s\n\n%s' % (
+				str(dData),
+				str(oResponse)
+			))
 
 	# Return OK
 	return resJSON(True)
