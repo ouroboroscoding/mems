@@ -16,7 +16,11 @@ import os, platform, pprint
 
 # Pip imports
 import bottle
-from RestOC import Conf, REST, Services
+import requests
+from RestOC import Conf, REST, Services, StrHelper
+
+# Shared imports
+from shared import GSheets
 
 # Local imports
 from . import reqJSON, resJSON
@@ -118,6 +122,135 @@ def calendlyCancelled():
 
 	# Get the body
 	#dData = reqJSON()
+
+	# Return OK
+	return resJSON(True)
+
+def customerIds(phone, email):
+	"""Customer IDs
+
+	Returns the list of customer IDs associated with either the phone or
+	email address listed
+
+	Arguments:
+		phone (str): The phone number to look up
+		email (str): The email to lookup
+
+	Returns:
+		list
+	"""
+
+	# Return list
+	lRet = []
+
+	# Get the KNK config
+	dConf = Conf.get(('konnektive'))
+
+	# Init params
+	dParams = {
+		"loginId": dConf['user'],
+		"password": dConf['pass'],
+		"startDate": '01/01/2000',
+		"endDate": '01/01/3000'
+	}
+
+	# Add either the phone or email
+	if phone:
+		dParams['phoneNumber'] = phone
+	else:
+		dParams['emailAddress'] = email
+
+	# Look up the customer
+	oRes = requests.post(
+		'https://%s/customer/query/' % dConf['host'],
+		params=dParams
+	)
+
+	# If the result is ok
+	if oRes and oRes.status_code == 200:
+		dRes = oRes.json()
+		if dRes['result'] == 'SUCCESS':
+			for o in dRes['message']['data']:
+				lRet.append('https://crm.konnektive.com/customer/cs/details/?customerId=%d' % o['customerId'])
+
+@bottle.post('/contactForm')
+def contactForm():
+	"""Contact Form
+
+	Recieves data from MaleExcel.com contact form
+
+	Returns:
+		str
+	"""
+
+	print('----------------------------------------')
+	print('ME Contact Form')
+	pprint.pprint({k:bottle.request.forms.get(k) for k in bottle.request.forms.keys()})
+
+	# Get the config data
+	dConf = Conf.get(('contact_form'))
+
+	# Insert the data at the top of the gdrive sheet
+	GSheets.insert(
+		'sg',
+		dConf['key'],
+		dConf['worksheet'],
+		[
+			bottle.request.forms.get('date'),
+			bottle.request.forms.get('time'),
+			bottle.request.forms.get('name'),
+			bottle.request.forms.get('email'),
+			bottle.request.forms.get('phone'),
+			bottle.request.forms.get('message'),
+			customerIds(
+				StrHelper.digits(bottle.request.forms.get('phone'))[-10:],
+				bottle.request.forms.get('email')
+			)
+		],
+		2
+	)
+
+	# Return OK
+	return resJSON(True)
+
+@bottle.post('/justcall')
+def justCallWebhook():
+	"""JustCall Webhook
+
+	Webhook called by JustCall when new calls occur
+
+	Returns:
+		str
+	"""
+
+	# Get the body
+	dData = reqJSON()
+	dData = dData['data']
+
+	# If the subject starts with 'Voicemail from ''
+	if dData['subject'][0:15] == 'Voicemail from ':
+
+		# Generate content
+		sContent = "VOICEMAIL:\nSent to %s (%s)\n%s" % (
+			dData['agent_name'],
+			dData['called_via'][-10:],
+			dData['recording_url'] and \
+				('[url=Click to listen|%s]' % dData['recording_url']) or \
+				'no recording found'
+		)
+
+		# Add the request as an incoming SMS
+		oResponse = Services.create('monolith', 'message/incoming', {
+			"_internal_": Services.internalKey(),
+			"customerPhone": dData['contact_number'][-10:],
+			"recvPhone": "0000000000",
+			"content": sContent
+		})
+		if oResponse.errorExists():
+			emailError('JustCall Webhook Request Failed', 'Failed to add SMS\n\n%s\n\n%s' % (
+				str(dData),
+				str(oResponse)
+			))
 
 	# Return OK
 	return resJSON(True)
