@@ -122,13 +122,13 @@ def calendlyCancelled():
 	# Return OK
 	return resJSON(True)
 
-@bottle.post('/justcall')
-def justCallWebhook():
-	"""JustCall Webhook
+@bottle.post('/contactForm')
+def contactForm():
+	"""Contact Form
 
-	Webhook called by JustCall when new calls occur
+	Recieves data from MaleExcel.com contact form
 
-	Returns
+	Returns:
 		str
 	"""
 
@@ -136,6 +136,27 @@ def justCallWebhook():
 	dData = reqJSON()
 
 	print('----------------------------------------')
+	print('ME Contact Form')
+	pprint.pprint({k:bottle.request.forms.get(k) for k in bottle.request.forms.keys()})
+
+	# Return OK
+	return resJSON(True)
+
+@bottle.post('/justcall')
+def justCallWebhook():
+	"""JustCall Webhook
+
+	Webhook called by JustCall when new calls occur
+
+	Returns:
+		str
+	"""
+
+	# Get the body
+	dData = reqJSON()
+
+	print('----------------------------------------')
+	print('JustCall Webhook')
 	pprint.pprint(dData)
 
 	# Return OK
