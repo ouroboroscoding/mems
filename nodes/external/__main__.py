@@ -16,7 +16,11 @@ import os, platform, pprint
 
 # Pip imports
 import bottle
+import requests
 from RestOC import Conf, REST, Services
+
+# Shared imports
+from shared import GSheets
 
 # Local imports
 from . import reqJSON, resJSON
@@ -122,6 +126,53 @@ def calendlyCancelled():
 	# Return OK
 	return resJSON(True)
 
+def customerIds(phone, email):
+	"""Customer IDs
+
+	Returns the list of customer IDs associated with either the phone or
+	email address listed
+
+	Arguments:
+		phone (str): The phone number to look up
+		email (str): The email to lookup
+
+	Returns:
+		list
+	"""
+
+	# Return list
+	lRet = []
+
+	# Get the KNK config
+	dConf = Conf.get(('konnektive'))
+
+	# Init params
+	dParams = {
+		"loginId": dConf['user'],
+		"password": dConf['pass'],
+		"startDate": '01/01/2000',
+		"endDate": '01/01/3000'
+	}
+
+	# Add either the phone or email
+	if phone:
+		dParams['phoneNumber'] = phone
+	else:
+		dParams['emailAddress'] = email
+
+	# Look up the customer
+	oRes = requests.post(
+		'https://%s/customer/query/' % dConf['host'],
+		params=dParams
+	)
+
+	# If the result is ok
+	if oRes and oRes.status_code == 200:
+		dRes = oRes.json()
+		if dRes['result'] == 'SUCCESS':
+			for o in dRes['message']['data']:
+				lRet.append('https://crm.konnektive.com/customer/cs/details/?customerId=%d' % o['customerId'])
+
 @bottle.post('/contactForm')
 def contactForm():
 	"""Contact Form
@@ -135,6 +186,28 @@ def contactForm():
 	print('----------------------------------------')
 	print('ME Contact Form')
 	pprint.pprint({k:bottle.request.forms.get(k) for k in bottle.request.forms.keys()})
+
+	# Get the config data
+	dConf = Conf.get(('contact_form'))
+
+	GSheets.insert(
+		'sg',
+		dConf['key'],
+		dConf['worksheet'],
+		[
+			bottle.request.forms.get('date'),
+			bottle.request.forms.get('time'),
+			bottle.request.forms.get('name'),
+			bottle.request.forms.get('email'),
+			bottle.request.forms.get('phone'),
+			bottle.request.forms.get('message'),
+			customerIds(
+				bottle.request.forms.get('phone'),
+				bottle.request.forms.get('email')
+			)
+		],
+		2
+	)
 
 	# Return OK
 	return resJSON(True)
