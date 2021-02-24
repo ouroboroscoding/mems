@@ -200,7 +200,7 @@ def justCallWebhook():
 			"_internal_": Services.internalKey(),
 			"customerPhone": dData['contact_number'][-10:],
 			"recvPhone": "0000000000",
-			"content":
+			"content": sContent
 		})
 		if oResponse.errorExists():
 			emailError('JustCall Webhook Request Failed', 'Failed to add SMS\n\n%s\n\n%s' % (
