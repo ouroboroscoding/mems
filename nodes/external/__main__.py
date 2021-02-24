@@ -122,6 +122,25 @@ def calendlyCancelled():
 	# Return OK
 	return resJSON(True)
 
+@bottle.post('/justcall')
+def justCallWebhook():
+	"""JustCall Webhook
+
+	Webhook called by JustCall when new calls occur
+
+	Returns
+		str
+	"""
+
+	# Get the body
+	dData = reqJSON()
+
+	print('----------------------------------------')
+	pprint.pprint(dData)
+
+	# Return OK
+	return resJSON(True)
+
 def show500():
 	"""Show 500
 
