@@ -186,12 +186,12 @@ def justCallWebhook():
 	if bSend:
 
 		# Generate content
-		sContent = "%s:\nSent to %s (%s)\n" % (
+		sContent = "%s:\nSent to %s (%s)\n%s" % (
 			sHeader,
 			dData['agent_name'],
 			dData['called_via'][-10:],
 			dData['recording_url'] and \
-				'[url=Click to listen|%s]' % dData['recording_url'] or \
+				('[url=Click to listen|%s]' % dData['recording_url']) or \
 				'no recording found'
 		)
 
