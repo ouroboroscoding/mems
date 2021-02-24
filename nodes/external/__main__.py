@@ -132,9 +132,6 @@ def contactForm():
 		str
 	"""
 
-	# Get the body
-	dData = reqJSON()
-
 	print('----------------------------------------')
 	print('ME Contact Form')
 	pprint.pprint({k:bottle.request.forms.get(k) for k in bottle.request.forms.keys()})
