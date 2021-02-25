@@ -84,7 +84,17 @@ class Konnektive(Services.Service):
 			sURL = self._generateURL(path, params)
 
 			# Fetch the data
-			oRes = requests.post(sURL, headers={"Content-Type": 'application/json; charset=utf-8'})
+			while True:
+				iAttempts = 0
+				try:
+					oRes = requests.post(sURL, headers={"Content-Type": 'application/json; charset=utf-8'})
+					break
+				except requests.exceptions.ConnectionError as e:
+					iAttempts += 1
+					if iAttempts < 3:
+						time.sleep(1)
+						continue
+					raise e
 
 			# Pull out the data
 			dData = oRes.json()
@@ -122,8 +132,18 @@ class Konnektive(Services.Service):
 		# Generate the URL
 		sURL = self._generateURL(path, params)
 
-		# Fetch the data
-		oRes = requests.post(sURL, headers={"Content-Type": 'application/json; charset=utf-8'})
+		# Send the data
+		while True:
+			iAttempts = 0
+			try:
+				oRes = requests.post(sURL, headers={"Content-Type": 'application/json; charset=utf-8'})
+				break
+			except requests.exceptions.ConnectionError as e:
+				iAttempts += 1
+				if iAttempts < 3:
+					time.sleep(1)
+					continue
+				raise e
 
 		# Pull out the reponse
 		dData = oRes.json()
