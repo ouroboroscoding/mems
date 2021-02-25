@@ -1146,6 +1146,37 @@ class HormonalSympCategories(Record_MySQL.Record):
 			Record_MySQL.ESelect.ALL
 		)
 
+# HrtLabResult
+class HrtLabResult(Record_MySQL.Record):
+	""""HRT Lab Result Tests
+
+	Represents a customers lab results test values in memo
+	"""
+
+	_conf = None
+	"""Configuration"""
+
+	@classmethod
+	def config(cls):
+		"""Config
+
+		Returns the configuration data associated with the record type
+
+		Returns:
+			dict
+		"""
+
+		# If we haven loaded the config yet
+		if not cls._conf:
+			cls._conf = Record_MySQL.Record.generateConfig(
+				Tree.fromFile('definitions/monolith/hrt_lab_result.json'),
+				'mysql'
+			)
+
+		# Return the config
+		return cls._conf
+
+
 # HrtLabResultTests class
 class HrtLabResultTests(Record_MySQL.Record):
 	""""HRT Lab Result Tests
@@ -1175,6 +1206,39 @@ class HrtLabResultTests(Record_MySQL.Record):
 
 		# Return the config
 		return cls._conf
+
+	@classmethod
+	def unique(cls, custom={}):
+		"""Unique
+
+		Returns a list of unique tests in the DB
+
+		Arguments:
+			custom (dict): Custom Host and DB info
+				'host' the name of the host to get/set data on
+				'append' optional postfix for dynamic DBs
+
+		Returns:
+			list
+		"""
+
+		# Fetch the record structure
+		dStruct = cls.struct(custom)
+
+		# Generate SQL
+		sSQL = "SELECT DISTINCT `name` " \
+				"FROM `%(db)s`.`%(table)s`" \
+				"ORDER BY `name`" % {
+			"db": dStruct['db'],
+			"table": dStruct['table']
+		}
+
+		# Execute and return the select
+		return Record_MySQL.Commands.select(
+			dStruct['host'],
+			sSQL,
+			Record_MySQL.ESelect.COLUMN
+		)
 
 # HrtPatient class
 class HrtPatient(Record_MySQL.Record):
