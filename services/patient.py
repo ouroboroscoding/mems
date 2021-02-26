@@ -273,7 +273,7 @@ class Patient(Services.Service):
 				if oResponse.error['code'] != 1104:
 					return oResponse
 			elif oResponse.dataExists():
-				dAccount['hrt'] = True
+				dAccount['hrt'] = oResponse.data['stage']
 
 		# Return the user data
 		return Services.Response(dAccount)
