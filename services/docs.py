@@ -263,7 +263,7 @@ class Docs(Services.Service):
 
 		# Find the record
 		oNoun = NounRecord.get(data['_id'])
-		if not oError:
+		if not oNoun:
 			return Services.Error(1104)
 
 		# Delete the record and return the result
