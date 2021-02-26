@@ -399,9 +399,23 @@ class Providers(Services.Service):
 		# Generate the final stats
 		for iID in dProviders:
 
+			# Calculate average time
+			iResolutions = dProviders[iID]['approvals'] + dProviders[iID]['declines']
+			iAverage = iResolutions and int(dProviders[iID]['seconds'] / iResolutions) or 0
+			iHours, iRemainder = divmod(iAverage, 3600)
+			iMinutes, iSeconds = divmod(iRemainder, 60)
+			if iHours:
+				sAvgHours = '{:0}:{:02}:{:02}'.format(iHours, iMinutes, iSeconds)
+			else:
+				sAvgHours = '{:0}:{:02}'.format(iMinutes, iSeconds)
+
 			# Calculate hours
 			iHours, iRemainder = divmod(dProviders[iID]['seconds'], 3600)
 			iMinutes, iSeconds = divmod(iRemainder, 60)
+			if iHours:
+				sHours = '{:0}:{:02}:{:02}'.format(iHours, iMinutes, iSeconds)
+			else:
+				sHours = '{:0}:{:02}'.format(iMinutes, iSeconds)
 			sHours = '{:0}:{:02}:{:02}'.format(iHours, iMinutes, iSeconds)
 
 			# Add new row
@@ -411,7 +425,8 @@ class Providers(Services.Service):
 				"lastName": iID in dUsers and dUsers[iID]['lastName'] or '',
 				"hours": sHours,
 				"approvals": dProviders[iID]['approvals'],
-				"declines": dProviders[iID]['declines']
+				"declines": dProviders[iID]['declines'],
+				"average": sAvgHours
 			})
 
 		# Return the list sorted by last name
