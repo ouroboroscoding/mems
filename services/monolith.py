@@ -8,7 +8,7 @@ __author__		= "Chris Nasr"
 __copyright__	= "MaleExcelMedical"
 __version__		= "1.0.0"
 __maintainer__	= "Chris Nasr"
-__email__		= "chris@fuelforthefire.ca"
+__email__		= "bast@maleexcel.com"
 __created__		= "2020-04-26"
 
 # Python imports
@@ -33,7 +33,9 @@ from records.monolith import \
 	CustomerCommunication, CustomerMsgPhone, \
 	DsApproved, DsPatient, \
 	Forgot, \
-	HrtLabResultTests, HrtPatient, HrtPatientDroppedReason, \
+	HormonalCategoryScore, HormonalSympCategories, \
+	HrtLabResult, HrtLabResultTests, \
+	HrtPatient, HrtPatientDroppedReason, \
 	KtCustomer, KtOrder, KtOrderClaim, KtOrderClaimLast, KtOrderContinuous, \
 	ShippingInfo, \
 	SmpNote, SmpOrderStatus, SmpState, \
@@ -68,7 +70,8 @@ class Monolith(Services.Service):
 		'Medical': 'Order declined for medical reasons.',
 		'Duplicate Order': 'Order declined due to duplicate.',
 		'Current Customer': 'Order declined at customer\'s request.',
-		'Contact Attempt': 'Order declined because customer can not be reached.'
+		'Contact Attempt': 'Order declined because customer can not be reached.',
+		'Medication Switch': 'Customer requested a different medication.'
 	}
 	"""Decline Notes"""
 
@@ -1060,12 +1063,7 @@ class Monolith(Services.Service):
 		"""
 
 		# Make sure the user has the proper permission to do this
-		oResponse = Services.read('auth', 'rights/verify', {
-			"name": "csr_messaging",
-			"right": Rights.CREATE
-		}, sesh)
-		if not oResponse.data:
-			return Services.Response(error=Rights.INVALID)
+		Rights.check(sesh, 'csr_messaging', Rights.CREATE)
 
 		# Verify fields
 		try: DictHelper.eval(data, ['customerPhone'])
@@ -1076,33 +1074,6 @@ class Monolith(Services.Service):
 
 		# Return OK
 		return Services.Response(True)
-
-	def customerHrtLabs_read(self, data, sesh):
-		"""Customer HRT Lab Results
-
-		Fetches a customer's HRT lab test results
-
-		Arguments:
-			data (dict): Data sent with request
-			sesh (Sesh._Session): THe session associated with the request
-
-		Returns:
-			Services.Response
-		"""
-
-		# Make sure the user has the proper permission to do this
-		Rights.check(sesh, 'memo_mips', Rights.READ)
-
-		# Verify fields
-		try: DictHelper.eval(data, ['customerId'])
-		except ValueError as e: return Services.Response(error=(1001, [(f, 'missing') for f in e.args]))
-
-		# Fetch and return the customer's HRT lab test results
-		return Services.Response(
-			HrtLabResultTests.filter({
-				"customerId": data['customerId']
-			}, raw=True)
-		)
 
 	def customerHrt_read(self, data, sesh):
 		"""Customer HRT Read
@@ -1117,12 +1088,12 @@ class Monolith(Services.Service):
 			Services.Response
 		"""
 
-		# Make sure the user has the proper permission to do this
-		Rights.check(sesh, 'customers', Rights.READ)
-
 		# Verify fields
 		try: DictHelper.eval(data, ['customerId'])
 		except ValueError as e: return Services.Response(error=(1001, [(f, 'missing') for f in e.args]))
+
+		# Make sure the user has the proper permission to do this
+		Rights.check(sesh, 'customers', Rights.READ, data['customerId'])
 
 		# Attempt to find the record
 		dPatient = HrtPatient.filter({
@@ -1159,12 +1130,12 @@ class Monolith(Services.Service):
 			Services.Response
 		"""
 
-		# Make sure the user has the proper permission to do this
-		Rights.check(sesh, 'customers', Rights.UPDATE)
-
 		# Verify fields
 		try: DictHelper.eval(data, ['customerId'])
 		except ValueError as e: return Services.Response(error=(1001, [(f, 'missing') for f in e.args]))
+
+		# Make sure the user has the proper permission to do this
+		Rights.check(sesh, 'customers', Rights.UPDATE, data['customerId'])
 
 		# Try to find the record
 		oHrtPatient = HrtPatient.filter({
@@ -1194,6 +1165,186 @@ class Monolith(Services.Service):
 		return Services.Response(
 			oHrtPatient.save()
 		)
+
+	def customerHrtLabs_read(self, data, sesh):
+		"""Customer HRT Lab Results
+
+		Fetches a customer's HRT lab test results
+
+		Arguments:
+			data (dict): Data sent with request
+			sesh (Sesh._Session): THe session associated with the request
+
+		Returns:
+			Services.Response
+		"""
+
+		# Verify fields
+		try: DictHelper.eval(data, ['customerId'])
+		except ValueError as e: return Services.Response(error=(1001, [(f, 'missing') for f in e.args]))
+
+		# Make sure the user has the proper permission to do this
+		Rights.check(sesh, 'customers', Rights.READ, data['customerId'])
+
+		# Find all the lab results for the customer
+		lLabs = HrtLabResult.filter({
+			"customerId": data['customerId']
+		}, raw=True, orderby=[['dateReported', 'DESC']])
+
+		# If there's none, return nothing
+		if not lLabs:
+			return Services.Response([])
+
+		# Generate a list of the dates
+		dDates = {
+			d['identifier']:d['dateReported']
+			for d in lLabs
+		}
+
+		# Find all the results based on the identifiers
+		lResults = HrtLabResultTests.filter({
+			"identifier": list(dDates.keys())
+		}, raw=True)
+
+		# Create a list of unique tests
+		lTests = list(set(['%s,%s' % (d['name'],d['code']) for d in lResults]))
+
+		# Init the list of unique tests and the dates associated
+		dTests = {}
+
+		# Go through all the tests to generate the
+		for s in lTests:
+
+			# If we don't have the test
+			if s not in dTests:
+				dTests[s] = {s:None for s in dDates.values()}
+
+		# Go through each result
+		for d in lResults:
+
+			# Get the test key
+			sKey = '%s,%s' % (d['name'],d['code'])
+
+			# Get the date associated with the identifier
+			sDate = dDates[d['identifier']]
+
+			# Update the tests
+			dTests[sKey][sDate] = d
+
+		# Return the structure
+		return Services.Response({
+			"dates": sorted(dDates.values(), reverse=True),
+			"tests": dTests
+		})
+
+	def customerHrtSymptoms_read(self, data, sesh):
+		"""Customer HRT Symptoms
+
+		Returns the HRT symptoms data formatted by category and date
+
+		Arguments:
+			data (dict): Data sent with the request
+			sesh (Sesh._Session): The session associated with the request
+
+		Returns:
+			Services.Response
+		"""
+
+		# Verify fields
+		try: DictHelper.eval(data, ['customerId'])
+		except ValueError as e: return Services.Response(error=(1001, [(f, 'missing') for f in e.args]))
+
+		# Make sure the user has the proper permission to do this
+		Rights.check(sesh, 'customers', Rights.READ, data['customerId'])
+
+		# Find all H1/H2 landing IDs associated with the given customer
+		dLandings = TfLanding.filter({
+			"ktCustomerId": str(data['customerId']),
+			"formId": ['MIP-H1', 'MIP-H2']
+		}, raw=['landing_id', 'submitted_at'], orderby=[['submitted_at', 'DESC']])
+
+		# If there's none, return nothing
+		if not dLandings:
+			return Services.Response([])
+
+		# Generate a list of the dates
+		dDates = {
+			d['landing_id']:d['submitted_at'][0:10]
+			for d in dLandings
+		}
+
+		# Fetch all the categories
+		lCats = HormonalSympCategories.withQuestions()
+
+		# Init the list of titles by question
+		dTitles = {}
+
+		# Init the list of unique questions and their categories
+		dQuestions = {}
+
+		# Init the list of unique categories, their questions, and the dates
+		#	associated
+		dCategories = {}
+
+		# Go through all the question to categories we found to find the unique
+		#	titles
+		for d in lCats:
+			if d['questionRef'] not in dTitles:
+				dTitles[d['questionRef']] = d['title']
+
+		# Go through all the questions again to generate the categories
+		for d in lCats:
+
+			# If we don't have the question
+			if d['questionRef'] not in dQuestions:
+				dQuestions[d['questionRef']] = []
+
+			# Add the category to the question
+			dQuestions[d['questionRef']].append(d['category'])
+
+			# If we don't have the category
+			if d['category'] not in dCategories:
+				dCategories[d['category']] = {
+					"score": {s:0 for s in dDates.values()},
+					"questions": {}
+				}
+
+			# Add the list of dates by category
+			dCategories[d['category']]['questions'][d['questionRef']] = {
+				"title": dTitles[d['questionRef']],
+				"dates": {s:None for s in dDates.values()}
+			}
+
+		# Find all the answers by landing IDs and question refs
+		lAnswers = TfAnswer.filter({
+			"landing_id": [d['landing_id'] for d in dLandings],
+			"ref": list(dQuestions.keys())
+		}, raw=['landing_id', 'ref', 'value'])
+
+		# Go through each answer
+		for d in lAnswers:
+
+			# Get the date associated with the landing
+			sDate = dDates[d['landing_id']]
+
+			# Go through each category for the associated question
+			for s in dQuestions[d['ref']]:
+
+				# Make sure score is an int
+				iScore = d['value'].isnumeric() and int(d['value']) or 0
+
+				# Add the score to the associated category / date
+				dCategories[s]['score'][sDate] += iScore
+
+				# Set the score to in the associated question in the category /
+				#	date
+				dCategories[s]['questions'][d['ref']]['dates'][sDate] = iScore
+
+		# Return the structure
+		return Services.Response({
+			"dates": sorted(dDates.values(), reverse=True),
+			"categories": dCategories
+		})
 
 	def customerIdByPhone_read(self, data, sesh):
 		"""Customer ID By Phone
@@ -2028,6 +2179,23 @@ class Monolith(Services.Service):
 			dNote['parentColumn'] = 'orderId'
 			dNote['columnValue'] = oClaim['orderId']
 
+			# If it's a continuous order
+			if oClaim['continuous']:
+
+				# Find the continuous order
+				oContOrder = KtOrderContinuous.filter({
+					"customerId": int(dDetails['customerId']),
+					"orderId": oClaim['orderId']
+				}, limit=1)
+
+				# If we found it
+				if oContOrder:
+
+					# Clear the medsNotWorking flag and mark it active
+					oContOrder['active'] = True;
+					oContOrder['medsNotWorking'] = False;
+					oContOrder.save()
+
 		# Else, there's no order
 		else:
 
@@ -2468,20 +2636,28 @@ class Monolith(Services.Service):
 		# Look up the customer IDs by phone number
 		lCustomers = KtCustomer.filter(
 			{"phoneNumber": lNumbers},
-			raw=['customerId', 'phoneNumber'],
+			raw=['customerId', 'phoneNumber', 'firstName', 'lastName'],
 			orderby=[('updatedAt', 'ASC')],
 		)
 
 		# Create a map of customers by phone number
 		dCustomers = {}
 		for d in lCustomers:
-			dCustomers[d['phoneNumber'][-10:]] = d['customerId']
+			dCustomers[d['phoneNumber'][-10:]] = {
+				"customerId": d['customerId'],
+				"customerName": '%s %s' % (
+					d['firstName'],
+					d['lastName']
+				)
+			}
 
 		# Go through each claimed and associate the correct customer ID
 		for d in lClaimed:
-			d['customerId'] = d['customerPhone'] in dCustomers and \
-								dCustomers[d['customerPhone']] or \
-								0
+			if d['customerPhone'] in dCustomers:
+				d['customerId'] = dCustomers[d['customerPhone']]['customerId']
+				d['customerName'] = dCustomers[d['customerPhone']]['customerName']
+			else:
+				d['customerId'] = 0
 
 		# Return the data
 		return Services.Response(lClaimed)
@@ -3131,12 +3307,7 @@ class Monolith(Services.Service):
 		"""
 
 		# Validate rights
-		oResponse = Services.read('auth', 'rights/verify', {
-			"name": "orders",
-			"right": Rights.UPDATE
-		}, sesh)
-		if not oResponse.data:
-			return Services.Response(error=Rights.INVALID)
+		Rights.check(sesh, 'orders', Rights.UPDATE)
 
 		# Verify fields
 		try: DictHelper.eval(data, ['customerId', 'orderId', 'soap'])
@@ -3181,6 +3352,73 @@ class Monolith(Services.Service):
 		# Return OK
 		return Services.Response(True)
 
+	def orderContinuousCancel_update(self, data, sesh):
+		"""Order Continuous Cancel
+
+		Remove a continuous order completely, most likely because the patient
+		doesn't actually want more medication, or because their prescription
+		has changed
+
+		Arguments:
+			data (dict): Data sent with the request
+			sesh (Sesh._Session): The session associated with the request
+
+		Returns:
+			Services.Response
+		"""
+
+		# Validate rights
+		Rights.check(sesh, 'orders', Rights.UPDATE)
+
+		# Verify fields
+		try: DictHelper.eval(data, ['customerId', 'orderId', 'reason'])
+		except ValueError as e: return Services.Response(error=(1001, [(f, 'missing') for f in e.args]))
+
+		# Make sure customer ID is an int
+		try: data['customerId'] = int(data['customerId'])
+		except ValueError: return Services.Response(error=(1001, [('customerId', 'not an int')]))
+
+		# Find the order
+		oOrder = KtOrderContinuous.filter({
+			"customerId": data['customerId'],
+			"orderId": data['orderId']
+		}, limit=1)
+		if not oOrder:
+			return Services.Response(error=1104)
+
+		# If the order is not pending
+		if oOrder['status'] != 'PENDING':
+			return Services.Response(error=1515)
+
+		# Cancel the purchase in Konnektive
+		oResponse = Services.update('konnektive', 'purchase/cancel', {
+			"purchaseId": oOrder['purchaseId'],
+			"reason": data['reason']
+		}, sesh)
+		if oResponse.errorExists(): return oResponse
+
+		# Delete the continuous order
+		oOrder.delete()
+
+		# Get current date/time
+		sDT = arrow.get().format('YYYY-MM-DD HH:mm:ss')
+
+		# Store Decline note
+		oSmpNote = SmpNote({
+			"parentTable": 'kt_customer',
+			"parentColumn": 'customerId',
+			"columnValue": str(data['customerId']),
+			"action": 'Cancel Continuous Order',
+			"createdBy": sesh['memo_id'],
+			"note": self._DECLINE_NOTES[data['reason']],
+			"createdAt": sDT,
+			"updatedAt": sDT
+		})
+		oSmpNote.create()
+
+		# Return OK
+		return Services.Response(True)
+
 	def orderContinuousDecline_update(self, data, sesh):
 		"""Order Continuous Decline
 
@@ -3195,12 +3433,7 @@ class Monolith(Services.Service):
 		"""
 
 		# Validate rights
-		oResponse = Services.read('auth', 'rights/verify', {
-			"name": "orders",
-			"right": Rights.UPDATE
-		}, sesh)
-		if not oResponse.data:
-			return Services.Response(error=Rights.INVALID)
+		Rights.check(sesh, 'orders', Rights.UPDATE)
 
 		# Verify fields
 		try: DictHelper.eval(data, ['customerId', 'orderId', 'reason'])
@@ -3663,10 +3896,14 @@ class Monolith(Services.Service):
 		if not oResponse.data:
 			return Services.Response(error=Rights.INVALID)
 
+		# Get the pending orders
+		lPending = KtOrder.queueCsr() + KtOrderContinuous.queueCsr()
+
+		# Sort them by date
+		lPending.sort(key=lambda d: d['updatedAt'])
+
 		# Fetch and return the unclaimed CSR orders
-		return Services.Response(
-			KtOrder.queueCsr()
-		)
+		return Services.Response(lPending)
 
 	def ordersPendingCsrCount_read(self, data, sesh):
 		"""Orders Pending CSR Count
@@ -3683,7 +3920,7 @@ class Monolith(Services.Service):
 
 		# Fetch and return the data
 		return Services.Response(
-			KtOrder.queueCsrCount()
+			KtOrder.queueCsrCount() + KtOrderContinuous.queueCsrCount()
 		)
 
 	def ordersPendingProviderEd_read(self, data, sesh):

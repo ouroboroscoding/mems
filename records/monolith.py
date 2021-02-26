@@ -162,8 +162,8 @@ class Calendly(Record_MySQL.Record):
 				"	`cal`.`pat_name` as `name`,\n" \
 				"	`cal`.`pat_emailAddress` as `emailAddress`,\n" \
 				"	`cal`.`pat_phoneNumber` as `phoneNumber`,\n" \
-				"	`cal`.`start`, \n" \
-				"	`cal`.`end`,\n" \
+				"	UNIX_TIMESTAMP(`cal`.`start`) as `start`, \n" \
+				"	UNIX_TIMESTAMP(`cal`.`end`) as `end`,\n" \
 				"	`ev`.`type`\n" \
 				"FROM `%(db)s`.`%(table)s` as `cal`\n" \
 				"INNER JOIN `%(db)s`.`calendly_event` as `ev` ON `cal`.`event` = `ev`.`name`\n" \
@@ -791,7 +791,8 @@ class CustomerMsgPhone(Record_MySQL.Record):
 				"	`cc`.`transferredBy`,\n" \
 				"	`cc`.`viewed`,\n" \
 				"	`cc`.`provider`,\n" \
-				"	`cc`.`orderId`\n" \
+				"	`cc`.`orderId`,\n" \
+				"	`cc`.`continuous`\n" \
 				"FROM\n" \
 				"	`%(db)s`.`%(table)s` AS `cmp` JOIN\n" \
 				"	`%(db)s`.`customer_claimed` as `cc` ON\n" \
@@ -1050,6 +1051,132 @@ class Forgot(Record_MySQL.Record):
 		# Return the config
 		return cls._conf
 
+# HormonalCategoryScore class
+class HormonalCategoryScore(Record_MySQL.Record):
+	"""Hormonal Category Score
+
+	Represents a single hormonal score
+	"""
+
+	_conf = None
+	"""Configuration"""
+
+	@classmethod
+	def config(cls):
+		"""Config
+
+		Returns the configuration data associated with the record type
+
+		Returns:
+			dict
+		"""
+
+		# If we haven loaded the config yet
+		if not cls._conf:
+			cls._conf = Record_MySQL.Record.generateConfig(
+				Tree.fromFile('definitions/monolith/hormonal_category_score.json'),
+				'mysql'
+			)
+
+		# Return the config
+		return cls._conf
+
+# HormonalSympCategories class
+class HormonalSympCategories(Record_MySQL.Record):
+	"""Hormonal Symptom Category
+
+	Represents a category of hormonal symptom
+	"""
+
+	_conf = None
+	"""Configuration"""
+
+	@classmethod
+	def config(cls):
+		"""Config
+
+		Returns the configuration data associated with the record type
+
+		Returns:
+			dict
+		"""
+
+		# If we haven loaded the config yet
+		if not cls._conf:
+			cls._conf = Record_MySQL.Record.generateConfig(
+				Tree.fromFile('definitions/monolith/hormonal_symp_categories.json'),
+				'mysql'
+			)
+
+		# Return the config
+		return cls._conf
+
+	@classmethod
+	def withQuestions(cls, custom={}):
+		"""With Questions
+
+		Returns the set of categories with their associated question title
+
+		Arguments:
+			custom (dict): Custom Host and DB info
+				'host' the name of the host to get/set data on
+				'append' optional postfix for dynamic DBs
+
+		Returns:
+			list
+		"""
+
+		# Fetch the record structure
+		dStruct = cls.struct(custom)
+
+		# Generate SQL
+		sSQL = "SELECT DISTINCT `hsc`.`category`, `hsc`.`questionRef`, `tfq`.`title` " \
+				"FROM `%(db)s`.`%(table)s` as `hsc` " \
+				"JOIN `%(db)s`.`tf_question` as `tfq` ON `hsc`.`questionRef` = `tfq`.`ref` " \
+				"WHERE `tfq`.`activeFlag` = 'Y' " \
+				"ORDER BY `category`, `questionRef`" % {
+			"db": dStruct['db'],
+			"table": dStruct['table']
+		}
+
+		# Execute and return the select
+		return Record_MySQL.Commands.select(
+			dStruct['host'],
+			sSQL,
+			Record_MySQL.ESelect.ALL
+		)
+
+# HrtLabResult
+class HrtLabResult(Record_MySQL.Record):
+	""""HRT Lab Result Tests
+
+	Represents a customers lab results test values in memo
+	"""
+
+	_conf = None
+	"""Configuration"""
+
+	@classmethod
+	def config(cls):
+		"""Config
+
+		Returns the configuration data associated with the record type
+
+		Returns:
+			dict
+		"""
+
+		# If we haven loaded the config yet
+		if not cls._conf:
+			cls._conf = Record_MySQL.Record.generateConfig(
+				Tree.fromFile('definitions/monolith/hrt_lab_result.json'),
+				'mysql'
+			)
+
+		# Return the config
+		return cls._conf
+
+
 # HrtLabResultTests class
 class HrtLabResultTests(Record_MySQL.Record):
 	""""HRT Lab Result Tests
@@ -1079,6 +1206,39 @@ class HrtLabResultTests(Record_MySQL.Record):
 
 		# Return the config
 		return cls._conf
+
+	@classmethod
+	def unique(cls, custom={}):
+		"""Unique
+
+		Returns a list of unique tests in the DB
+
+		Arguments:
+			custom (dict): Custom Host and DB info
+				'host' the name of the host to get/set data on
+				'append' optional postfix for dynamic DBs
+
+		Returns:
+			list
+		"""
+
+		# Fetch the record structure
+		dStruct = cls.struct(custom)
+
+		# Generate SQL
+		sSQL = "SELECT DISTINCT `name` " \
+				"FROM `%(db)s`.`%(table)s`" \
+				"ORDER BY `name`" % {
+			"db": dStruct['db'],
+			"table": dStruct['table']
+		}
+
+		# Execute and return the select
+		return Record_MySQL.Commands.select(
+			dStruct['host'],
+			sSQL,
+			Record_MySQL.ESelect.COLUMN
+		)
 
 # HrtPatient class
 class HrtPatient(Record_MySQL.Record):
@@ -1131,8 +1291,6 @@ class HrtPatient(Record_MySQL.Record):
 
 		# Fetch the record structure
 		dStruct = cls.struct(custom)
-
-		print(dropped)
 
 		# Generate SQL
 		sSQL = "SELECT `joinDate`, `customerId`, `phoneNumber`, `firstName`, `lastName` " \
@@ -1547,25 +1705,26 @@ class KtOrder(Record_MySQL.Record):
 		# Generate the SQL
 		sSQL = "SELECT\n" \
 				"	`kto`.`orderId`,\n" \
+				"	`cmp`.`type`,\n" \
 				"	CONCAT(`kto`.`shipFirstName`, ' ', `kto`.`shipLastName`) as `customerName`,\n" \
 				"	`kto`.`phoneNumber` as `customerPhone`,\n" \
 				"	`kto`.`shipCity`,\n" \
 				"	IFNULL(`ss`.`name`, '[state missing]') as `shipState`,\n" \
-				"	IFNULL(`ss`.`legalEncounterType`, '') as `type`,\n" \
+				"	IFNULL(`ss`.`legalEncounterType`, '') as `encounter`,\n" \
 				"	CONVERT(`kto`.`customerId`, UNSIGNED) as `customerId`,\n" \
-				"	`kto`.`dateCreated`,\n" \
-				"	`kto`.`dateUpdated`,\n" \
+				"	`kto`.`createdAt`,\n" \
+				"	`kto`.`updatedAt`,\n" \
 				"	IFNULL(`os`.`attentionRole`, 'Not Assigned') AS `attentionRole`,\n" \
 				"	IFNULL(`os`.`orderLabel`, 'Not Labeled') AS `orderLabel`\n" \
 				"FROM `%(db)s`.`%(table)s` AS `kto`\n" \
+				"JOIN `%(db)s`.`campaign` as `cmp` ON `cmp`.`id` = CONVERT(`kto`.`campaignId`, UNSIGNED)\n" \
 				"LEFT JOIN `%(db)s`.`smp_state` as `ss` ON `ss`.`abbreviation` = `kto`.`shipState`\n" \
 				"LEFT JOIN `%(db)s`.`smp_order_status` as `os` ON `os`.`orderId` = `kto`.`orderId`\n" \
 				"LEFT JOIN `%(db)s`.`customer_claimed` as `cc` ON `cc`.`phoneNumber` = `kto`.`phoneNumber`\n" \
 				"WHERE `kto`.`orderStatus` = 'PENDING'\n" \
 				"AND IFNULL(`kto`.`cardType`, '') <> 'TESTCARD'\n" \
 				"AND `cc`.`user` IS NULL\n" \
-				"AND `attentionRole` = 'CSR'\n" \
-				"ORDER BY `kto`.`dateCreated` ASC" % {
+				"AND `attentionRole` = 'CSR'" % {
 			"db": dStruct['db'],
 			"table": dStruct['table']
 		}
@@ -1949,6 +2108,8 @@ class KtOrderContinuous(Record_MySQL.Record):
 				"LEFT JOIN `%(db)s`.`kt_order_claim` as `claim` ON `claim`.`customerId` = CONVERT(`kto`.`customerId`, UNSIGNED)\n" \
 				"LEFT JOIN `%(db)s`.`user` ON `user`.`id` = `claim`.`user`\n" \
 				"WHERE `cont`.`customerId` IN (%(customer_ids)s)\n" \
+				"AND `active` = 1\n" \
+				"AND `medsNotWorking` = 0\n" \
 				"AND `cont`.`status` = 'PENDING'\n" \
 				"AND IFNULL(`kto`.`cardType`, '') <> 'TESTCARD'\n" \
 				"AND (`os`.`attentionRole` = 'Doctor' OR `os`.`attentionRole` IS NULL)\n" \
@@ -1996,8 +2157,8 @@ class KtOrderContinuous(Record_MySQL.Record):
 				"	IFNULL(`ss`.`name`, '[state missing]') as `shipState`,\n" \
 				"	IFNULL(`ss`.`legalEncounterType`, '') as `encounter`,\n" \
 				"	CONVERT(`kto`.`customerId`, UNSIGNED) as `customerId`,\n" \
-				"	`kto`.`dateCreated`,\n" \
-				"	`kto`.`dateUpdated`,\n" \
+				"	`cont`.`createdAt` as `dateCreated`,\n" \
+				"	`cont`.`updatedAt` as `dateUpdated`,\n" \
 				"	IFNULL(`os`.`attentionRole`, 'Not Assigned') as `attentionRole`,\n" \
 				"	IFNULL(`os`.`orderLabel`, 'Not Labeled') as `orderLabel`\n" \
 				"FROM `%(db)s`.`%(table)s` as `cont`\n" \
@@ -2008,6 +2169,7 @@ class KtOrderContinuous(Record_MySQL.Record):
 				"LEFT JOIN `%(db)s`.`kt_order_claim` as `ktoc` ON `ktoc`.`customerId` = CONVERT(`kto`.`customerId`, UNSIGNED)\n" \
 				"WHERE `cont`.`status` = 'PENDING'\n" \
 				"AND `cont`.`active` = 1\n" \
+				"AND `medsNotWorking` = 0\n" \
 				"AND `kto`.`shipState` IN (%(states)s)\n" \
 				"AND `ss`.`legalEncounterType` = 'AS'\n" \
 				"AND `ktoc`.`user` IS NULL\n" \
@@ -2025,6 +2187,102 @@ class KtOrderContinuous(Record_MySQL.Record):
 			dStruct['host'],
 			sSQL,
 			Record_MySQL.ESelect.ALL
+		)
+
+	@classmethod
+	def queueCsr(cls, custom={}):
+		"""Queue CSR
+
+		Returns all pending, unclaimed, meds not working orders
+
+		Arguments:
+			custom (dict): Custom Host and DB info
+				'host' the name of the host to get/set data on
+				'append' optional postfix for dynamic DBs
+
+		Returns:
+			list
+		"""
+
+		# Fetch the record structure
+		dStruct = cls.struct(custom)
+
+		# Generate the SQL
+		sSQL = "SELECT\n" \
+				"	1 as `continuous`,\n" \
+				"	`kto`.`orderId`,\n" \
+				"	`cmp`.`type`,\n" \
+				"	CONCAT(`kto`.`shipFirstName`, ' ', `kto`.`shipLastName`) as `customerName`,\n" \
+				"	`kto`.`phoneNumber` as `customerPhone`,\n" \
+				"	`kto`.`shipCity`,\n" \
+				"	IFNULL(`ss`.`name`, '[state missing]') as `shipState`,\n" \
+				"	IFNULL(`ss`.`legalEncounterType`, '') as `type`,\n" \
+				"	CONVERT(`kto`.`customerId`, UNSIGNED) as `customerId`,\n" \
+				"	`cont`.`createdAt`,\n" \
+				"	`cont`.`updatedAt`,\n" \
+				"	IFNULL(`os`.`attentionRole`, 'Not Assigned') as `attentionRole`,\n" \
+				"	IFNULL(`os`.`orderLabel`, 'Not Labeled') as `orderLabel`\n" \
+				"FROM `%(db)s`.`%(table)s` as `cont`\n" \
+				"JOIN `%(db)s`.`kt_order` as `kto` ON `kto`.`orderId` = `cont`.`orderId`\n" \
+				"JOIN `%(db)s`.`campaign` as `cmp` ON `cmp`.`id` = CONVERT(`kto`.`campaignId`, UNSIGNED)\n" \
+				"LEFT JOIN `%(db)s`.`smp_state` as `ss` ON `ss`.`abbreviation` = `kto`.`shipState`\n" \
+				"LEFT JOIN `%(db)s`.`smp_order_status` as `os` ON `os`.`orderId` = `kto`.`orderId`\n" \
+				"LEFT JOIN `%(db)s`.`customer_claimed` as `cc` ON `cc`.`phoneNumber` = `kto`.`phoneNumber`\n" \
+				"WHERE `cont`.`status` = 'PENDING'\n" \
+				"AND `cont`.`active` = 0\n" \
+				"AND `cont`.`medsNotWorking` = 1\n" \
+				"AND `cc`.`user` IS NULL\n" % {
+			"db": dStruct['db'],
+			"table": dStruct['table']
+		}
+
+		# Fetch and return the data
+		return Record_MySQL.Commands.select(
+			dStruct['host'],
+			sSQL,
+			Record_MySQL.ESelect.ALL
+		)
+
+	@classmethod
+	def queueCsrCount(cls, custom={}):
+		"""Queue CSR Count
+
+		Returns the count of all pending, unclaimed, meds not working orders
+
+		Arguments:
+			custom (dict): Custom Host and DB info
+				'host' the name of the host to get/set data on
+				'append' optional postfix for dynamic DBs
+
+		Returns:
+			list
+		"""
+
+		# Fetch the record structure
+		dStruct = cls.struct(custom)
+
+		# Generate the SQL
+		sSQL = "SELECT\n" \
+				"	COUNT(*) as `count`\n" \
+				"FROM `%(db)s`.`%(table)s` as `cont`\n" \
+				"JOIN `%(db)s`.`kt_order` as `kto` ON `kto`.`orderId` = `cont`.`orderId`\n" \
+				"JOIN `%(db)s`.`campaign` as `cmp` ON `cmp`.`id` = CONVERT(`kto`.`campaignId`, UNSIGNED)\n" \
+				"LEFT JOIN `%(db)s`.`smp_state` as `ss` ON `ss`.`abbreviation` = `kto`.`shipState`\n" \
+				"LEFT JOIN `%(db)s`.`smp_order_status` as `os` ON `os`.`orderId` = `kto`.`orderId`\n" \
+				"LEFT JOIN `%(db)s`.`customer_claimed` as `cc` ON `cc`.`phoneNumber` = `kto`.`phoneNumber`\n" \
+				"WHERE `cont`.`status` = 'PENDING'\n" \
+				"AND `cont`.`active` = 0\n" \
+				"AND `cont`.`medsNotWorking` = 1\n" \
+				"AND `cc`.`user` IS NULL\n" % {
+			"db": dStruct['db'],
+			"table": dStruct['table']
+		}
+
+		# Fetch and return the data
+		return Record_MySQL.Commands.select(
+			dStruct['host'],
+			sSQL,
+			Record_MySQL.ESelect.CELL
 		)
 
 # ShippingInfo class

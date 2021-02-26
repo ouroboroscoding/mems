@@ -8,14 +8,16 @@ __author__		= "Chris Nasr"
 __copyright__	= "MaleExcelMedical"
 __version__		= "1.0.0"
 __maintainer__	= "Chris Nasr"
-__email__		= "chris@fuelforthefire.ca"
+__email__		= "bast@maleexcel.com"
 __created__		= "2020-10-15"
 
 # Python imports
+from datetime import timedelta
 from time import time
 import uuid
 
 # Pip imports
+import arrow
 from FormatOC import Node
 from RestOC import Conf, DictHelper, Errors, Record_MySQL, Services, Sesh, \
 					StrHelper
@@ -319,6 +321,103 @@ class Providers(Services.Service):
 
 		# Return OK
 		return Services.Response(True)
+
+	def hours_read(self, data, sesh):
+		"""Hours
+
+		Returns breakdown of hours worked by provider
+
+		Arguments:
+			data (mixed): Data sent with the request
+			sesh (Sesh._Session): The session associated with the request
+
+		Returns:
+			Services.Response
+		"""
+
+		# Make sure the user has the proper permission to do this
+		Rights.check(sesh, 'prov_stats', Rights.READ)
+
+		# Verify minimum fields
+		try: DictHelper.eval(data, ['start', 'end',])
+		except ValueError as e: return Services.Error(1001, [(f, 'missing') for f in e.args])
+
+		# Fetch all records in the given time period
+		lTracking = Tracking.range(data['start'], data['end'])
+
+		# If we got nothing
+		if not lTracking:
+			return Services.Response([])
+
+		# Init the dictionary of providers
+		dProviders = {}
+
+		# Go through each record
+		for d in lTracking:
+
+			# If we don't have the provider yet
+			if d['memo_id'] not in dProviders:
+				dProviders[d['memo_id']] = {
+					"seconds": 0,
+					"approvals": 0,
+					"declines": 0
+				}
+
+			# If the action is signin
+			if d['action'] == 'signin':
+				print('%d - %d = %d' % (d['resolution_ts'], d['action_ts'], (d['resolution_ts'] - d['action_ts'])))
+				dProviders[d['memo_id']]['seconds'] += (d['resolution_ts'] - d['action_ts'])
+
+			# Else, if the action is viewed
+			elif d['action'] == 'viewed':
+				if d['resolution'] == 'approved':
+					dProviders[d['memo_id']]['approvals'] += 1
+				elif d['resolution'] == 'declined':
+					dProviders[d['memo_id']]['declines'] += 1
+
+		# Get the provider names for all the IDs
+		oResponse = Services.read('monolith', 'users', {
+			"_internal_": Services.internalKey(),
+			"id": list(dProviders.keys()),
+			"fields": ['id', 'firstName', 'lastName']
+		}, sesh)
+
+		# If there's none
+		if not oResponse.data:
+			dUsers = {}
+
+		# Else, turn it into a dictionary
+		else:
+			dUsers = {
+				d['id']: {'firstName': d['firstName'], 'lastName': d['lastName']}
+				for d in oResponse.data
+			}
+
+		# Init the return value
+		lRet = []
+
+		# Generate the final stats
+		for iID in dProviders:
+
+			# Calculate hours
+			iHours, iRemainder = divmod(dProviders[iID]['seconds'], 3600)
+			iMinutes, iSeconds = divmod(iRemainder, 60)
+			sHours = '{:0}:{:02}:{:02}'.format(iHours, iMinutes, iSeconds)
+
+			# Add new row
+			lRet.append({
+				"memoId": iID,
+				"firstName": iID in dUsers and dUsers[iID]['firstName'] or '',
+				"lastName": iID in dUsers and dUsers[iID]['lastName'] or '',
+				"hours": sHours,
+				"approvals": dProviders[iID]['approvals'],
+				"declines": dProviders[iID]['declines']
+			})
+
+		# Return the list sorted by last name
+		return Services.Response(
+			sorted(lRet, key=lambda d: d['lastName'])
+		)
 
 	def prescriptions_create(self, data, sesh):
 		"""Prescriptions Create
@@ -767,6 +866,43 @@ class Providers(Services.Service):
 			"claims_timeout": 48
 		}, sesh)
 
+	def providerTracking_read(self, data, sesh):
+		"""Provider Tracking
+
+		Returns all tracking records related to a specfic provider in the given
+		timeframe
+
+		Arguments:
+			data (mixed): Data sent with the request
+			sesh (Sesh._Session): The session associated with the request
+
+		Returns:
+			Services.Response
+		"""
+
+		# Make sure the user has the proper permission to do this
+		Rights.check(sesh, 'prov_stats', Rights.READ)
+
+		# Verify minimum fields
+		try: DictHelper.eval(data, ['start', 'end', 'memo_id'])
+		except ValueError as e: return Services.Error(1001, [(f, 'missing') for f in e.args])
+
+		# Fetch all records in the given time period
+		lTracking = Tracking.range(data['start'], data['end'], data['memo_id'])
+
+		# Go through each record found
+		for d in lTracking:
+
+			# Calculate the hours, minutes, and seconds
+			iHours, iRemainder = divmod(d['resolution_ts'] - d['action_ts'], 3600)
+			iMinutes, iSeconds = divmod(iRemainder, 60)
+
+			# Add the time to the record
+			d['time'] = '{:0}:{:02}:{:02}'.format(iHours, iMinutes, iSeconds)
+
+		# Return the records
+		return Services.Response(lTracking)
+
 	def providerNames_read(self, data, sesh):
 		"""Provider Names
 
@@ -951,19 +1087,38 @@ class Providers(Services.Service):
 		oPrevTrack = Tracking.filter({
 			"memo_id": oSesh['memo_id'],
 			"action": 'signin',
-			"end": None
+			"resolution": None
 		}, limit=1, orderby=[['_updated', 'DESC']])
 		if oPrevTrack:
-			oPrevTrack['resolution'] = 'new_signin'
-			oPrevTrack['end'] = int(time())
-			oPrevTrack.save()
+
+			# Look for the oldest viewed in the same session
+			dViewed = Tracking.filter({
+				"memo_id": oPrevTrack['memo_id'],
+				"action": 'viewed',
+				"resolution_sesh": oPrevTrack['action_sesh']
+			}, orderby=[['resolution_ts', 'DESC']], limit=1)
+
+			# If there's none
+			if not dViewed:
+
+				# Delete the previous signin
+				oPrevTrack.delete()
+
+			# Else, if there's one
+			else:
+
+				# Set the end time to the last viewed's end time
+				oPrevTrack['resolution'] = 'new_signin'
+				oPrevTrack['resolution_sesh'] = sUUID
+				oPrevTrack['resolution_ts'] = dViewed['resolution_ts']
+				oPrevTrack.save()
 
 		# Create the sign in tracking
 		oTracking = Tracking({
 			"memo_id": oSesh['memo_id'],
-			"sesh": sUUID,
 			"action": 'signin',
-			"start": int(time())
+			"action_sesh": sUUID,
+			"action_ts": int(time())
 		})
 		oTracking.create()
 
@@ -996,18 +1151,35 @@ class Providers(Services.Service):
 		# If it starts with the proper prefix
 		if sSeshID[0:5] == self._seshPre:
 
+			# Trim the session ID
+			sSeshID = sSeshID[5:]
+
 			# Find the previous sign in
 			oTracking = Tracking.filter({
 				"memo_id": sesh['memo_id'],
-				"sesh": sSeshID[5:],
 				"action": 'signin',
-				"end": None
+				"action_sesh": sSeshID,
+				"resolution" : None
 			}, limit=1)
 
-			# If we found one, end it
+			# If we found one
 			if oTracking:
+
+				# Get the current timestamp
+				iTS = int(time())
+
+				# If it was a timeout
+				if 'timeout' in data and data['timeout']:
+					try:
+						data['timeout'] = int(data['timeout'])
+						iTS -= data['timeout']
+					except ValueError:
+						return Services.Error(1001, [('timeout', 'not an integer')])
+
+				# End it
 				oTracking['resolution'] = 'signout'
-				oTracking['end'] = int(time())
+				oTracking['resolution_sesh'] = sSeshID
+				oTracking['resolution_ts'] = iTS
 				oTracking.save()
 
 		# Close the session so it can no longer be found/used
@@ -1030,12 +1202,7 @@ class Providers(Services.Service):
 		"""
 
 		# Make sure the user has the proper permission to do this
-		oResponse = Services.read('auth', 'rights/verify', {
-			"name": "prov_templates",
-			"right": Rights.CREATE
-		}, sesh)
-		if not oResponse.data:
-			return Services.Response(error=Rights.INVALID)
+		Rights.check(sesh, 'prov_templates', Rights.CREATE)
 
 		# Verify minimum fields
 		try: DictHelper.eval(data, ['title', 'type', 'content'])
@@ -1070,13 +1237,7 @@ class Providers(Services.Service):
 		except ValueError as e: return Services.Response(error=(1001, [(f, 'missing') for f in e.args]))
 
 		# Make sure the user has the proper permission to do this
-		oResponse = Services.read('auth', 'rights/verify', {
-			"name": "prov_templates",
-			"right": Rights.DELETE,
-			"ident": data['_id']
-		}, sesh)
-		if not oResponse.data:
-			return Services.Response(error=Rights.INVALID)
+		Rights.check(sesh, 'prov_templates', Rights.DELETE, data['_id'])
 
 		# If the record does not exist
 		if not Template.exists(data['_id']):
@@ -1107,13 +1268,7 @@ class Providers(Services.Service):
 		except ValueError as e: return Services.Response(error=(1001, [(f, 'missing') for f in e.args]))
 
 		# Make sure the user has the proper permission to do this
-		oResponse = Services.read('auth', 'rights/verify', {
-			"name": "prov_templates",
-			"right": Rights.READ,
-			"ident": data['_id']
-		}, sesh)
-		if not oResponse.data:
-			return Services.Response(error=Rights.INVALID)
+		Rights.check(sesh, 'prov_templates', Rights.READ, data['_id'])
 
 		# Look for the template
 		dTemplate = Template.get(data['_id'], raw=True)
@@ -1143,13 +1298,7 @@ class Providers(Services.Service):
 		except ValueError as e: return Services.Response(error=(1001, [(f, 'missing') for f in e.args]))
 
 		# Make sure the user has the proper permission to do this
-		oResponse = Services.read('auth', 'rights/verify', {
-			"name": "prov_templates",
-			"right": Rights.UPDATE,
-			"ident": data['_id']
-		}, sesh)
-		if not oResponse.data:
-			return Services.Response(error=Rights.INVALID)
+		Rights.check(sesh, 'prov_templates', Rights.UPDATE, data['_id'])
 
 		# Fetch the template
 		oTemplate = Template.get(data['_id'])
@@ -1191,12 +1340,7 @@ class Providers(Services.Service):
 		"""
 
 		# Make sure the user has the proper permission to do this
-		oResponse = Services.read('auth', 'rights/verify', {
-			"name": "prov_templates",
-			"right": Rights.READ
-		}, sesh)
-		if not oResponse.data:
-			return Services.Response(error=Rights.INVALID)
+		Rights.check(sesh, 'prov_templates', Rights.READ)
 
 		# Fetch and return the templates
 		return Services.Response(
@@ -1236,9 +1380,9 @@ class Providers(Services.Service):
 			# Create a new tracking instance
 			oTracking = Tracking({
 				"memo_id": sesh['memo_id'],
-				"sesh": sesh.id()[5:],
 				"action": data['action'],
-				"start": int(time()),
+				"action_sesh": sesh.id()[5:],
+				"action_ts": int(time()),
 				"crm_type": data['crm_type'],
 				"crm_id": str(data['crm_id'])
 			})
@@ -1257,7 +1401,8 @@ class Providers(Services.Service):
 			# Look for an existing viewed tracking
 			oTracking = Tracking.filter({
 				"memo_id": sesh['memo_id'],
-				"end": None,
+				"action": "viewed",
+				"resolution": None,
 				"crm_type": data['crm_type'],
 				"crm_id": str(data['crm_id'])
 			}, limit=1, orderby=[['_created', 'DESC']])
@@ -1265,7 +1410,8 @@ class Providers(Services.Service):
 			# If we found one
 			if oTracking:
 				oTracking['resolution'] = data['resolution']
-				oTracking['end'] = int(time())
+				oTracking['resolution_sesh'] = sesh.id()[5:]
+				oTracking['resolution_ts'] = int(time())
 				oTracking.save()
 
 			# Return

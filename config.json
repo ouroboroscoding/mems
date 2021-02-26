@@ -1,7 +1,7 @@
 {
 	"contact_form": {
-		"from": "maleexcel@ded3204.inmotionhosting.com",
-		"failed": ""
+		"key": "",
+		"worksheet": ""
 	},
 
 	"crons": {
@@ -68,7 +68,8 @@
 		"host": "api.konnektive.com",
 		"user": "",
 		"pass": "",
-		"allow_qa_update": false
+		"allow_qa_update": false,
+		"allow_purchase_cancel": false
 	},
 
 	"memo": {
@@ -139,7 +140,8 @@
 			"customers": {"port": 12},
 			"docs": {"port": 18, "workers": 1},
 			"external": {"port": 100},
-			"hubspot": {"port": 17},
+			"hubspot": {"port": 17, "workers": 1},
+			"justcall": {"port": 19, "workers": 1},
 			"konnektive": {"port": 7},
 			"monolith": {"port": 6},
 			"patient": {"port": 11},
@@ -172,7 +174,7 @@
 			"support_email": "bast@maleexcel.com"
 		},
 		"providers": {
-			"sesh_ttl": 7200
+			"sesh_ttl": 1200
 		},
 		"queue": {
 			"key": null

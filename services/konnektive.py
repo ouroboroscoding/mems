@@ -8,7 +8,7 @@ __author__		= "Chris Nasr"
 __copyright__	= "MaleExcelMedical"
 __version__		= "1.0.0"
 __maintainer__	= "Chris Nasr"
-__email__		= "chris@fuelforthefire.ca"
+__email__		= "bast@maleexcel.com"
 __created__		= "2020-05-09"
 
 # Python imports
@@ -84,7 +84,17 @@ class Konnektive(Services.Service):
 			sURL = self._generateURL(path, params)
 
 			# Fetch the data
-			oRes = requests.post(sURL, headers={"Content-Type": 'application/json; charset=utf-8'})
+			while True:
+				iAttempts = 0
+				try:
+					oRes = requests.post(sURL, headers={"Content-Type": 'application/json; charset=utf-8'})
+					break
+				except requests.exceptions.ConnectionError as e:
+					iAttempts += 1
+					if iAttempts < 3:
+						time.sleep(1)
+						continue
+					raise e
 
 			# Pull out the data
 			dData = oRes.json()
@@ -122,8 +132,18 @@ class Konnektive(Services.Service):
 		# Generate the URL
 		sURL = self._generateURL(path, params)
 
-		# Fetch the data
-		oRes = requests.post(sURL, headers={"Content-Type": 'application/json; charset=utf-8'})
+		# Send the data
+		while True:
+			iAttempts = 0
+			try:
+				oRes = requests.post(sURL, headers={"Content-Type": 'application/json; charset=utf-8'})
+				break
+			except requests.exceptions.ConnectionError as e:
+				iAttempts += 1
+				if iAttempts < 3:
+					time.sleep(1)
+					continue
+				raise e
 
 		# Pull out the reponse
 		dData = oRes.json()
@@ -145,6 +165,7 @@ class Konnektive(Services.Service):
 		self._pass = Conf.get(('konnektive', 'pass'))
 		self._host = Conf.get(('konnektive', 'host'))
 		self._allowQaUpdate = Conf.get(('konnektive', 'allow_qa_update'))
+		self._allowPurchaseCancel = Conf.get(('konnektive', 'allow_purchase_cancel'))
 
 		# Store encounter types
 		self._encounters = JSON.load('definitions/encounter_by_state.json');
@@ -891,12 +912,15 @@ class Konnektive(Services.Service):
 		if 'reason' in data:
 			dData['reason'] = data['reason']
 
-		# Cancel the purchase
-		bRes = oKNK._post('purchase/cancel', dData)
+		# If Purchase cancellation's are allowed
+		if self._allowPurchaseCancel:
 
-		# If we failed
-		if not bRes:
-			return Services.Response(error=1103)
+			# Cancel the purchase
+			bRes = oKNK._post('purchase/cancel', dData)
+
+			# If we failed
+			if not bRes:
+				return Services.Response(error=1103)
 
 		# Return OK
 		return Services.Response(True)

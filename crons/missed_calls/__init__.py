@@ -25,7 +25,7 @@ from services.konnektive import Konnektive
 from crons import emailError, isRunning
 
 # Local imports
-from . import justcall, signia
+from . import signia
 
 def process(data):
 	"""Process
@@ -94,12 +94,6 @@ def run(period=None):
 
 		# Select the inbox
 		sStatus, lIDs = oIMAP.select('INBOX')
-
-		# Parse the JustCall emails
-		lData = justcall.parse(oIMAP)
-
-		# Process the default calls
-		process(lData)
 
 		# Parse signia emails
 		lData = signia.parse(oIMAP)
