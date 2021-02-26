@@ -34,7 +34,8 @@ from records.monolith import \
 	DsApproved, DsPatient, \
 	Forgot, \
 	HormonalCategoryScore, HormonalSympCategories, \
-	HrtLabResultTests, HrtPatient, HrtPatientDroppedReason, \
+	HrtLabResult, HrtLabResultTests, \
+	HrtPatient, HrtPatientDroppedReason, \
 	KtCustomer, KtOrder, KtOrderClaim, KtOrderClaimLast, KtOrderContinuous, \
 	ShippingInfo, \
 	SmpNote, SmpOrderStatus, SmpState, \
@@ -1074,33 +1075,6 @@ class Monolith(Services.Service):
 		# Return OK
 		return Services.Response(True)
 
-	def customerHrtLabs_read(self, data, sesh):
-		"""Customer HRT Lab Results
-
-		Fetches a customer's HRT lab test results
-
-		Arguments:
-			data (dict): Data sent with request
-			sesh (Sesh._Session): THe session associated with the request
-
-		Returns:
-			Services.Response
-		"""
-
-		# Verify fields
-		try: DictHelper.eval(data, ['customerId'])
-		except ValueError as e: return Services.Response(error=(1001, [(f, 'missing') for f in e.args]))
-
-		# Make sure the user has the proper permission to do this
-		Rights.check(sesh, 'memo_mips', Rights.READ, data['customerId'])
-
-		# Fetch and return the customer's HRT lab test results
-		return Services.Response(
-			HrtLabResultTests.filter({
-				"customerId": data['customerId']
-			}, raw=True)
-		)
-
 	def customerHrt_read(self, data, sesh):
 		"""Customer HRT Read
 
@@ -1191,6 +1165,77 @@ class Monolith(Services.Service):
 		return Services.Response(
 			oHrtPatient.save()
 		)
+
+	def customerHrtLabs_read(self, data, sesh):
+		"""Customer HRT Lab Results
+
+		Fetches a customer's HRT lab test results
+
+		Arguments:
+			data (dict): Data sent with request
+			sesh (Sesh._Session): THe session associated with the request
+
+		Returns:
+			Services.Response
+		"""
+
+		# Verify fields
+		try: DictHelper.eval(data, ['customerId'])
+		except ValueError as e: return Services.Response(error=(1001, [(f, 'missing') for f in e.args]))
+
+		# Make sure the user has the proper permission to do this
+		Rights.check(sesh, 'customers', Rights.READ, data['customerId'])
+
+		# Find all the lab results for the customer
+		lLabs = HrtLabResult.filter({
+			"customerId": data['customerId']
+		}, raw=True, orderby=[['dateReported', 'DESC']])
+
+		# If there's none, return nothing
+		if not lLabs:
+			return Services.Response([])
+
+		# Generate a list of the dates
+		dDates = {
+			d['identifier']:d['dateReported']
+			for d in lLabs
+		}
+
+		# Find all the results based on the identifiers
+		lResults = HrtLabResultTests.filter({
+			"identifier": list(dDates.keys())
+		}, raw=True)
+
+		# Create a list of unique tests
+		lTests = list(set(['%s,%s' % (d['name'],d['code']) for d in lResults]))
+
+		# Init the list of unique tests and the dates associated
+		dTests = {}
+
+		# Go through all the tests to generate the
+		for s in lTests:
+
+			# If we don't have the test
+			if s not in dTests:
+				dTests[s] = {s:None for s in dDates.values()}
+
+		# Go through each result
+		for d in lResults:
+
+			# Get the test key
+			sKey = '%s,%s' % (d['name'],d['code'])
+
+			# Get the date associated with the identifier
+			sDate = dDates[d['identifier']]
+
+			# Update the tests
+			dTests[sKey][sDate] = d
+
+		# Return the structure
+		return Services.Response({
+			"dates": sorted(dDates.values(), reverse=True),
+			"tests": dTests
+		})
 
 	def customerHrtSymptoms_read(self, data, sesh):
 		"""Customer HRT Symptoms
@@ -1285,12 +1330,15 @@ class Monolith(Services.Service):
 			# Go through each category for the associated question
 			for s in dQuestions[d['ref']]:
 
+				# Make sure score is an int
+				iScore = d['value'].isnumeric() and int(d['value']) or 0
+
 				# Add the score to the associated category / date
-				dCategories[s]['score'][sDate] += int(d['value'])
+				dCategories[s]['score'][sDate] += iScore
 
 				# Set the score to in the associated question in the category /
 				#	date
-				dCategories[s]['questions'][d['ref']]['dates'][sDate] = int(d['value'])
+				dCategories[s]['questions'][d['ref']]['dates'][sDate] = iScore
 
 		# Return the structure
 		return Services.Response({
