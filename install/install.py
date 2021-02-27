@@ -12,8 +12,8 @@ from RestOC import Conf, Record_MySQL
 
 # Services
 from records.auth import Permission, User
-from services import auth, csr, customers, patient, payment, prescriptions, \
-					providers, reports, welldyne
+from services import auth, csr, customers, docs, patient, payment, \
+					prescriptions, providers, reports, welldyne
 
 # Only run if called directly
 if __name__ == "__main__":
@@ -27,13 +27,14 @@ if __name__ == "__main__":
 	# Add hosts
 	Record_MySQL.addHost('primary', Conf.get(("mysql", "hosts", "primary")))
 
-	# Add the DBs
+	# Add the DB
 	Record_MySQL.dbCreate(Conf.get(("mysql", "primary", "db"), "mems"), 'primary', 'utf8', 'utf8_bin')
 
 	# Install
 	auth.Auth.install()
 	csr.CSR.install()
 	customers.Customers.install()
+	docs.Docs.install()
 	patient.Patient.install()
 	payment.Payment.install()
 	prescriptions.Prescriptions.install()
