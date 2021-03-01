@@ -3104,7 +3104,7 @@ class Monolith(Services.Service):
 		mWarning = None
 
 		# If the order was approved
-		if data['reason'] in ['approved', 'declined', 'transferred', 'x']:
+		if data['reason'] in ['approved', 'declined', 'transferred', 'closed']:
 
 			# Add tracking
 			oResponse = Services.create('providers', 'tracking', {
@@ -4466,8 +4466,21 @@ class Monolith(Services.Service):
 		if 'orderId' in data:
 			SMSWorkflow.providerMessaged(data['orderId'], oSmpNote['id'])
 
+		# Init warning
+		mWarning = None
+
+		# Add tracking
+		oResponse = Services.create('providers', 'tracking', {
+			"_internal_": Services.internalKey(),
+			"action": 'sms',
+			"crm_type": 'knk',
+			"crm_id": data['customerId']
+		}, sesh)
+		if oResponse.errorExists():
+			mWarning = oResponse.error;
+
 		# Return the ID of the new note
-		return Services.Response(oSmpNote['id'])
+		return Services.Response(oSmpNote['id'], warning=mWarning)
 
 	def providers_read(self, data, sesh):
 		"""Providers
