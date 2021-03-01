@@ -31,7 +31,7 @@ REST.Server({
 	"/customer/purchases": {"methods": REST.READ, "session": True},
 	"/customer/orders": {"methods": REST.READ, "session": True},
 	"/customer/transactions": {"methods": REST.READ, "session": True},
-	"/order": {"methods": REST.READ, "session": True},
+	"/order": {"methods": REST.CREATE | REST.READ, "session": True},
 	"/order/qa": {"methods": REST.UPDATE, "session": True},
 	"/order/transactions": {"methods": REST.READ, "session": True},
 	"/purchase/cancel": {"methods": REST.UPDATE, "session": True}
