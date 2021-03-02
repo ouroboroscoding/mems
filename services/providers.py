@@ -1418,6 +1418,10 @@ class Providers(Services.Service):
 		# Else, we're adding a resolution
 		else:
 
+			# If we got an 'x', rename it
+			if data['resolution'] == 'x':
+				data['resolution'] = 'closed'
+
 			# If it's not a viewed
 			if data['resolution'] not in ['approved', 'declined', 'transferred', 'closed']:
 				return Services.Response(error=(1001, [('resolution', 'invalid')]))
