@@ -22,7 +22,7 @@ from RestOC import Conf, DictHelper, JSON, Services, StrHelper
 import xmltodict
 
 # Shared imports
-from shared import Rights, USPS
+from shared import Environment, Rights, USPS
 
 class Konnektive(Services.Service):
 	"""Konnektive Service class
@@ -383,6 +383,52 @@ class Konnektive(Services.Service):
 		# Return OK
 		return Services.Response(True)
 
+	def customerPayment_update(self, data, sesh, environ):
+		"""Customer Payment
+
+		Updates the payment source for the customer
+
+		Arguments:
+			data (dict): Data sent with the request
+			sesh (Sesh._Session): The session associated with the request
+			environ (dict): Info related to the request
+
+		Returns:
+			Services.Response
+		"""
+
+		# Verify fields
+		try: DictHelper.eval(data, ['customerId', 'cc_number', 'cc_expiry', 'cc_cvc'])
+		except ValueError as e: return Services.Response(error=(1001, [(f, 'missing') for f in e.args]))
+
+		# Make sure the user has the proper permission to do this
+		Rights.check(sesh, 'customers', Rights.UPDATE, data['customerId'])
+
+		# Create a fake order to be able to run the card
+		oResponse = self.order_create({
+			"customerId": data['customerId'],
+			"ip": Environment.getClientIP(environ),
+			"payment": {
+				"type": 'CREDITCARD',
+				"number": data['cc_number'],
+				"month": data['cc_expiry'][:2],
+				"year": data['cc_expiry'][2:],
+				"code": data['cc_cvc']
+			},
+			"campaignId": '',
+			"products": [{
+				"id": '',
+				"qty": 1
+			}]
+		}, sesh)
+
+		# If there's an error
+		if oResponse.errorExists():
+			return oResponse
+
+		# Return OK
+		return Services.Response(True)
+
 	def customerPurchases_read(self, data, sesh):
 		"""Customer Purchases
 
@@ -621,7 +667,7 @@ class Konnektive(Services.Service):
 			"currency": d['currencySymbol']
 		} for d in lTransactions])
 
-	def order_create(self, data, sesh):
+	def order_create(self, data, sesh, verify=True):
 		"""Order Create
 
 		Creates a new order
@@ -629,25 +675,18 @@ class Konnektive(Services.Service):
 		Arguments:
 			data (dict): Data sent with the request
 			sesh (Sesh._Session): The session associated with the request
+			verify (bool): Allow bypassing verification for internal calls
 
 		Returns:
 			Services.Response
 		"""
 
-		# If we have an internal key
-		if '_internal_' in data:
-
-			# Verify the key, remove it if it's ok
-			if not Services.internalKey(data['_internal_']):
-				return Services.Error(Errors.SERVICE_INTERNAL_KEY)
-			del data['_internal_']
-
-		# Else, make sure the user has the proper permission to do this
-		else:
+		# If we need to verify
+		if verify:
 			Rights.check(sesh, 'orders', Rights.CREATE)
 
 		# Verify fields
-		try: DictHelper.eval(data, ['customerId', 'products', 'payment', 'ip'])
+		try: DictHelper.eval(data, ['customerId', 'campaignId', 'products', 'payment', 'ip'])
 		except ValueError as e: return Services.Error(1001, [(f, 'missing') for f in e.args])
 
 		# Init the data sent to Konnektive
@@ -681,6 +720,9 @@ class Konnektive(Services.Service):
 
 		# Add the IP address
 		dData['ipAddress'] = data['ip']
+
+		# Add the campaign ID
+		dData['campaignId'] = data['campaignId']
 
 		# Make sure products is an array
 		if isinstance(data['products'], list):
@@ -799,6 +841,10 @@ class Konnektive(Services.Service):
 		dData['emailAddress'] = data['email']
 		dData['phoneNumber'] = data['phone']
 
+		# Verify billing fields
+		try: DictHelper.eval(data['billing'], ['address1', 'city', 'country', 'firstName', 'lastName', 'postalCode', 'state'])
+		except ValueError as e: return Services.Error(1001, [('billing.' + f, 'missing') for f in e.args])
+
 		# Add the billing info
 		dData['address1'] = data['billing']['address1']
 		if data['billing']['address2']: dData['address2'] = data['billing']['address2']
@@ -812,6 +858,11 @@ class Konnektive(Services.Service):
 
 		# If we need shipping info
 		if 'shippingIsBilling' not in data or data['shippingIsBilling'] == False:
+
+			# Verify shipping fields
+			try: DictHelper.eval(data['shipping'], ['address1', 'city', 'country', 'firstName', 'lastName', 'postalCode', 'state'])
+			except ValueError as e: return Services.Error(1001, [('shipping.' + f, 'missing') for f in e.args])
+
 			dData['address1'] = data['shipping']['address1']
 			if data['shipping']['address2']: dData['address2'] = data['shipping']['address2']
 			dData['city'] = data['shipping']['city']
@@ -949,6 +1000,46 @@ class Konnektive(Services.Service):
 			"transactions": data['transactions'] and dTransaction or None,
 			"currency": dOrder['currencySymbol']
 		})
+
+	def orderCancel_update(self, data, sesh):
+		"""Order Cancel
+
+		Cancels an order and optionally issues a full refund
+
+		Arguments:
+			data (dict): Data sent with the request
+			sesh (Sesh._Session): The session associated with the request
+
+		Returns:
+			Services.Response
+		"""
+
+		# Validate rights
+		Rights.check(sesh, 'orders', Rights.UPDATE)
+
+		# Verify fields
+		try: DictHelper.eval(data, ['orderId', 'reason'])
+		except ValueError as e: return Services.Response(error=(1001, [(f, 'missing') for f in e.args]))
+
+		# Init data to send
+		dData = {
+			"orderId": data['orderId'],
+			"cancelReason": data['reason']
+		}
+
+		# If refund was passed
+		if 'refund' in data and data['refund']:
+			dData['fullRefund'] = 'true'
+
+		# Make the request
+		dRes = self._post('order/cancel', dData)
+
+		# If we failed
+		if dRes['result'] != 'SUCCESS':
+			return Services.Error(1103)
+
+		# Return OK
+		return Services.Response(True)
 
 	def orderQa_update(self, data, sesh):
 		"""Order QA
