@@ -266,7 +266,10 @@ class Tracking(Record_MySQL.Record):
 		sSQL = "SELECT *\n" \
 				"FROM `%(db)s`.`%(table)s`\n" \
 				"WHERE `action_ts` BETWEEN FROM_UNIXTIME(%(start)d) AND FROM_UNIXTIME(%(end)d)\n" \
-				"AND `resolution_ts` IS NOT NULL\n" \
+				"AND (\n" \
+				"	`resolution_ts` IS NOT NULL OR\n" \
+				"	`action` = 'sms'\n" \
+				")\n" \
 				"%(memo_id)s" \
 				"ORDER BY `action_ts`" % {
 			"db": dStruct['db'],
@@ -275,8 +278,6 @@ class Tracking(Record_MySQL.Record):
 			"end": int(end),
 			"memo_id": memo_id is not None and ('AND `memo_id` = %d\n' % memo_id) or ''
 		}
-
-		print(sSQL)
 
 		# Fetch and return all records
 		return Record_MySQL.Commands.select(

@@ -592,37 +592,60 @@ class Monolith(Services.Service):
 
 		# Find the claim
 		oClaim = CustomerClaimed.get(data['phoneNumber'])
+
+		# If the claim doesn't exist
 		if not oClaim:
-			return Services.Response(error=(1104, data['phoneNumber']))
 
-		# If the current owner of the claim is not the person transfering,
-		#	check permissions
-		if oClaim['user'] != sesh['memo_id']:
+			# If the person transferring has overwrite permissions
+			if not Rights.check(sesh, 'csr_overwrite', Rights.CREATE, None, True):
+				return Services.Response(error=(1104, data['phoneNumber']))
 
-			# Make sure the user has the proper rights
-			oResponse = Services.read('auth', 'rights/verify', {
-				"name": "csr_overwrite",
-				"right": Rights.CREATE
-			}, sesh)
-			if not oResponse.data:
-				return Services.Response(error=Rights.INVALID)
+			# Else, create a new claim
+			oClaim = CustomerClaimed({
+				"phoneNumber": data['phoneNumber'],
+				"user": data['user_id'],
+				"orderId": None,
+				"provider": None,
+				"continuous": None,
+				"transferredBy": sesh['memo_id'],
+				"viewed": False
+			})
+			oClaim.create()
 
-			# Store the old user
-			iOldUser = oClaim['user']
-
-		# Else, no old user
-		else:
+			# No original claim
 			iOldUser = None
 
-		# Find the user
-		if not User.exists(data['user_id']):
-			return Services.Response(error=(1104, data['user_id']))
+		# Else, the claim exists
+		else:
 
-		# Switch the user associated to the logged in user
-		oClaim['user'] = data['user_id']
-		oClaim['transferredBy'] = sesh['memo_id']
-		oClaim['viewed'] = False
-		oClaim.save()
+			# If the current owner of the claim is not the person transfering,
+			#	check permissions
+			if oClaim['user'] != sesh['memo_id']:
+
+				# Make sure the user has the proper rights
+				oResponse = Services.read('auth', 'rights/verify', {
+					"name": "csr_overwrite",
+					"right": Rights.CREATE
+				}, sesh)
+				if not oResponse.data:
+					return Services.Response(error=Rights.INVALID)
+
+				# Store the old user
+				iOldUser = oClaim['user']
+
+			# Else, no old user
+			else:
+				iOldUser = None
+
+			# Find the user
+			if not User.exists(data['user_id']):
+				return Services.Response(error=(1104, data['user_id']))
+
+			# Switch the user associated to the logged in user
+			oClaim['user'] = data['user_id']
+			oClaim['transferredBy'] = sesh['memo_id']
+			oClaim['viewed'] = False
+			oClaim.save()
 
 		# If the user transferred it to themselves, they don't need a
 		#	notification
@@ -635,6 +658,7 @@ class Monolith(Services.Service):
 					"phoneNumber": data['phoneNumber'],
 					"orderId": oClaim['orderId'],
 					"provider": oClaim['provider'],
+					"continuous": oClaim['continuous'],
 					"transferredBy": sesh['memo_id'],
 					"viewed": False
 				}
@@ -3104,7 +3128,7 @@ class Monolith(Services.Service):
 		mWarning = None
 
 		# If the order was approved
-		if data['reason'] in ['approved', 'declined', 'transferred', 'x']:
+		if data['reason'] in ['approved', 'declined', 'transferred', 'closed']:
 
 			# Add tracking
 			oResponse = Services.create('providers', 'tracking', {
@@ -4466,8 +4490,21 @@ class Monolith(Services.Service):
 		if 'orderId' in data:
 			SMSWorkflow.providerMessaged(data['orderId'], oSmpNote['id'])
 
+		# Init warning
+		mWarning = None
+
+		# Add tracking
+		oResponse = Services.create('providers', 'tracking', {
+			"_internal_": Services.internalKey(),
+			"action": 'sms',
+			"crm_type": 'knk',
+			"crm_id": data['customerId']
+		}, sesh)
+		if oResponse.errorExists():
+			mWarning = oResponse.error;
+
 		# Return the ID of the new note
-		return Services.Response(oSmpNote['id'])
+		return Services.Response(oSmpNote['id'], warning=mWarning)
 
 	def providers_read(self, data, sesh):
 		"""Providers

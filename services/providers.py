@@ -908,12 +908,19 @@ class Providers(Services.Service):
 		# Go through each record found
 		for d in lTracking:
 
-			# Calculate the hours, minutes, and seconds
-			iHours, iRemainder = divmod(d['resolution_ts'] - d['action_ts'], 3600)
-			iMinutes, iSeconds = divmod(iRemainder, 60)
+			# If it's not SMS
+			if d['action'] != 'sms':
 
-			# Add the time to the record
-			d['time'] = '{:0}:{:02}:{:02}'.format(iHours, iMinutes, iSeconds)
+				# Calculate the hours, minutes, and seconds
+				iHours, iRemainder = divmod(d['resolution_ts'] - d['action_ts'], 3600)
+				iMinutes, iSeconds = divmod(iRemainder, 60)
+
+				# Add the time to the record
+				d['time'] = '{:0}:{:02}:{:02}'.format(iHours, iMinutes, iSeconds)
+
+			# Else
+			else:
+				d['time'] = ''
 
 		# Return the records
 		return Services.Response(lTracking)
@@ -1182,17 +1189,19 @@ class Providers(Services.Service):
 
 				# Get the current timestamp
 				iTS = int(time())
+				sResolution = 'signout'
 
 				# If it was a timeout
 				if 'timeout' in data and data['timeout']:
 					try:
 						data['timeout'] = int(data['timeout'])
 						iTS -= data['timeout']
+						sResolution = 'timeout'
 					except ValueError:
 						return Services.Error(1001, [('timeout', 'not an integer')])
 
 				# End it
-				oTracking['resolution'] = 'signout'
+				oTracking['resolution'] = sResolution
 				oTracking['resolution_sesh'] = sSeshID
 				oTracking['resolution_ts'] = iTS
 				oTracking.save()
@@ -1388,8 +1397,8 @@ class Providers(Services.Service):
 		# If we're creating a new action
 		if 'action' in data:
 
-			# If it's not a viewed
-			if data['action'] != 'viewed':
+			# If it's not a viewed or sms
+			if data['action'] not in ['viewed', 'sms']:
 				return Services.Response(error=(1001, [('action', 'invalid')]))
 
 			# Create a new tracking instance
@@ -1409,8 +1418,12 @@ class Providers(Services.Service):
 		# Else, we're adding a resolution
 		else:
 
+			# If we got an 'x', rename it
+			if data['resolution'] == 'x':
+				data['resolution'] = 'closed'
+
 			# If it's not a viewed
-			if data['resolution'] not in ['approved', 'declined', 'transferred', 'x']:
+			if data['resolution'] not in ['approved', 'declined', 'transferred', 'closed']:
 				return Services.Response(error=(1001, [('resolution', 'invalid')]))
 
 			# Look for an existing viewed tracking

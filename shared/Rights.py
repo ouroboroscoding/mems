@@ -32,7 +32,7 @@ ALL		= 0x0F
 INVALID = 1000
 """REST invalid rights error code"""
 
-def check(sesh, name, right, ident=None):
+def check(sesh, name, right, ident=None, return_failure=False):
 	"""Check
 
 	Checks's if the currently signed in user has the requested right on the
@@ -44,6 +44,8 @@ def check(sesh, name, right, ident=None):
 		name (str): The name of the permission to check
 		right (uint): The right to check for
 		ident (str): Optional identifier to check against
+		return_failure (bool): If true, return failure instead of raising an
+								exception
 
 	Raises:
 		ResponseException
@@ -65,9 +67,18 @@ def check(sesh, name, right, ident=None):
 	# Check with the auth service
 	oResponse = Services.read('auth', 'rights/verify', dData, sesh)
 
-	# If the check failed, raise an exception
+	# If the check failed
 	if not oResponse.data:
+
+		# If we need to return
+		if return_failure:
+			return False
+
+		# Else, raise an exception
 		raise Services.ResponseException(error=INVALID)
+
+	# Return OK
+	return True
 
 def checkReturn(sesh, name, right, ident=None):
 	""" Check Return
