@@ -64,8 +64,18 @@ class JustCall(Services.Service):
 		# Generate URL
 		sURL = 'https://api.justcall.io/v1/%s' % path
 
-		# Make the request
-		oRes = requests.post(sURL, data=sBody, headers=dHeaders)
+		# Send the data
+		iAttempts = 0
+		while True:
+			try:
+				oRes = requests.post(sURL, data=sBody, headers=dHeaders)
+				break
+			except requests.exceptions.ConnectionError as e:
+				iAttempts += 1
+				if iAttempts < 3:
+					time.sleep(1)
+					continue
+				raise e
 
 		# If we got a 200 back
 		if oRes.status_code == 200:
