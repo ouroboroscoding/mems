@@ -157,44 +157,6 @@ class HubSpot(Services.Service):
 		"""
 		return True
 
-	def customerLabel_update(self, data):
-		"""Customer Label
-
-		Sets the label for a customer
-
-		Arguments:
-			data (dict): Data sent with the request
-
-		Returns:
-			Services.Response
-		"""
-
-		# Verify fields
-		try: DictHelper.eval(data, ['_internal_', 'label'])
-		except ValueError as e: return Services.Response(error=(1001, [(f, 'missing') for f in e.args]))
-
-		# Must have one of vid or email
-		if 'vid' not in data and 'email' not in data:
-			return Services.Response(error=(1001, [('vid', 'missing'), ('email', 'missing')]))
-
-		# Verify the key, remove it if it's ok
-		if not Services.internalKey(data['_internal_']):
-			return Services.Response(error=Errors.SERVICE_INTERNAL_KEY)
-		del data['_internal_']
-
-		# If we got a vid
-		if 'vid' in data:
-			sPath = 'contacts/v2/contact/vid/%s/profile' % str(data['vid'])
-		else:
-			sPath = 'contacts/v2/contact/email/%s/profile' % data['email']
-
-		# Make the request and return the result
-		return Services.Response(
-			self._post(sPath, {
-				"order_label": data['label']
-			})
-		)
-
 	def customerDecline_update(self, data):
 		"""Customer Decline
 
@@ -242,5 +204,43 @@ class HubSpot(Services.Service):
 		return Services.Response(
 			self._post(sContactPath, {
 				"decline_reason": data['type']
+			})
+		)
+
+	def customerLabel_update(self, data):
+		"""Customer Label
+
+		Sets the label for a customer
+
+		Arguments:
+			data (dict): Data sent with the request
+
+		Returns:
+			Services.Response
+		"""
+
+		# Verify fields
+		try: DictHelper.eval(data, ['_internal_', 'label'])
+		except ValueError as e: return Services.Response(error=(1001, [(f, 'missing') for f in e.args]))
+
+		# Must have one of vid or email
+		if 'vid' not in data and 'email' not in data:
+			return Services.Response(error=(1001, [('vid', 'missing'), ('email', 'missing')]))
+
+		# Verify the key, remove it if it's ok
+		if not Services.internalKey(data['_internal_']):
+			return Services.Response(error=Errors.SERVICE_INTERNAL_KEY)
+		del data['_internal_']
+
+		# If we got a vid
+		if 'vid' in data:
+			sPath = 'contacts/v2/contact/vid/%s/profile' % str(data['vid'])
+		else:
+			sPath = 'contacts/v2/contact/email/%s/profile' % data['email']
+
+		# Make the request and return the result
+		return Services.Response(
+			self._post(sPath, {
+				"order_label": data['label']
 			})
 		)
