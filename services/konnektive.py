@@ -75,7 +75,7 @@ class Konnektive(Services.Service):
 		params['resultsPerPage'] = 200
 
 		# Make sure we get every page
-		while(True):
+		while True:
 
 			# Set the current page
 			params['page'] = iPage
@@ -84,8 +84,8 @@ class Konnektive(Services.Service):
 			sURL = self._generateURL(path, params)
 
 			# Fetch the data
+			iAttempts = 0
 			while True:
-				iAttempts = 0
 				try:
 					oRes = requests.post(sURL, headers={"Content-Type": 'application/json; charset=utf-8'})
 					break
@@ -133,8 +133,8 @@ class Konnektive(Services.Service):
 		sURL = self._generateURL(path, params)
 
 		# Send the data
+		iAttempts = 0
 		while True:
-			iAttempts = 0
 			try:
 				oRes = requests.post(sURL, headers={"Content-Type": 'application/json; charset=utf-8'})
 				break

@@ -107,6 +107,8 @@ class CSR(Services.Service):
 				"csr_messaging": 5,			# Read, Create
 				"csr_templates": 1,			# Read
 				"customers": 3,				# Read, Update
+				"hubspot": 1,				# Read
+				"justcall": 1,				# Read
 				"memo_mips": 3,				# Read, Update
 				"memo_notes": 5,			# Read, Create
 				"orders": 7,				# Read, Update, Create
