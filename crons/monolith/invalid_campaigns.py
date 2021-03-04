@@ -56,7 +56,7 @@ def run():
 		# Generate the email
 		sContent = "The following campaign IDs have no associated type, i.e. ED, HRT, etc\n\n" \
 					"%s\n\n" \
-					"Please login to https://admin.meutils.com/ and add the campaigns" % ', '.join(lDiff)
+					"Please login to https://admin.meutils.com/ and add the campaigns" % ', '.join([str(s) for s in lDiff])
 
 		# Send the email
 		oResponse = Services.create('communications', 'email', {
