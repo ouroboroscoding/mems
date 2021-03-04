@@ -24,6 +24,9 @@ import xmltodict
 # Shared imports
 from shared import Environment, Rights, USPS
 
+# Local imports
+from . import emailError
+
 class Konnektive(Services.Service):
 	"""Konnektive Service class
 
@@ -415,16 +418,31 @@ class Konnektive(Services.Service):
 				"year": data['cc_expiry'][2:],
 				"code": data['cc_cvc']
 			},
-			"campaignId": '',
+			"campaignId": '139',
 			"products": [{
-				"id": '',
+				"id": '994',
 				"qty": 1
-			}]
-		}, sesh)
+			}],
+			"qa": True
+		}, sesh, False)
 
 		# If there's an error
 		if oResponse.errorExists():
 			return oResponse
+
+		# Cancel the order
+		oResponse = self.orderCancel_update({
+			"orderId": oResponse.data,
+			"reason": "CC Change Order",
+			"refund": True
+		}, sesh, False)
+
+		# If it failed
+		if oResponse.errorExists():
+			emailError('CC Change Cancel Order Failed', "Customer: %s\n\nOrder: %s" % (
+				str(data['customerId']),
+				oResponse.data
+			))
 
 		# Return OK
 		return Services.Response(True)
@@ -694,10 +712,10 @@ class Konnektive(Services.Service):
 
 		# If the pay source is to use the existing
 		if data['payment'] == 'existing':
-			dData['paySource'] = ACCTONFILE
+			dData['paySource'] = 'ACCTONFILE'
 
 		# Else, if we got a dictionary
-		elif instanceof(data['payment'], dict):
+		elif isinstance(data['payment'], dict):
 
 			# Verify pay source fields
 			try: DictHelper.eval(data['payment'], ['type', 'number', 'month', 'year', 'code'])
@@ -708,7 +726,7 @@ class Konnektive(Services.Service):
 				return Services.Error(1001, [['payment.type', 'invalid']])
 
 			# Add the details
-			dData['paySource'] = CREDITCARD
+			dData['paySource'] = data['payment']['type']
 			dData['cardNumber'] = data['payment']['number']
 			dData['cardMonth'] = data['payment']['month']
 			dData['cardYear'] = data['payment']['year']
@@ -863,15 +881,15 @@ class Konnektive(Services.Service):
 			try: DictHelper.eval(data['shipping'], ['address1', 'city', 'country', 'firstName', 'lastName', 'postalCode', 'state'])
 			except ValueError as e: return Services.Error(1001, [('shipping.' + f, 'missing') for f in e.args])
 
-			dData['address1'] = data['shipping']['address1']
-			if data['shipping']['address2']: dData['address2'] = data['shipping']['address2']
-			dData['city'] = data['shipping']['city']
-			if data['shipping']['company']: dData['companyName'] = data['shipping']['company']
-			dData['country'] = data['shipping']['country']
-			dData['firstName'] = data['shipping']['firstName']
-			dData['lastName'] = data['shipping']['lastName']
-			dData['postalCode'] = data['shipping']['postalCode']
-			dData['state'] = data['shipping']['state']
+			dData['shipAddress1'] = data['shipping']['address1']
+			if data['shipping']['address2']: dData['shipAddress2'] = data['shipping']['address2']
+			dData['shipCity'] = data['shipping']['city']
+			if data['shipping']['company']: dData['shipCompanyName'] = data['shipping']['company']
+			dData['shipCountry'] = data['shipping']['country']
+			dData['shipFirstName'] = data['shipping']['firstName']
+			dData['shipLastName'] = data['shipping']['lastName']
+			dData['shipPostalCode'] = data['shipping']['postalCode']
+			dData['shipState'] = data['shipping']['state']
 		else:
 			dData['billShipSame'] = '1'
 
@@ -1001,7 +1019,7 @@ class Konnektive(Services.Service):
 			"currency": dOrder['currencySymbol']
 		})
 
-	def orderCancel_update(self, data, sesh):
+	def orderCancel_update(self, data, sesh, verify=True):
 		"""Order Cancel
 
 		Cancels an order and optionally issues a full refund
@@ -1009,13 +1027,15 @@ class Konnektive(Services.Service):
 		Arguments:
 			data (dict): Data sent with the request
 			sesh (Sesh._Session): The session associated with the request
+			verify (bool): Allow bypassing verification for internal calls
 
 		Returns:
 			Services.Response
 		"""
 
 		# Validate rights
-		Rights.check(sesh, 'orders', Rights.UPDATE)
+		if verify:
+			Rights.check(sesh, 'orders', Rights.UPDATE)
 
 		# Verify fields
 		try: DictHelper.eval(data, ['orderId', 'reason'])
