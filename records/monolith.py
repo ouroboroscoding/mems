@@ -726,6 +726,44 @@ class CustomerMsgPhone(Record_MySQL.Record):
 		return Record_MySQL.Commands.execute(dStruct['host'], sSQL)
 
 	@classmethod
+	def addAutoResponse(cls, customerPhone, date, message, custom={}):
+		"""Add Auto Response
+
+		Adds an outgoing auto-response message to the conversation summary
+		without modifying the hidden or direction flags
+
+		Arguments:
+			customerPhone (str): The number associated with the conversation
+			message (str): The message to prepend to the conversation
+			custom (dict): Custom Host and DB info
+				'host' the name of the host to get/set data on
+				'append' optional postfix for dynamic DBs
+
+		Returns:
+			None
+		"""
+
+		# Fetch the record structure
+		dStruct = cls.struct(custom)
+
+		# Generate SQL
+		sSQL = "UPDATE `%(db)s`.`%(table)s` SET\n" \
+				"	`totalOutGoing` = `totalOutGoing` + 1,\n" \
+				"	`lastMsg` = CONCAT('%(message)s', IFNULL(`lastMsg`, '')),\n" \
+				"	`updatedAt` = '%(dt)s'\n" \
+				"WHERE `customerPhone` = '%(customerPhone)s'" % {
+			"db": dStruct['db'],
+			"table": dStruct['table'],
+			"date": date,
+			"message": Record_MySQL.Commands.escape(dStruct['host'], message),
+			"customerPhone": Record_MySQL.Commands.escape(dStruct['host'], customerPhone),
+			"dt": arrow.get().format('YYYY-MM-DD HH:mm:ss')
+		}
+
+		# Execute the update
+		return Record_MySQL.Commands.execute(dStruct['host'], sSQL)
+
+	@classmethod
 	def existsByCustomerId(cls, customer_id, custom={}):
 		"""Exists By Customer ID
 

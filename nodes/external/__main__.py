@@ -230,7 +230,7 @@ def justCallWebhook():
 	# If the subject starts with 'Voicemail from ''
 	if dData['subject'][0:15] == 'Voicemail from ':
 
-		# Generate content
+		# Generate incoming content
 		sContent = "VOICEMAIL:\nSent to %s (%s)\n%s" % (
 			dData['agent_name'],
 			dData['called_via'][-10:],
@@ -248,6 +248,24 @@ def justCallWebhook():
 		})
 		if oResponse.errorExists():
 			emailError('JustCall Webhook Request Failed', 'Failed to add SMS\n\n%s\n\n%s' % (
+				str(dData),
+				str(oResponse)
+			))
+
+		# Generate outgoing content
+		sContent = "Male Excel Medical: We have missed a call from your number. All our agents are currently assisting other patients. The next available agent will contact you in the shortest possible delay. Please note that all calls outside of office hours  will be returned upon reopening.\n\nIf you would prefer that we contact you via text please reply \"Text\" otherwise our agents will reach out by phone."
+
+		# Add the request as an incoming SMS
+		oResponse = Services.create('monolith', 'message/outgoing', {
+			"_internal_": Services.internalKey(),
+			"auto_response": True,
+			"customerPhone": dData['contact_number'][-10:],
+			"content": sContent,
+			"name": "SMS Workflow",
+			"type": "support"
+		})
+		if oResponse.errorExists():
+			emailError('JustCall Webhook Request Failed', 'Failed to send Auto-Response SMS\n\n%s\n\n%s' % (
 				str(dData),
 				str(oResponse)
 			))
