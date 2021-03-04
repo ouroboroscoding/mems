@@ -2518,6 +2518,10 @@ class Monolith(Services.Service):
 		try: DictHelper.eval(data, ['customerPhone', 'content', 'type'])
 		except ValueError as e: return Services.Response(error=(1001, [(f, 'missing') for f in e.args]))
 
+		# If the auto-response flag is missing
+		if 'auto_response' not in data:
+			data['auto_response'] = False
+
 		# Check the number isn't blocked
 		if SMSStop.filter({"phoneNumber": data['customerPhone'], "service": data['type']}):
 			return Services.Response(error=1500)
@@ -2587,17 +2591,30 @@ class Monolith(Services.Service):
 		# Catch issues with summary
 		try:
 
-			# Update the conversations
-			CustomerMsgPhone.add(
-				CustomerMsgPhone.OUTGOING,
-				data['customerPhone'],
-				sDT,
-				'\n--------\nSent by %s at %s\n%s\n' % (
-					data['name'],
+			# If it's an auto-response
+			if data['auto_response'] == True:
+				CustomerMsgPhone.addAutoResponse(
+					data['customerPhone'],
 					sDT,
-					data['content']
+					'\n--------\nSent by %s at %s\n%s\n' % (
+						data['name'],
+						sDT,
+						data['content']
+					)
 				)
-			)
+
+			# Else, it's a regular outgoing message
+			else:
+				CustomerMsgPhone.add(
+					CustomerMsgPhone.OUTGOING,
+					data['customerPhone'],
+					sDT,
+					'\n--------\nSent by %s at %s\n%s\n' % (
+						data['name'],
+						sDT,
+						data['content']
+					)
+				)
 
 		# Catch any exceptions with summaries
 		except Exception as e:

@@ -34,6 +34,7 @@ REST.Server({
 	"/account/byCRM": {"methods": REST.READ, "session": True},
 	"/account/email": {"methods": REST.UPDATE, "session": True},
 	"/account/forgot": {"methods": REST.CREATE | REST.UPDATE},
+	"/account/payment": {"methods": REST.UPDATE, "session": True},
 	"/account/phone": {"methods": REST.UPDATE, "session": True},
 	"/account/rx": {"methods": REST.UPDATE, "session": True},
 	"/account/verify": {"methods": REST.UPDATE},

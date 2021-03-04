@@ -28,10 +28,12 @@ oRestConf = init(
 # Create the HTTP server and map requests to service
 REST.Server({
 	"/customer": {"methods": REST.READ | REST.UPDATE, "session": True},
+	"/customer/payment": {"methods": REST.UPDATE, "session": True, "environ": True},
 	"/customer/purchases": {"methods": REST.READ, "session": True},
 	"/customer/orders": {"methods": REST.READ, "session": True},
 	"/customer/transactions": {"methods": REST.READ, "session": True},
-	"/order": {"methods": REST.READ, "session": True},
+	"/order": {"methods": REST.CREATE | REST.READ, "session": True},
+	"/order/cancel": {"methods": REST.UPDATE, "session": True},
 	"/order/qa": {"methods": REST.UPDATE, "session": True},
 	"/order/transactions": {"methods": REST.READ, "session": True},
 	"/purchase/cancel": {"methods": REST.UPDATE, "session": True}
