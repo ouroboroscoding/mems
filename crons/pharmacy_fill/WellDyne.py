@@ -139,6 +139,8 @@ class TriggerFile(object):
 			Allergies.fetch(data)
 		];
 
+		print(lLine)
+
 		# If we have an existing trigger ID
 		if existing:
 
