@@ -63,11 +63,14 @@ if __name__ == "__main__":
 
 	# Try to find allergy answers in the landings
 	if lLandings:
+
+		# Look for answers for the specific questions
 		lAnswers = TfAnswer.filter({
 			"landing_id": lLandings,
-			"ref": ['95f9516a-4670-43b1-9b33-4cf822dc5917', 'allergies']
-		}, raw=['value'])
-		if lAnswers:
+			"ref": ['95f9516a-4670-43b1-9b33-4cf822dc5917', 'allergies', 'allergiesList']
+		}, raw=['ref', 'value'])
+
+		print(lAnswers)
 			lAnswers = [d['value'] for d in lAnswers]
 
 	print('Answers: %s' % ', '.join(lAnswers))

@@ -4915,7 +4915,7 @@ class Monolith(Services.Service):
 
 		# Make sure the new password is strong enough
 		if not User.passwordStrength(sPasswd):
-			return Services.Response(error=1204)
+			return Services.Response(error=1502)
 
 		# Set the new password and save
 		oUser['password'] = bcrypt.hashpw(sPasswd.encode('utf8'), bcrypt.gensalt()).decode('utf8')
