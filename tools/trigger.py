@@ -20,7 +20,7 @@ import sys
 from RestOC import Conf, Record_Base, Record_MySQL, REST, Services
 
 # Cron imports
-from crons.shared import PharmacyFill
+from crons.shared import Allergies, PharmacyFill
 
 # If the version argument is missing
 if len(sys.argv) < 3:
@@ -56,6 +56,10 @@ dRes = PharmacyFill.process({
 	"crm_id": sys.argv[2],
 	"crm_order": sys.argv[3]
 })
+
+# Add allergies
+for d in dRes['data']:
+	d['allergies'] = Allergies.fetch(d)
 
 # Print the result
 print('Status: %s' % (dRes['status'] and 'Success' or 'Failure'))
