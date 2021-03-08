@@ -131,28 +131,32 @@
 			"host": "0.0.0.0",
 			"port": 8000,
 			"protocol": "http",
-			"workers": 2
+			"workers": 1
 		},
 		"services": {
+
+			"webpoll": {"port": 2},
 			"auth": {"port": 3},
 			"communications": {"port": 4},
-			"csr": {"port": 9},
-			"customers": {"port": 12},
-			"docs": {"port": 18, "workers": 1},
-			"external": {"port": 100},
-			"hubspot": {"port": 17, "workers": 1},
-			"justcall": {"port": 19, "workers": 1},
-			"konnektive": {"port": 7},
-			"monolith": {"port": 6},
-			"patient": {"port": 11},
 			"payment": {"port": 5},
+			"monolith": {"port": 6},
+			"konnektive": {"port": 7},
 			"prescriptions": {"port": 8},
-			"products": {"port": 14},
-			"providers": {"port": 16},
-			"qualmed": {"port": 15},
+			"csr": {"port": 9},
+			"welldyne": {"port": 10},
+			"patient": {"port": 11},
+			"customers": {"port": 12},
 			"reports": {"port": 13},
-			"webpoll": {"port": 2},
-			"welldyne": {"port": 10}
+			"products": {"port": 14},
+			"qualmed": {"port": 15},
+			"providers": {"port": 16},
+			"hubspot": {"port": 17, "workers": 1},
+			"docs": {"port": 18, "workers": 1},
+			"justcall": {"port": 19, "workers": 1},
+			"link": {"port": 20},
+
+			"external": {"port": 100},
+			"link_domain": {"port": 101}
 		}
 	},
 
