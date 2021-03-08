@@ -243,3 +243,45 @@ class Tracking(Record_MySQL.Record):
 
 		# Return the config
 		return cls._conf
+
+	@classmethod
+	def range(cls, start, end, memo_id=None, custom={}):
+		"""Range
+
+		Returns the tracking records within the given range
+
+		Arguments:
+			start (uint): The start timestamp
+			end (uint): The end timestamp
+			memo_id (uint): Optional memo user to filter by
+
+		Returns:
+			list
+		"""
+
+		# Fetch the record structure
+		dStruct = cls.struct(custom)
+
+		# Generate SQL
+		sSQL = "SELECT *\n" \
+				"FROM `%(db)s`.`%(table)s`\n" \
+				"WHERE `action_ts` BETWEEN FROM_UNIXTIME(%(start)d) AND FROM_UNIXTIME(%(end)d)\n" \
+				"AND (\n" \
+				"	`resolution_ts` IS NOT NULL OR\n" \
+				"	`action` = 'sms'\n" \
+				")\n" \
+				"%(memo_id)s" \
+				"ORDER BY `action_ts`" % {
+			"db": dStruct['db'],
+			"table": dStruct['table'],
+			"start": int(start),
+			"end": int(end),
+			"memo_id": memo_id is not None and ('AND `memo_id` = %d\n' % memo_id) or ''
+		}
+
+		# Fetch and return all records
+		return Record_MySQL.Commands.select(
+			dStruct['host'],
+			sSQL,
+			Record_MySQL.ESelect.ALL
+		)

@@ -311,7 +311,8 @@ class Eligibility(Record_MySQL.Record):
 				"	((`%(db)s`.`%(table)s` as `wde`\n" \
 				"	JOIN `%(db)s`.`kt_customer` as `ktc` USING (`customerId`))\n" \
 				"	JOIN `%(db)s`.`ds_patient` as `dsp` USING (`customerId`))\n" \
-				"WHERE `wde`.`memberThru` != '0000-00-00 00:00:00'" % {
+				"WHERE `wde`.`memberThru` != '0000-00-00 00:00:00'\n" \
+				"AND `wde`.`updatedAt` > DATE_SUB(NOW(), INTERVAL 1 DAY)" % {
 			"db": dStruct['db'],
 			"table": dStruct['table']
 		}

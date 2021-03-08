@@ -8,7 +8,7 @@ __author__		= "Chris Nasr"
 __copyright__	= "MaleExcelMedical"
 __version__		= "1.0.0"
 __maintainer__	= "Chris Nasr"
-__email__		= "chris@fuelforthefire.ca"
+__email__		= "bast@maleexcel.com"
 __created__		= "2020-05-09"
 
 # Python imports
@@ -22,7 +22,10 @@ from RestOC import Conf, DictHelper, JSON, Services, StrHelper
 import xmltodict
 
 # Shared imports
-from shared import Rights, USPS
+from shared import Environment, Rights, USPS
+
+# Local imports
+from . import emailError
 
 class Konnektive(Services.Service):
 	"""Konnektive Service class
@@ -75,7 +78,7 @@ class Konnektive(Services.Service):
 		params['resultsPerPage'] = 200
 
 		# Make sure we get every page
-		while(True):
+		while True:
 
 			# Set the current page
 			params['page'] = iPage
@@ -84,7 +87,17 @@ class Konnektive(Services.Service):
 			sURL = self._generateURL(path, params)
 
 			# Fetch the data
-			oRes = requests.post(sURL, headers={"Content-Type": 'application/json; charset=utf-8'})
+			iAttempts = 0
+			while True:
+				try:
+					oRes = requests.post(sURL, headers={"Content-Type": 'application/json; charset=utf-8'})
+					break
+				except requests.exceptions.ConnectionError as e:
+					iAttempts += 1
+					if iAttempts < 3:
+						time.sleep(1)
+						continue
+					raise e
 
 			# Pull out the data
 			dData = oRes.json()
@@ -122,14 +135,21 @@ class Konnektive(Services.Service):
 		# Generate the URL
 		sURL = self._generateURL(path, params)
 
-		# Fetch the data
-		oRes = requests.post(sURL, headers={"Content-Type": 'application/json; charset=utf-8'})
+		# Send the data
+		iAttempts = 0
+		while True:
+			try:
+				oRes = requests.post(sURL, headers={"Content-Type": 'application/json; charset=utf-8'})
+				break
+			except requests.exceptions.ConnectionError as e:
+				iAttempts += 1
+				if iAttempts < 3:
+					time.sleep(1)
+					continue
+				raise e
 
-		# Pull out the reponse
-		dData = oRes.json()
-
-		# Return based on result
-		return dData['result'] == 'SUCCESS'
+		# Pull out the reponse and return it
+		return oRes.json()
 
 	def initialise(self):
 		"""Initialise
@@ -145,6 +165,7 @@ class Konnektive(Services.Service):
 		self._pass = Conf.get(('konnektive', 'pass'))
 		self._host = Conf.get(('konnektive', 'host'))
 		self._allowQaUpdate = Conf.get(('konnektive', 'allow_qa_update'))
+		self._allowPurchaseCancel = Conf.get(('konnektive', 'allow_purchase_cancel'))
 
 		# Store encounter types
 		self._encounters = JSON.load('definitions/encounter_by_state.json');
@@ -186,13 +207,7 @@ class Konnektive(Services.Service):
 			data['detailed'] = False
 
 		# Make sure the user has the proper permission to do this
-		oResponse = Services.read('auth', 'rights/verify', {
-			"name": "customers",
-			"right": Rights.READ,
-			"ident": data['customerId']
-		}, sesh)
-		if not oResponse.data:
-			return Services.Response(error=Rights.INVALID)
+		Rights.check(sesh, 'customers', Rights.READ, data['customerId'])
 
 		# Make the request to Konnektive
 		lCustomers = self._request('customer/query', {
@@ -272,13 +287,7 @@ class Konnektive(Services.Service):
 		except ValueError as e: return Services.Response(error=(1001, [(f, 'missing') for f in e.args]))
 
 		# Make sure the user has the proper permission to do this
-		oResponse = Services.read('auth', 'rights/verify', {
-			"name": "customers",
-			"right": Rights.UPDATE,
-			"ident": data['customerId']
-		}, sesh)
-		if not oResponse.data:
-			return Services.Response(error=Rights.INVALID)
+		Rights.check(sesh, 'customers', Rights.UPDATE, data['customerId'])
 
 		# Init the params to KNK
 		dQuery = {}
@@ -368,8 +377,72 @@ class Konnektive(Services.Service):
 			dQuery['customerId'] = data['customerId']
 
 			# Send the update to Konnektive
-			if not self._post('customer/update', dQuery):
+			dRes = self._post('customer/update', dQuery)
+
+			# If we failed
+			if dRes['result'] != 'SUCCESS':
 				return Services.Response(error=1103)
+
+		# Return OK
+		return Services.Response(True)
+
+	def customerPayment_update(self, data, sesh, environ):
+		"""Customer Payment
+
+		Updates the payment source for the customer
+
+		Arguments:
+			data (dict): Data sent with the request
+			sesh (Sesh._Session): The session associated with the request
+			environ (dict): Info related to the request
+
+		Returns:
+			Services.Response
+		"""
+
+		# Verify fields
+		try: DictHelper.eval(data, ['customerId', 'cc_number', 'cc_expiry', 'cc_cvc'])
+		except ValueError as e: return Services.Response(error=(1001, [(f, 'missing') for f in e.args]))
+
+		# Make sure the user has the proper permission to do this
+		Rights.check(sesh, 'customers', Rights.UPDATE, data['customerId'])
+
+		# Create a fake order to be able to run the card
+		oResponse = self.order_create({
+			"customerId": data['customerId'],
+			"ip": Environment.getClientIP(environ),
+			"payment": {
+				"type": 'CREDITCARD',
+				"number": data['cc_number'],
+				"month": data['cc_expiry'][:2],
+				"year": data['cc_expiry'][2:],
+				"code": data['cc_cvc']
+			},
+			"campaignId": '139',
+			"products": [{
+				"id": '994',
+				"qty": 1
+			}],
+			"qa": True
+		}, sesh, False)
+
+		# If there's an error
+		if oResponse.errorExists():
+			return oResponse
+
+		# Cancel the order
+		oResponse = self.orderCancel_update({
+			"orderId": oResponse.data,
+			"reason": "CC Change Order",
+			"refund": True
+		}, sesh, False)
+
+		# If it failed
+		if oResponse.errorExists():
+			emailError('CC Change Cancel Order Failed', "Customer: %s\n\nOrder: %s" % (
+				str(data['customerId']),
+				oResponse.data
+			))
 
 		# Return OK
 		return Services.Response(True)
@@ -392,13 +465,7 @@ class Konnektive(Services.Service):
 		except ValueError as e: return Services.Response(error=(1001, [(f, 'missing') for f in e.args]))
 
 		# Make sure the user has the proper permission to do this
-		oResponse = Services.read('auth', 'rights/verify', {
-			"name": "customers",
-			"right": Rights.READ,
-			"ident": data['customerId']
-		}, sesh)
-		if not oResponse.data:
-			return Services.Response(error=Rights.INVALID)
+		Rights.check(sesh, 'customers', Rights.READ, data['customerId'])
 
 		# Make the request to Konnektive
 		lPurchases = self._request('purchase/query', {
@@ -479,13 +546,7 @@ class Konnektive(Services.Service):
 		except ValueError as e: return Services.Response(error=(1001, [(f, 'missing') for f in e.args]))
 
 		# Make sure the user has the proper permission to do this
-		oResponse = Services.read('auth', 'rights/verify', {
-			"name": "customers",
-			"right": Rights.READ,
-			"ident": data['customerId']
-		}, sesh)
-		if not oResponse.data:
-			return Services.Response(error=Rights.INVALID)
+		Rights.check(sesh, 'customers', Rights.READ, data['customerId'])
 
 		# If transactions flag not passed, assume false
 		if 'transactions' not in data:
@@ -593,13 +654,7 @@ class Konnektive(Services.Service):
 
 		# Make sure the user has the proper permission to do this
 		if verify:
-			oResponse = Services.read('auth', 'rights/verify', {
-				"name": "customers",
-				"right": Rights.READ,
-				"ident": data['customerId']
-			}, sesh)
-			if not oResponse.data:
-				return Services.Response(error=Rights.INVALID)
+			Rights.check(sesh, 'customers', Rights.READ, data['customerId'])
 
 		# Make the request to Konnektive
 		lTransactions = self._request('transactions/query', {
@@ -630,8 +685,231 @@ class Konnektive(Services.Service):
 			"currency": d['currencySymbol']
 		} for d in lTransactions])
 
+	def order_create(self, data, sesh, verify=True):
+		"""Order Create
+
+		Creates a new order
+
+		Arguments:
+			data (dict): Data sent with the request
+			sesh (Sesh._Session): The session associated with the request
+			verify (bool): Allow bypassing verification for internal calls
+
+		Returns:
+			Services.Response
+		"""
+
+		# If we need to verify
+		if verify:
+			Rights.check(sesh, 'orders', Rights.CREATE)
+
+		# Verify fields
+		try: DictHelper.eval(data, ['customerId', 'campaignId', 'products', 'payment', 'ip'])
+		except ValueError as e: return Services.Error(1001, [(f, 'missing') for f in e.args])
+
+		# Init the data sent to Konnektive
+		dData = {}
+
+		# If the pay source is to use the existing
+		if data['payment'] == 'existing':
+			dData['paySource'] = 'ACCTONFILE'
+
+		# Else, if we got a dictionary
+		elif isinstance(data['payment'], dict):
+
+			# Verify pay source fields
+			try: DictHelper.eval(data['payment'], ['type', 'number', 'month', 'year', 'code'])
+			except ValueError as e: return Services.Error(1001, [('payment.' + f, 'missing') for f in e.args])
+
+			# If the type is not credit card
+			if data['payment']['type'] != 'CREDITCARD':
+				return Services.Error(1001, [['payment.type', 'invalid']])
+
+			# Add the details
+			dData['paySource'] = data['payment']['type']
+			dData['cardNumber'] = data['payment']['number']
+			dData['cardMonth'] = data['payment']['month']
+			dData['cardYear'] = data['payment']['year']
+			dData['cardSecurityCode'] = data['payment']['code']
+
+		# Else, invalid paysource
+		else:
+			return Services.Error(1001, [['payment', 'invalid']])
+
+		# Add the IP address
+		dData['ipAddress'] = data['ip']
+
+		# Add the campaign ID
+		dData['campaignId'] = data['campaignId']
+
+		# Make sure products is an array
+		if isinstance(data['products'], list):
+
+			# Go through each one
+			for i in range(len(data['products'])):
+
+				# If it a dictionary
+				if isinstance(data['products'][i], dict):
+
+					# Make sure we at least have an ID
+					if 'id' not in data['products'][i]:
+						return Services.Error(1001, [('paySource.' + f, 'missing') for f in e.args])
+
+					# Product index
+					iP = i+1
+
+					# Add the product details
+					dData['product%d_id' % iP] = data['products'][i]['id']
+					if 'qty' in data['products'][i]:
+						dData['product%d_qty' % iP] = data['products'][i]['qty']
+					if 'price' in data['products'][i]:
+						dData['product%d_price' % iP] = data['products'][i]['price']
+					if 'shipping' in data['products'][i]:
+						dData['product%d_shipPrice' % iP] = data['products'][i]['shipping']
+					if 'variant' in data['products'][i]:
+						dData['variant%d_id' % iP] = data['products'][i]['variant']
+
+				# Else, we got invalid data
+				else:
+					return Services.Error(1001, [['products.%d' % i, 'must be an object']])
+
+		# Else, we got invalid data
+		else:
+			return Services.Error(1001, [['products', 'must be an array']])
+
+		# If we want to skip QA
+		if 'qa' in data and data['qa']:
+			dData['forceQA'] = '1'
+			dData['skipQA'] = '0'
+		else:
+			dData['forceQA'] = '0'
+			dData['skipQA'] = '1'
+
+		# Init fetch customer data flag
+		bFetchCustomer = False
+
+		# If the email or phone is missing
+		if 'email' not in data:
+			bFetchCustomer = True
+		if 'phone' not in data:
+			bFetchCustomer = True
+
+		# If the billing info is missing
+		if 'billing' not in data or data['billing'] == False:
+			bFetchCustomer = True
+
+		# If the shipping info is missing, and it's not meant to be the billing
+		#	info
+		if 'shipping' not in data or data['shipping'] == False and \
+			'shippingIsBilling' not in data or data['shippingIsBilling'] == False:
+			bFetchCustomer = True
+
+		# If we need the previous data
+		if bFetchCustomer:
+
+			# Make the request to Konnektive
+			lCustomers = self._request('customer/query', {
+				"dateRangeType": "dateCreated",
+				"customerId": data['customerId'],
+				"startDate": "01/01/2019",
+				"endDate": "01/01/3000"
+			});
+
+			# If there's none
+			if not lCustomers:
+				return Services.Response(error=1104)
+
+			# If we need the email
+			if 'email' not in data:
+				data['email'] = lCustomers[0]['emailAddress']
+
+			# If we need the phone
+			if 'phone' not in data:
+				data['phone'] = lCustomers[0]['phoneNumber']
+
+			# If we need billing
+			if 'billing' not in data or data['billing'] == False:
+				data['billing'] = {
+					"address1": lCustomers[0]['address1'],
+					"address2": lCustomers[0]['address2'],
+					"city": lCustomers[0]['city'],
+					"company": lCustomers[0]['companyName'],
+					"country": lCustomers[0]['country'],
+					"firstName": lCustomers[0]['firstName'],
+					"lastName": lCustomers[0]['lastName'],
+					"postalCode": lCustomers[0]['postalCode'],
+					"state": lCustomers[0]['state']
+				}
+
+			if 'shipping' not in data or data['shipping'] == False and \
+				'shippingIsBilling' not in data or data['shippingIsBilling'] == False:
+				data['shipping'] = {
+					"address1": lCustomers[0]['shipAddress1'],
+					"address2": lCustomers[0]['shipAddress2'],
+					"city": lCustomers[0]['shipCity'],
+					"company": lCustomers[0]['shipCompanyName'],
+					"country": lCustomers[0]['shipCountry'],
+					"firstName": lCustomers[0]['shipFirstName'],
+					"lastName": lCustomers[0]['shipLastName'],
+					"postalCode": lCustomers[0]['shipPostalCode'],
+					"state": lCustomers[0]['shipState']
+				}
+
+		# Add the email and phone number
+		dData['emailAddress'] = data['email']
+		dData['phoneNumber'] = data['phone']
+
+		# Verify billing fields
+		try: DictHelper.eval(data['billing'], ['address1', 'city', 'country', 'firstName', 'lastName', 'postalCode', 'state'])
+		except ValueError as e: return Services.Error(1001, [('billing.' + f, 'missing') for f in e.args])
+
+		# Add the billing info
+		dData['address1'] = data['billing']['address1']
+		if data['billing']['address2']: dData['address2'] = data['billing']['address2']
+		dData['city'] = data['billing']['city']
+		if data['billing']['company']: dData['companyName'] = data['billing']['company']
+		dData['country'] = data['billing']['country']
+		dData['firstName'] = data['billing']['firstName']
+		dData['lastName'] = data['billing']['lastName']
+		dData['postalCode'] = data['billing']['postalCode']
+		dData['state'] = data['billing']['state']
+
+		# If we need shipping info
+		if 'shippingIsBilling' not in data or data['shippingIsBilling'] == False:
+
+			# Verify shipping fields
+			try: DictHelper.eval(data['shipping'], ['address1', 'city', 'country', 'firstName', 'lastName', 'postalCode', 'state'])
+			except ValueError as e: return Services.Error(1001, [('shipping.' + f, 'missing') for f in e.args])
+
+			dData['shipAddress1'] = data['shipping']['address1']
+			if data['shipping']['address2']: dData['shipAddress2'] = data['shipping']['address2']
+			dData['shipCity'] = data['shipping']['city']
+			if data['shipping']['company']: dData['shipCompanyName'] = data['shipping']['company']
+			dData['shipCountry'] = data['shipping']['country']
+			dData['shipFirstName'] = data['shipping']['firstName']
+			dData['shipLastName'] = data['shipping']['lastName']
+			dData['shipPostalCode'] = data['shipping']['postalCode']
+			dData['shipState'] = data['shipping']['state']
+		else:
+			dData['billShipSame'] = '1'
+
+		# Send the order to konnektice
+		dRes = self._post('order/import', dData)
+
+		# If we we successful
+		if dRes['result'] == 'SUCCESS':
+
+			# Return the orderId
+			return Services.Response(dRes['message']['orderId'])
+
+		# else, we failed
+		else:
+
+			# Return the message from konnektive
+			return Services.Error(1100, dRes['message'])
+
 	def order_read(self, data, sesh):
-		"""Order
+		"""Order Read
 
 		Fetches an order by ID
 
@@ -664,13 +942,7 @@ class Konnektive(Services.Service):
 		dOrder = dOrder[0]
 
 		# Make sure the user has the proper permission to do this
-		oResponse = Services.read('auth', 'rights/verify', {
-			"name": "customers",
-			"right": Rights.READ,
-			"ident": dOrder['customerId']
-		}, sesh)
-		if not oResponse.data:
-			return Services.Response(error=Rights.INVALID)
+		Rights.check(sesh, 'customers', Rights.READ, dOrder['customerId'])
 
 		# If we also want the associated transactions
 		if data['transactions']:
@@ -747,6 +1019,48 @@ class Konnektive(Services.Service):
 			"currency": dOrder['currencySymbol']
 		})
 
+	def orderCancel_update(self, data, sesh, verify=True):
+		"""Order Cancel
+
+		Cancels an order and optionally issues a full refund
+
+		Arguments:
+			data (dict): Data sent with the request
+			sesh (Sesh._Session): The session associated with the request
+			verify (bool): Allow bypassing verification for internal calls
+
+		Returns:
+			Services.Response
+		"""
+
+		# Validate rights
+		if verify:
+			Rights.check(sesh, 'orders', Rights.UPDATE)
+
+		# Verify fields
+		try: DictHelper.eval(data, ['orderId', 'reason'])
+		except ValueError as e: return Services.Response(error=(1001, [(f, 'missing') for f in e.args]))
+
+		# Init data to send
+		dData = {
+			"orderId": data['orderId'],
+			"cancelReason": data['reason']
+		}
+
+		# If refund was passed
+		if 'refund' in data and data['refund']:
+			dData['fullRefund'] = 'true'
+
+		# Make the request
+		dRes = self._post('order/cancel', dData)
+
+		# If we failed
+		if dRes['result'] != 'SUCCESS':
+			return Services.Error(1103)
+
+		# Return OK
+		return Services.Response(True)
+
 	def orderQa_update(self, data, sesh):
 		"""Order QA
 
@@ -761,12 +1075,7 @@ class Konnektive(Services.Service):
 		"""
 
 		# Validate rights
-		oResponse = Services.read('auth', 'rights/verify', {
-			"name": "orders",
-			"right": Rights.UPDATE
-		}, sesh)
-		if not oResponse.data:
-			return Services.Response(error=Rights.INVALID)
+		Rights.check(sesh, 'orders', Rights.UPDATE)
 
 		# Verify fields
 		try: DictHelper.eval(data, ['orderId', 'action'])
@@ -783,13 +1092,13 @@ class Konnektive(Services.Service):
 		if self._allowQaUpdate:
 
 			# Send the update to Konnektive
-			bRes = self._post('order/qa', {
+			dRes = self._post('order/qa', {
 				"action": data['action'],
 				"orderId": data['orderId']
 			})
 
 			# If we failed
-			if not bRes:
+			if dRes['result'] != 'SUCCESS':
 				return Services.Response(error=1103)
 
 		# Return OK
@@ -826,13 +1135,7 @@ class Konnektive(Services.Service):
 
 		# Make sure the user has the proper permission to do this
 		if verify:
-			oResponse = Services.read('auth', 'rights/verify', {
-				"name": "customers",
-				"right": Rights.READ,
-				"ident": lTransactions[0]['customerId']
-			}, sesh)
-			if not oResponse.data:
-				return Services.Response(error=Rights.INVALID)
+			Rights.check(sesh, 'customers', Rights.READ, lTransactions[0]['customerId'])
 
 		# Return what ever's found after removing unnecessary data
 		return Services.Response([{
@@ -871,12 +1174,7 @@ class Konnektive(Services.Service):
 		"""
 
 		# Validate rights
-		oResponse = Services.read('auth', 'rights/verify', {
-			"name": "orders",
-			"right": Rights.UPDATE
-		}, sesh)
-		if not oResponse.data:
-			return Services.Response(error=Rights.INVALID)
+		Rights.check(sesh, 'orders', Rights.UPDATE)
 
 		# Verify fields
 		try: DictHelper.eval(data, ['purchaseId'])
@@ -891,12 +1189,15 @@ class Konnektive(Services.Service):
 		if 'reason' in data:
 			dData['reason'] = data['reason']
 
-		# Cancel the purchase
-		bRes = oKNK._post('purchase/cancel', dData)
+		# If Purchase cancellation's are allowed
+		if self._allowPurchaseCancel:
 
-		# If we failed
-		if not bRes:
-			return Services.Response(error=1103)
+			# Cancel the purchase
+			dRes = oKNK._post('purchase/cancel', dData)
+
+			# If we failed
+			if dRes['result'] != 'SUCCESS':
+				return Services.Response(error=1103)
 
 		# Return OK
 		return Services.Response(True)

@@ -8,7 +8,7 @@ __author__		= "Chris Nasr"
 __copyright__	= "MaleExcelMedical"
 __version__		= "1.0.0"
 __maintainer__	= "Chris Nasr"
-__email__		= "chris@fuelforthefire.ca"
+__email__		= "bast@maleexcel.com"
 __created__		= "2020-05-17"
 
 # Python imports
@@ -107,6 +107,8 @@ class CSR(Services.Service):
 				"csr_messaging": 5,			# Read, Create
 				"csr_templates": 1,			# Read
 				"customers": 3,				# Read, Update
+				"hubspot": 1,				# Read
+				"justcall": 1,				# Read
 				"memo_mips": 3,				# Read, Update
 				"memo_notes": 5,			# Read, Create
 				"orders": 7,				# Read, Update, Create

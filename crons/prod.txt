@@ -1,5 +1,5 @@
 # certbot
-0 0,12 * * * python -c 'import random; import time; time.sleep(random.random() * 3600)' && /root/venvs/c$
+0 0,12 * * * python -c 'import random; import time; time.sleep(random.random() * 3600)' && /root/venvs/certbot/bin/certbot renew --renew-hook "/etc/init.d/nginx reload"
 
 # MeMS
 # Zrt Shipping
@@ -13,16 +13,18 @@
 0 13 * * * cd /me/mems; /root/venvs/mems/bin/python -m crons pharmacy_fill noon &> /dev/null
 3 11 * * * cd /me/mems; /root/venvs/mems/bin/python -m crons expiring &> /dev/null
 
-# Monolith Claims
+# Monolith Claims and Campaigns
 15,45 * * * * cd /me/mems; /root/venvs/mems/bin/python -m crons monolith claims_timeout &> /dev/null
+28 * * * * cd /me/mems; /root/venvs/mems/bin/python -m crons monolith invalid_campaigns &> /dev/null
+20 * * * * cd /me/mems; /root/venvs/mems/bin/python -m crons monolith.hrt_join_date &> /dev/null
 
 # WellDyne Incoming
-10 8 * * * cd /me/mems; /root/venvs/mems/bin/python -m crons welldyne incoming outbound morning &> /dev/$
-12 8 * * * cd /me/mems; /root/venvs/mems/bin/python -m crons welldyne incoming shipped morning &> /dev/n$
-14 8 * * * cd /me/mems; /root/venvs/mems/bin/python -m crons welldyne incoming opened morning &> /dev/nu$
-#10 15 * * * cd /me/mems; /root/venvs/mems/bin/python -m crons welldyne incoming outbound afternoon &> /$
-12 15 * * * cd /me/mems; /root/venvs/mems/bin/python -m crons welldyne incoming shipped afternoon &> /de$
-14 15 * * * cd /me/mems; /root/venvs/mems/bin/python -m crons welldyne incoming opened afternoon &> /dev$
+40 8 * * * cd /me/mems; /root/venvs/mems/bin/python -m crons welldyne incoming outbound morning &> /dev/null
+42 8 * * * cd /me/mems; /root/venvs/mems/bin/python -m crons welldyne incoming shipped morning &> /dev/null
+44 8 * * * cd /me/mems; /root/venvs/mems/bin/python -m crons welldyne incoming opened morning &> /dev/null
+#40 15 * * * cd /me/mems; /root/venvs/mems/bin/python -m crons welldyne incoming outbound afternoon &> /dev/null
+42 15 * * * cd /me/mems; /root/venvs/mems/bin/python -m crons welldyne incoming shipped afternoon &> /dev/null
+44 15 * * * cd /me/mems; /root/venvs/mems/bin/python -m crons welldyne incoming opened afternoon &> /dev/null
 
 # WellDyne Outgoing
 0 12 * * * cd /me/mems; /root/venvs/mems/bin/python -m crons welldyne adhoc noon &> /dev/null

@@ -22,7 +22,7 @@ from RestOC import Conf, Record_MySQL, Services, Sesh, Templates
 from shared import Email
 
 # Service imports
-from records.monolith import KtCustomer, ShippingInfo, SMSTemplate
+from records.monolith import KtCustomer, HrtPatient, ShippingInfo, SMSTemplate
 
 # Cron imports
 from . import isRunning, emailError
@@ -100,6 +100,12 @@ def run():
 			emailError('ZRT Shipping Error', 'No customer found for:\n\n%s' % str(lMatches))
 			continue
 
+		# Look for an HRT Patient record that's still onboarding
+		oHrtPatient = HrtPatient.filter({
+			"ktCustomerId": dKtCustomer['customerId'],
+			"stage": 'Onboarding'
+		}, limit=1)
+
 		# Make the date readable
 		sDate = '%s-%s-%s' % (lMatches[2][4:8], lMatches[2][0:2], lMatches[2][2:4])
 
@@ -168,6 +174,7 @@ def run():
 				dKtCustomer['customerId'],
 				str(lMatches)
 			))
+			continue
 
 		# Find the template
 		dSmsTpl = SMSTemplate.filter({
@@ -195,9 +202,9 @@ def run():
 		})
 		if oResponse.errorExists():
 			emailError('ZRT Shipping Error', 'Couldn\'t send sms:\n\n%s\n\n%s\n\n%s' % (
+				str(oResponse),
 				str(dKtCustomer),
-				str(lMatches),
-				str(oResponse)
+				str(lMatches)
 			))
 
 		# Send the Email to the patient
@@ -215,6 +222,20 @@ def run():
 				str(oResponse)
 			))
 		"""
+
+		# If there's an HRT patient
+		if oHrtPatient:
+
+			# If the kit was shipped
+			if iStep == ZRT_KIT_SHIPPED:
+				oHrtPatient['processStatus'] = 'Shipped Lab Kit';
+
+			# Else if it was delivered
+			elif iStep == ZRT_KIT_DELIVERED:
+				oHrtPatient['processStatus'] = 'Delivered Lab Kit'
+
+			# Save the record
+			oHrtPatient.save()
 
 	# Return OK
 	return True

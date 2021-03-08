@@ -122,18 +122,18 @@ This will allow you to attach the shared folder with full rights.
 * login as mems/mems
 * `sudo su -`
 * `cd /`
-* `mkdir /mems`
+* `mkdir -p /me/mems`
 * `echo 'vboxsf' | tee -a /etc/modules`
-* `echo 'share /mems vboxsf uid=0,gid=0,umask=0000,_netdev 0 0' | tee -a /etc/fstab`
+* `echo 'share /me/mems vboxsf uid=0,gid=0,umask=0000,_netdev 0 0' | tee -a /etc/fstab`
 * `mount share`
 
 ### Set host-only IP
 Now that the share is mounted, you can set the IP address
-* `/mems/install/host_only.sh`
+* `/me/mems/install/host_only.sh`
 
 ### Allow Root Access
 Auto log the VM into root, as well as allowing root access via SSH. I suggest using the password mems
-* `/mems/install/root_access.sh`
+* `/me/mems/install/root_access.sh`
 * `shutdown -P now`
 
 ## Snapshot the VM
@@ -144,14 +144,9 @@ Because things can always go wrong, it's a good idea at this point, before we in
 ## Install MeMS
 Once the VM reboots you should now be auto-logged in as root and be able to install the necessary software to get MeMS up and running as a dev environment.
 If you plan to connect to an external server to get MySQL/Redis access, then you can answer no to the first question, but be sure to answer yes to the second question in order to setup nginx with a local certificate and dev domain names.
-* `cd /mems`
+* `cd /me/mems`
 * `./install.sh`
 * `reboot`
-
-## Install MySQL Tables
-If you said yes to the first part of the install and have installed MySQL locally for development, or you are connecting to an external MySQL that hasn't been setup yet, you will need to install the schemas and tables.
-* `src_mems`
-* `python install.py`
 
 ## Add Hostname
 In order to be able to access the services via Postman or a browser, you will need to add the hostname to your hosts file. This location of this file is different depending on your OS, I suggest [the following article](https://www.howtogeek.com/howto/27350/beginner-geek-how-to-edit-your-hosts-file/) for finding and editting your hosts file. Once you've found it, add the following line to it
@@ -173,3 +168,9 @@ Or via a browser UI by connecting to:
 * http://mems.local:9001
 user: mems
 pass: mems
+
+## SSH Access
+From command prompt
+`ssh root@mems.local`
+
+If you have Putty instead, set hostname to mems.local, and set auto-login of Data section to root

@@ -8,7 +8,7 @@ __author__		= "Chris Nasr"
 __copyright__	= "MaleExcelMedical"
 __version__		= "1.0.0"
 __maintainer__	= "Chris Nasr"
-__email__		= "chris@fuelforthefire.ca"
+__email__		= "bast@maleexcel.com"
 __created__		= "2020-06-26"
 
 # Python imports
@@ -33,9 +33,10 @@ from . import emailError
 
 # Support request types
 _dSupportRequest = {
-	"cancel_order": "to cancel their order",
-	"payment": "to change their payment info",
-	"urgent_address": "an urgent change to their shipping address (address already changed in the CRM)"
+	"cancel_order": "PP: Customer has requested to cancel their order",
+	"payment": "PP: Customer has requested to change their payment info",
+	"payment_changed": "PAYMENT METHOD UPDATED: Please review with the patient and clean up any card info if needed",
+	"urgent_address": "PP: Customer has requested an urgent change to their shipping address (address already changed in the CRM)"
 }
 
 # Regex for validating email
@@ -100,6 +101,132 @@ class Patient(Services.Service):
 		# Return OK
 		return True
 
+	def account_create(self, data, sesh):
+		"""Account Create
+
+		Creates a new patient portal account and sends the signup email
+
+		Arguments:
+			data (dict): Data sent with the request
+			sesh (Sesh._Session): The session associated with the request
+
+		Returns:
+			Services.Response
+		"""
+
+		# Make sure the user has the proper rights
+		Rights.check(sesh, 'patient_account', Rights.CREATE)
+
+		# Verify fields
+		try: DictHelper.eval(data, ['passwd', 'crm_type', 'crm_id', 'url'])
+		except ValueError as e: return Services.Response(error=(1001, [(f, 'missing') for f in e.args]))
+
+		# Make sure password is strong enough
+		if not Account.passwordStrength(data['passwd']):
+			return Services.Error(1904);
+
+		# Init record data
+		dAccount = {
+			"passwd": Account.passwordHash(data['passwd']),
+			"locale": 'locale' in data and data['locale'] or 'en-US',
+			"verified": False
+		}
+
+		# If they're KNK
+		if data['crm_type'] == 'knk':
+
+			# Find the customer in Konnektive
+			oResponse = Services.read('konnektive', 'customer', {
+				"customerId": data['crm_id']
+			}, sesh)
+			if oResponse.errorExists():
+				return Services.Error(oResponse.error['code'], 'crm')
+
+			# Store the account details
+			dAccount['crm_type'] = 'knk'
+			dAccount['crm_id'] = str(data['crm_id'])
+			dAccount['email'] = oResponse.data['email'].lower()
+			sFirst = oResponse.data['shipping']['firstName']
+
+			# Look for an existing account with the given CRM data
+			if Account.filter({"crm_type": 'knk', "crm_id": dAccount['crm_id']}, limit=1) or \
+				AccountSetup.filter({"crm_type": 'knk', "crm_id": dAccount['crm_id']}, limit=1):
+				return Services.Error(1900, 'crm')
+
+		# Else, invalid CRM type
+		else:
+			return Services.Error(1001, [('crm_type', 'invalid')])
+
+		# Check if we already have an account with that email
+		if Account.exists(dAccount['email'], 'email') or \
+			AccountSetup.exists(dAccount['email'], 'email'):
+			return Services.Error(1900, 'email')
+
+		# Generate a UUID
+		#	we need this because the two step process doesn't auto-generate the
+		#	primary key, it uses the one from the setup record in order to keep
+		#	track of accounts already created. We can't
+		dAccount['_id'] = Account.uuid()
+
+		# Check for field errors
+		try:
+			oAccount = Account(dAccount)
+		except ValueError as e:
+			return Services.Error(1001, e.args[0])
+
+		# Try to create the record
+		try:
+			if not oAccount.create(changes={"user": sesh['user_id']}):
+				return Services.Error(1100)
+		except Record_MySQL.DuplicateException:
+			return Services.Error(1900)
+
+		# Init permissions
+		dPerms = {
+			"customers": {"rights": 3, "idents": oAccount['crm_id']}
+		}
+
+		# Create the permissions
+		sWarning = None
+		oResponse = Services.update('auth', 'permissions', {
+			"_internal_": Services.internalKey(),
+			"user": oAccount['_id'],
+			"permissions": dPerms
+		}, sesh)
+		if oResponse.errorExists():
+			sWarning = 'Failed to create permissions for patient'
+
+		# Upsert the record with the key
+		sKey = StrHelper.random(32, '_0x')
+		oVerify = Verify({
+			"_account": oAccount['_id'],
+			"key": sKey
+		})
+		if not oVerify.create(conflict="replace"):
+			return Services.Error(1100)
+
+		# Email verification template variables
+		dTpl = {
+			"first": sFirst,
+			"url": "%s%s" % (
+				data['url'],
+				sKey
+			)
+		}
+
+		# Email the patient the key
+		oResponse = Services.create('communications', 'email', {
+			"_internal_": Services.internalKey(),
+			"html_body": Templates.generate('email/patient/signup.html', dTpl, oAccount['locale']),
+			"subject": Templates.generate('email/patient/signup_subject.txt', {}, oAccount['locale']),
+			"to": self._conf['override'] or data['email']
+		})
+		if oResponse.errorExists():
+			return oResponse
+
+		# Return the ID
+		return Services.Response(oAccount['_id'], warning=sWarning)
+
 	def account_read(self, data, sesh):
 		"""Account Read
 
@@ -132,6 +259,22 @@ class Patient(Services.Service):
 
 		# Remove the passwd
 		del dAccount['passwd']
+
+		# Assume no HRT data
+		dAccount['hrt'] = False
+
+		# If it's a KNK customer
+		if dAccount['crm_type'] == 'knk':
+
+			# Check for HRT data
+			oResponse = Services.read('monolith', 'customer/hrt', {
+				"customerId": dAccount['crm_id']
+			}, sesh)
+			if oResponse.errorExists():
+				if oResponse.error['code'] != 1104:
+					return oResponse
+			elif oResponse.dataExists():
+				dAccount['hrt'] = oResponse.data['stage']
 
 		# Return the user data
 		return Services.Response(dAccount)
@@ -261,7 +404,7 @@ class Patient(Services.Service):
 		if not oVerify.create(conflict="replace"):
 			return Services.Response(error=1100)
 
-		# Forgot email template variables
+		# Email verification template variables
 		dTpl = {
 			"first": sFirst,
 			"url": "%s%s" % (
@@ -403,6 +546,62 @@ class Patient(Services.Service):
 
 		# Delete the verify record
 		oVerify.delete()
+
+		# Return OK
+		return Services.Response(True)
+
+	def accountPayment_update(self, data, sesh):
+		"""Account Payment
+
+		Updates the payment source associated with the patient
+
+		Arguments:
+			data (dict): Data sent with the request
+			sesh (Sesh._Session): The session associated with the request
+
+		Returns:
+			Services.Response
+		"""
+
+		# Verify fields
+		try: DictHelper.eval(data, ['cc_number', 'cc_expiry', 'cc_cvc'])
+		except ValueError as e: return Services.Response(error=(1001, [(f, 'missing') for f in e.args]))
+
+		# Find the patient
+		dAccount = Account.get(sesh['user_id'], raw=['crm_type', 'crm_id'])
+		if not dAccount:
+			return Services.Error(1104)
+
+		# If the patient is with Konnektive
+		if dAccount['crm_type'] == 'knk':
+
+			# Send the request to Konnektive
+			oResponse = Services.update('konnektive', 'customer/payment', {
+				"customerId": dAccount['crm_id'],
+				"cc_number": data['cc_number'],
+				"cc_expiry": data['cc_expiry'],
+				"cc_cvc": data['cc_cvc']
+			}, sesh)
+
+			# If there's an error
+			if oResponse.errorExists():
+				return oResponse
+
+		# Else, invalid CRM type
+		else:
+			emailError('Payment Update Failed', 'Invalid CRM Type\n\n%s' % (
+				str(oAccount)
+			))
+			return Services.Response(1912)
+
+		# Add a fake SMS to the patient's profile
+		oResponse = self.supportRequest_create({
+			"type": 'payment_changed'
+		}, sesh)
+
+		# If there's an error
+		if oResponse.errorExists():
+			emailError('PP Account Payment Failed', 'Failed to add fake SMS\n\nSession: %s' % str(sesh))
 
 		# Return OK
 		return Services.Response(True)
@@ -1071,13 +1270,14 @@ class Patient(Services.Service):
 			emailError('Support Request Failed', 'Invalid CRM Type\n\n%s' % (
 				str(oAccount)
 			))
+			return Services.Response(1912)
 
 		# Add the request as an incoming SMS
 		oResponse = Services.create('monolith', 'message/incoming', {
 			"_internal_": Services.internalKey(),
 			"customerPhone": sNumber,
 			"recvPhone": "0000000000",
-			"content": "PP: Customer has requested %s" % _dSupportRequest[data['type']]
+			"content": _dSupportRequest[data['type']]
 		})
 		if oResponse.errorExists():
 			emailError('Support Request Failed', 'Failed to add SMS\n\n%s\n\n%s\n\n%s' % (
@@ -1085,6 +1285,7 @@ class Patient(Services.Service):
 				str(oAccount),
 				str(oResponse)
 			))
+			return oResponse
 
 		# Return OK
 		return Services.Response(True)

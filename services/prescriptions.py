@@ -8,7 +8,7 @@ __author__		= "Chris Nasr"
 __copyright__	= "MaleExcelMedical"
 __version__		= "1.0.0"
 __maintainer__	= "Chris Nasr"
-__email__		= "chris@fuelforthefire.ca"
+__email__		= "bast@maleexcel.com"
 __created__		= "2020-05-10"
 
 # Python imports
@@ -50,12 +50,7 @@ _dProviders = {
 	43432: 'Gary Klein',
 	43433: 'Faride Ramos',
 	43434: 'Ron Waldrop',
-	43545: 'Josh Sawyer',
-	43546: 'Dylan Whitaker',
-	43547: 'Ejune Wu',
-	43548: 'Chris Berry',
 	43900: 'Janelle Weyer',
-	44175: 'Cassandra Franco',
 	44188: 'Vincent Meoli',
 	44731: 'Arnaldo Trabucco',
 	44756: 'Beau Butherus',
@@ -70,43 +65,21 @@ _dProviders = {
 	46711: 'Edward Henson',
 	47103: 'Harold Hibbs',
 	47221: 'Fawn Munro',
-	47489: 'Melissa Mendoza',
-	47490: 'Dacia Mann',
-	47754: 'Aaron Borengasser PA',
-	47756: 'Colby Jestes',
+	47754: 'Aaron Borengasser',
 	48200: 'Tony Underwood',
 	48721: 'Heather Gall',
 	48871: 'Mariama Hubbard',
-	48907: 'Annissa dominguez',
-	48908: 'Joe Compton',
-	49258: 'Nikki Wombwell',
-	49492: 'Sven Wombwell',
 	50616: 'Mark Matthews ',
-	50890: 'Mekala Parker',
-	51575: 'Joe Compton',
 	52785: 'Ben de Miranda',
 	52854: 'Paige Smith',
 	53780: 'Muna Orra',
 	54215: 'Jamie Bittar',
-	54347: 'Jessie Burgess',
-	55449: 'Craig Larsen',
-	56947: 'Karll Cloutier',
 	57458: 'Sasha Hanson',
 	58275: 'Stacy Comeau ',
 	59335: 'Jessica Toath',
-	62723: 'Yannick Ferreri',
 	62726: 'Yannick Ferreri',
-	63820: 'Maciej Malczewski',
-	63821: 'Jo-Anne Stevens',
-	64034: 'Payton Bernal',
-	64299: 'Jeremie Lanctôt',
-	64381: 'Chris Cloutier',
-	65024: 'Phil Cloutier',
-	65481: 'Michelle Coulombe',
-	65589: 'Eddy Wilson',
 	65753: 'Neifa Nayor',
 	66591: 'Marc Calabrese',
-	69646: 'Sam Gagnon',
 	76563: 'Andrew Abraham',
 	85007: 'Grace Oropesa'
 }
@@ -123,7 +96,8 @@ _dStatus = {
 	9: 'Edited',
 	10: 'EpcsError',
 	11: 'EpcsSigned',
-	12: 'ReadyToSign'
+	12: 'ReadyToSign',
+	13: 'PharmacyVerified'
 }
 
 _dMedicationStatus = {
@@ -137,7 +111,10 @@ _dMedicationStatus = {
 	7: 'CancelPending',
 	8: 'Cancelled',
 	9: 'CancelDenied',
-	10: 'Changed'
+	10: 'Changed',
+	11: 'Fullfill',
+	12: 'PartialFill',
+	13: 'NoFill'
 }
 
 class Prescriptions(Services.Service):

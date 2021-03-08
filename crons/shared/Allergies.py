@@ -145,16 +145,25 @@ def fetch(data):
 	if lLanding:
 
 		# Look for answers for the specific questions
-		dAnswer = TfAnswer.filter({
-			"landing_id": lLanding[0]['landing_id'],
-			"ref": ['95f9516a-4670-43b1-9b33-4cf822dc5917', 'allergies']
-		}, raw=['value'], limit=1);
+		dAnswers = {
+			d['ref']:d['value'] for d in TfAnswer.filter({
+				"landing_id": lLanding[0]['landing_id'],
+				"ref": ['95f9516a-4670-43b1-9b33-4cf822dc5917', 'allergies', 'allergiesList']
+			}, raw=['ref', 'value'])
+		}
+
+		# If we have an allergiesList
+		if 'allergiesList' in dAnswers:
+			sAnswer = dAnswers['allergiesList']
+		elif 'allergies' in dAnswers:
+			sAnswer = dAnswers['allergies']
+		elif '95f9516a-4670-43b1-9b33-4cf822dc5917' in dAnswers:
+			sAnswer = dAnswers['95f9516a-4670-43b1-9b33-4cf822dc5917']
+		else:
+			sAnswer = None
 
 		# If we have an answer
-		if dAnswer:
-
-			# Table answer
-			sAnswer = dAnswer['value']
+		if sAnswer:
 
 			# If the answer is valid
 			if sAnswer in AUTOCORRECT:
@@ -162,7 +171,7 @@ def fetch(data):
 
 			# Else, go through the autocorrect
 			else:
-				s = dAnswer['value'].strip().lower();
+				s = sAnswer.strip().lower();
 				for k in AUTOCORRECT:
 					if s in AUTOCORRECT[k]:
 						sAnswer = k
