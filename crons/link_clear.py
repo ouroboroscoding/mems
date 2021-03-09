@@ -21,7 +21,8 @@ def run():
 
 	# Find all records that haven't been accessed in 30 days
 	lIDs = [d['_id'] for d in UrlRecord.filter({
-		"_updated": {"lt": Record_MySQL.Literal('DATE_SUB(NOW(), INTERVAL 30 DAY)')}
+		"_updated": {"lt": Record_MySQL.Literal('DATE_SUB(NOW(), INTERVAL 30 DAY)')},
+		"permanent": False
 	}, raw=['_id'])]
 
 	# If we have no IDs
