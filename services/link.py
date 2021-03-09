@@ -203,11 +203,16 @@ class Link(Services.Service):
 		if validators.url(data['url']) != True:
 			return Services.Error(1001, [['url', 'invalid']])
 
+		# If the permanent flag is missing
+		if 'permanent' not in data:
+			data['permanent'] = False
+
 		# Create a new url instance to check for errors
 		try:
 			oUrl = UrlRecord({
+				"code": StrHelper.random(6, self._codeChars),
 				"url": data['url'],
-				"code": StrHelper.random(6, self._codeChars)
+				"permanent": data['permanent']
 			})
 		except ValueError as e:
 			return Services.Error(1001, e.args[0])
