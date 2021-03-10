@@ -104,6 +104,8 @@ REST.Server({
 	"/phone/change": {"methods": REST.UPDATE, "session": True},
 
 	"/provider/calendly": {"methods": REST.READ, "session": True},
+	"/provider/claim": {"methods": REST.DELETE, "session": True},
+	"/provider/claims": {"methods": REST.READ, "session": True},
 	"/provider/sms": {"methods": REST.CREATE, "session": True},
 
 	"/providers": {"methods": REST.READ, "session": True},

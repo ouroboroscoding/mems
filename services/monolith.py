@@ -4493,6 +4493,107 @@ class Monolith(Services.Service):
 		# Return anything found
 		return Services.Response(lAppts)
 
+	def providerClaim_delete(self, data, sesh):
+		"""Provider Claim Delete
+
+		Deletes an existing claim
+
+		Arguments:
+			data (dict): Data sent with the request
+			sesh (Sesh._Session): The session associated with the request
+
+		Returns:
+			Services.Response
+		"""
+
+		# Make sure the user has the proper permission to do this
+		oResponse = Services.read('auth', 'rights/verify', {
+			"name": "prov_overwrite",
+			"right": Rights.DELETE
+		}, sesh)
+		if not oResponse.data:
+			return Services.Response(error=Rights.INVALID)
+
+		# Verify fields
+		try: DictHelper.eval(data, ['customerId'])
+		except ValueError as e: return Services.Response(error=(1001, [(f, 'missing') for f in e.args]))
+
+		# Find the claim
+		oClaim = KtOrderClaim.get(data['customerId'])
+		if not oClaim:
+			return Services.Response(error=1104)
+
+		# Store the agent ID
+		iProvider = oClaim['user']
+
+		# Delete the claim
+		if oClaim.delete():
+
+			# Notify the agent they lost the claim
+			Sync.push('monolith', 'user-%s' % str(iProvider), {
+				"type": 'claim_removed',
+				"customerId": data['customerId']
+			})
+
+			# Return OK
+			return Services.Response(True)
+
+		# Failed
+		return Services.Response(False)
+
+	def providerClaims_read(self, data, sesh):
+		"""Provider Claims
+
+		Returns all claims by all providers currently in the system
+
+		Arguments:
+			data (dict): Data sent with the request
+			sesh (Sesh._Session): The session associated with the request
+
+		Returns:
+			Services.Response
+		"""
+
+		# Make sure the user has the proper permission to do this
+		oResponse = Services.read('auth', 'rights/verify', {
+			"name": "prov_overwrite",
+			"right": Rights.READ
+		}, sesh)
+		if not oResponse.data:
+			return Services.Response(error=Rights.INVALID)
+
+		# Fetch all the current claims
+		lClaims = KtOrderClaim.get(raw=True, orderby=[['createdAt', 'DESC']])
+
+		# If there's nothing, return nothing
+		if not lClaims:
+			return Services.Response([])
+
+		# Get a list of all the user IDs
+		lUserIDs = set()
+		for d in lClaims:
+			lUserIDs.add(d['user'])
+			if d['transferredBy']:
+				d['transferredBy'] = int(d['transferredBy'])
+				lUserIDs.add(d['transferredBy'])
+
+		# Get the names of all the users
+		dUsers = {
+			d['id']: '%s %s' % (d['firstName'], d['lastName'])
+			for d in User.get(list(lUserIDs), raw=['id', 'firstName', 'lastName'])
+		}
+
+		# Go through each claim and update the name accordingly
+		for d in lClaims:
+			d['user'] = d['user'] in dUsers and dUsers[d['user']] or 'N/A'
+			if d['transferredBy']:
+				d['transferredBy'] = d['transferredBy'] in dUsers and dUsers[d['transferredBy']] or 'N/A'
+			else:
+				d['transferredBy'] = ''
+
+		# Return the list of claims
+		return Services.Response(lClaims)
+
 	def providerSms_create(self, data, sesh):
 		"""Provider SMS
 
