@@ -1190,6 +1190,85 @@ class Monolith(Services.Service):
 			oHrtPatient.save()
 		)
 
+	def customerHrtLab_create(self, data, sesh):
+		"""Customer HRT Lab Create
+
+		Creates a new set of records for lab results
+
+		Arguments:
+			data (dict): Data sent with request
+			sesh (Sesh._Session): THe session associated with the request
+
+		Returns:
+			Services.Response
+		"""
+
+		# Verify fields
+		try: DictHelper.eval(data, ['customerId', 'tests'])
+		except ValueError as e: return Services.Response(error=(1001, [(f, 'missing') for f in e.args]))
+
+		# Make sure the user has the proper permission to do this
+		Rights.check(sesh, 'customers', Rights.UPDATE, data['customerId'])
+
+		# Pull off the tests
+		lTestsData = data.pop('tests')
+
+		# If it's not a list
+		if not isinstance(lTestsData, list):
+			return Services.Error(1001, [['tests', 'not a list']])
+
+		# Init possible errors
+		lErrors = []
+
+		# Generate date/time
+		sDT = arrow.get().format('YYYY-MM-DD HH:mm:ss')
+
+		# Add the identifier
+		data['identifier'] = HrtLabResult.uuid()
+
+		# Add the created/updated
+		data['createdAt'] = sDT
+		data['updatedAt'] = sDT
+
+		# Create an instance of the lab results to check for errors
+		try:
+			oLabResult = HrtLabResult(data)
+		except ValueError as e:
+			lErrors.extend(e.args[0])
+
+		# Init test instances
+		lTests = []
+
+		# Go through each test and make an instance to check for errors
+		for d in lTestsData:
+			try:
+
+				# Add required fields
+				d['identifier'] = data['identifier']
+				d['customerId'] = data['customerId']
+				d['createdAt'] = sDT
+				d['updatedAt'] = sDT
+
+				# Append the instance to the list of tests
+				lTests.append(
+					HrtLabResultTests(d)
+				)
+
+			except ValueError as e:
+				for l in e.args[0]:
+					lErrors.append(('tests.%s' % l[0], l[1]))
+
+		# If there's any errors
+		if lErrors:
+			return Services.Error(1001, lErrors)
+
+		# Create all the records
+		oLabResult.create()
+		HrtLabResultTests.createMany(lTests)
+
+		# Return OK
+		return Services.Response(True)
+
 	def customerHrtLabs_read(self, data, sesh):
 		"""Customer HRT Lab Results
 

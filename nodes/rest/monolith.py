@@ -44,6 +44,7 @@ REST.Server({
 	"/customer/exists": {"methods": REST.READ, "session": True},
 	"/customer/hide": {"methods": REST.UPDATE, "session": True},
 	"/customer/hrt": {"methods": REST.READ | REST.UPDATE, "session": True},
+	"/customer/hrt/lab": {"methods": REST.CREATE, "session": True},
 	"/customer/hrt/labs": {"methods": REST.READ, "session": True},
 	"/customer/hrt/symptoms": {"methods": REST.READ, "session": True},
 	"/customer/id/byPhone": {"methods": REST.READ, "session": True},
