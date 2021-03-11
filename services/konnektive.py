@@ -1193,7 +1193,7 @@ class Konnektive(Services.Service):
 		if self._allowPurchaseCancel:
 
 			# Cancel the purchase
-			dRes = oKNK._post('purchase/cancel', dData)
+			dRes = self._post('purchase/cancel', dData)
 
 			# If we failed
 			if dRes['result'] != 'SUCCESS':
