@@ -2353,6 +2353,111 @@ class ShippingInfo(Record_MySQL.Record):
 		# Return the config
 		return cls._conf
 
+# SmpCustomer class
+class SmpCustomer(Record_MySQL.Record):
+	"""SmpCustomer
+
+	Represents, as far as I can see, duplicate data that's in the KtCustomer
+	table. This entire DB looks like it was made by code monkeys.
+	"""
+
+	_conf = None
+	"""Configuration"""
+
+	@classmethod
+	def byCustomerId(cls, customer_id, custom={}):
+		"""By Customer ID
+
+		Finds the record by joining with the kt_customer table
+
+		Arguments:
+			customer_id (str): The customerId of the customer
+			custom (dict): Custom Host and DB info
+				'host' the name of the host to get/set data on
+				'append' optional postfix for dynamic DBs
+
+		Returns:
+			dict
+		"""
+
+		# Fetch the record structure
+		dStruct = cls.struct(custom)
+
+		# Generate the SQL
+		sSQL = "SELECT\n" \
+				"	`smp`.*\n" \
+				"FROM `%(db)s`.`%(table)s` as `smp`,\n" \
+				"	`%(db)s`.`kt_customer` as `kt`\n" \
+				"WHERE `kt`.`customerId` = '%(id)s'\n" \
+				"AND `kt`.`lastName` = `smp`.`lastName`\n" \
+				"AND (\n" \
+				"	`kt`.`emailAddress` = `smp`.`email` OR\n" \
+				"	`kt`.`phoneNumber` = `smp`.`primaryPhone`\n" \
+				")\n" \
+				"ORDER BY `smp`.`updatedAt` DESC" % {
+			"db": dStruct['db'],
+			"table": dStruct['table'],
+			"id": customer_id
+		}
+
+		# Fetch and return the data
+		return Record_MySQL.Commands.select(
+			dStruct['host'],
+			sSQL,
+			Record_MySQL.ESelect.ROW
+		)
+
+	@classmethod
+	def config(cls):
+		"""Config
+
+		Returns the configuration data associated with the record type
+
+		Returns:
+			dict
+		"""
+
+		# If we haven loaded the config yet
+		if not cls._conf:
+			cls._conf = Record_MySQL.Record.generateConfig(
+				Tree.fromFile('definitions/monolith/smp_customer.json'),
+				'mysql'
+			)
+
+		# Return the config
+		return cls._conf
+
+# SmpImage class
+class SmpImage(Record_MySQL.Record):
+	"""SmpImage
+
+	Represents and stores images, which is just about the dumbest fucking thing
+	imaginable. What kind of idiot stores images in a DB?
+	"""
+
+	_conf = None
+	"""Configuration"""
+
+	@classmethod
+	def config(cls):
+		"""Config
+
+		Returns the configuration data associated with the record type
+
+		Returns:
+			dict
+		"""
+
+		# If we haven loaded the config yet
+		if not cls._conf:
+			cls._conf = Record_MySQL.Record.generateConfig(
+				Tree.fromFile('definitions/monolith/smp_image.json'),
+				'mysql'
+			)
+
+		# Return the config
+		return cls._conf
+
 # SmpNote class
 class SmpNote(Record_MySQL.Record):
 	"""SmpNote

@@ -12,6 +12,7 @@ __email__		= "bast@maleexcel.com"
 __created__		= "2020-04-26"
 
 # Python imports
+from base64 import b64encode
 import re
 from time import time
 
@@ -38,7 +39,7 @@ from records.monolith import \
 	HrtPatient, HrtPatientDroppedReason, \
 	KtCustomer, KtOrder, KtOrderClaim, KtOrderClaimLast, KtOrderContinuous, \
 	ShippingInfo, \
-	SmpNote, SmpOrderStatus, SmpState, \
+	SmpCustomer, SmpImage, SmpNote, SmpOrderStatus, SmpState, \
 	SMSStop, SMSStopChange, \
 	TfAnswer, TfLanding, TfQuestion, TfQuestionOption, \
 	User, \
@@ -1050,6 +1051,55 @@ class Monolith(Services.Service):
 
 		# Return the response
 		return oResponse
+
+	def customerEverify_read(self, data, sesh):
+		"""Customer E-Verify
+
+		Returns the e-verify data and images associated with the customer
+
+		Arguments:
+			data (dict): Data sent with the request
+			sesh (Sesh._Session): The session associated with the request
+
+		Returns:
+			Services.Response
+		"""
+
+		# Verify fields
+		try: DictHelper.eval(data, ['customerId'])
+		except ValueError as e: return Services.Response(error=(1001, [(f, 'missing') for f in e.args]))
+
+		# Make sure the user has the proper permission to do this
+		Rights.check(sesh, 'everify', Rights.READ, data['customerId'])
+
+		# Find the SMP record
+		dSmpCustomer = SmpCustomer.byCustomerId(data['customerId'])
+
+		# If we don't have one
+		if not dSmpCustomer:
+			return Services.Response(None)
+
+		# Add image dictionary
+		dSmpCustomer['images'] = {}
+
+		# Look for records by the id
+		lRecords = SmpImage.filter({
+			"parentTable": 'smp_customer',
+			"parentColumn": 'id',
+			"columnValue": str(dSmpCustomer['id']),
+			"usageType": ['selfie', 'idScan'],
+			"imageType": ['image/jpeg', 'image/png']
+		}, raw=['usageType', 'imageType', 'imageData'], orderby=['updatedAt'])
+
+		# Go through each image and process it
+		for d in lRecords:
+			dSmpCustomer['images'][d['usageType']] = 'data:%s;base64,%s' % (
+				d['imageType'],
+				b64encode(d['imageData']).decode('ascii')
+			)
+
+		# Return the record
+		return Services.Response(dSmpCustomer)
 
 	def customerExists_read(self, data, sesh):
 		"""Customer Exists
