@@ -64,6 +64,11 @@
 		}
 	},
 
+	"identiflo": {
+		"user": "",
+		"pass": ""
+	},
+
 	"konnektive": {
 		"host": "api.konnektive.com",
 		"user": "",
@@ -154,6 +159,7 @@
 			"docs": {"port": 18, "workers": 1},
 			"justcall": {"port": 19, "workers": 1},
 			"link": {"port": 20},
+			"identiflo": {"port": 21},
 
 			"external": {"port": 100},
 			"link_domain": {"port": 101}

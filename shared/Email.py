@@ -15,6 +15,7 @@ __created__		= "2020-07-28"
 import base64
 import email
 import imaplib
+import quopri
 
 def fetch_imap(user, passwd, host='localhost', port=143, tls=False, box='INBOX', from_=None, markread=True):
 	"""Fetch IMAP
@@ -127,6 +128,8 @@ def fetch_imap(user, passwd, host='localhost', port=143, tls=False, box='INBOX',
 				if 'Content-Transfer-Encoding' in dEmail['headers']:
 					if dEmail['headers']['Content-Transfer-Encoding'] == 'base64':
 						sPayload = base64.b64decode(sPayload)
+					elif dEmail['headers']['Content-Transfer-Encoding'] == 'quoted-printable':
+						sPayload = quopri.decodestring(sPayload)
 					else:
 						raise ValueError('Unknown Content-Transfer-Encoding: %s' % dEmail['headers']['Content-Transfer-Encoding'])
 
