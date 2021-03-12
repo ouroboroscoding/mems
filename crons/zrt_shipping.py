@@ -151,7 +151,7 @@ def USPS(conf):
 		port=conf['server']['port'],
 		tls=conf['tls'],
 		from_='no-reply@zrtlab.com',
-		markread=False
+		markread=True
 	)
 
 	# If we got no emails
@@ -212,9 +212,9 @@ def run():
 	lTracking = []
 
 	# Parse the UPS emails
-#	lTracking.extend(
-#		UPS(dConf)
-#	)
+	lTracking.extend(
+		UPS(dConf)
+	)
 
 	# Parse the USPS emails
 	lTracking.extend(

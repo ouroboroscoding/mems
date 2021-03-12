@@ -1077,7 +1077,7 @@ class Monolith(Services.Service):
 
 		# If we don't have one
 		if not dSmpCustomer:
-			return Services.Response(None)
+			return Services.Response(False)
 
 		# Add image dictionary
 		dSmpCustomer['images'] = {}
