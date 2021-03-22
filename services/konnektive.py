@@ -381,7 +381,7 @@ class Konnektive(Services.Service):
 
 			# If we failed
 			if dRes['result'] != 'SUCCESS':
-				return Services.Response(error=1103)
+				return Services.Error(1103, ('message' in dRes and dRes['message'] or None))
 
 		# Return OK
 		return Services.Response(True)
@@ -1056,7 +1056,7 @@ class Konnektive(Services.Service):
 
 		# If we failed
 		if dRes['result'] != 'SUCCESS':
-			return Services.Error(1103)
+			return Services.Error(1103, ('message' in dRes and dRes['message'] or None))
 
 		# Return OK
 		return Services.Response(True)
@@ -1099,7 +1099,7 @@ class Konnektive(Services.Service):
 
 			# If we failed
 			if dRes['result'] != 'SUCCESS':
-				return Services.Response(error=1103)
+				return Services.Error(1103, ('message' in dRes and dRes['message'] or None))
 
 		# Return OK
 		return Services.Response(True)
@@ -1197,7 +1197,7 @@ class Konnektive(Services.Service):
 
 			# If we failed
 			if dRes['result'] != 'SUCCESS':
-				return Services.Response(error=1103)
+				return Services.Error(1103, ('message' in dRes and dRes['message'] or None))
 
 		# Return OK
 		return Services.Response(True)
