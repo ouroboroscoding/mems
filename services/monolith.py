@@ -2538,6 +2538,38 @@ class Monolith(Services.Service):
 		# Return all customers
 		return Services.Response(lPatients)
 
+	def internalCustomersWithClaimed_read(self, data, sesh):
+		"""Internal: Customers with Claimed
+
+		Returns data on the list of customer IDs passed including whether
+		they're claimed by an agent or not
+
+		Arguments:
+			data (dict): Data sent with the request
+			sesh (Sesh._Session): The session associated with the request
+
+		Returns:
+			Services.Response
+		"""
+
+		# Verify fields
+		try: DictHelper.eval(data, ['_internal_', 'customerIds'])
+		except ValueError as e: return Services.Response(error=(1001, [(f, 'missing') for f in e.args]))
+
+		# Verify the key, remove it if it's ok
+		if not Services.internalKey(data['_internal_']):
+			return Services.Response(error=Errors.SERVICE_INTERNAL_KEY)
+		del data['_internal_']
+
+		# Fetch the records and store them by ID
+		dRecords = {
+			d['customerId']:d
+			for d in KtCustomer.withClaimed(data['customerIds'])
+		}
+
+		# Return whatever is found
+		return Services.Response(dRecords)
+
 	def messageIncoming_create(self, data):
 		"""Message Incoming
 

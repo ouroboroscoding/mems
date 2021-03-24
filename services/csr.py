@@ -22,8 +22,8 @@ from RestOC import DictHelper, Errors, Record_MySQL, Services, Sesh
 from shared import Rights
 
 # Records imports
-from records.csr import Agent, CustomList, CustomListItem, TemplateEmail, \
-						TemplateSMS
+from records.csr import Agent, CustomList, CustomListItem, Reminder, \
+						TemplateEmail, TemplateSMS
 
 # Valid DOB
 _DOB = Node('date')
@@ -1039,6 +1039,306 @@ class CSR(Services.Service):
 
 		# Pass along the details to the patient service and return the result
 		return  Services.create('patient', 'setup/start', data, sesh)
+
+	def reminder_create(self, data, sesh):
+		"""Reminder Create
+
+		Creates a new reminder for the signed in agent
+
+		Arguments:
+			data (dict): Data sent with the request
+			sesh (Sesh._Session): The session associated with the request
+
+		Returns:
+			Services.Response
+		"""
+
+		# If this is an internal request
+		if '_internal_' in data:
+
+			# Verify the key, remove it if it's ok
+			if not Services.internalKey(data['_internal_']):
+				return Services.Response(error=Errors.SERVICE_INTERNAL_KEY)
+			del data['_internal_']
+
+			# If the agent is missing
+			if 'agent_id' not in data:
+				return Services.Error(1001, [['agent_id', 'missing']])
+
+			# Mark the creator as 0
+			data['creator_id'] = 0
+
+		# Else, this is a user
+		else:
+
+			# Make sure the user has at least csr messaging permission
+			Rights.check(sesh, 'csr_messaging', Rights.READ)
+
+			# Mark the agent and creator as the signed in user
+			data['agent_id'] = sesh['memo_id']
+			data['creator_id'] = sesh['memo_id']
+
+		# Create an instance to test the fields
+		try:
+			oReminder = Reminder(data)
+		except ValueError as e:
+			return Services.Error(1001, e.args[0])
+
+		# Create the reminder
+		oReminder.create()
+
+		# Store the raw record
+		dReminder = oReminder.record()
+
+		# If we have a crm type
+		if 'crm_type' in dReminder and dReminder['crm_type']:
+
+			# If it's knk
+			if dReminder['crm_type'] == 'knk':
+
+				# Fetch the claimed data
+				oResponse = Services.read('monolith', 'internal/customersWithClaimed', {
+					"_internal_": Services.internalKey(),
+					"customerIds": [dReminder['crm_id']]
+				}, sesh)
+
+				# If we got data
+				if oResponse.dataExists():
+
+					# If we got the record
+					if dReminder['crm_id'] in oResponse.data:
+
+						# Store it in the reminder
+						dReminder['claimed'] = oResponse.data[dReminder['crm_id']]
+
+		# Return the raw record
+		return Services.Response(dReminder)
+
+	def reminder_delete(self, data, sesh):
+		"""Reminder Delete
+
+		Deletes an existing reminder for the signed in agent
+
+		Arguments:
+			data (dict): Data sent with the request
+			sesh (Sesh._Session): The session associated with the request
+
+		Returns:
+			Services.Response
+		"""
+
+		# Make sure the user has at least csr messaging permission
+		Rights.check(sesh, 'csr_messaging', Rights.READ)
+
+		# If the ID is missing
+		if '_id' not in data:
+			return Services.Error(1001, [['_id', 'missing']])
+
+		# Find the reminder
+		oReminder = Reminder.get(data['_id'])
+		if not oReminder:
+			return Services.Error(1104)
+
+		# If the creator is not the signed in user
+		if oReminder['creator_id'] != sesh['memo_id']:
+			return Services.Error(1000)
+
+		# Delete the reminder and return the result
+		return Services.Response(
+			oReminder.delete()
+		)
+
+	def reminder_update(self, data, sesh):
+		"""Reminder Update
+
+		Updates an existing reminder for the signed in agent
+
+		Arguments:
+			data (dict): Data sent with the request
+			sesh (Sesh._Session): The session associated with the request
+
+		Returns:
+			Services.Response
+		"""
+
+		# Make sure the user has at least csr messaging permission
+		Rights.check(sesh, 'csr_messaging', Rights.READ)
+
+		# If the ID is missing
+		if '_id' not in data:
+			return Services.Error(1001, [['_id', 'missing']])
+
+		# Find the reminder
+		oReminder = Reminder.get(data['_id'])
+		if not oReminder:
+			return Services.Error(1104)
+
+		# If the creator is not the signed in user
+		if oReminder['creator_id'] != sesh['memo_id']:
+			return Services.Error(1000)
+
+		# If the reminder is already resolved
+		if oReminder['resolved']:
+			return Services.Error(1002)
+
+		# Remove fields that can't be changed
+		del data['_id']
+		if '_created' in data: del data['_created']
+		if 'agent_id' in data: del data['agent_id']
+		if 'creator_id' in data: del data['creator_id']
+		if 'resolved' in data == False: del data['resolved']
+
+		# Update all reminaing fields and keep track of any errors
+		lErrors = []
+		for f in data:
+			try: oReminder[f] = data[f]
+			except ValueError as e: lErrors.extend(e.args[0])
+
+		# If there's any errors
+		if lErrors:
+			return Services.Error(1001, lErrors)
+
+		# Save the record and return the result
+		return Services.Response(
+			oReminder.save()
+		)
+
+	def reminderResolve_update(self, data, sesh):
+		"""Reminder Create
+
+		Marks the reminder as resolved for the signed in patient
+
+		Arguments:
+			data (dict): Data sent with the request
+			sesh (Sesh._Session): The session associated with the request
+
+		Returns:
+			Services.Response
+		"""
+
+		# Make sure the user has at least csr messaging permission
+		Rights.check(sesh, 'csr_messaging', Rights.READ)
+
+		# If the ID is missing
+		if '_id' not in data:
+			return Services.Error(1001, [['_id', 'missing']])
+
+		# Find the reminder
+		oReminder = Reminder.get(data['_id'])
+		if not oReminder:
+			return Services.Error(1104)
+
+		# If the creator is not the signed in user
+		if oReminder['creator_id'] != sesh['memo_id']:
+			return Services.Error(1000)
+
+		# If the reminder is already resolved
+		if oReminder['resolved']:
+			return Services.Response(True)
+
+		# Mark the reminder as resolved and return the result
+		oReminder['resolved'] = True
+		return Services.Response(
+			oReminder.save()
+		)
+
+	def reminders_read(self, data, sesh):
+		"""Reminders
+
+		Returns the unresolved reminders for the agent
+
+		Arguments:
+			data (dict): Data sent with the request
+			sesh (Sesh._Session): The session associated with the request
+
+		Returns:
+			Services.Response
+		"""
+
+		# Make sure the user has at least csr messaging permission
+		Rights.check(sesh, 'csr_messaging', Rights.READ)
+
+		# Fetch all reminders not resolved for the signed in agent
+		lReminders = Reminder.filter({
+			"agent_id": sesh['memo_id'],
+			"resolved": False
+		}, raw=True, orderby='date')
+
+		# CRM IDs
+		dCrmIds = {"knk": []}
+		dClaimed ={"knk": {}}
+
+		# Go through each one and store the ID by CRM
+		for d in lReminders:
+
+			# If we have a crm type
+			if 'crm_type' in d and d['crm_type']:
+
+				# Store the id by type
+				dCrmIds[d['crm_type']].append(d['crm_id'])
+
+		# If we have any KNK ones
+		if dCrmIds['knk']:
+
+			# Fetch the claimed data
+			oResponse = Services.read('monolith', 'internal/customersWithClaimed', {
+				"_internal_": Services.internalKey(),
+				"customerIds": dCrmIds['knk']
+			}, sesh)
+
+			# If we got an error
+			if oResponse.errorExists():
+				return oResponse
+
+			# If we got data, store it
+			if oResponse.dataExists():
+				dClaimed['knk'] = oResponse.data
+
+		# Go through each reminder
+		for d in lReminders:
+
+			# Init claimed
+			d['claimed'] = None
+
+			# If we have a crm_type
+			if 'crm_type' in d and d['crm_type']:
+
+				# If we have claimed
+				if d['crm_id'] in dClaimed[d['crm_type']]:
+					d['claimed'] = dClaimed[d['crm_type']][d['crm_id']]
+
+		# Return the reminders
+		return Services.Response(lReminders)
+
+	def remindersCount_read(self, data, sesh):
+		"""Reminders Count
+
+		Returns the number of unresolved reminders for the given data and
+		previous days, for the signed in agent
+
+		Arguments:
+			data (dict): Data sent with the request
+			sesh (Sesh._Session): The session associated with the request
+
+		Returns:
+			Services.Response
+		"""
+
+		# Make sure the user has at least csr messaging permission
+		Rights.check(sesh, 'csr_messaging', Rights.READ)
+
+		# If the data is missing
+		if 'date' not in data:
+			return Services.Error(1001, [['date', 'missing']])
+
+		# Fetch the count of unresolved reminders and return it
+		return Services.Response(
+			Reminder.count(filter={
+				"agent_id": sesh['memo_id'],
+				"date": {"lte": data['date']},
+				"resolved": False
+			})
+		)
 
 	def session_read(self, data, sesh):
 		"""Session

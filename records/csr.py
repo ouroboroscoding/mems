@@ -138,6 +138,36 @@ class CustomListItem(Record_MySQL.Record):
 			sSQL
 		)
 
+# Reminder class
+class Reminder(Record_MySQL.Record):
+	"""Reminder
+
+	Represents a reminder for an agent
+	"""
+
+	_conf = None
+	"""Configuration"""
+
+	@classmethod
+	def config(cls):
+		"""Config
+
+		Returns the configuration data associated with the record type
+
+		Returns:
+			dict
+		"""
+
+		# If we haven loaded the config yet
+		if not cls._conf:
+			cls._conf = Record_MySQL.Record.generateConfig(
+				Tree.fromFile('definitions/csr/reminder.json'),
+				'mysql'
+			)
+
+		# Return the config
+		return cls._conf
+
 # TemplateEmail class
 class TemplateEmail(Record_MySQL.Record):
 	"""TemplateEmail

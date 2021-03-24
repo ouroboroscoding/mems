@@ -40,6 +40,11 @@ REST.Server({
 	"/list/item": {"methods": REST.CREATE | REST.DELETE, "session": True},
 	"/lists": {"methods": REST.READ, "session": True},
 
+	"/reminder": {"methods": REST.CREATE | REST.UPDATE | REST.DELETE, "session": True},
+	"/reminder/resolve": {"methods": REST.UPDATE, "session": True},
+	"/reminders": {"methods": REST.READ, "session": True},
+	"/reminders/count": {"methods": REST.READ, "session": True},
+
 	"/session": {"methods": REST.READ, "session": True},
 	"/signin": {"methods": REST.CREATE},
 	"/signout": {"methods": REST.CREATE},
