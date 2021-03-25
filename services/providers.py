@@ -27,7 +27,7 @@ from shared import Rights, SMSWorkflow
 
 # Records imports
 from records.providers import CalendlySingleUse, ProductToRx, Provider, \
-								RoundRobinAgent, Template, Tracking
+								Request, RoundRobinAgent, Template, Tracking
 
 class Providers(Services.Service):
 	"""Providers Service class
@@ -1003,6 +1003,35 @@ class Providers(Services.Service):
 
 		# Return the providers in order of userName
 		return Services.Response(sorted(lProviders, key=lambda o: o['userName']))
+
+	def request_create(self, data, sesh):
+		"""Request Create
+
+		Stores a request made in the provider portal so we can make sense of
+		provider activity
+
+		Arguments:
+			data (dict): Data sent with the request
+			sesh (Sesh._Session): The session associated with the request
+
+		Returns:
+			Services.Response
+		"""
+
+		# Add the memo id and session to the data
+		data['memo_id'] = sesh['memo_id']
+		data['sesh'] = sesh.id()[5:]
+
+		# Create the instance
+		try:
+			oRequest = Request(data)
+		except ValueError as e:
+			return Services.Error(1001, e.args[0])
+
+		# Create the record and return the result
+		return Services.Response(
+			oRequest.create()
+		)
 
 	def roundrobin_read(self, data, sesh):
 		"""Round Robin

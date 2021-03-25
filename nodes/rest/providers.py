@@ -50,6 +50,8 @@ REST.Server([
 	{"uri": "/provider/tracking", "methods": REST.READ, "session": True},
 	{"uri": "/roundrobin", "methods": REST.READ, "session": True},
 
+	{"uri": "/request", "methods": REST.CREATE, "session": True},
+
 	{"uri": "/session", "methods": REST.READ, "session": True},
 	{"uri": "/signin", "methods": REST.CREATE},
 	{"uri": "/signout", "methods": REST.CREATE},
