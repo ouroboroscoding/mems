@@ -322,7 +322,6 @@ class Activity(Record_MySQL.Record):
 		# Return the config
 		return cls._conf
 
-
 # Verify class
 class Verify(Record_MySQL.Record):
 	"""Verify
@@ -352,3 +351,28 @@ class Verify(Record_MySQL.Record):
 
 		# Return the config
 		return cls._conf
+
+	def delete(self):
+		"""Delete
+
+		Overrides base delete since there's no primary key
+
+		Returns:
+			uint
+		"""
+
+		# Generate SQL
+		sSQL = "DELETE FROM `%(db)s`.`%(table)s`\n" \
+				"WHERE `_account` = '%(_account)s'\n" \
+				"AND `type` = '%(type)s'" % {
+			"db": self._dStruct['db'],
+			"table": self._dStruct['table'],
+			"_account": self._dRecord['_account'],
+			"type": self._dRecord['type']
+		}
+
+		# Run the SQL
+		return Record_MySQL.Commands.execute(
+			self._dStruct['host'],
+			sSQL
+		)
