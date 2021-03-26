@@ -154,6 +154,36 @@ class Provider(Record_MySQL.Record):
 		# Return the config
 		return cls._conf
 
+# Request class
+class Request(Record_MySQL.Record):
+	"""Request
+
+	Represents a request to rest
+	"""
+
+	_conf = None
+	"""Configuration"""
+
+	@classmethod
+	def config(cls):
+		"""Config
+
+		Returns the configuration data associated with the record type
+
+		Returns:
+			dict
+		"""
+
+		# If we haven loaded the config yet
+		if not cls._conf:
+			cls._conf = Record_MySQL.Record.generateConfig(
+				Tree.fromFile('definitions/providers/request.json'),
+				'mysql'
+			)
+
+		# Return the config
+		return cls._conf
+
 # RoundRobinAgent class
 class RoundRobinAgent(Record_MySQL.Record):
 	"""RoundRobinAgent
