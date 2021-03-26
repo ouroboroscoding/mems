@@ -200,7 +200,8 @@ class Patient(Services.Service):
 		sKey = StrHelper.random(32, '_0x')
 		oVerify = Verify({
 			"_account": oAccount['_id'],
-			"key": sKey
+			"key": sKey,
+			"type": 'email'
 		})
 		if not oVerify.create(conflict="replace"):
 			return Services.Error(1100)
@@ -399,7 +400,8 @@ class Patient(Services.Service):
 		sKey = StrHelper.random(32, '_0x')
 		oVerify = Verify({
 			"_account": oAccount['_id'],
-			"key": sKey
+			"key": sKey,
+			"type": 'email'
 		})
 		if not oVerify.create(conflict="replace"):
 			return Services.Response(error=1100)
@@ -453,8 +455,11 @@ class Patient(Services.Service):
 		if not dAccount:
 			return Services.Response(False)
 
-		# Look for a verify record by account id
-		oVerify = Verify.get(dAccount['_id'])
+		# Look for a verify record by account id and type
+		oVerify = Verify.filter({
+			'_account': dAccount['_id'],
+			'type': ['', 'forgot']
+		})
 
 		# Is there already a key for the account?
 		if oVerify and 'regenerate' not in data:
@@ -483,7 +488,8 @@ class Patient(Services.Service):
 		sKey = StrHelper.random(32, '_0x')
 		oVerify = Verify({
 			"_account": dAccount['_id'],
-			"key": sKey
+			"key": sKey,
+			"type": 'forgot'
 		})
 		if not oVerify.create(conflict="replace"):
 			return Services.Response(error=1100)
