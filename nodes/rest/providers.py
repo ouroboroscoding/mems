@@ -54,7 +54,7 @@ REST.Server([
 
 	{"uri": "/session", "methods": REST.READ, "session": True},
 	{"uri": "/signin", "methods": REST.CREATE},
-	{"uri": "/signout", "methods": REST.CREATE},
+	{"uri": "/signout", "methods": REST.CREATE, "session": True},
 
 	{"uri": "/template", "methods": REST.ALL, "session": True},
 	{"uri": "/templates", "methods": REST.READ, "session": True},
