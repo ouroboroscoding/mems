@@ -767,9 +767,9 @@ class Monolith(Services.Service):
 
 			# Get the latest landing
 			lLandings = TfLanding.find(
-				dCustomer['shipping']['lastName'],
-				dCustomer['email'] or '',
-				dCustomer['phone'],
+				dCustomer['lastName'],
+				dCustomer['emailAddress'] or '',
+				dCustomer['phoneNumber'],
 				['MIP-A1', 'MIP-A2', 'MIP-H1', 'MIP-H2']
 			)
 			if not lLandings:
