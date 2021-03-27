@@ -2889,7 +2889,7 @@ class Monolith(Services.Service):
 				lUserIDs.add(d['transferredBy'])
 
 		# If we have any users
-		if lUserIDs:
+		if len(lUserIDs):
 
 			# Get the names of all the users
 			dUsers = {
