@@ -652,17 +652,44 @@ class Monolith(Services.Service):
 		#	notification
 		if data['user_id'] != sesh['memo_id']:
 
+			# Claim data
+			dData = {
+				"phoneNumber": data['phoneNumber'],
+				"orderId": oClaim['orderId'],
+				"provider": oClaim['provider'],
+				"continuous": oClaim['continuous'],
+				"transferredBy": sesh['memo_id'],
+				"viewed": False
+			}
+
+			# Get a list of all the user IDs
+			lUserIDs = set()
+			if dData['provider']: lUserIDs.add(dData['provider'])
+			if dData['transferredBy']:
+				dData['transferredBy'] = int(dData['transferredBy'])
+				lUserIDs.add(dData['transferredBy'])
+
+			# If we have any IDs
+			if lUserIDs:
+
+				# Get the names of all the users
+				dUsers = {
+					d['id']: '%s %s' % (d['firstName'], d['lastName'])
+					for d in User.get(list(lUserIDs), raw=['id', 'firstName', 'lastName'])
+				}
+
+				# Add provider name
+				if dData['provider']:
+					dData['providerName'] = dData['provider'] in dUsers and dUsers[dData['provider']] or 'N/A'
+
+				# Add transferred name
+				if dData['transferredBy']:
+					dData['transferredByName'] = dData['transferredBy'] in dUsers and dUsers[dData['transferredBy']] or 'N/A'
+
 			# Sync the transfer for anyone interested
 			Sync.push('monolith', 'user-%s' % str(data['user_id']), {
 				"type": 'claim_transfered',
-				"claim": {
-					"phoneNumber": data['phoneNumber'],
-					"orderId": oClaim['orderId'],
-					"provider": oClaim['provider'],
-					"continuous": oClaim['continuous'],
-					"transferredBy": sesh['memo_id'],
-					"viewed": False
-				}
+				"claim": dData
 			})
 
 		# If the claim was forceable removed
@@ -2853,13 +2880,37 @@ class Monolith(Services.Service):
 				)
 			}
 
+		# Get a list of all the user IDs
+		lUserIDs = set()
+		for d in lClaimed:
+			if d['provider']: lUserIDs.add(d['provider'])
+			if d['transferredBy']:
+				d['transferredBy'] = int(d['transferredBy'])
+				lUserIDs.add(d['transferredBy'])
+
+		# Get the names of all the users
+		dUsers = {
+			d['id']: '%s %s' % (d['firstName'], d['lastName'])
+			for d in User.get(list(lUserIDs), raw=['id', 'firstName', 'lastName'])
+		}
+
 		# Go through each claimed and associate the correct customer ID
 		for d in lClaimed:
+
+			# Add customer ID
 			if d['customerPhone'] in dCustomers:
 				d['customerId'] = dCustomers[d['customerPhone']]['customerId']
 				d['customerName'] = dCustomers[d['customerPhone']]['customerName']
 			else:
 				d['customerId'] = 0
+
+			# Add provider name
+			if d['provider']:
+				d['providerName'] = d['provider'] in dUsers and dUsers[d['provider']] or 'N/A'
+
+			# Add transferred name
+			if d['transferredBy']:
+				d['transferredByName'] = d['transferredBy'] in dUsers and dUsers[d['transferredBy']] or 'N/A'
 
 		# Return the data
 		return Services.Response(lClaimed)
@@ -3962,11 +4013,19 @@ class Monolith(Services.Service):
 			"viewed": False
 		}
 
+		# Get the user name
+		dUser = User.get(sesh['memo_id'], raw=['firstName', 'lastName'])
+		sName = '%s %s' % (dUser['firstName'], dUser['lastName'])
+
 		# Create a new claim instance for the agent and store in the DB
 		oCustClaim = CustomerClaimed(dData)
 		try:
 			if not oCustClaim.create():
 				return Services.Response(error=1100)
+
+			# Add the provider name and transferred name
+			dData['providerName'] = sName
+			dData['transferredByName'] = sName
 
 			# Sync the transfer for anyone interested
 			Sync.push('monolith', 'user-%s' % str(data['agent']), {
@@ -3990,6 +4049,10 @@ class Monolith(Services.Service):
 					"type": 'claim_removed',
 					"phoneNumber": dKtCustomer['phoneNumber']
 				})
+
+				# Add the provider name and transferred name
+				dData['providerName'] = sName
+				dData['transferredByName'] = sName
 
 				# Notify the new agent they gained a claim
 				Sync.push('monolith', 'user-%s' % str(data['agent']), {
