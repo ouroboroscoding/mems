@@ -2888,11 +2888,14 @@ class Monolith(Services.Service):
 				d['transferredBy'] = int(d['transferredBy'])
 				lUserIDs.add(d['transferredBy'])
 
-		# Get the names of all the users
-		dUsers = {
-			d['id']: '%s %s' % (d['firstName'], d['lastName'])
-			for d in User.get(list(lUserIDs), raw=['id', 'firstName', 'lastName'])
-		}
+		# If we have any users
+		if lUserIDs:
+
+			# Get the names of all the users
+			dUsers = {
+				d['id']: '%s %s' % (d['firstName'], d['lastName'])
+				for d in User.get(list(lUserIDs), raw=['id', 'firstName', 'lastName'])
+			}
 
 		# Go through each claimed and associate the correct customer ID
 		for d in lClaimed:
