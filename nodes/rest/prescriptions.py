@@ -45,7 +45,10 @@ REST.Server({
 	"/pharmacy/fill/errors": {"methods": REST.READ, "session": True},
 
 	"/product": {"methods": REST.ALL, "session": True},
-	"/products": {"methods": REST.READ, "session": True}
+	"/products": {"methods": REST.READ, "session": True},
+
+	"/provider/notifications": {"methods": REST.READ, "session": True},
+	"/provider/sso": {"methods": REST.READ, "session": True}
 
 }, 'prescriptions', "https?://(.*\\.)?%s" % Conf.get(("rest","allowed")).replace('.', '\\.')).run(
 	host=oRestConf['prescriptions']['host'],
