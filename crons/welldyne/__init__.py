@@ -24,13 +24,8 @@ def run(kind, report, arg1=None):
 		bool
 	"""
 
-	# If the type is adhoc
-	if kind == 'adhoc':
-		from . import adhoc
-		return adhoc.run(report)
-
 	# Else if the type is eligibility
-	elif kind == 'eligibility':
+	if kind == 'eligibility':
 		from . import eligibility
 		return eligibility.run(report)
 
