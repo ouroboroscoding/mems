@@ -19,7 +19,7 @@ import traceback
 # Pip imports
 import arrow
 import pysftp
-from RestOC import Conf, DictHelper
+from RestOC import Conf, DictHelper, Services
 
 # Record imports
 from records.welldyne import AdHoc, Eligibility
@@ -60,24 +60,25 @@ def run(period=None):
 		sSince = arrow.get().format('YYYY-MM-DD 00:00:00')
 		sThru = arrow.get().shift(days=15).format('YYYY-MM-DD 00:00:00')
 
-		# If we're doing the noon run
-		if period == 'noon':
-			sFileTime = '120000'
-
-		# Else, if we're doing the mid day run
-		elif period == 'afternoon':
-			sFileTime = '160000'
-
-		# Else, invalid time period
-		else:
-			print('Invalid time period: %s' % time)
-			return False
-
 		# Find all AdHoc records
 		lAdHocs = AdHoc.report()
 
+		# If there's no data, we're done
+		if not lAdHocs:
+			return True
+
+		# Init the counts
+		dCounts = {}
+
 		# Go through each one
 		for d in lAdHocs:
+
+			# If we don't have the type yet
+			if d['type'] not in dCounts:
+				dCounts[d['type']] = 0
+
+			# Increase the type count
+			dCounts[d['type']] += 1
 
 			# Split the raw data by comma
 			lLine = d['raw'].split(',')
@@ -144,8 +145,7 @@ def run(period=None):
 		oFile.seek(0)
 
 		# Generate the filename with the current date
-		sDate = '%s%s' % (arrow.get().format('YYYYMMDD'), sFileTime)
-		sFilename = 'ADHOC%s.CSV' % sDate;
+		sFilename = 'ADHOC%s.CSV' % arrow.get().format('YYYYMMDDHHmmss');
 
 		# Get the sFTP config
 		dSFTP = DictHelper.clone(Conf.get(('welldyne', 'sftp')))
@@ -156,6 +156,7 @@ def run(period=None):
 			sFilename = '%s/%s' % (sFolder, sFilename)
 
 		# Upload the file to the sFTP
+		"""
 		with pysftp.Connection(**dSFTP) as oCon:
 			oCon.putfo(oFile, sFilename, confirm=False)
 
@@ -164,6 +165,39 @@ def run(period=None):
 			AdHoc.deleteGet([
 				d['_id'] for d in lAdHocs
 			])
+		"""
+		# Get the list of recipients for the email
+		oResponse = Services.read('reports', 'recipients/internal', {
+			"_internal_": Services.internalKey(),
+			"name": 'WellDyne_AdHoc'
+		})
+		if oResponse.errorExists():
+			emailError('WellDyne AdHoc Failed', 'Failed to get report recipients\n\n%s' % (
+				str(oResponse)
+			))
+			return False
+
+		# Generate the email
+		sContent = 'THIS IS AN AUTOMATED MESSAGE, PLEASE DO NOT REPLY.\n\n' \
+					'-----\n\n' \
+					'A new AdHoc file, %s, has been uploaded to the FTP with the following\n\n%s' % (
+						sFilename,
+						'\n'.join(['%s: %d' % (k,i) for k,i in dCounts.items()])
+					)
+
+		# Send the email
+		oResponse = Services.create('communications', 'email', {
+			"_internal_": Services.internalKey(),
+			"text_body": sContent,
+			"subject": 'New AdHoc Uploaded',
+			"to": oResponse.data
+		})
+		if oResponse.errorExists():
+			emailError('Invalid Campaigns Failed', 'Failed to send email\n\n%s\n\n' % (
+				str(oResponse),
+				sContent
+			))
+			return False
 
 		# Return OK
 		return True
