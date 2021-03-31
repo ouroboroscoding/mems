@@ -1554,3 +1554,104 @@ class Prescriptions(Services.Service):
 
 		# Return what's allowed
 		return Services.Response(lRet)
+
+	def providerNotifications_read(self, data, sesh):
+		"""Provider Notifications
+
+		Returns the current list of provider notifications
+
+		Arguments:
+			data (dict): Data sent with the request
+			sesh (Sesh._Session): The session associated with the request
+
+		Returns:
+			Services.Response
+		"""
+
+		# If we're missing the clinician ID
+		if 'clinician_id' not in data:
+			return Services.Error(1001, [('clinician_id', 'missing')])
+
+		# Make sure the user has the proper rights
+		Rights.check(sesh, 'prescriptions', Rights.READ)
+
+		# Make sure we got an int
+		if not isinstance(data['clinician_id'], int):
+			return Services.Error(1001, [('clinician_id', 'must be integer')])
+
+		# Generate the token
+		sToken = self._generateToken(data['clinician_id'])
+
+		# Generate the URL
+		sURL = 'https://%s/webapi/api/notifications/counts' % self._host
+
+		# Generate the headers
+		dHeaders = {
+			"Accept": "application/json",
+			"Authorization": "Bearer %s" % sToken
+		}
+
+		# Make the request
+		oRes = requests.get(sURL, headers=dHeaders)
+
+		# If we didn't get a 200
+		if oRes.status_code != 200:
+			return Services.Response(error=(1601, oRes.text))
+
+		# Get the data
+		dData = oRes.json()
+
+		# If we got an error
+		if dData['Result']['ResultCode'] == 'ERROR':
+			return Services.Error(1602, dData['Result']['ResultDescription'])
+
+		# Return the total count
+		return Services.Response(
+			dData['RefillRequestsCount'] +
+			dData['TransactionErrorsCount'] +
+			dData['PendingPrescriptionsCount'] +
+			dData['PendingRxChangeCount']
+		)
+
+	def providerSso_read(self, data, sesh):
+		"""Provider SSO
+
+		Returns the SSO url for a provider (clinician) page
+
+		Arguments:
+			data (dict): Data sent with the request
+			sesh (Sesh._Session): The session associated with the request
+
+		Returns:
+			Services.Response
+		"""
+
+		# If we're missing the clinician ID
+		if 'clinician_id' not in data:
+			return Services.Error(1001, [('clinician_id', 'missing')])
+
+		# Make sure the user has the proper rights
+		Rights.check(sesh, 'prescriptions', Rights.UPDATE)
+
+		# Make sure we got an int
+		if not isinstance(data['clinician_id'], int):
+			return Services.Error(1001, [('clinician_id', 'must be integer')])
+
+		# Generate the IDs
+		lIDs = self._generateIds(data['clinician_id'])
+
+		# Generate the URL
+		sURL = 'https://%s/LoginSingleSignOn.aspx?%s' % (
+			self._host,
+			urlencode({
+				"SingleSignOnClinicId": self._clinic_id,
+				"SingleSignOnUserId": '%d' % data['clinician_id'],
+				"SingleSignOnPhraseLength": '32',
+				"SingleSignOnCode": lIDs[0],
+				"SingleSignOnUserIdVerify": lIDs[1],
+				"RefillsErrors": '1'
+			})
+		)
+
+		# Return the URL
+		return Services.Response(sURL)
