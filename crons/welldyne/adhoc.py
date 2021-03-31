@@ -145,7 +145,7 @@ def run(period=None):
 		oFile.seek(0)
 
 		# Generate the filename with the current date
-		sFilename = 'ADHOC%s.CSV' % arrow.get().format('YYYYMMDDHHmmss');
+		sFilename = 'ADHOC%s.CSV' % arrow.get().format('YYYYMMDDHHmm');
 
 		# Get the sFTP config
 		dSFTP = DictHelper.clone(Conf.get(('welldyne', 'sftp')))
@@ -156,16 +156,9 @@ def run(period=None):
 			sFilename = '%s/%s' % (sFolder, sFilename)
 
 		# Upload the file to the sFTP
-		"""
 		with pysftp.Connection(**dSFTP) as oCon:
 			oCon.putfo(oFile, sFilename, confirm=False)
 
-		# Delete the adhocs processed
-		if lAdHocs:
-			AdHoc.deleteGet([
-				d['_id'] for d in lAdHocs
-			])
-		"""
 		# Get the list of recipients for the email
 		oResponse = Services.read('reports', 'recipients/internal', {
 			"_internal_": Services.internalKey(),
@@ -198,6 +191,12 @@ def run(period=None):
 				sContent
 			))
 			return False
+
+		# Delete the adhocs processed
+		if lAdHocs:
+			AdHoc.deleteGet([
+				d['_id'] for d in lAdHocs
+			])
 
 		# Return OK
 		return True
