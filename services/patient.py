@@ -36,7 +36,8 @@ _dSupportRequest = {
 	"cancel_order": "PP: Customer has requested to cancel their order",
 	"payment": "PP: Customer has requested to change their payment info",
 	"payment_changed": "PAYMENT METHOD UPDATED: Please review with the patient and clean up any card info if needed",
-	"urgent_address": "PP: Customer has requested an urgent change to their shipping address (address already changed in the CRM)"
+	"urgent_address": "PP: Customer has requested an urgent change to their shipping address (address already changed in the CRM)",
+	"hrt_address": "PP: HRT PT ADDRESS CHANGE\n\nPatient changed their shipping address, please update Anazao immediately."
 }
 
 # Regex for validating email
