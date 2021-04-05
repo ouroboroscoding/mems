@@ -62,6 +62,7 @@ REST.Server({
 	"/customer/stops": {"methods": REST.READ, "session": True},
 	"/customer/provider/return": {"methods": REST.UPDATE, "session": True},
 	"/customer/provider/transfer": {"methods": REST.UPDATE, "session": True},
+	"/customer/providers": {"methods": REST.READ, "session": True},
 
 	"/encounter": {"methods": REST.READ},
 

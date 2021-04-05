@@ -2415,6 +2415,10 @@ class Monolith(Services.Service):
 			dData['customerName'] = dDetails['customerName']
 			dData['type'] = dDetails['type']
 
+			# Get the name of the transfer user
+			dUser = User.get(dData['transferredBy'], raw=['id', 'firstName', 'lastName'])
+			dData['transferredByName'] = dUser and '%s %s' % (dUser['firstName'], dUser['lastName']) or 'N/A'
+
 			# Create the record in the DB
 			try:
 				if not oOrderClaim.create():
@@ -2468,7 +2472,7 @@ class Monolith(Services.Service):
 		"""
 
 		# Make sure the user has the proper permission to do this
-		Rights.check(sesh, 'csr_claims', Rights.CREATE)
+		Rights.check(sesh, 'csr_claims_provider', Rights.CREATE)
 
 		# Verify fields
 		try: DictHelper.eval(data, ['phoneNumber', 'note', 'user_id'])
@@ -2507,13 +2511,17 @@ class Monolith(Services.Service):
 		dData['customerName'] = '%s %s' % (dDetails['firstName'], dDetails['lastName'])
 		dData['type'] = 'view'
 
+		# Get the name of the transfer user
+		dUser = User.get(dData['transferredBy'], raw=['id', 'firstName', 'lastName'])
+		dData['transferredByName'] = dUser and '%s %s' % (dUser['firstName'], dUser['lastName']) or 'N/A'
+
 		# Create the record in the DB
 		try:
 			if not oOrderClaim.create():
 				return Services.Response(error=1100)
 
 			# Sync the transfer for anyone interested
-			Sync.push('monolith', 'user-%s' % str(oClaim['provider']), {
+			Sync.push('monolith', 'user-%s' % str(data['user_id']), {
 				"type": 'claim_transfered',
 				"claim": dData
 			})
@@ -2534,7 +2542,7 @@ class Monolith(Services.Service):
 			})
 
 			# Notify the new provider they gained a claim
-			Sync.push('monolith', 'user-%s' % str(oClaim['provider']), {
+			Sync.push('monolith', 'user-%s' % str(data['user_id']), {
 				"type": 'claim_transfered',
 				"claim": dData
 			})
@@ -2557,6 +2565,58 @@ class Monolith(Services.Service):
 
 		# Return OK
 		return Services.Response(True)
+
+	def customerProviders_read(self, data, sesh):
+		"""Customer Providers
+
+		Returns the list of memo IDs and names for providers who work in the
+		state the customer is in, in the given medication type
+
+		Arguments:
+			data (dict): Data sent with the request
+			sesh (Sesh._Session): The session associated with the request
+
+		Returns:
+			Services.Response
+		"""
+
+		# Verify fields
+		try: DictHelper.eval(data, ['customerId', 'type'])
+		except ValueError as e: return Services.Response(error=(1001, [(f, 'missing') for f in e.args]))
+
+		# If the type is invalid
+		if data['type'] not in ['ed', 'hrt']:
+			return Services.Error(1001, [('type', 'invalid')])
+
+		# Find the customer's shipping state
+		dCustomer = KtCustomer.filter({
+			"customerId": str(data['customerId'])
+		}, raw=['shipState'], limit=1)
+		if not dCustomer:
+			return Services.Error(1104)
+
+		# If we're looking for ED
+		if data['type'] == 'ed':
+			lUsers = User.filter({
+				'eDFlag': 'Y',
+				'practiceStates': {'like': '%%%s%%' % dCustomer['shipState']}
+			}, raw=['id', 'firstName', 'lastName'])
+
+		# Else, if we're looking for HRT
+		elif data['type'] == 'hrt':
+			lUsers = User.filter({
+				'hormoneFlag': 'Y',
+				'hrtPracticeStates': {'like': '%%%s%%' % dCustomer['shipState']}
+			}, raw=['id', 'firstName', 'lastName'])
+
+		# Return the list of users
+		return Services.Response({
+			d['id']:{
+				"firstName": d['firstName'],
+				"lastName": d['lastName']
+			}
+			for d in lUsers
+		})
 
 	def encounter_read(self, data):
 		"""Encounter
@@ -3559,10 +3619,34 @@ class Monolith(Services.Service):
 		if not oResponse.data:
 			return Services.Response(error=Rights.INVALID)
 
-		# Get and return the claimed records
-		return Services.Response(
-			KtOrderClaim.byUser(sesh['memo_id'])
-		)
+		# Get all the claims
+		lClaimed = KtOrderClaim.byUser(sesh['memo_id'])
+
+		# Get a list of all the user IDs
+		lUserIDs = set()
+		for d in lClaimed:
+			if d['transferredBy']:
+				d['transferredBy'] = int(d['transferredBy'])
+				lUserIDs.add(d['transferredBy'])
+
+		# If we have any users
+		if len(lUserIDs):
+
+			# Get the names of all the users
+			dUsers = {
+				d['id']: '%s %s' % (d['firstName'], d['lastName'])
+				for d in User.get(list(lUserIDs), raw=['id', 'firstName', 'lastName'])
+			}
+
+		# Go through each claimed and associate the correct users
+		for d in lClaimed:
+
+			# Add transferred name
+			if d['transferredBy']:
+				d['transferredByName'] = d['transferredBy'] in dUsers and dUsers[d['transferredBy']] or 'N/A'
+
+		# Return the claimed records
+		return Services.Response(lClaimed)
 
 	def orderContinuous_create(self, data, sesh):
 		"""Order Continuous Create
