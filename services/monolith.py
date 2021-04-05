@@ -2289,10 +2289,11 @@ class Monolith(Services.Service):
 			}, raw=['service', 'agent'])
 		})
 
-	def customerTransfer_update(self, data, sesh):
-		"""Customer Transfer
+	def customerProviderReturn_update(self, data, sesh):
+		"""Customer Provider Return
 
-		Transfers a customer from an agent to a provider
+		Transfers a customer from an agent back to a specific provider or
+		to the provider queue
 
 		Arguments:
 			data (dict): Data sent with the request
@@ -2303,12 +2304,7 @@ class Monolith(Services.Service):
 		"""
 
 		# Make sure the user has the proper permission to do this
-		oResponse = Services.read('auth', 'rights/verify', {
-			"name": "csr_claims",
-			"right": Rights.CREATE
-		}, sesh)
-		if not oResponse.data:
-			return Services.Response(error=Rights.INVALID)
+		Rights.check(sesh, 'csr_claims', Rights.CREATE)
 
 		# Verify fields
 		try: DictHelper.eval(data, ['phoneNumber', 'note'])
@@ -2419,6 +2415,10 @@ class Monolith(Services.Service):
 			dData['customerName'] = dDetails['customerName']
 			dData['type'] = dDetails['type']
 
+			# Get the name of the transfer user
+			dUser = User.get(dData['transferredBy'], raw=['id', 'firstName', 'lastName'])
+			dData['transferredByName'] = dUser and '%s %s' % (dUser['firstName'], dUser['lastName']) or 'N/A'
+
 			# Create the record in the DB
 			try:
 				if not oOrderClaim.create():
@@ -2457,6 +2457,166 @@ class Monolith(Services.Service):
 
 		# Return OK
 		return Services.Response(True)
+
+	def customerProviderTransfer_update(self, data, sesh):
+		"""Customer Provider Transfer
+
+		Handles transfering a view only claim from an agent to a provider
+
+		Arguments:
+			data (dict): Data sent with the request
+			sesh (Sesh._Session): The session associated with the request
+
+		Returns:
+			Services.Response
+		"""
+
+		# Make sure the user has the proper permission to do this
+		Rights.check(sesh, 'csr_claims_provider', Rights.CREATE)
+
+		# Verify fields
+		try: DictHelper.eval(data, ['phoneNumber', 'note', 'user_id'])
+		except ValueError as e: return Services.Response(error=(1001, [(f, 'missing') for f in e.args]))
+
+		# Find the claim
+		oClaim = CustomerClaimed.get(data['phoneNumber'])
+		if not oClaim:
+			return Services.Response(error=(1104, 'claim'))
+
+		# If the owner of the claim isn't the one transferring
+		if oClaim['user'] != sesh['memo_id']:
+			return Services.Response(error=1513)
+
+		# Find customer by phone number
+		dDetails = KtCustomer.filter(
+			{"phoneNumber": data['phoneNumber']},
+			raw=['customerId', 'firstName', 'lastName'],
+			limit=1,
+			orderby=[['createdAt', 'DESC']]
+		)
+
+		# Generate the data for the record and the WS message
+		dData = {
+			"customerId": int(dDetails['customerId']),
+			"continuous": 0,
+			"user": data['user_id'],
+			"transferredBy": sesh['memo_id'],
+			"viewed": False
+		}
+
+		# Create a new claim instance for the agent and store in the DB
+		oOrderClaim = KtOrderClaim(dData)
+
+		# Add the extra details
+		dData['customerName'] = '%s %s' % (dDetails['firstName'], dDetails['lastName'])
+		dData['type'] = 'view'
+
+		# Get the name of the transfer user
+		dUser = User.get(dData['transferredBy'], raw=['id', 'firstName', 'lastName'])
+		dData['transferredByName'] = dUser and '%s %s' % (dUser['firstName'], dUser['lastName']) or 'N/A'
+
+		# Create the record in the DB
+		try:
+			if not oOrderClaim.create():
+				return Services.Response(error=1100)
+
+			# Sync the transfer for anyone interested
+			Sync.push('monolith', 'user-%s' % str(data['user_id']), {
+				"type": 'claim_transfered',
+				"claim": dData
+			})
+
+		# If there's somehow a claim already
+		except Record_MySQL.DuplicateException as e:
+
+			# Find the existing claim
+			oOldClaim = KtOrderClaim.get(dDetails['customerId'])
+
+			# Save instead of create
+			oOrderClaim.save()
+
+			# Notify the old provider they lost the claim
+			Sync.push('monolith', 'user-%s' % str(oOldClaim['user']), {
+				"type": 'claim_removed',
+				"customerId": dDetails['customerId']
+			})
+
+			# Notify the new provider they gained a claim
+			Sync.push('monolith', 'user-%s' % str(data['user_id']), {
+				"type": 'claim_transfered',
+				"claim": dData
+			})
+
+		# Get current date/time
+		sDT = arrow.get().format('YYYY-MM-DD HH:mm:ss')
+
+		# Store transfer note
+		oSmpNote = SmpNote({
+			"action": 'Agent Transfer',
+			"parentTable": 'kt_customer',
+			"parentColumn": 'customerId',
+			"columnValue": dDetails['customerId'],
+			"createdBy": sesh['memo_id'],
+			"note": data['note'],
+			"createdAt": sDT,
+			"updatedAt": sDT
+		})
+		oSmpNote.create()
+
+		# Return OK
+		return Services.Response(True)
+
+	def customerProviders_read(self, data, sesh):
+		"""Customer Providers
+
+		Returns the list of memo IDs and names for providers who work in the
+		state the customer is in, in the given medication type
+
+		Arguments:
+			data (dict): Data sent with the request
+			sesh (Sesh._Session): The session associated with the request
+
+		Returns:
+			Services.Response
+		"""
+
+		# Verify fields
+		try: DictHelper.eval(data, ['customerId', 'type'])
+		except ValueError as e: return Services.Response(error=(1001, [(f, 'missing') for f in e.args]))
+
+		# If the type is invalid
+		if data['type'] not in ['ed', 'hrt']:
+			return Services.Error(1001, [('type', 'invalid')])
+
+		# Find the customer's shipping state
+		dCustomer = KtCustomer.filter({
+			"customerId": str(data['customerId'])
+		}, raw=['shipState'], limit=1)
+		if not dCustomer:
+			return Services.Error(1104)
+
+		# If we're looking for ED
+		if data['type'] == 'ed':
+			lUsers = User.filter({
+				'eDFlag': 'Y',
+				'practiceStates': {'like': '%%%s%%' % dCustomer['shipState']}
+			}, raw=['id', 'firstName', 'lastName'])
+
+		# Else, if we're looking for HRT
+		elif data['type'] == 'hrt':
+			lUsers = User.filter({
+				'hormoneFlag': 'Y',
+				'hrtPracticeStates': {'like': '%%%s%%' % dCustomer['shipState']}
+			}, raw=['id', 'firstName', 'lastName'])
+
+		# Return the list of users
+		return Services.Response({
+			d['id']:{
+				"firstName": d['firstName'],
+				"lastName": d['lastName']
+			}
+			for d in lUsers
+		})
 
 	def encounter_read(self, data):
 		"""Encounter
@@ -3459,10 +3619,34 @@ class Monolith(Services.Service):
 		if not oResponse.data:
 			return Services.Response(error=Rights.INVALID)
 
-		# Get and return the claimed records
-		return Services.Response(
-			KtOrderClaim.byUser(sesh['memo_id'])
-		)
+		# Get all the claims
+		lClaimed = KtOrderClaim.byUser(sesh['memo_id'])
+
+		# Get a list of all the user IDs
+		lUserIDs = set()
+		for d in lClaimed:
+			if d['transferredBy']:
+				d['transferredBy'] = int(d['transferredBy'])
+				lUserIDs.add(d['transferredBy'])
+
+		# If we have any users
+		if len(lUserIDs):
+
+			# Get the names of all the users
+			dUsers = {
+				d['id']: '%s %s' % (d['firstName'], d['lastName'])
+				for d in User.get(list(lUserIDs), raw=['id', 'firstName', 'lastName'])
+			}
+
+		# Go through each claimed and associate the correct users
+		for d in lClaimed:
+
+			# Add transferred name
+			if d['transferredBy']:
+				d['transferredByName'] = d['transferredBy'] in dUsers and dUsers[d['transferredBy']] or 'N/A'
+
+		# Return the claimed records
+		return Services.Response(lClaimed)
 
 	def orderContinuous_create(self, data, sesh):
 		"""Order Continuous Create

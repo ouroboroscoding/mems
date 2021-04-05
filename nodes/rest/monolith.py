@@ -60,7 +60,9 @@ REST.Server({
 	"/customer/shipping": {"methods": REST.READ, "session": True},
 	"/customer/stop": {"methods": REST.CREATE | REST.DELETE, "session": True},
 	"/customer/stops": {"methods": REST.READ, "session": True},
-	"/customer/transfer": {"methods": REST.UPDATE, "session": True},
+	"/customer/provider/return": {"methods": REST.UPDATE, "session": True},
+	"/customer/provider/transfer": {"methods": REST.UPDATE, "session": True},
+	"/customer/providers": {"methods": REST.READ, "session": True},
 
 	"/encounter": {"methods": REST.READ},
 
