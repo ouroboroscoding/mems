@@ -1767,6 +1767,138 @@ class KtOrder(Record_MySQL.Record):
 		)
 
 	@classmethod
+	def queue(cls, group, states, custom={}):
+		"""Queue
+
+		Returns all pending, unclaimed, async orders in the given states
+
+		Arguments:
+			group (str): 'ed' or 'hrt'
+			states (list): The states to check for pending orders in
+			custom (dict): Custom Host and DB info
+				'host' the name of the host to get/set data on
+				'append' optional postfix for dynamic DBs
+
+		Returns:
+			list
+		"""
+
+		# Fetch the record structure
+		dStruct = cls.struct(custom)
+
+		# Generate the SQL
+		sSQL = "SELECT\n" \
+				"	`kto`.`orderId`,\n" \
+				"	CONCAT(`kto`.`shipFirstName`, ' ', `kto`.`shipLastName`) as `customerName`,\n" \
+				"	`kto`.`phoneNumber` as `customerPhone`,\n" \
+				"	`kto`.`shipCity`,\n" \
+				"	IFNULL(`ss`.`name`, '[state missing]') as `shipState`,\n" \
+				"	IFNULL(`ss`.`legalEncounterType`, '') as `encounter`,\n" \
+				"	CONVERT(`kto`.`customerId`, UNSIGNED) as `customerId`,\n" \
+				"	`kto`.`dateCreated`,\n" \
+				"	`kto`.`dateUpdated`,\n" \
+				"	IFNULL(`os`.`attentionRole`, 'Not Assigned') as `attentionRole`,\n" \
+				"	IFNULL(`os`.`orderLabel`, 'Not Labeled') as `orderLabel`\n" \
+				"FROM `%(db)s`.`%(table)s` as `kto`\n" \
+				"JOIN `%(db)s`.`campaign` as `cmp` ON `cmp`.`id` = CONVERT(`kto`.`campaignId`, UNSIGNED)\n" \
+				"LEFT JOIN `%(db)s`.`smp_state` as `ss` ON `ss`.`abbreviation` = `kto`.`shipState`\n" \
+				"LEFT JOIN `%(db)s`.`smp_order_status` as `os` ON `os`.`orderId` = `kto`.`orderId`\n" \
+				"LEFT JOIN `%(db)s`.`kt_order_claim` as `ktoc` ON `ktoc`.`customerId` = CONVERT(`kto`.`customerId`, UNSIGNED)\n" \
+				"WHERE `kto`.`orderStatus` = 'PENDING'\n" \
+				"AND IFNULL(`kto`.`cardType`, '') <> 'TESTCARD'\n" \
+				"AND `kto`.`shipState` IN (%(states)s)\n" \
+				"AND `ss`.`legalEncounterType` = 'AS'\n" \
+				"AND `ktoc`.`user` IS NULL\n" \
+				"AND `cmp`.`type` = '%(group)s'\n" \
+				"AND (`os`.`attentionRole` = 'Doctor' OR `os`.`attentionRole` IS NULL)\n" \
+				"ORDER BY `kto`.`dateUpdated` ASC" % {
+			"db": dStruct['db'],
+			"table": dStruct['table'],
+			"group": group,
+			"states": "'%s'" % "','".join(states)
+		}
+
+		# Fetch and return the data
+		return Record_MySQL.Commands.select(
+			dStruct['host'],
+			sSQL,
+			Record_MySQL.ESelect.ALL
+		)
+
+	@classmethod
+	def queueCount(cls, group=None, encounter=None, states=None, hide_claimed=True, group_by=None, custom={}):
+		"""Queue Count
+
+		Returns the count of pending orders
+
+		Arguments:
+			group (str): 'ed' or 'hrt'
+			encounter (str): 'AS', 'A', or 'V'
+			states (list): The states to check for pending orders in
+			hide_claimed (bool): If true, don't show claimed orders
+			group_by (str): If set, groups counts by field
+			custom (dict): Custom Host and DB info
+				'host' the name of the host to get/set data on
+				'append' optional postfix for dynamic DBs
+
+		Returns:
+			list
+		"""
+
+		# Fetch the record structure
+		dStruct = cls.struct(custom)
+
+		# Init joins and wheres
+		lJoins = []
+		lWhere = []
+
+		# If we have a group
+		if group:
+			lJoins.append("JOIN `%s`.`campaign` as `cmp` ON `cmp`.`id` = CONVERT(`kto`.`campaignId`, UNSIGNED)" % dStruct['db'])
+			lWhere.append("AND `cmp`.`type` = '%s'" % group)
+
+		# If we have an encounter
+		if encounter:
+			lJoins.append("LEFT JOIN `%s`.`smp_state` as `ss` ON `ss`.`abbreviation` = `kto`.`shipState`" % dStruct['db'])
+			lWhere.append("AND `ss`.`legalEncounterType` = '%s'" % encounter)
+
+		# If we have states
+		if states:
+			lWhere.append("AND `kto`.`shipState` IN ('%s')" % "','".join(states))
+
+		# If we high claimed
+		if hide_claimed:
+			lJoins.append("LEFT JOIN `%s`.`kt_order_claim` as `ktoc` ON `ktoc`.`customerId` = CONVERT(`kto`.`customerId`, UNSIGNED)" % dStruct['db'])
+			lWhere.append('AND `ktoc`.`user` IS NULL')
+
+		# Generate the SQL
+		sSQL = "SELECT %(select)sCOUNT(*) as `count`\n" \
+				"FROM `%(db)s`.`%(table)s` as `kto`\n" \
+				"%(joins)s\n" \
+				"LEFT JOIN `%(db)s`.`smp_order_status` as `os` ON `os`.`orderId` = `kto`.`orderId`\n" \
+				"WHERE `kto`.`orderStatus` = 'PENDING'\n" \
+				"AND IFNULL(`kto`.`cardType`, '') <> 'TESTCARD'\n" \
+				"AND (`os`.`attentionRole` = 'Doctor' OR `os`.`attentionRole` IS NULL)\n" \
+				"%(where)s\n" \
+				"%(group_by)s" % {
+			"db": dStruct['db'],
+			"table": dStruct['table'],
+			"select": group_by and ('`%s`, ' % group_by) or '',
+			"joins": lJoins and '\n'.join(lJoins) or '',
+			"where": lWhere and '\n'.join(lWhere) or '',
+			"group_by": group_by and ('GROUP BY `%s`' % group_by) or ''
+		}
+
+		print(sSQL)
+
+		# Fetch and return the data
+		return Record_MySQL.Commands.select(
+			dStruct['host'],
+			sSQL,
+			Record_MySQL.ESelect.ALL
+		)
+
+	@classmethod
 	def queueCsr(cls, custom={}):
 		"""Queue CSR
 
@@ -1855,65 +1987,6 @@ class KtOrder(Record_MySQL.Record):
 			dStruct['host'],
 			sSQL,
 			Record_MySQL.ESelect.CELL
-		)
-
-	@classmethod
-	def queue(cls, group, states, custom={}):
-		"""Queue
-
-		Returns all pending, unclaimed, async orders in the given states
-
-		Arguments:
-			group (str): 'ed' or 'hrt'
-			states (list): The states to check for pending orders in
-			custom (dict): Custom Host and DB info
-				'host' the name of the host to get/set data on
-				'append' optional postfix for dynamic DBs
-
-		Returns:
-			list
-		"""
-
-		# Fetch the record structure
-		dStruct = cls.struct(custom)
-
-		# Generate the SQL
-		sSQL = "SELECT\n" \
-				"	`kto`.`orderId`,\n" \
-				"	CONCAT(`kto`.`shipFirstName`, ' ', `kto`.`shipLastName`) as `customerName`,\n" \
-				"	`kto`.`phoneNumber` as `customerPhone`,\n" \
-				"	`kto`.`shipCity`,\n" \
-				"	IFNULL(`ss`.`name`, '[state missing]') as `shipState`,\n" \
-				"	IFNULL(`ss`.`legalEncounterType`, '') as `encounter`,\n" \
-				"	CONVERT(`kto`.`customerId`, UNSIGNED) as `customerId`,\n" \
-				"	`kto`.`dateCreated`,\n" \
-				"	`kto`.`dateUpdated`,\n" \
-				"	IFNULL(`os`.`attentionRole`, 'Not Assigned') as `attentionRole`,\n" \
-				"	IFNULL(`os`.`orderLabel`, 'Not Labeled') as `orderLabel`\n" \
-				"FROM `%(db)s`.`%(table)s` as `kto`\n" \
-				"JOIN `%(db)s`.`campaign` as `cmp` ON `cmp`.`id` = CONVERT(`kto`.`campaignId`, UNSIGNED)\n" \
-				"LEFT JOIN `%(db)s`.`smp_state` as `ss` ON `ss`.`abbreviation` = `kto`.`shipState`\n" \
-				"LEFT JOIN `%(db)s`.`smp_order_status` as `os` ON `os`.`orderId` = `kto`.`orderId`\n" \
-				"LEFT JOIN `%(db)s`.`kt_order_claim` as `ktoc` ON `ktoc`.`customerId` = CONVERT(`kto`.`customerId`, UNSIGNED)\n" \
-				"WHERE `kto`.`orderStatus` = 'PENDING'\n" \
-				"AND IFNULL(`kto`.`cardType`, '') <> 'TESTCARD'\n" \
-				"AND `kto`.`shipState` IN (%(states)s)\n" \
-				"AND `ss`.`legalEncounterType` = 'AS'\n" \
-				"AND `ktoc`.`user` IS NULL\n" \
-				"AND `cmp`.`type` = '%(group)s'\n" \
-				"AND (`os`.`attentionRole` = 'Doctor' OR `os`.`attentionRole` IS NULL)\n" \
-				"ORDER BY `kto`.`dateUpdated` ASC" % {
-			"db": dStruct['db'],
-			"table": dStruct['table'],
-			"group": group,
-			"states": "'%s'" % "','".join(states)
-		}
-
-		# Fetch and return the data
-		return Record_MySQL.Commands.select(
-			dStruct['host'],
-			sSQL,
-			Record_MySQL.ESelect.ALL
 		)
 
 # KtOrderClaim class
@@ -2251,7 +2324,7 @@ class KtOrderContinuous(Record_MySQL.Record):
 				"LEFT JOIN `%(db)s`.`kt_order_claim` as `ktoc` ON `ktoc`.`customerId` = CONVERT(`kto`.`customerId`, UNSIGNED)\n" \
 				"WHERE `cont`.`status` = 'PENDING'\n" \
 				"AND `cont`.`active` = 1\n" \
-				"AND `medsNotWorking` = 0\n" \
+				"AND `cont`.`medsNotWorking` = 0\n" \
 				"AND `kto`.`shipState` IN (%(states)s)\n" \
 				"AND `ss`.`legalEncounterType` = 'AS'\n" \
 				"AND `ktoc`.`user` IS NULL\n" \
@@ -2263,6 +2336,82 @@ class KtOrderContinuous(Record_MySQL.Record):
 			"group": group,
 			"states": "'%s'" % "','".join(states)
 		}
+
+		# Fetch and return the data
+		return Record_MySQL.Commands.select(
+			dStruct['host'],
+			sSQL,
+			Record_MySQL.ESelect.ALL
+		)
+
+	@classmethod
+	def queueCount(cls, group=None, encounter=None, states=None, hide_claimed=True, group_by=None, custom={}):
+		"""Queue Count
+
+		Returns the count of pending orders
+
+		Arguments:
+			group (str): 'ed' or 'hrt'
+			encounter (str): 'AS', 'A', or 'V'
+			states (list): The states to check for pending orders in
+			hide_claimed (bool): If true, don't show claimed orders
+			group_by (str): If set, groups counts by field
+			custom (dict): Custom Host and DB info
+				'host' the name of the host to get/set data on
+				'append' optional postfix for dynamic DBs
+
+		Returns:
+			list
+		"""
+
+		# Fetch the record structure
+		dStruct = cls.struct(custom)
+
+		# Init joins and wheres
+		lJoins = []
+		lWhere = []
+
+		# If we have a group
+		if group:
+			lJoins.append("JOIN `%s`.`campaign` as `cmp` ON `cmp`.`id` = CONVERT(`kto`.`campaignId`, UNSIGNED)" % dStruct['db'])
+			lWhere.append("AND `cmp`.`type` = '%s'" % group)
+
+		# If we have an encounter
+		if encounter:
+			lJoins.append("LEFT JOIN `%s`.`smp_state` as `ss` ON `ss`.`abbreviation` = `kto`.`shipState`" % dStruct['db'])
+			lWhere.append("AND `ss`.`legalEncounterType` = '%s'" % encounter)
+
+		# If we have states
+		if states:
+			lWhere.append("AND `kto`.`shipState` IN ('%s')" % "','".join(states))
+
+		# If we high claimed
+		if hide_claimed:
+			lJoins.append("LEFT JOIN `%s`.`kt_order_claim` as `ktoc` ON `ktoc`.`customerId` = CONVERT(`kto`.`customerId`, UNSIGNED)" % dStruct['db'])
+			lWhere.append('AND `ktoc`.`user` IS NULL')
+
+		# Generate the SQL
+		sSQL = "SELECT %(select)sCOUNT(*) as `count`\n" \
+				"FROM `%(db)s`.`%(table)s` as `cont`\n" \
+				"JOIN `%(db)s`.`kt_order` as `kto` ON `kto`.`orderId` = `cont`.`orderId`\n" \
+				"%(joins)s\n" \
+				"LEFT JOIN `%(db)s`.`smp_order_status` as `os` ON `os`.`orderId` = `kto`.`orderId`\n" \
+				"WHERE `cont`.`status` = 'PENDING'\n" \
+				"AND `cont`.`active` = 1\n" \
+				"AND `cont`.`medsNotWorking` = 0\n" \
+				"AND IFNULL(`kto`.`cardType`, '') <> 'TESTCARD'\n" \
+				"AND (`os`.`attentionRole` = 'Doctor' OR `os`.`attentionRole` IS NULL)\n" \
+				"%(where)s\n" \
+				"%(group_by)s" % {
+			"db": dStruct['db'],
+			"table": dStruct['table'],
+			"select": group_by and ('`%s`, ' % group_by) or '',
+			"joins": lJoins and '\n'.join(lJoins) or '',
+			"where": lWhere and '\n'.join(lWhere) or '',
+			"group_by": group_by and ('GROUP BY `%s`' % group_by) or ''
+		}
+
+		print(sSQL)
 
 		# Fetch and return the data
 		return Record_MySQL.Commands.select(
