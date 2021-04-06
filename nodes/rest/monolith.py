@@ -97,6 +97,7 @@ REST.Server({
 	"/order/refresh": {"methods": REST.UPDATE, "session": True},
 	"/order/transfer": {"methods": REST.UPDATE, "session": True},
 
+	"/orders/pending/counts": {"methods": REST.READ, "session": True},
 	"/orders/pending/csr": {"methods": REST.READ, "session": True},
 	"/orders/pending/csr/count": {"methods": REST.READ, "session": True},
 	"/orders/pending/provider/ed": {"methods": REST.READ, "session": True},

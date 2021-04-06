@@ -4327,6 +4327,63 @@ class Monolith(Services.Service):
 		# Return OK
 		return Services.Response(True)
 
+	def ordersPendingCounts_read(self, data, sesh):
+		"""Orders Pending Counts
+
+		Returns the pending order counts by state
+
+		Arguments:
+			data (dict): Data sent with the request
+			sesh (Sesh._Session): The session associated with the request
+
+		Returns:
+			Services.Response
+		"""
+
+		# Get all the states
+		lStates = SmpState.get(
+			raw=['abbreviation', 'name', 'legalEncounterType'],
+			orderby=['name']
+		)
+
+		# Get the pending ED order count by state
+		dNewCounts = {
+			d['shipState']:d['count']
+			for d in KtOrder.queueCount(
+				group='ed',
+				hide_claimed=False,
+				group_by='shipState'
+			)
+		}
+
+		# Get the pending ED continuous count by state
+		dExpiringCounts = {
+			d['shipState']:d['count']
+			for d in KtOrderContinuous.queueCount(
+				group='ed',
+				hide_claimed=False,
+				group_by='shipState'
+			)
+		}
+
+		# Go through each state
+		for d in lStates:
+
+			# Add full name
+			d['full_name'] = '%s (%s)' % (d['name'], d['abbreviation'])
+
+			# Add new orders
+			d['new'] = d['abbreviation'] in dNewCounts and dNewCounts[d['abbreviation']] or 0
+
+			# Add expiring orders
+			d['expiring'] = d['abbreviation'] in dExpiringCounts and dExpiringCounts[d['abbreviation']] or 0
+
+			# Add total
+			d['total'] = d['new'] + d['expiring']
+
+		# Return the data
+		return Services.Response(lStates)
+
 	def ordersPendingCsr_read(self, data, sesh):
 		"""Order Pending CSR
 
