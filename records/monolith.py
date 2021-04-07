@@ -100,8 +100,11 @@ class Calendly(Record_MySQL.Record):
 		dStruct = cls.struct(custom)
 
 		# Generate SQL
-		sSQL = "SELECT `cal`.`prov_name`, `cal`.`prov_emailAddress`, " \
-				"`cal`.`start`, `cal`.`end`\n" \
+		sSQL = "SELECT\n" \
+				"	`cal`.`prov_name`,\n" \
+				"	`cal`.`prov_emailAddress`,\n" \
+				"	UNIX_TIMESTAMP(`cal`.`start`) as `start`, \n" \
+				"	UNIX_TIMESTAMP(`cal`.`end`) as `end`\n" \
 				"FROM `%(db)s`.`%(table)s` as `cal`,\n" \
 				"	`%(db)s`.`kt_customer` as `ktc`\n" \
 				"WHERE `ktc`.`customerId` = '%(id)d'\n" \
@@ -2685,7 +2688,7 @@ class SmpNote(Record_MySQL.Record):
 				"	`smp`.`id`,\n" \
 				"	`smp`.`action`,\n" \
 				"	`smp`.`note`,\n" \
-				"	`smp`.`createdAt`,\n" \
+				"	UNIX_TIMESTAMP(`smp`.`createdAt`) as `createdAt`,\n" \
 				"	CONCAT(`user`.`firstName`, ' ', `user`.`lastName`) AS `createdBy`,\n" \
 				"	`user`.`userRole` AS `userRole`\n" \
 				"FROM\n" \
@@ -2705,7 +2708,7 @@ class SmpNote(Record_MySQL.Record):
 				"	`smp`.`id`,\n" \
 				"	`smp`.`action`,\n" \
 				"	`smp`.`note`,\n" \
-				"	`smp`.`createdAt`,\n" \
+				"	UNIX_TIMESTAMP(`smp`.`createdAt`) as `createdAt`,\n" \
 				"	CONCAT(`user`.`firstName`, ' ', `user`.`lastName`) AS `createdBy`,\n" \
 				"	`user`.`userRole` AS `userRole`\n" \
 				"FROM\n" \
