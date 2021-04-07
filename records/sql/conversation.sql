@@ -5,7 +5,7 @@ SELECT
 	`fromPhone`,
 	`fromName`,
 	`notes`,
-	`createdAt`,
+	UNIX_TIMESTAMP(`createdAt`) as `createdAt`,
 	`type`
 FROM
 	`%(db)s`.`%(table)s`
