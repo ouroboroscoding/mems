@@ -673,7 +673,7 @@ class CustomerMsgPhone(Record_MySQL.Record):
 		return cls._conf
 
 	@classmethod
-	def add(cls, direction, customerPhone, date, message, custom={}):
+	def add(cls, direction, customerPhone, message, custom={}):
 		"""Add
 
 		Adds an incoming or outgoing message to the conversation summary
@@ -708,7 +708,7 @@ class CustomerMsgPhone(Record_MySQL.Record):
 		# Generate SQL
 		sSQL = "UPDATE `%(db)s`.`%(table)s` SET\n" \
 				"	`lastMsgDir` = '%(direction)s',\n" \
-				"	`lastMsgAt` = '%(date)s',\n" \
+				"	`lastMsgAt` = '%(dt)s',\n" \
 				"	`hiddenFlag` = '%(hidden)s',\n" \
 				"	`%(increment)s` = `%(increment)s` + 1,\n" \
 				"	`lastMsg` = CONCAT('%(message)s', IFNULL(`lastMsg`, '')),\n" \
@@ -716,7 +716,6 @@ class CustomerMsgPhone(Record_MySQL.Record):
 				"WHERE `customerPhone` = '%(customerPhone)s'" % {
 			"db": dStruct['db'],
 			"table": dStruct['table'],
-			"date": date,
 			"direction": sDirection,
 			"message": Record_MySQL.Commands.escape(dStruct['host'], message),
 			"customerPhone": Record_MySQL.Commands.escape(dStruct['host'], customerPhone),
@@ -729,7 +728,7 @@ class CustomerMsgPhone(Record_MySQL.Record):
 		return Record_MySQL.Commands.execute(dStruct['host'], sSQL)
 
 	@classmethod
-	def addAutoResponse(cls, customerPhone, date, message, custom={}):
+	def addAutoResponse(cls, customerPhone, message, custom={}):
 		"""Add Auto Response
 
 		Adds an outgoing auto-response message to the conversation summary
@@ -757,7 +756,6 @@ class CustomerMsgPhone(Record_MySQL.Record):
 				"WHERE `customerPhone` = '%(customerPhone)s'" % {
 			"db": dStruct['db'],
 			"table": dStruct['table'],
-			"date": date,
 			"message": Record_MySQL.Commands.escape(dStruct['host'], message),
 			"customerPhone": Record_MySQL.Commands.escape(dStruct['host'], customerPhone),
 			"dt": arrow.get().format('YYYY-MM-DD HH:mm:ss')
