@@ -10,7 +10,7 @@ __copyright__	= "MaleExcelMedical"
 __version__		= "1.0.0"
 __maintainer__	= "Chris Nasr"
 __email__		= "bast@maleexcel.com"
-__created__		= "2021-03-22"
+__created__		= "2021-04-08"
 
 # Python imports
 from time import time
@@ -29,7 +29,7 @@ from records.reports import LastRun
 from crons import emailError, isRunning
 
 # Defines
-CRON_NAME = 'monolith_hard_declines'
+CRON_NAME = 'monolith_soft_declines'
 
 def run():
 	"""Run
@@ -62,7 +62,7 @@ def run():
 
 	# Get the hard declines between the last and current timestamp
 	lResults = oKNK._request('transactions/query', {
-		"responseType": 'HARD_DECLINE',
+		"responseType": 'SOFT_DECLINE',
 		"startDate": oStart.format('MM/DD/YYYY'),
 		"startTime": oStart.format('HH:mm'),
 		"endDate": oEnd.format('MM/DD/YYYY'),
@@ -72,29 +72,32 @@ def run():
 	# Go through each result
 	for d in lResults:
 
-		# Add the decline as an incoming SMS
-		oResponse = Services.create('monolith', 'message/incoming', {
-			"_internal_": Services.internalKey(),
-			"customerPhone": d['phoneNumber'][-10:],
-			"recvPhone": "0000000000",
-			"content": "HARD DECLINE:\n%s" % d['responseText']
-		})
-		if oResponse.errorExists():
-			emailError('Hard Declines Failed', 'Failed to add SMS\n\n%s\n\n%s' % (
-				str(d),
-				str(oResponse)
-			))
+		# If not in ED mids, or recycle is null, skip it
+		if d['merchantId'] not in [26,27] or d['recycleNumber'] == None:
+			continue
 
-		# Generate the message
-		sContent = "MALE EXCEL MEDICAL: Mr. %s, we have attempted to bill " \
-					"your card however we were unsuccessful. We will reach " \
-					"out to assist you with this billing issue or you can " \
-					"contact us by replying to this message, emailing " \
-					"support@maleexcel.com or calling (833)-625-3392. " \
-					"Please note that you will no longer receive your " \
-					"subscribed medication until this billing issue has " \
-					"been resolved. Thank you again for choosing Male Excel " \
-					"Medical and have a great day." % d['lastName']
+		# If it will be recycled
+		if d['recycleNumber'] == 0:
+
+			# If it's not in the first three months
+			if d['billingCycleNumber'] not in [1,2,3]:
+				continue
+
+			# Generate the message
+			sContent = "MALE EXCEL MEDICAL: Mr. %s, we are unable to fulfill " \
+						"your prescription due to your payment being declined " \
+						"by your bank. We will attempt to process the payment " \
+						"and fill your prescription again in the coming days. " \
+						"To update your payment method or speak to an agent " \
+						"please reply to this message, emailing " \
+						"support@maleexcel.com or calling (833)-625-3392. " \
+						"Thanks for choosing Male Excel Medical and have a " \
+						"great day." % d['lastName']
+
+		# Unknown recycle number
+		else:
+			emailError('Soft Decline Issue', 'Unknown recycleNumber\n\n%s' % str(d))
+			continue
 
 		# Send the message to the customer
 		oResponse = Services.create('monolith', 'message/outgoing', {
@@ -106,7 +109,7 @@ def run():
 			"type": "support"
 		})
 		if oResponse.errorExists():
-			emailError('Hard Decline Failed', 'Failed to send Auto-Response SMS\n\n%s\n\n%s' % (
+			emailError('Soft Decline Failed', 'Failed to send Auto-Response SMS\n\n%s\n\n%s' % (
 				str(dData),
 				str(oResponse)
 			))

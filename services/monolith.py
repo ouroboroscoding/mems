@@ -2815,9 +2815,8 @@ class Monolith(Services.Service):
 		iCount = CustomerMsgPhone.add(
 			CustomerMsgPhone.INCOMING,
 			data['customerPhone'],
-			sDT,
 			'\n--------\nReceived at %s\n%s\n' % (
-				sDT,
+				arrow.get().to('US/Eastern').format('YYYY-MM-DD HH:mm:ss'),
 				data['content']
 			)
 		)
@@ -2825,11 +2824,12 @@ class Monolith(Services.Service):
 		# If no conversation was updated
 		if not iCount:
 
+			# Create the new summary
 			oMsgPhone = CustomerMsgPhone({
 				"customerPhone": data['customerPhone'],
 				"customerName": mName,
 				"lastMsg": '\n--------\nReceived at %s\n%s\n' % (
-					sDT,
+					arrow.get().to('US/Eastern').format('YYYY-MM-DD HH:mm:ss'),
 					data['content']
 				),
 				"lastMsgDir": 'Incoming',
@@ -2939,30 +2939,58 @@ class Monolith(Services.Service):
 		# Catch issues with summary
 		try:
 
+			# Generate the content
+			sContent = '\n--------\nSent by %s at %s\n%s\n' % (
+				data['name'],
+				arrow.get().to('US/Eastern').format('YYYY-MM-DD HH:mm:ss'),
+				data['content']
+			)
+
 			# If it's an auto-response
 			if data['auto_response'] == True:
-				CustomerMsgPhone.addAutoResponse(
+				iCount = CustomerMsgPhone.addAutoResponse(
 					data['customerPhone'],
-					sDT,
-					'\n--------\nSent by %s at %s\n%s\n' % (
-						data['name'],
-						sDT,
-						data['content']
-					)
+					sContent
 				)
 
 			# Else, it's a regular outgoing message
 			else:
-				CustomerMsgPhone.add(
+				iCount = CustomerMsgPhone.add(
 					CustomerMsgPhone.OUTGOING,
 					data['customerPhone'],
-					sDT,
-					'\n--------\nSent by %s at %s\n%s\n' % (
-						data['name'],
-						sDT,
-						data['content']
-					)
+					sContent
 				)
+
+			# If no conversation was updated
+			if not iCount:
+
+				# Try to find a customer name
+				dCustomer = KtCustomer.filter(
+					{"phoneNumber": [data['customerPhone'], '1%s' % data['customerPhone']]},
+					raw=['firstName', 'lastName'],
+					orderby=[('updatedAt', 'DESC')],
+					limit=1
+				)
+
+				# If we have one
+				mName = dCustomer and \
+						'%s %s' % (dCustomer['firstName'], dCustomer['lastName']) or \
+						None
+
+				# Create the new summary
+				oMsgPhone = CustomerMsgPhone({
+					"customerPhone": data['customerPhone'],
+					"customerName": mName,
+					"lastMsg": sContent,
+					"lastMsgDir": 'Outgoing',
+					"lastMsgAt": sDT,
+					"hiddenFlag": 'Y',
+					"totalIncoming": 0,
+					"totalOutGoing": 1,
+					"createdAt": sDT,
+					"updatedAt": sDT
+				})
+				oMsgPhone.create()
 
 		# Catch any exceptions with summaries
 		except Exception as e:
