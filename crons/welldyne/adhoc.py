@@ -145,7 +145,7 @@ def run(period=None):
 		oFile.seek(0)
 
 		# Generate the filename with the current date
-		sFilename = 'ADHOC%s.CSV' % arrow.get().format('YYYYMMDDHHmm');
+		sFilename = 'ADHOC%s.CSV' % arrow.get().to('US/Eastern').format('YYYYMMDDHHmm');
 
 		# Get the sFTP config
 		dSFTP = DictHelper.clone(Conf.get(('welldyne', 'sftp')))
