@@ -72,6 +72,10 @@ def run():
 	# Go through each result
 	for d in lResults:
 
+		# If the transaction type is not SALE, AUTHORIZE, or CAPTURE, skip it
+		if d['txnType'] not in ['SALE', 'AUTHORIZE', 'CAPTURE']:
+			continue
+
 		# Add the decline as an incoming SMS
 		oResponse = Services.create('monolith', 'message/incoming', {
 			"_internal_": Services.internalKey(),
