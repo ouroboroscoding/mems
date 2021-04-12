@@ -72,6 +72,10 @@ def run():
 	# Go through each result
 	for d in lResults:
 
+		# If the transaction type is not SALE, AUTHORIZE, or CAPTURE, skip it
+		if d['txnType'] not in ['SALE', 'AUTHORIZE', 'CAPTURE']:
+			continue
+
 		# If not in ED mids, or recycle is null, skip it
 		if d['merchantId'] not in [26,27] or d['recycleNumber'] == None:
 			continue
