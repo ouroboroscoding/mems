@@ -911,7 +911,6 @@ class Patient(Services.Service):
 			dSetup['crm_id'] = str(data['crm_id'])
 			dSetup['email'] = oResponse.data['email'].lower()
 			dSetup['lname'] = oResponse.data['shipping']['lastName']
-			sFirst = oResponse.data['shipping']['firstName']
 
 		# Else, invalid CRM type
 		else:
@@ -957,10 +956,7 @@ class Patient(Services.Service):
 			return Services.Response(error=1100)
 
 		# Patient setup email template variables
-		dTpl = {
-			"first": sFirst,
-			"url": data['url'] + oSetup['_id']
-		}
+		dTpl = {"url": data['url'] + oSetup['_id']}
 
 		# Email the patient the key
 		oResponse = Services.create('communications', 'email', {
@@ -988,12 +984,12 @@ class Patient(Services.Service):
 			Services.Response
 		"""
 
+		# Make sure the user has the proper permission to do this
+		Rights.check(sesh, 'patient_account', Rights.UPDATE)
+
 		# Verify fields
 		try: DictHelper.eval(data, ['_id'])
 		except ValueError as e: return Services.Response(error=(1001, [(f, 'missing') for f in e.args]))
-
-		# Make sure the user has the proper permission to do this
-		Rights.check(sesh, 'patient_account', Rights.UPDATE)
 
 		# Try to find the record in the account setup table
 		oSetup = AccountSetup.get(data['_id'])
@@ -1003,6 +999,24 @@ class Patient(Services.Service):
 		# Remove fields that can't be changed
 		for k in ['_id', '_created', 'crm_type', 'crm_id', 'user']:
 			if k in data: del data[k]
+
+		# If the email was changed we need to re-send the setup email
+		if 'email' in data and data['email'] != oSetup['email']:
+			bSendSetup = True
+			if 'url' not in data:
+				return Services.Error(1001, [('url', 'missing')])
+
+			# Check if we already have an account with that email
+			if Account.exists(data['email'], 'email') or \
+				AccountSetup.exists(data['email'], 'email'):
+				return Services.Response(error=1900)
+
+		else:
+			bSendSetup = False
+
+		# Remove the url if we have it or not
+		try: sUrl = data.pop('url')
+		except KeyError: sUrl = None
 
 		# Step through each field passed and update/validate it
 		lErrors = []
@@ -1014,10 +1028,27 @@ class Patient(Services.Service):
 		if lErrors:
 			return Services.Response(error=(1001, lErrors))
 
-		# Update the record and return the result
-		return Services.Response(
-			oSetup.save()
-		)
+		# Save the record and store the result
+		bRes = oSetup.save()
+
+		# If we saved and the setup needs to be sent
+		if bRes and bSendSetup:
+
+			# Patient setup email template variables
+			dTpl = {"url": sUrl + oSetup['_id']}
+
+			# Email the patient the key
+			oResponse = Services.create('communications', 'email', {
+				"_internal_": Services.internalKey(),
+				"html_body": Templates.generate('email/patient/setup.html', dTpl, 'en-US'),
+				"subject": Templates.generate('email/patient/setup_subject.txt', {}, 'en-US'),
+				"to": self._conf['override'] or dSetup['email']
+			})
+			if oResponse.errorExists():
+				return oResponse
+
+		# Return the result of the save
+		return Services.Response(bRes)
 
 	def setupValidate_create(self, data):
 		"""Setup Update
