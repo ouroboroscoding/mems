@@ -133,6 +133,14 @@ class JustCall(Services.Service):
 		if 'phone' not in data:
 			return Services.Error(1001, [('phone', 'missing')])
 
+		# If the length of the number is 11
+		if len(data['phone']) == 11:
+			data['phone'] = '+%s' % data['phone']
+
+		# Else, if it's 10
+		elif len(data['phone']) == 10:
+			data['phone'] = '+1%s' % data['phone']
+
 		# Make the request
 		dRes = self._post('calls/query', {
 			"contact_number": data['phone'],
