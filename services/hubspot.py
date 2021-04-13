@@ -12,7 +12,7 @@ __email__		= "bast@maleexcel.com"
 __created__		= "2020-11-12"
 
 # Python imports
-import time
+from time import sleep
 import urllib.parse
 
 # Pip imports
@@ -177,7 +177,7 @@ class HubSpot(Services.Service):
 			except requests.exceptions.ConnectionError as e:
 				iAttempts += 1
 				if iAttempts < 3:
-					time.sleep(1)
+					sleep(1)
 					continue
 				raise e
 
@@ -236,7 +236,7 @@ class HubSpot(Services.Service):
 				except requests.exceptions.ConnectionError as e:
 					iAttempts += 1
 					if iAttempts < 3:
-						time.sleep(1)
+						sleep(1)
 						continue
 					raise e
 

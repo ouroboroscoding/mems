@@ -14,6 +14,7 @@ __created__		= "2020-05-09"
 # Python imports
 import math
 import sys
+from time import sleep
 import urllib.parse
 
 # Pip imports
@@ -95,7 +96,7 @@ class Konnektive(Services.Service):
 				except requests.exceptions.ConnectionError as e:
 					iAttempts += 1
 					if iAttempts < 3:
-						time.sleep(1)
+						sleep(1)
 						continue
 					raise e
 
@@ -144,7 +145,7 @@ class Konnektive(Services.Service):
 			except requests.exceptions.ConnectionError as e:
 				iAttempts += 1
 				if iAttempts < 3:
-					time.sleep(1)
+					sleep(1)
 					continue
 				raise e
 
