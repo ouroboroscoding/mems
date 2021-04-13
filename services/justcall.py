@@ -12,6 +12,7 @@ __email__		= "bast@maleexcel.com"
 __created__		= "2021-02-22"
 
 # Python imports
+from time import sleep
 import urllib.parse
 
 # Pip imports
@@ -73,7 +74,7 @@ class JustCall(Services.Service):
 			except requests.exceptions.ConnectionError as e:
 				iAttempts += 1
 				if iAttempts < 3:
-					time.sleep(1)
+					sleep(1)
 					continue
 				raise e
 
