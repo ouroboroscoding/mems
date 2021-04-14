@@ -2559,6 +2559,50 @@ class SmpCustomer(Record_MySQL.Record):
 	"""Configuration"""
 
 	@classmethod
+	def byCustomerDetails(cls, last_name, email, phone, custom={}):
+		"""By Customer ID
+
+		Finds the record by joining with the kt_customer table
+
+		Arguments:
+			last_name (str): The last name of the customer
+			email (str): The email of the customer
+			phone (str): The phone number of the customer
+			custom (dict): Custom Host and DB info
+				'host' the name of the host to get/set data on
+				'append' optional postfix for dynamic DBs
+
+		Returns:
+			dict
+		"""
+
+		# Fetch the record structure
+		dStruct = cls.struct(custom)
+
+		# Generate the SQL
+		sSQL = "SELECT *\n" \
+				"FROM `%(db)s`.`%(table)s`\n" \
+				"WHERE `lastName` = '%(last_name)s'\n" \
+				"AND (\n" \
+				"	`email` = '%(email)s' OR\n" \
+				"	`primaryPhone` = '%(phone)s'\n" \
+				")\n" \
+				"ORDER BY `updatedAt` DESC" % {
+			"db": dStruct['db'],
+			"table": dStruct['table'],
+			"last_name": Record_MySQL.Commands.escape(dStruct['host'], last_name),
+			"email": Record_MySQL.Commands.escape(dStruct['host'], email),
+			"phone": Record_MySQL.Commands.escape(dStruct['host'], phone)
+		}
+
+		# Fetch and return the data
+		return Record_MySQL.Commands.select(
+			dStruct['host'],
+			sSQL,
+			Record_MySQL.ESelect.ROW
+		)
+
+	@classmethod
 	def byCustomerId(cls, customer_id, custom={}):
 		"""By Customer ID
 

@@ -1230,10 +1230,102 @@ class Monolith(Services.Service):
 				oRes.text
 			))
 
-		import pprint
-		pprint.pprint(oRes.text)
-		pprint.pprint(xmltodict.parse(oRes.text))
+		# Convert the XML to a dict
+		dRes = xmltodict.parse(oRes.text)
 
+		# We can skip the parent dict
+		dRes = dRes['PlatformResponse']
+
+		# Get the current timestamp
+		sDT = arrow.get().format('YYYY-MM-DD HH:mm:ss')
+
+		# Look for an existing customer
+		dSmpCustomer = SmpCustomer.byCustomerDetails(
+			dCustomer['lastName'],
+			dCustomer['emailAddress'],
+			dCustomer['phoneNumber']
+		)
+
+		# If we have one, create the instance from it
+		if dSmpCustomer:
+			bExisting = True
+			oSmpCustomer = SmpCustomer(dSmpCustomer)
+			oSmpCustomer['lastIdentiFloAt'] = sDT
+			oSmpCustomer['updatedAt'] = sDT
+
+		# Else, create a new instance
+		else:
+			bExisting = False
+			oSmpCustomer = SmpCustomer({
+				"firstName": dCustomer['firstName'],
+				"lastName": dCustomer['lastName'],
+				"dateOfBirth": dCustomer['dob'],
+				"ssn": '',
+				"gender": 'M',
+				"email": dCustomer['emailAddress'],
+				"address1": dCustomer['shipAddress1'],
+				"address2": dCustomer['shipAddress2'],
+				"city": dCustomer['shipCity'],
+				"state": dCustomer['shipState'],
+				"country": dCustomer['shipCountry'],
+				"zipCode": dCustomer['shipPostalCode'],
+				"primaryPhone": dCustomer['phoneNumber'],
+				"identiFloCode": '',
+				"identiFloOutcome": '',
+				"idfResultAddress": '',
+				"idfResultPhone": '',
+				"idfResultDateOfBirth": '',
+				"idfResultSocialSecurity": '',
+				"identiFloErrorMessage": '',
+				"lastIdentiFloAt": sDT,
+				"createdAt": sDT,
+				"updatedAt": sDT
+			})
+
+		# If we have errors
+		if 'Errors' in dRes['TransactionDetails'] and dRes['TransactionDetails']['Errors']:
+
+			# If we have a message
+			if 'Error' in dRes['TransactionDetails']['Errors'] and dRes['TransactionDetails']['Errors']['Error'] and '@message' in dRes['TransactionDetails']['Errors']['Error']:
+				oSmpCustomer['identiFloErrorMessage'] = dRes['TransactionDetails']['Errors']['Error']['@message']
+			else:
+				oSmpCustomer['identiFloErrorMessage'] = 'No error message back from Identiflo.'
+
+			# Set the code and outcome
+			oSmpCustomer['identiFloCode'] = 'R'
+			oSmpCustomer['identiFloOutcome'] = 'Needs Further Review'
+
+		# Else, store the results
+		else:
+
+			# If we have the workflow outcome
+			if 'WorkflowOutcome' in dRes['Response']:
+				oSmpCustomer['identiFloCode'] = dRes['Response']['WorkflowOutcome']['@code']
+				oSmpCustomer['identiFloOutcome'] = dRes['Response']['WorkflowOutcome']['#text']
+
+			# If we have the address verification result
+			if 'AddressVerificationResult' in dRes['Response']:
+				oSmpCustomer['idfResultAddress'] = dRes['Response']['AddressVerificationResult']['#text']
+
+			# If we have the phone verification result
+			if 'PhoneVerificationResult' in dRes['Response']:
+				oSmpCustomer['idfResultPhone'] = dRes['Response']['PhoneVerificationResult']['#text']
+
+			# If we have the dob result
+			if 'DateOfBirthResult' in dRes['Response']:
+				oSmpCustomer['idfResultDateOfBirth'] = dRes['Response']['DateOfBirthResult']['#text']
+
+			# If we have the ssn result
+			if 'SocialSecurityNumberResult' in dRes['Response']:
+				oSmpCustomer['idfResultSocialSecurity'] = dRes['Response']['SocialSecurityNumberResult']['#text']
+
+		# If it's an existing record
+		if bExisting:
+			oSmpCustomer.save()
+		else:
+			oSmpCustomer.create()
+
+		# Return OK
 		return Services.Response(True)
 
 	def customerExists_read(self, data, sesh):
