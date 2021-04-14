@@ -22,6 +22,8 @@ import bcrypt
 from redis import StrictRedis
 from RestOC import Conf, DictHelper, Errors, Record_MySQL, Services, \
 					StrHelper, Templates
+import requests
+import xmltodict
 
 # Shared imports
 from shared import Memo, Rights, SMSWorkflow, Sync
@@ -100,6 +102,9 @@ class Monolith(Services.Service):
 
 		# Store conf
 		self._conf = Conf.get(('services', 'monolith'))
+
+		# Store identiflo config
+		self._identiflo = Conf.get('identiflo')
 
 		# Return self for chaining
 		return self
@@ -1080,7 +1085,7 @@ class Monolith(Services.Service):
 		return oResponse
 
 	def customerEverify_read(self, data, sesh):
-		"""Customer E-Verify
+		"""Customer E-Verify Read
 
 		Returns the e-verify data and images associated with the customer
 
@@ -1127,6 +1132,109 @@ class Monolith(Services.Service):
 
 		# Return the record
 		return Services.Response(dSmpCustomer)
+
+	def customerEverify_update(self, data, sesh):
+		"""Customer E-Verify update
+
+		Re-submits the customer information and stores the updated result
+
+		Arguments:
+			data (dict): Data sent with the request
+			sesh (Sesh._Session): The session associated with the request
+
+		Returns:
+			Services.Response
+		"""
+
+		# Verify fields
+		try: DictHelper.eval(data, ['customerId'])
+		except ValueError as e: return Services.Response(error=(1001, [(f, 'missing') for f in e.args]))
+
+		# Make sure the user has the proper permission to do this
+		Rights.check(sesh, 'everify', Rights.UPDATE, data['customerId'])
+
+		# Find the customer by ID
+		dCustomer = KtCustomer.filter(
+			{"customerId": data['customerId']},
+			raw=['customerId', 'firstName', 'lastName',
+					'emailAddress', 'phoneNumber',
+					'shipAddress1', 'shipAddress2', 'shipCity',
+					'shipState', 'shipCountry', 'shipPostalCode'],
+			limit=1
+		)
+
+		# If there's no customer
+		if not dCustomer:
+			return Services.Error(1104)
+
+		# Look for a landing by customerId
+		dLanding = TfLanding.filter({
+			"ktCustomerId": str(data['customerId']),
+			"formId": ['MIP-A1', 'MIP-A2', 'MIP-H1', 'MIP-H2']
+		}, raw=['landing_id'], limit=1, orderby=[['submitted_at', 'DESC']])
+
+		# If there's no landing
+		if not dLanding:
+
+			# Get the latest landing
+			lLandings = TfLanding.find(
+				dCustomer['lastName'],
+				dCustomer['emailAddress'] or '',
+				dCustomer['phoneNumber'],
+				['MIP-A1', 'MIP-A2', 'MIP-H1', 'MIP-H2']
+			)
+			if not lLandings:
+				return Services.Error(1517)
+
+			# Store the latest one
+			dLanding = lLandings[0]
+
+		# Find the dob
+		sDOB = TfAnswer.dob(dLanding['landing_id'])
+		if not sDOB:
+			return Services.Error(1517)
+
+		# Add the DOB
+		dCustomer['dob'] = sDOB
+
+		# Trim all fields
+		for k in dCustomer.keys():
+			if dCustomer[k] is not None:
+				dCustomer[k] = dCustomer[k].strip()
+			else:
+				dCustomer[k] = ''
+
+		# Convert address 1 + 2 into one line
+		dCustomer['shipAddress'] = dCustomer['shipAddress1']
+		if dCustomer['shipAddress2']:
+			dCustomer['shipAddress'] += ' %s' % dCustomer['shipAddress2']
+
+		# Add empty ssn
+		dCustomer['ssn'] = ''
+
+		# Add the user and pass
+		dCustomer['user'] = self._identiflo['user']
+		dCustomer['pass'] = self._identiflo['pass']
+
+		# Send the request
+		oRes = requests.post(
+			self._identiflo['url'],
+			data=Templates.generate('xml/monolith/everify.xml', dCustomer, 'en-US'),
+			headers={"Content-Type": "application/xml"}
+		)
+
+		# If we failed
+		if oRes.status_code != 200:
+			return Services.Error(1518, '%d %s' % (
+				oRes.status_code,
+				oRes.text
+			))
+
+		import pprint
+		pprint.pprint(oRes.text)
+		pprint.pprint(xmltodict.parse(oRes.text))
+
+		return Services.Response(True)
 
 	def customerExists_read(self, data, sesh):
 		"""Customer Exists

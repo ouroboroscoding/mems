@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+<PlatformRequest>
+  <Credentials>
+    <Username>{{ user }}</Username>
+    <Password>{{ pass }}</Password>
+  </Credentials>
+  <CustomerReference>{{ customerId }}</CustomerReference>
+  <Identity>
+    <FirstName>{{ firstName }}</FirstName>
+    <LastName>{{ lastName }}</LastName>
+    <Ssn>{{ ssn }}</Ssn>
+    <Street>{{ shipAddress }}</Street>
+    <City>{{ shipCity }}</City>
+    <State>{{ shipState }}</State>
+    <ZipCode>{{ shipPostalCode }}</ZipCode>
+    <DateOfBirth>{{ dob }}</DateOfBirth>
+    <DriverLicenseNumber></DriverLicenseNumber>
+    <DriverLicenseState></DriverLicenseState>
+    <PhoneNumber>{{ phoneNumber }}</PhoneNumber>
+    <EmailAddress>{{ emailAddress }}</EmailAddress>
+    <IpAddress></IpAddress>
+  </Identity>
+</PlatformRequest>

@@ -65,6 +65,7 @@
 	},
 
 	"identiflo": {
+		"url": "https://identiflo.everification.net/WebServices/Integrated/Main/V210/ConsumerPlus",
 		"user": "",
 		"pass": ""
 	},
