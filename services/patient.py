@@ -397,7 +397,7 @@ class Patient(Services.Service):
 			# Store the first name
 			sFirst = oResponse.data['shipping']['firstName']
 
-		# Upsert the record with the
+		# Upsert the record with the key
 		sKey = StrHelper.random(32, '_0x')
 		oVerify = Verify({
 			"_account": oAccount['_id'],

@@ -688,8 +688,6 @@ class Auth(Services.Service):
 		if not oUser:
 			return Services.Response(error=1104)
 
-		print(oUser)
-
 		# If we have an old password
 		if 'passwd' in data:
 

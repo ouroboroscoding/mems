@@ -41,7 +41,7 @@ REST.Server({
 	"/customer/claim/view": {"methods": REST.UPDATE, "session": True},
 	"/customer/dob": {"methods": REST.READ, "session": True},
 	"/customer/dsid": {"methods": REST.CREATE | REST.READ | REST.UPDATE, "session": True},
-	"/customer/everify": {"methods": REST.READ, "session": True},
+	"/customer/everify": {"methods": REST.READ | REST.UPDATE, "session": True},
 	"/customer/exists": {"methods": REST.READ, "session": True},
 	"/customer/hide": {"methods": REST.UPDATE, "session": True},
 	"/customer/hrt": {"methods": REST.READ | REST.UPDATE, "session": True},
