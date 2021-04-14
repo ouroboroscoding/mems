@@ -111,7 +111,7 @@ def run():
 		})
 		if oResponse.errorExists():
 			emailError('Hard Decline Failed', 'Failed to send Auto-Response SMS\n\n%s\n\n%s' % (
-				str(dData),
+				str(d),
 				str(oResponse)
 			))
 
