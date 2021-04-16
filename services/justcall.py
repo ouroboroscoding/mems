@@ -114,6 +114,41 @@ class JustCall(Services.Service):
 		"""
 		return True
 
+	def log_read(self, data, sesh):
+		"""Log
+
+		Returns a single log by ID
+
+		Arguments:
+			data (dict): Data sent with the request
+			sesh (Sesh._Session): The session associated with the user
+
+		Returns:
+			Services.Response
+		"""
+
+		# Make sure the user has the proper permission to do this
+		Rights.check(sesh, 'justcall', Rights.READ)
+
+		# If the ID is missing
+		if 'id' not in data:
+			return Services.Error(1001, [('id', 'missing')])
+
+		# Make the request
+		dRes = self._post('calls/get', {
+			"id": data['id']
+		})
+
+		# If the request failed
+		if dRes == False:
+			return Services.Error(2100, '404')
+
+		# Add the text version of the call type
+		dRes['data']['typeText'] = _CALL_TYPES[dRes['data']['type']]
+
+		# Return the data received
+		return Services.Response(dRes['data'])
+
 	def logs_read(self, data, sesh):
 		"""Logs
 
