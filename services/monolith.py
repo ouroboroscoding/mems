@@ -1481,7 +1481,7 @@ class Monolith(Services.Service):
 		"""
 
 		# Verify fields
-		try: DictHelper.eval(data, ['customerId', 'tests'])
+		try: DictHelper.eval(data, ['customerId', 'tests', 'dateReported'])
 		except ValueError as e: return Services.Response(error=(1001, [(f, 'missing') for f in e.args]))
 
 		# Make sure the user has the proper permission to do this
