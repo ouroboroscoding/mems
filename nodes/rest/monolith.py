@@ -71,6 +71,7 @@ REST.Server({
 	"/hrt/patients": {"methods": REST.READ, "session": True},
 
 	"/internal/customersWithClaimed": {"methods": REST.READ, "session": True},
+	"/internal/ticketInfo": {"methods": REST.READ},
 
 	"/message/incoming": {"methods": REST.CREATE},
 	"/message/outgoing": {"methods": REST.CREATE},

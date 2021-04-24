@@ -40,6 +40,8 @@ REST.Server({
 	"/list/item": {"methods": REST.CREATE | REST.DELETE, "session": True},
 	"/lists": {"methods": REST.READ, "session": True},
 
+	"/patient/account": {"methods": REST.CREATE, "session": True},
+
 	"/reminder": {"methods": REST.CREATE | REST.UPDATE | REST.DELETE, "session": True},
 	"/reminder/resolve": {"methods": REST.UPDATE, "session": True},
 	"/reminders": {"methods": REST.READ, "session": True},
@@ -49,12 +51,16 @@ REST.Server({
 	"/signin": {"methods": REST.CREATE},
 	"/signout": {"methods": REST.CREATE},
 
-	"/patient/account": {"methods": REST.CREATE, "session": True},
-
 	"/template/email": {"methods": REST.ALL, "session": True},
 	"/template/emails": {"methods": REST.READ, "session": True},
 	"/template/sms": {"methods": REST.ALL, "session": True},
-	"/template/smss": {"methods": REST.READ, "session": True}
+	"/template/smss": {"methods": REST.READ, "session": True},
+
+	"/ticket": {"methods": REST.CREATE | REST.READ | REST.UPDATE, "session": True},
+	"/ticket/action": {"methods": REST.CREATE, "session": True},
+	"/ticket/item": {"methods": REST.CREATE, "session": True},
+	"/tickets/customer": {"methods": REST.READ, "session": True},
+	"/tickets/user": {"methods": REST.READ, "session": True}
 
 }, 'csr', "https?://(.*\\.)?%s" % Conf.get(("rest","allowed")).replace('.', '\\.')).run(
 	host=oRestConf['csr']['host'],

@@ -2957,6 +2957,69 @@ class Monolith(Services.Service):
 		# Return whatever is found
 		return Services.Response(dRecords)
 
+	def internalTicketInfo(self, data):
+		"""Internal: Ticket Info
+
+		Gets a list of IDs for notes, SMSs, emails, etc and returns the data
+		associated with each
+
+		Arguments:
+			data (dict): Data sent with the request
+
+		Returns:
+			Services.Response
+		"""
+
+		# Check for internal key
+		Rights.internal(data)
+
+		# Init the return
+		dRet = {}
+
+		# If we have email requests
+		#if 'email' in data:
+
+		# If we have message requests
+		if 'messages' in data:
+
+			# Fetch all the messages and store them by ID
+			dRet['messages'] = {
+				d['id']:d for d in CustomerCommunication.get(
+					data['messages'],
+					raw=True,
+					orderby='createdAt'
+				)
+			}
+
+			# Go through each requested ID
+			for s in data['messages']:
+
+				# If it's missing
+				if s not in dRet['messages']:
+					dRet['messages'][s] = None
+
+		# If we have note requests
+		if 'notes' in data:
+
+			# Fetch all the notes and store them by ID
+			dRet['notes'] = {
+				d['id']:d for d in SmpNote.get(
+					data['notes'],
+					raw=True,
+					orderby='createdAt'
+				)
+			}
+
+			# Go through each requested ID
+			for s in data['notes']:
+
+				# If it's missing
+				if s not in dRet['notes']:
+					dRet['notes'][s] = None
+
+		# Return the results
+		return Services.Response(dRet)
+
 	def messageIncoming_create(self, data):
 		"""Message Incoming
 

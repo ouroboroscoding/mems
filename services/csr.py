@@ -16,14 +16,15 @@ import uuid
 
 # Pip imports
 from FormatOC import Node
-from RestOC import DictHelper, Errors, Record_MySQL, Services, Sesh
+from RestOC import DictHelper, Errors, JSON, Record_MySQL, Services, Sesh
 
 # Shared imports
 from shared import Rights
 
 # Records imports
 from records.csr import Agent, CustomList, CustomListItem, Reminder, \
-						TemplateEmail, TemplateSMS
+						TemplateEmail, TemplateSMS, \
+						Ticket, TicketAction, TicketItem
 
 # Valid DOB
 _DOB = Node('date')
@@ -34,8 +35,56 @@ class CSR(Services.Service):
 	Service for CSR access
 	"""
 
-	_install = [Agent, CustomList, CustomListItem, TemplateEmail, TemplateSMS]
+	_install = [Agent, CustomList, CustomListItem, TemplateEmail, TemplateSMS,
+				Ticket, TicketAction, TicketItem]
 	"""Record types called in install"""
+
+	def _addTicketItems(ticket, items):
+		"""Add Ticket Items
+
+		Adds one or more items to an existing ticket
+
+		Arguments:
+			ticket (str): The ID of the ticket
+			items (dict|list): The items to add
+
+		Returns:
+			list
+		"""
+
+		# If the ticket doesn't exist
+		if not Ticket.exists(ticket):
+			return Services.Error(1104)
+
+		# If items is a dict
+		if isinstance(items, dict):
+			items = [items]
+
+		# Init the return
+		lRet = []
+
+		# Go through each item
+		for i in range(items):
+
+			# Add the ticket ID
+			items[i]['ticket'] = ticket
+
+			# Create a new instance
+			try:
+				oItem = TicketItem(items[i])
+			except ValueError as e:
+				lRet.append(
+					Services.Error(1001, [
+						['%d.%s' % (i , l[0]), l[1]] for l in e.args[0]
+					]))
+
+			# Store the data and store the result
+			lRet.append(
+				oItem.create()
+			)
+
+		# Return the results
+		return lRet
 
 	def initialise(self):
 		"""Initialise
@@ -45,6 +94,9 @@ class CSR(Services.Service):
 		Returns:
 			Monolith
 		"""
+
+		# Init the Ticket record class so that we get the action types
+		TicketAction.init()
 
 		# Return self for chaining
 		return self
@@ -1575,3 +1627,272 @@ class CSR(Services.Service):
 			Services.Response
 		"""
 		return self._templates_read(data, sesh, TemplateSMS)
+
+	def ticket_create(self, data, sesh):
+		"""Ticket Create
+
+		Creates a new ticket
+
+		Arguments:
+			data (mixed): Data sent with the request
+			sesh (Sesh._Session): The session associated with the request
+
+		Returns:
+			Services.Response
+		"""
+
+		# Check internal key or rights
+		Rights.internalOrCheck(data, sesh, 'csr_claims', Rights.CREATE)
+
+		# If the crm data is missing
+		if 'crm_type' not in data:
+
+			# If the phone number is missing
+			if 'phone_number' not in data:
+				return Services.Error(1001, [('phone_number', 'missing')])
+
+			# Assume konnektive
+			data['crm_type'] = 'knk'
+
+			# Fetch the ID from monolith
+			oResponse = Services.read('monolith', 'customer/id/byPhone', {
+				"phoneNumber": data['phone_number'][-10:]
+			})
+			if oResponse.errorExists():
+				return oResponse
+
+			# Store the ID
+			data['crm_id'] = str(oResponse.data['customerId'])
+
+		# If we got any actions
+		try: dAction = data.pop('action')
+		except KeyError: dAction = False
+
+		# If we got any items
+		try: lItems = data.pop('items')
+		except KeyError: lItems = False
+
+		# Create an instance to test the fields
+		try:
+			oTicket = Ticket(data)
+		except ValueError as e:
+			return Services.Error(1001, e.args[0])
+
+		# Store the ticket
+		sID = oTicket.create()
+
+		# If we have an action
+		if dAction:
+
+			# Verify minimum fields
+			try: DictHelper.eval(dAction, ['type', 'subtype', 'user', 'memo_id'])
+			except ValueError as e: return Services.Error(1001, [('action.%s' % f, 'missing') for f in e.args])
+
+			# Make sure the type is valid
+			if dAction['type'] not in self._ticket_action_types:
+				return Services.Error(1001, [('action.type', 'invalid')])
+
+			# Make sure the subtype is valid
+			if dAction['subtype'] not in self._ticket_action_subtypes[dAction['type']]:
+				return Services.Error(1001, [('action.subtype', 'invalid')])
+
+			# Add the ticket ID to the action
+			dAction['ticket'] = sID
+
+			# Add the memo ID from the session
+			dAction['memo_id'] = sesh['memo_id']
+
+			# Create a new instance
+			try:
+				oAction = TicketAction(dAction)
+			except ValueError as e:
+				return Services.Error(1001, ['action.%s' % l[0] for l in e.args[0]])
+
+			# Store the data
+			oAction.create()
+
+		# Init warning
+		mWarning = []
+
+		# If we have items
+		if lItems:
+
+			# Add the items
+			lRes = self._addTicketItems(sID, lItems)
+
+			# Go through the results, if any are errors, add them to the warning
+			for o in lRes:
+				if o.errorExists():
+					mWarning.append(str(o))
+
+		# Return the ID of the new ticket
+		return Services.Response(sID, warning=(mWarning and ('Failed Items: %s' % str([str(o) for o in mWarning])) or None))
+
+	def ticketAction_create(self, data, sesh):
+		"""Ticket Action Create
+
+		Adds a new action to an existing ticket
+
+		Arguments:
+			data (mixed): Data sent with the request
+			sesh (Sesh._Session): The session associated with the request
+
+		Returns:
+			Services.Response
+		"""
+
+		# Check internal key or rights
+		Rights.internalOrCheck(data, sesh, 'csr_claims', Rights.CREATE)
+
+		# Verify minimum fields
+		try: DictHelper.eval(data, ['ticket', 'type', 'subtype'])
+		except ValueError as e: return Services.Response(error=(1001, [(f, 'missing') for f in e.args]))
+
+		# If the ticket doesn't exist
+		if not Ticket.exists(data['ticket']):
+			return Services.Error(1104)
+
+		# Make sure the type is valid
+		if data['type'] not in self._ticket_action_types:
+			return Services.Error(1001, [('type', 'invalid')])
+
+		# Make sure the subtype is valid
+		if data['subtype'] not in self._ticket_action_subtypes[data['type']]:
+			return Services.Error(1001, [('subtype', 'invalid')])
+
+		# Add the memo ID from the session
+		data['memo_id'] = sesh['memo_id']
+
+		# Create a new instance
+		try:
+			oAction = TicketAction(oAction)
+		except ValueError as e:
+			return Services.Error(1001, e.args[0])
+
+		# Store the data and return the result
+		return Services.Response(
+			oAction.create()
+		)
+
+	def ticketItems_create(self, data, sesh):
+		"""Ticket Items Create
+
+		Adds a one or more items to an existing ticket
+
+		Arguments:
+			data (mixed): Data sent with the request
+			sesh (Sesh._Session): The session associated with the request
+
+		Returns:
+			Services.Response
+		"""
+
+		# Check internal key or rights
+		Rights.internalOrCheck(data, sesh, 'csr_claims', Rights.CREATE)
+
+		# Verify minimum fields
+		try: DictHelper.eval(data, ['ticket', 'items'])
+		except ValueError as e: return Services.Response(error=(1001, [(f, 'missing') for f in e.args]))
+
+		# Add the items and return the result
+		return Services.Response(
+			self._addTicketItems(data['ticket'], data['items'])
+		)
+
+	def ticketsCustomer_read(self, data, sesh):
+		"""Tickets by Customer
+
+		Returns all the tickets associated with a specific customer
+
+		Arguments:
+			data (mixed): Data sent with the request
+			sesh (Sesh._Session): The session associated with the request
+
+		Returns:
+			Services.Response
+		"""
+
+		# Check rights
+		Rights.check(data, sesh, 'csr_claims', Rights.READ)
+
+		# If we have crm type and ID
+		if 'crm_type' in data and 'crm_id' in data:
+
+			# Find all the records by ID
+			lTickets = Ticket.filter({
+				"crm_type": data['crm_type'],
+				"crm_id": data['crm_id']
+			}, raw=True, orderby='_created')
+
+		# Else, if we got a phone number
+		elif 'phone_number' in data:
+
+			# Find all the records by phone number
+			lTickets = Ticket.filter({
+				"phone_number": data['phone_number']
+			}, raw=True, orderby='_created')
+
+		# Else, missing data
+		else:
+			return Services.Error(1001, [('crm_type', 'missing'), ('crm_id', 'missing')])
+
+		# Return the tickets
+		return Services.Response(lTickets)
+
+	def ticketsUser_read(self, data, sesh):
+		"""Tickets by User
+
+		Returns all the tickets a user has any action on
+
+		Arguments:
+			data (mixed): Data sent with the request
+			sesh (Sesh._Session): The session associated with the request
+
+		Returns:
+			Services.Response
+		"""
+
+		# If the user is not the one signed in
+		if ('user' in data and data['user'] != sesh['user_id']) or \
+			('memo_id' in data and data['memo_id'] != sesh['memo_id']):
+
+			# Check rights
+			Rights.check(data, sesh, 'csr_overwrite', Rights.READ)
+
+		# If the memo_id is missing
+		if 'memo_id' not in data:
+			return Services.Error(1001, [('memo_id', 'missing')])
+
+		# Init the filter data
+		dFilter = {"memo_id": data['memo_id']}
+
+		# If we got a range
+		if 'range' in data:
+			dFilter['_created'] = {"between": [
+				data['range']['start'],
+				data['range']['end']
+			]}
+
+		# Get a list of the actions and ticket IDS the user is associated with
+		lActions = Actions.filter(dFilter, raw=['ticket', 'type'])
+
+		# Go through all the actions found and generate a list of unique tickets
+		#	and their actions
+		dTicketActions = {}
+		for d in lActions:
+			try: dTicketActions[d['ticket']].append(d['type'])
+			except KeyError: dTicketActions[d['ticket']] =[d['type']]
+
+		# Fetch the tickets by IDs in order by created
+		lTickets = Ticket.withResolution(
+			list(dTicketActions.keys())
+		)
+
+		# Go through each ticket and add the associated actions for the user
+		for d in lTickets:
+			d['actions'] = d['_id'] in dTicketActions and \
+							dTicketActions[d['_id']] or \
+							'N/A'
+
+		# Return the tickets
+		return Services.Response(lTickets)
