@@ -58,6 +58,7 @@ REST.Server({
 
 	"/ticket": {"methods": REST.CREATE | REST.READ | REST.UPDATE, "session": True},
 	"/ticket/action": {"methods": REST.CREATE, "session": True},
+	"/ticket/exists": {"methods": REST.READ, "session": True},
 	"/ticket/item": {"methods": REST.CREATE, "session": True},
 	"/tickets/customer": {"methods": REST.READ, "session": True},
 	"/tickets/user": {"methods": REST.READ, "session": True}

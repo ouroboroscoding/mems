@@ -398,7 +398,6 @@ class CSR(Services.Service):
 		# Pull out CSR only values
 		dAgent = {}
 		if 'claims_max' in data: dAgent['claims_max'] = data.pop('claims_max')
-		if 'claims_timeout' in data: dAgent['claims_timeout'] = data.pop('claims_timeout')
 
 		# Send the data to monolith to create the memo user
 		data['_internal_'] = Services.internalKey()
@@ -506,7 +505,7 @@ class CSR(Services.Service):
 
 		# Try to update the claims vars
 		lErrors = []
-		for s in ['claims_max', 'claims_timeout']:
+		for s in ['claims_max']:
 			if s in data:
 				try: oAgent[s] = data.pop(s)
 				except ValueError as e: lErrors.append(e.args[0])
@@ -574,8 +573,7 @@ class CSR(Services.Service):
 		# Create the agent and return the response
 		return self._agent_create({
 			"memo_id": oResponse.data,
-			"claims_max": 20,
-			"claims_timeout": 48
+			"claims_max": 20
 		}, sesh)
 
 	def agentNames_read(self, data, sesh):
@@ -1459,7 +1457,6 @@ class CSR(Services.Service):
 		# Store the user ID and claim vars in the session
 		oSesh['user_id'] = dAgent['_id']
 		oSesh['claims_max'] = dAgent['claims_max']
-		oSesh['claims_timeout'] = dAgent['claims_timeout']
 		oSesh.save()
 
 		# Return the session ID and primary user data
@@ -1685,7 +1682,7 @@ class CSR(Services.Service):
 		if dAction:
 
 			# Verify minimum fields
-			try: DictHelper.eval(dAction, ['type', 'subtype', 'user', 'memo_id'])
+			try: DictHelper.eval(dAction, ['type', 'subtype'])
 			except ValueError as e: return Services.Error(1001, [('action.%s' % f, 'missing') for f in e.args])
 
 			# Make sure the type is valid
@@ -1772,6 +1769,50 @@ class CSR(Services.Service):
 		# Store the data and return the result
 		return Services.Response(
 			oAction.create()
+		)
+
+	def ticketExists_read(self, data, sesh):
+		"""Ticket Exists Read
+
+		Returns if the given phone number or customer ID already has a ticket
+		associated or not
+
+		Arguments:
+			data (mixed): Data sent with the request
+			sesh (Sesh._Session): The session associated with the request
+
+		Returns:
+			Services.Response
+		"""
+
+		# Check internal key or rights
+		Rights.internalOrCheck(data, sesh, 'csr_claims', Rights.READ)
+
+		# Init the filter
+		dFilter = {}
+
+		# If we have a CRM type and ID
+		if 'crm_type' in data and 'crm_id' in data:
+			dFilter['crm_type'] = data['crm_type']
+			dFilter['crm_id'] = data['crm_id']
+
+		# Else, if we have a phone number
+		elif 'phone_number' in data:
+			dFilter['phone_number'] = data['phone_number']
+
+		# Else, invalid data
+		else:
+			return Services.Error(1001, [('crm_type', 'missing'), ('crm_id', 'missing')])
+
+		# Check if resolved is null
+		dFilter['resolved'] = None
+
+		# Find the ticket
+		dTicket = Ticket.filter(dFilter, raw=['_id'])
+
+		# Return the ID or false
+		return Services.Response(
+			dTicket and dTicket['_id'] or False
 		)
 
 	def ticketItems_create(self, data, sesh):

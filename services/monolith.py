@@ -100,9 +100,6 @@ class Monolith(Services.Service):
 		# Init the Sync module
 		Sync.init()
 
-		# Store conf
-		self._conf = Conf.get(('services', 'monolith'))
-
 		# Store identiflo config
 		self._identiflo = Conf.get('identiflo')
 
