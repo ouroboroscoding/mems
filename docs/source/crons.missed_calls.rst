@@ -7,7 +7,6 @@ Submodules
 .. toctree::
    :maxdepth: 4
 
-   crons.missed_calls.justcall
    crons.missed_calls.signia
 
 Module contents

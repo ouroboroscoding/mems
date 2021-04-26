@@ -19,6 +19,10 @@ Submodules
 .. toctree::
    :maxdepth: 4
 
+   crons.contact_form
+   crons.expiring
+   crons.hrt_ratings
+   crons.link_clear
    crons.zrt_shipping
 
 Module contents

@@ -10,7 +10,6 @@ Submodules
    crons.welldyne.adhoc
    crons.welldyne.eligibility
    crons.welldyne.incoming
-   crons.welldyne.outgoing
 
 Module contents
 ---------------

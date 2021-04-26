@@ -8,12 +8,15 @@ Submodules
    :maxdepth: 4
 
    shared.Email
+   shared.Environment
    shared.Excel
    shared.GSheets
-   shared.JSON
    shared.Memo
+   shared.Record_MySQLSearch
    shared.Rights
    shared.RocketGate
+   shared.SMSWorkflow
+   shared.Shipping
    shared.Sync
    shared.USPS
 

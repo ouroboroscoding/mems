@@ -10,10 +10,16 @@ Submodules
    records.auth
    records.csr
    records.customers
+   records.docs
+   records.link
    records.monolith
    records.patient
    records.payment
    records.prescriptions
+   records.products
+   records.providers
+   records.qualmed
+   records.reports
    records.welldyne
 
 Module contents

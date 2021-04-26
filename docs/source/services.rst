@@ -11,13 +11,20 @@ Submodules
    services.communications
    services.csr
    services.customers
+   services.docs
+   services.hubspot
+   services.justcall
    services.konnektive
+   services.link
    services.monolith
    services.patient
    services.payment
    services.prescriptions
+   services.products
+   services.providers
+   services.qualmed
+   services.reports
    services.webpoll
-   services.websocket
    services.welldyne
 
 Module contents

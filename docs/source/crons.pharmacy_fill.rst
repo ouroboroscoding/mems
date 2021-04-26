@@ -9,6 +9,7 @@ Submodules
 
    crons.pharmacy_fill.Generic
    crons.pharmacy_fill.WellDyne
+   crons.pharmacy_fill.eligibility
 
 Module contents
 ---------------

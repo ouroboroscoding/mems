@@ -7,7 +7,10 @@ Submodules
 .. toctree::
    :maxdepth: 4
 
-   crons.monolith.claims_timeout
+   crons.monolith.hard_declines
+   crons.monolith.hrt_join_date
+   crons.monolith.invalid_campaigns
+   crons.monolith.soft_declines
 
 Module contents
 ---------------
