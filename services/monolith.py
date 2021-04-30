@@ -4967,7 +4967,7 @@ class Monolith(Services.Service):
 				oSummary['lastMsgDir'] = lMsgs[iLast]['fromPhone'] == data['new'] and \
 											'Incoming' or \
 											'Outgoing'
-				oSummary['lastMsgAt'] = lMsgs[iLast]['createdAt']
+				oSummary['lastMsgAt'] = arrow.get(lMsgs[iLast]['createdAt']).format('YYYY-MM-DD HH:mm:ss')
 
 				# Keep track of incoming/outgoing and summary texts
 				iIncoming = 0
