@@ -1042,7 +1042,7 @@ class Patient(Services.Service):
 				"_internal_": Services.internalKey(),
 				"html_body": Templates.generate('email/patient/setup.html', dTpl, 'en-US'),
 				"subject": Templates.generate('email/patient/setup_subject.txt', {}, 'en-US'),
-				"to": self._conf['override'] or dSetup['email']
+				"to": self._conf['override'] or oSetup['email']
 			})
 			if oResponse.errorExists():
 				return oResponse
