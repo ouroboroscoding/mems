@@ -56,10 +56,12 @@ REST.Server({
 	"/template/sms": {"methods": REST.ALL, "session": True},
 	"/template/smss": {"methods": REST.READ, "session": True},
 
-	"/ticket": {"methods": REST.CREATE | REST.READ | REST.UPDATE, "session": True},
+	"/ticket": {"methods": REST.ALL, "session": True},
 	"/ticket/action": {"methods": REST.CREATE, "session": True},
-	"/ticket/exists": {"methods": REST.READ, "session": True},
+	"/ticket/exists": {"methods": REST.READ},
 	"/ticket/item": {"methods": REST.CREATE, "session": True},
+	"/ticket/open/user": {"methods": REST.READ, "session": True},
+	"/ticket/resolve": {"methods": REST.UPDATE, "session": True},
 	"/tickets/customer": {"methods": REST.READ, "session": True},
 	"/tickets/user": {"methods": REST.READ, "session": True}
 

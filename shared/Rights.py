@@ -65,14 +65,8 @@ def check(sesh, name, right, ident=None):
 	# Check with the auth service
 	oResponse = Services.read('auth', 'rights/verify', dData, sesh)
 
-	# If the check failed
+	# If the check failed, raise an exception
 	if not oResponse.data:
-
-		# If we need to return
-		if return_failure:
-			return False
-
-		# Else, raise an exception
 		raise Services.ResponseException(error=INVALID)
 
 	# Return OK
@@ -155,4 +149,4 @@ def internalOrCheck(data, sesh, name, right, ident=None):
 	else:
 
 		# Make sure the user has the proper permission to do this
-		Rights.check(sesh, name, right, ident)
+		check(sesh, name, right, ident)

@@ -181,12 +181,24 @@ class JustCall(Services.Service):
 		dRes = self._post('calls/query', {
 			"contact_number": data['phone'],
 			"order": "ASC",
-			"per_page": 100
+			"per_page": 100,
+			"type": '1'
 		})
 
 		# If the request failed
 		if dRes == False:
 			return Services.Error(2100, '404')
+
+		# If we don't have a type
+		if 'types' not in data:
+			data['types'] = []
+
+		# Else, make sure we have a list
+		elif not isinstance(data['types'], list):
+			data['types'] = [data['types']]
+
+		# Init the return list
+		lRet = []
 
 		# Go through each call
 		for d in dRes['data']:
@@ -194,5 +206,9 @@ class JustCall(Services.Service):
 			# Add the text version of the call type
 			d['typeText'] = _CALL_TYPES[d['type']]
 
+			# If we want all or the type is in the list
+			if not data['types'] or d['type'] in data['types']:
+				lRet.append(d)
+
 		# Return the data received
-		return Services.Response(dRes['data'])
+		return Services.Response(lRet)

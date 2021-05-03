@@ -330,10 +330,10 @@ class TicketAction(Record_MySQL.Record):
 	_resolved = None
 	"""The unsigned integer used to represent 'Resolved'"""
 
-	_subtypes = None
+	subtypes = None
 	"""The allowed subtypes of actions based on the type"""
 
-	_types = None
+	types = None
 	"""The allowed types of actions"""
 
 	@classmethod
@@ -402,15 +402,15 @@ class TicketAction(Record_MySQL.Record):
 		"""
 
 		# Load the ticket action types and subtypes
-		cls._types = DictHelper.keysToInts(
+		cls.types = DictHelper.keysToInts(
 			JSON.load('definitions/csr/ticket_action_types.json')
 		)
-		cls._subtypes = DictHelper.keysToInts(
+		cls.subtypes = DictHelper.keysToInts(
 			JSON.load('definitions/csr/ticket_action_subtypes.json')
 		)
 
 		# Go through each acton type
-		for i,s in cls._types.items():
+		for i,s in cls.types.items():
 
 			# If the string is resolved
 			if s == 'Resolved':

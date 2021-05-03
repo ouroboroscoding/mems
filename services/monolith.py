@@ -443,8 +443,17 @@ class Monolith(Services.Service):
 			return Services.Response(error=Rights.INVALID)
 
 		# Verify fields
-		try: DictHelper.eval(data, ['phoneNumber'])
+		try: DictHelper.eval(data, ['phoneNumber', 'ticket'])
 		except ValueError as e: return Services.Response(error=(1001, [(f, 'missing') for f in e.args]))
+
+		# Make sure the ticket exists
+		oResponse = Services.read('csr', 'ticket/exists', {
+			"_id": data['ticket']
+		})
+		if oResponse.errorExists():
+			return oResponse
+		elif oResponse.data == False:
+			return Services.Error(2003, 'ticket')
 
 		# If not order ID was passed
 		if 'orderId' not in data:
@@ -523,7 +532,7 @@ class Monolith(Services.Service):
 		# If we got a duplicate exception
 		except Record_MySQL.DuplicateException:
 
-			# Fine the user who claimed it
+			# Find the user who claimed it
 			dClaim = CustomerClaimed.get(data['phoneNumber'], raw=['user']);
 
 			# Return the error with the user ID
@@ -598,101 +607,72 @@ class Monolith(Services.Service):
 
 		# If the claim doesn't exist
 		if not oClaim:
+			return Services.Response(False)
 
-			# If the person transferring has overwrite permissions
-			if not Rights.check(sesh, 'csr_overwrite', Rights.CREATE, None, True):
-				return Services.Response(error=(1104, data['phoneNumber']))
+		# If the current owner of the claim is not the person transfering,
+		#	check permissions
+		if oClaim['user'] != sesh['memo_id']:
 
-			# Else, create a new claim
-			oClaim = CustomerClaimed({
-				"phoneNumber": data['phoneNumber'],
-				"user": data['user_id'],
-				"orderId": None,
-				"provider": None,
-				"continuous": None,
-				"transferredBy": sesh['memo_id'],
-				"viewed": False
-			})
-			oClaim.create()
+			# Make sure the user has the proper rights
+			Rights.check(sesh, 'csr_overwrite', Rights.CREATE)
 
-			# No original claim
+			# Store the old user
+			iOldUser = oClaim['user']
+
+		# Else, no old user
+		else:
 			iOldUser = None
 
-		# Else, the claim exists
-		else:
+		# Find the user
+		if not User.exists(data['user_id']):
+			return Services.Response(error=(1104, data['user_id']))
 
-			# If the current owner of the claim is not the person transfering,
-			#	check permissions
-			if oClaim['user'] != sesh['memo_id']:
+		# Switch the user associated to the logged in user
+		oClaim['user'] = data['user_id']
+		oClaim['transferredBy'] = sesh['memo_id']
+		oClaim['viewed'] = False
+		oClaim.save()
 
-				# Make sure the user has the proper rights
-				oResponse = Services.read('auth', 'rights/verify', {
-					"name": "csr_overwrite",
-					"right": Rights.CREATE
-				}, sesh)
-				if not oResponse.data:
-					return Services.Response(error=Rights.INVALID)
+		# Claim data
+		dData = {
+			"ticket": oClaim['ticket'],
+			"phoneNumber": data['phoneNumber'],
+			"orderId": oClaim['orderId'],
+			"provider": oClaim['provider'],
+			"continuous": oClaim['continuous'],
+			"transferredBy": sesh['memo_id'],
+			"viewed": False
+		}
 
-				# Store the old user
-				iOldUser = oClaim['user']
+		# Get a list of all the user IDs
+		lUserIDs = set()
+		if dData['provider']: lUserIDs.add(dData['provider'])
+		if dData['transferredBy']:
+			dData['transferredBy'] = int(dData['transferredBy'])
+			lUserIDs.add(dData['transferredBy'])
 
-			# Else, no old user
-			else:
-				iOldUser = None
+		# If we have any IDs
+		if lUserIDs:
 
-			# Find the user
-			if not User.exists(data['user_id']):
-				return Services.Response(error=(1104, data['user_id']))
-
-			# Switch the user associated to the logged in user
-			oClaim['user'] = data['user_id']
-			oClaim['transferredBy'] = sesh['memo_id']
-			oClaim['viewed'] = False
-			oClaim.save()
-
-		# If the user transferred it to themselves, they don't need a
-		#	notification
-		if data['user_id'] != sesh['memo_id']:
-
-			# Claim data
-			dData = {
-				"phoneNumber": data['phoneNumber'],
-				"orderId": oClaim['orderId'],
-				"provider": oClaim['provider'],
-				"continuous": oClaim['continuous'],
-				"transferredBy": sesh['memo_id'],
-				"viewed": False
+			# Get the names of all the users
+			dUsers = {
+				d['id']: '%s %s' % (d['firstName'], d['lastName'])
+				for d in User.get(list(lUserIDs), raw=['id', 'firstName', 'lastName'])
 			}
 
-			# Get a list of all the user IDs
-			lUserIDs = set()
-			if dData['provider']: lUserIDs.add(dData['provider'])
+			# Add provider name
+			if dData['provider']:
+				dData['providerName'] = dData['provider'] in dUsers and dUsers[dData['provider']] or 'N/A'
+
+			# Add transferred name
 			if dData['transferredBy']:
-				dData['transferredBy'] = int(dData['transferredBy'])
-				lUserIDs.add(dData['transferredBy'])
+				dData['transferredByName'] = dData['transferredBy'] in dUsers and dUsers[dData['transferredBy']] or 'N/A'
 
-			# If we have any IDs
-			if lUserIDs:
-
-				# Get the names of all the users
-				dUsers = {
-					d['id']: '%s %s' % (d['firstName'], d['lastName'])
-					for d in User.get(list(lUserIDs), raw=['id', 'firstName', 'lastName'])
-				}
-
-				# Add provider name
-				if dData['provider']:
-					dData['providerName'] = dData['provider'] in dUsers and dUsers[dData['provider']] or 'N/A'
-
-				# Add transferred name
-				if dData['transferredBy']:
-					dData['transferredByName'] = dData['transferredBy'] in dUsers and dUsers[dData['transferredBy']] or 'N/A'
-
-			# Sync the transfer for anyone interested
-			Sync.push('monolith', 'user-%s' % str(data['user_id']), {
-				"type": 'claim_transfered',
-				"claim": dData
-			})
+		# Sync the transfer for anyone interested
+		Sync.push('monolith', 'user-%s' % str(data['user_id']), {
+			"type": 'claim_transfered',
+			"claim": dData
+		})
 
 		# If the claim was forceable removed
 		if iOldUser:
@@ -1790,6 +1770,60 @@ class Monolith(Services.Service):
 			"stop": bStop,
 			"type": sType
 		})
+
+	def customerMessagesIncoming_read(self, data, sesh):
+		"""Customer Messages Incoming Read
+
+		Returns the number of messages requested from what has been sent by
+		the customer
+
+		Arguments:
+			data (dict): Data sent with the request
+			sesh (Sesh._Session): The session associated with the request
+
+		Returns:
+			Services.Response
+		"""
+
+		# Verify fields
+		try: DictHelper.eval(data, ['customerPhone'])
+		except ValueError as e: return Services.Response(error=(1001, [(f, 'missing') for f in e.args]))
+
+		# If the start isn't set
+		if 'start' not in data:
+			data['start'] = 0
+
+		# If the limit isn't set
+		if 'count' not in data:
+			data['count'] = 3
+
+		# Make sure start and count are unsigned ints
+		lErrors = []
+		for f in ['start', 'count']:
+			try: data[f] = int(data[f])
+			except ValueError: lErrors.append([f, 'not an integer'])
+
+		# If the start is less than 0
+		if data['start'] < 0:
+			lErrors.append(['start', 'not a positive number'])
+
+		# If the count is less than 1
+		if data['count'] < 1:
+			lErrors.append(['count', 'must be at least 1'])
+
+		# If we got any errors
+		if lErrors:
+			return Services.Error(1001, lErrors)
+
+		# Fetch the incoming messages
+		lMsgs = CustomerCommunication.incoming(
+			data['customerPhone'],
+			data['start'],
+			data['count']
+		)
+
+		# Return the messages
+		return Services.Response(lMsgs)
 
 	def customerMips_read(self, data, sesh):
 		"""Customer MIPs

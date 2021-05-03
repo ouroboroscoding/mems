@@ -50,6 +50,7 @@ REST.Server({
 	"/customer/hrt/symptoms": {"methods": REST.READ, "session": True},
 	"/customer/id/byPhone": {"methods": REST.READ, "session": True},
 	"/customer/messages": {"methods": REST.READ, "session": True},
+	"/customer/messages/incoming": {"methods": REST.READ, "session": True},
 	"/customer/mip": {"methods": REST.READ, "session": True},
 	"/customer/mips": {"methods": REST.READ, "session": True},
 	"/customer/mip/answer": {"methods": REST.UPDATE, "session": True},

@@ -26,7 +26,6 @@ from RestOC import Conf, Record_MySQL
 from shared import Record_MySQLSearch
 
 # Custome SQL
-sConversationSQL = ''
 sLatestStatusSQL = ''
 sNumOfOrdersSQL = ''
 sSearchSQL = ''
@@ -37,11 +36,9 @@ def init():
 	Need to find a better way to do this
 	"""
 
-	global sConversationSQL, sLatestStatusSQL, sNumOfOrdersSQL, sSearchSQL
+	global sLatestStatusSQL, sNumOfOrdersSQL, sSearchSQL
 
 	# SQL files
-	with open('records/sql/conversation.sql') as oF:
-		sConversationSQL = oF.read()
 	with open('records/sql/latest_status.sql') as oF:
 		sLatestStatusSQL = oF.read()
 	with open('records/sql/number_of_orders.sql') as oF:
@@ -557,6 +554,56 @@ class CustomerCommunication(Record_MySQL.Record):
 		return cls._conf
 
 	@classmethod
+	def incoming(cls, number, start, count, custom={}):
+		"""Incoming
+
+		Fetches all the records in associated with a phone number in
+		reverse chronological order
+
+		Arguments:
+			number (str): The phone number to look up
+			start (uint): The starting record
+			count (uint): The amount of records to return after the start
+			custom (dict): Custom Host and DB info
+				'host' the name of the host to get/set data on
+				'append' optional postfix for dynamic DBs
+
+		Returns:
+			list
+		"""
+
+		# Fetch the record structure
+		dStruct = cls.struct(custom)
+
+		# Generate the SQL
+		sSQL = "SELECT\n" \
+				"	`id`,\n" \
+				"	`status`,\n" \
+				"	`errorMessage`,\n" \
+				"	`fromPhone`,\n" \
+				"	`fromName`,\n" \
+				"	`notes`,\n" \
+				"	UNIX_TIMESTAMP(`createdAt`) as `createdAt`,\n" \
+				"	`type`\n" \
+				"FROM `%(db)s`.`%(table)s`\n" \
+				"WHERE `fromPhone` IN ('%(number)s', '1%(number)s')\n" \
+				"ORDER BY `createdAt` DESC\n" \
+				"LIMIT %(start)d, %(count)d" % {
+			"db": dStruct['db'],
+			"table": dStruct['table'],
+			"number": Record_MySQL.Commands.escape(dStruct['host'], number),
+			"start": start,
+			"count": count
+		}
+
+		# Fetch and return the data
+		return Record_MySQL.Commands.select(
+			dStruct['host'],
+			sSQL,
+			Record_MySQL.ESelect.ALL
+		)
+
+	@classmethod
 	def newMessages(cls, numbers, ts, custom={}):
 		"""New Messages
 
@@ -627,14 +674,30 @@ class CustomerCommunication(Record_MySQL.Record):
 		# Fetch the record structure
 		dStruct = cls.struct(custom)
 
-		# Fetch and return the data
-		return Record_MySQL.Commands.select(
-			dStruct['host'],
-			sConversationSQL % {
+		# Generate the SQL
+		sSQL = "SELECT\n" \
+				"	`id`,\n" \
+				"	`status`,\n" \
+				"	`errorMessage`,\n" \
+				"	`fromPhone`,\n" \
+				"	`fromName`,\n" \
+				"	`notes`,\n" \
+				"	UNIX_TIMESTAMP(`createdAt`) as `createdAt`,\n" \
+				"	`type`\n" \
+				"FROM `%(db)s`.`%(table)s`\n" \
+				"WHERE `fromPhone` IN ('%(number)s', '1%(number)s')\n" \
+				"OR `toPhone` IN ('%(number)s', '1%(number)s')\n" \
+				"ORDER BY `createdAt` ASC" % {
 				"db": dStruct['db'],
 				"table": dStruct['table'],
 				"number": Record_MySQL.Commands.escape(dStruct['host'], number)
 			}
+
+		# Fetch and return the data
+		return Record_MySQL.Commands.select(
+			dStruct['host'],
+			sSQL,
+			Record_MySQL.ESelect.ALL
 		)
 
 # CustomerMsgPhone class
