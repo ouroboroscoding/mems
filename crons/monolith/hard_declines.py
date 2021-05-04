@@ -96,7 +96,7 @@ def run():
 					"contact us by replying to this message, emailing " \
 					"support@maleexcel.com or calling (833)-625-3392. " \
 					"Please note that you will no longer receive your " \
-					"subscribed medication until this billing issue has " \
+					"prescribed medication until this billing issue has " \
 					"been resolved. Thank you again for choosing Male Excel " \
 					"Medical and have a great day." % d['lastName']
 
