@@ -25,21 +25,6 @@ from shared import GSheets
 # Local imports
 from nodes import emailError, reqJSON, resJSON, show500
 
-# Load the config
-Conf.load('config.json')
-sConfOverride = 'config.%s.json' % platform.node()
-if os.path.isfile(sConfOverride):
-	Conf.load_merge(sConfOverride)
-
-# Create the REST config instance
-oRestConf = REST.Config(Conf.get("rest"))
-
-# Get all the services
-dServices = {k:None for k in Conf.get(('rest', 'services'))}
-
-# Register all services
-Services.register(dServices, oRestConf, Conf.get(('services', 'salt')))
-
 @bottle.post('/calendly/created')
 def calendlyCreate():
 	"""Calendly Create
@@ -249,10 +234,28 @@ def justCallWebhook():
 	# Return OK
 	return resJSON(True)
 
-# Run the webserver
-bottle.run(
-	host=oRestConf['external']['host'],
-	port=oRestConf['external']['port'],
-	server="gunicorn",
-	workers=oRestConf['external']['workers']
-)
+# Only run if called directly
+if __name__ == "__main__":
+
+	# Load the config
+	Conf.load('config.json')
+	sConfOverride = 'config.%s.json' % platform.node()
+	if os.path.isfile(sConfOverride):
+		Conf.load_merge(sConfOverride)
+
+	# Create the REST config instance
+	oRestConf = REST.Config(Conf.get("rest"))
+
+	# Get all the services
+	dServices = {k:None for k in Conf.get(('rest', 'services'))}
+
+	# Register all services
+	Services.register(dServices, oRestConf, Conf.get(('services', 'salt')))
+
+	# Run the webserver
+	bottle.run(
+		host=oRestConf['external']['host'],
+		port=oRestConf['external']['port'],
+		server="gunicorn",
+		workers=oRestConf['external']['workers']
+	)

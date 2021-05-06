@@ -1,0 +1,36 @@
+nodes.rest package
+==================
+
+Submodules
+----------
+
+.. toctree::
+   :maxdepth: 4
+
+   nodes.rest.auth
+   nodes.rest.communications
+   nodes.rest.csr
+   nodes.rest.customers
+   nodes.rest.docs
+   nodes.rest.hubspot
+   nodes.rest.justcall
+   nodes.rest.konnektive
+   nodes.rest.link
+   nodes.rest.monolith
+   nodes.rest.patient
+   nodes.rest.payment
+   nodes.rest.prescriptions
+   nodes.rest.products
+   nodes.rest.providers
+   nodes.rest.qualmed
+   nodes.rest.reports
+   nodes.rest.webpoll
+   nodes.rest.welldyne
+
+Module contents
+---------------
+
+.. automodule:: nodes.rest
+   :members:
+   :undoc-members:
+   :show-inheritance:

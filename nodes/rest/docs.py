@@ -20,33 +20,36 @@ from services.docs import Docs
 # Local imports
 from . import init
 
-# Init the REST info
-oRestConf = init(
-	dbs=['primary'],
-	services={'docs':Docs()}
-)
+# Only run if called directly
+if __name__ == "__main__":
 
-# Create the HTTP server and map requests to service
-REST.Server([
+	# Init the REST info
+	oRestConf = init(
+		dbs=['primary'],
+		services={'docs':Docs()}
+	)
 
-	# Public
-	{"uri": "/errors", "methods": REST.READ},
+	# Create the HTTP server and map requests to service
+	REST.Server([
 
-	{"uri": "/noun", "methods": REST.READ},
+		# Public
+		{"uri": "/errors", "methods": REST.READ},
 
-	{"uri": "/service", "methods": REST.READ},
-	{"uri": "/services", "methods": REST.READ},
+		{"uri": "/noun", "methods": REST.READ},
 
-	# Private
-	{"uri": "/error", "methods": REST.CREATE | REST.DELETE | REST.UPDATE, "session": True},
+		{"uri": "/service", "methods": REST.READ},
+		{"uri": "/services", "methods": REST.READ},
 
-	{"uri": "/noun", "methods": REST.CREATE | REST.DELETE | REST.UPDATE, "session": True},
+		# Private
+		{"uri": "/error", "methods": REST.CREATE | REST.DELETE | REST.UPDATE, "session": True},
 
-	{"uri": "/service", "methods": REST.CREATE | REST.DELETE | REST.UPDATE, "session": True}
+		{"uri": "/noun", "methods": REST.CREATE | REST.DELETE | REST.UPDATE, "session": True},
 
-], 'docs', "https?://(.*\\.)?%s" % Conf.get(("rest","allowed")).replace('.', '\\.')).run(
-	host=oRestConf['docs']['host'],
-	port=oRestConf['docs']['port'],
-	workers=oRestConf['docs']['workers'],
-	timeout='timeout' in oRestConf['docs'] and oRestConf['docs']['timeout'] or 30
-)
+		{"uri": "/service", "methods": REST.CREATE | REST.DELETE | REST.UPDATE, "session": True}
+
+	], 'docs', "https?://(.*\\.)?%s" % Conf.get(("rest","allowed")).replace('.', '\\.')).run(
+		host=oRestConf['docs']['host'],
+		port=oRestConf['docs']['port'],
+		workers=oRestConf['docs']['workers'],
+		timeout='timeout' in oRestConf['docs'] and oRestConf['docs']['timeout'] or 30
+	)

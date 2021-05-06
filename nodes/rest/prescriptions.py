@@ -20,39 +20,42 @@ from services.prescriptions import Prescriptions
 # Local imports
 from . import init
 
-# Init the REST info
-oRestConf = init(
-	dbs=['primary'],
-	services={'prescriptions':Prescriptions()}
-)
+# Only run if called directly
+if __name__ == "__main__":
 
-# Create the HTTP server and map requests to service
-REST.Server({
-	"/patient": {"methods": REST.CREATE | REST.READ | REST.UPDATE, "session": True},
-	"/patient/medications": {"methods": REST.READ, "session": True},
-	"/patient/pharmacies": {"methods": REST.READ, "session": True},
-	"/patient/pharmacy": {"methods": REST.CREATE | REST.DELETE, "session": True},
-	"/patient/prescription": {"methods": REST.CREATE | REST.READ, "session": True},
-	"/patient/prescriptions": {"methods": REST.READ},
-	"/patient/sso": {"methods": REST.READ, "session": True},
+	# Init the REST info
+	oRestConf = init(
+		dbs=['primary'],
+		services={'prescriptions':Prescriptions()}
+	)
 
-	"/pharmacies": {"methods": REST.READ, "session": True},
+	# Create the HTTP server and map requests to service
+	REST.Server({
+		"/patient": {"methods": REST.CREATE | REST.READ | REST.UPDATE, "session": True},
+		"/patient/medications": {"methods": REST.READ, "session": True},
+		"/patient/pharmacies": {"methods": REST.READ, "session": True},
+		"/patient/pharmacy": {"methods": REST.CREATE | REST.DELETE, "session": True},
+		"/patient/prescription": {"methods": REST.CREATE | REST.READ, "session": True},
+		"/patient/prescriptions": {"methods": REST.READ},
+		"/patient/sso": {"methods": REST.READ, "session": True},
 
-	"/pharmacy/fill": {"methods": REST.CREATE | REST.DELETE, "session": True},
-	"/pharmacy/fill/byCustomer": {"methods": REST.READ, "session": True},
+		"/pharmacies": {"methods": REST.READ, "session": True},
 
-	"/pharmacy/fill/error": {"methods": REST.CREATE | REST.UPDATE | REST.DELETE, "session": True},
-	"/pharmacy/fill/errors": {"methods": REST.READ, "session": True},
+		"/pharmacy/fill": {"methods": REST.CREATE | REST.DELETE, "session": True},
+		"/pharmacy/fill/byCustomer": {"methods": REST.READ, "session": True},
 
-	"/product": {"methods": REST.ALL, "session": True},
-	"/products": {"methods": REST.READ, "session": True},
+		"/pharmacy/fill/error": {"methods": REST.CREATE | REST.UPDATE | REST.DELETE, "session": True},
+		"/pharmacy/fill/errors": {"methods": REST.READ, "session": True},
 
-	"/provider/notifications": {"methods": REST.READ, "session": True},
-	"/provider/sso": {"methods": REST.READ, "session": True}
+		"/product": {"methods": REST.ALL, "session": True},
+		"/products": {"methods": REST.READ, "session": True},
 
-}, 'prescriptions', "https?://(.*\\.)?%s" % Conf.get(("rest","allowed")).replace('.', '\\.')).run(
-	host=oRestConf['prescriptions']['host'],
-	port=oRestConf['prescriptions']['port'],
-	workers=oRestConf['prescriptions']['workers'],
-	timeout='timeout' in oRestConf['prescriptions'] and oRestConf['prescriptions']['timeout'] or 30
-)
+		"/provider/notifications": {"methods": REST.READ, "session": True},
+		"/provider/sso": {"methods": REST.READ, "session": True}
+
+	}, 'prescriptions', "https?://(.*\\.)?%s" % Conf.get(("rest","allowed")).replace('.', '\\.')).run(
+		host=oRestConf['prescriptions']['host'],
+		port=oRestConf['prescriptions']['port'],
+		workers=oRestConf['prescriptions']['workers'],
+		timeout='timeout' in oRestConf['prescriptions'] and oRestConf['prescriptions']['timeout'] or 30
+	)

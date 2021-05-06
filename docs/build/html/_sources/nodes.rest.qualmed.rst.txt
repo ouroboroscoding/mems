@@ -1,0 +1,7 @@
+nodes.rest.qualmed module
+=========================
+
+.. automodule:: nodes.rest.qualmed
+   :members:
+   :undoc-members:
+   :show-inheritance:

@@ -1,0 +1,7 @@
+nodes.rest.csr module
+=====================
+
+.. automodule:: nodes.rest.csr
+   :members:
+   :undoc-members:
+   :show-inheritance:

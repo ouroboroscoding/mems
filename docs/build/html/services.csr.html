@@ -1,0 +1,888 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" />
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  
+  <title>services.csr module &mdash; MeMS 1.50 documentation</title>
+  
+
+  
+  <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+
+  
+  
+
+  
+  
+
+  
+
+  
+  <!--[if lt IE 9]>
+    <script src="_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+    
+      <script type="text/javascript" id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
+        <script src="_static/jquery.js"></script>
+        <script src="_static/underscore.js"></script>
+        <script src="_static/doctools.js"></script>
+    
+    <script type="text/javascript" src="_static/js/theme.js"></script>
+
+    
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" /> 
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+          
+
+          
+            <a href="index.html" class="icon icon-home"> MeMS
+          
+
+          
+          </a>
+
+          
+            
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <!-- Local TOC -->
+              <div class="local-toc"><ul>
+<li><a class="reference internal" href="#">services.csr module</a></li>
+</ul>
+</div>
+            
+          
+        </div>
+        
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">MeMS</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="index.html" class="icon icon-home"></a> &raquo;</li>
+        
+      <li>services.csr module</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+          
+            <a href="_sources/services.csr.rst.txt" rel="nofollow"> View page source</a>
+          
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <div class="section" id="module-services.csr">
+<span id="services-csr-module"></span><h1>services.csr module<a class="headerlink" href="#module-services.csr" title="Permalink to this headline">¶</a></h1>
+<p>CSR Service</p>
+<p>Handles all CSR requests</p>
+<dl class="py class">
+<dt id="services.csr.CSR">
+<em class="property"><span class="pre">class</span> </em><code class="sig-prename descclassname"><span class="pre">services.csr.</span></code><code class="sig-name descname"><span class="pre">CSR</span></code><a class="headerlink" href="#services.csr.CSR" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">RestOC.Services.Service</span></code></p>
+<p>CSR Service class</p>
+<p>Service for CSR access</p>
+<dl class="py method">
+<dt id="services.csr.CSR.agentMemo_create">
+<code class="sig-name descname"><span class="pre">agentMemo_create</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sesh</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#services.csr.CSR.agentMemo_create" title="Permalink to this definition">¶</a></dt>
+<dd><p>Agent from Memo</p>
+<p>Creates an agent record from an existing Memo user instead of creating
+a new one</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>data</strong> (<em>mixed</em>) – Data sent with the request</p></li>
+<li><p><strong>sesh</strong> (<em>Sesh._Session</em>) – The session associated with the request</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>Services.Response</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="services.csr.CSR.agentNames_read">
+<code class="sig-name descname"><span class="pre">agentNames_read</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sesh</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#services.csr.CSR.agentNames_read" title="Permalink to this definition">¶</a></dt>
+<dd><p>Agent Names</p>
+<p>Returns the list of agents who can have issues transfered / escalated to
+them</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>data</strong> (<em>mixed</em>) – Data sent with the request</p></li>
+<li><p><strong>sesh</strong> (<em>Sesh._Session</em>) – The session associated with the request</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>Services.Response</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="services.csr.CSR.agentPasswd_update">
+<code class="sig-name descname"><span class="pre">agentPasswd_update</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sesh</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#services.csr.CSR.agentPasswd_update" title="Permalink to this definition">¶</a></dt>
+<dd><p>Agent Password Update</p>
+<p>Updates an agent’s password in monolith</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>data</strong> (<em>mixed</em>) – Data sent with the request</p></li>
+<li><p><strong>sesh</strong> (<em>Sesh._Session</em>) – The session associated with the request</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>Services.Response</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="services.csr.CSR.agentPermissions_read">
+<code class="sig-name descname"><span class="pre">agentPermissions_read</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sesh</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#services.csr.CSR.agentPermissions_read" title="Permalink to this definition">¶</a></dt>
+<dd><p>Agent Permissions Read</p>
+<p>Returns all permissions associated with an agent</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>data</strong> (<em>mixed</em>) – Data sent with the request</p></li>
+<li><p><strong>sesh</strong> (<em>Sesh._Session</em>) – The session associated with the request</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>Services.Response</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="services.csr.CSR.agentPermissions_update">
+<code class="sig-name descname"><span class="pre">agentPermissions_update</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sesh</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#services.csr.CSR.agentPermissions_update" title="Permalink to this definition">¶</a></dt>
+<dd><p>Agent Permissions Update</p>
+<p>Updates the permissions associated with an agent</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>data</strong> (<em>mixed</em>) – Data sent with the request</p></li>
+<li><p><strong>sesh</strong> (<em>Sesh._Session</em>) – The session associated with the request</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>Services.Response</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="services.csr.CSR.agent_create">
+<code class="sig-name descname"><span class="pre">agent_create</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sesh</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#services.csr.CSR.agent_create" title="Permalink to this definition">¶</a></dt>
+<dd><p>Agent Create</p>
+<p>Creates a user record associated with the memo user in order to apply
+permissions to it</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>data</strong> (<em>mixed</em>) – Data sent with the request</p></li>
+<li><p><strong>sesh</strong> (<em>Sesh._Session</em>) – The session associated with the request</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>Services.Response</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="services.csr.CSR.agent_delete">
+<code class="sig-name descname"><span class="pre">agent_delete</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sesh</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#services.csr.CSR.agent_delete" title="Permalink to this definition">¶</a></dt>
+<dd><p>Agent Delete</p>
+<p>Deletes an existing memo user record associated</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>data</strong> (<em>mixed</em>) – Data sent with the request</p></li>
+<li><p><strong>sesh</strong> (<em>Sesh._Session</em>) – The session associated with the request</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>Services.Response</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="services.csr.CSR.agent_read">
+<code class="sig-name descname"><span class="pre">agent_read</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sesh</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#services.csr.CSR.agent_read" title="Permalink to this definition">¶</a></dt>
+<dd><p>Agent Read</p>
+<p>Fetches one, many, or all user records</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>data</strong> (<em>mixed</em>) – Data sent with the request</p></li>
+<li><p><strong>sesh</strong> (<em>Sesh._Session</em>) – The session associated with the request</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>Services.Response</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="services.csr.CSR.agent_update">
+<code class="sig-name descname"><span class="pre">agent_update</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sesh</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#services.csr.CSR.agent_update" title="Permalink to this definition">¶</a></dt>
+<dd><p>Agent Update</p>
+<p>Updates an existing agent (via memo user)</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>data</strong> (<em>mixed</em>) – Data sent with the request</p></li>
+<li><p><strong>sesh</strong> (<em>Sesh._Session</em>) – The session associated with the request</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>Services.Response</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="services.csr.CSR.agents_read">
+<code class="sig-name descname"><span class="pre">agents_read</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sesh</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#services.csr.CSR.agents_read" title="Permalink to this definition">¶</a></dt>
+<dd><p>Agents</p>
+<p>Returns all agents in the system</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>data</strong> (<em>mixed</em>) – Data sent with the request</p></li>
+<li><p><strong>sesh</strong> (<em>Sesh._Session</em>) – The session associated with the request</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>Services.Response</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="services.csr.CSR.initialise">
+<code class="sig-name descname"><span class="pre">initialise</span></code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#services.csr.CSR.initialise" title="Permalink to this definition">¶</a></dt>
+<dd><p>Initialise</p>
+<p>Initialises the instance and returns itself for chaining</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>Monolith</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="services.csr.CSR.install">
+<em class="property"><span class="pre">classmethod</span> </em><code class="sig-name descname"><span class="pre">install</span></code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#services.csr.CSR.install" title="Permalink to this definition">¶</a></dt>
+<dd><p>Install</p>
+<p>The service’s install method, used to setup storage or other one time
+install configurations</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>bool</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="services.csr.CSR.listItem_create">
+<code class="sig-name descname"><span class="pre">listItem_create</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sesh</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#services.csr.CSR.listItem_create" title="Permalink to this definition">¶</a></dt>
+<dd><p>List Item Create</p>
+<p>Adds a new item to an exiting or a new list</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>data</strong> (<em>mixed</em>) – Data sent with the request</p></li>
+<li><p><strong>sesh</strong> (<em>Sesh._Session</em>) – The session associated with the request</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>Services.Response</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="services.csr.CSR.listItem_delete">
+<code class="sig-name descname"><span class="pre">listItem_delete</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sesh</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#services.csr.CSR.listItem_delete" title="Permalink to this definition">¶</a></dt>
+<dd><p>List Item Delete</p>
+<p>Deletes a list item</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>data</strong> (<em>mixed</em>) – Data sent with the request</p></li>
+<li><p><strong>sesh</strong> (<em>Sesh._Session</em>) – The session associated with the request</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>Services.Response</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="services.csr.CSR.list_create">
+<code class="sig-name descname"><span class="pre">list_create</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sesh</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#services.csr.CSR.list_create" title="Permalink to this definition">¶</a></dt>
+<dd><p>List Create</p>
+<p>Create a new custom list</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>data</strong> (<em>mixed</em>) – Data sent with the request</p></li>
+<li><p><strong>sesh</strong> (<em>Sesh._Session</em>) – The session associated with the request</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>Services.Response</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="services.csr.CSR.list_delete">
+<code class="sig-name descname"><span class="pre">list_delete</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sesh</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#services.csr.CSR.list_delete" title="Permalink to this definition">¶</a></dt>
+<dd><p>List Delete</p>
+<p>Deletes a list and all items</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>data</strong> (<em>mixed</em>) – Data sent with the request</p></li>
+<li><p><strong>sesh</strong> (<em>Sesh._Session</em>) – The session associated with the request</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>Services.Response</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="services.csr.CSR.list_update">
+<code class="sig-name descname"><span class="pre">list_update</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sesh</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#services.csr.CSR.list_update" title="Permalink to this definition">¶</a></dt>
+<dd><p>List Update</p>
+<p>Updates the title on an existing list</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>data</strong> (<em>mixed</em>) – Data sent with the request</p></li>
+<li><p><strong>sesh</strong> (<em>Sesh._Session</em>) – The session associated with the request</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>Services.Response</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="services.csr.CSR.lists_read">
+<code class="sig-name descname"><span class="pre">lists_read</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sesh</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#services.csr.CSR.lists_read" title="Permalink to this definition">¶</a></dt>
+<dd><p>Lists</p>
+<p>Returns all lists and their items belonging to the current agent</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>data</strong> (<em>mixed</em>) – Data sent with the request</p></li>
+<li><p><strong>sesh</strong> (<em>Sesh._Session</em>) – The session associated with the request</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>Services.Response</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="services.csr.CSR.patientAccount_create">
+<code class="sig-name descname"><span class="pre">patientAccount_create</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sesh</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#services.csr.CSR.patientAccount_create" title="Permalink to this definition">¶</a></dt>
+<dd><p>Patient Account Create</p>
+<p>Gets the necessary data to create a patient account and sends it off
+to the patient service</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>data</strong> (<em>mixed</em>) – Data sent with the request</p></li>
+<li><p><strong>sesh</strong> (<em>Sesh._Session</em>) – The session associated with the request</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>Services.Response</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="services.csr.CSR.reminderResolve_update">
+<code class="sig-name descname"><span class="pre">reminderResolve_update</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sesh</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#services.csr.CSR.reminderResolve_update" title="Permalink to this definition">¶</a></dt>
+<dd><p>Reminder Create</p>
+<p>Marks the reminder as resolved for the signed in patient</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>data</strong> (<em>dict</em>) – Data sent with the request</p></li>
+<li><p><strong>sesh</strong> (<em>Sesh._Session</em>) – The session associated with the request</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>Services.Response</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="services.csr.CSR.reminder_create">
+<code class="sig-name descname"><span class="pre">reminder_create</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sesh</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#services.csr.CSR.reminder_create" title="Permalink to this definition">¶</a></dt>
+<dd><p>Reminder Create</p>
+<p>Creates a new reminder for the signed in agent</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>data</strong> (<em>dict</em>) – Data sent with the request</p></li>
+<li><p><strong>sesh</strong> (<em>Sesh._Session</em>) – The session associated with the request</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>Services.Response</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="services.csr.CSR.reminder_delete">
+<code class="sig-name descname"><span class="pre">reminder_delete</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sesh</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#services.csr.CSR.reminder_delete" title="Permalink to this definition">¶</a></dt>
+<dd><p>Reminder Delete</p>
+<p>Deletes an existing reminder for the signed in agent</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>data</strong> (<em>dict</em>) – Data sent with the request</p></li>
+<li><p><strong>sesh</strong> (<em>Sesh._Session</em>) – The session associated with the request</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>Services.Response</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="services.csr.CSR.reminder_update">
+<code class="sig-name descname"><span class="pre">reminder_update</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sesh</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#services.csr.CSR.reminder_update" title="Permalink to this definition">¶</a></dt>
+<dd><p>Reminder Update</p>
+<p>Updates an existing reminder for the signed in agent</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>data</strong> (<em>dict</em>) – Data sent with the request</p></li>
+<li><p><strong>sesh</strong> (<em>Sesh._Session</em>) – The session associated with the request</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>Services.Response</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="services.csr.CSR.remindersCount_read">
+<code class="sig-name descname"><span class="pre">remindersCount_read</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sesh</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#services.csr.CSR.remindersCount_read" title="Permalink to this definition">¶</a></dt>
+<dd><p>Reminders Count</p>
+<p>Returns the number of unresolved reminders for the given data and
+previous days, for the signed in agent</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>data</strong> (<em>dict</em>) – Data sent with the request</p></li>
+<li><p><strong>sesh</strong> (<em>Sesh._Session</em>) – The session associated with the request</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>Services.Response</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="services.csr.CSR.reminders_read">
+<code class="sig-name descname"><span class="pre">reminders_read</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sesh</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#services.csr.CSR.reminders_read" title="Permalink to this definition">¶</a></dt>
+<dd><p>Reminders</p>
+<p>Returns the unresolved reminders for the agent</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>data</strong> (<em>dict</em>) – Data sent with the request</p></li>
+<li><p><strong>sesh</strong> (<em>Sesh._Session</em>) – The session associated with the request</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>Services.Response</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="services.csr.CSR.session_read">
+<code class="sig-name descname"><span class="pre">session_read</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sesh</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#services.csr.CSR.session_read" title="Permalink to this definition">¶</a></dt>
+<dd><p>Session</p>
+<p>Returns the ID of the user logged into the current session</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>data</strong> (<em>dict</em>) – Data sent with the request</p></li>
+<li><p><strong>sesh</strong> (<em>Sesh._Session</em>) – The session associated with the request</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>Services.Response</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="services.csr.CSR.signin_create">
+<code class="sig-name descname"><span class="pre">signin_create</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#services.csr.CSR.signin_create" title="Permalink to this definition">¶</a></dt>
+<dd><p>Signin</p>
+<p>Signs a user into the system</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>data</strong> (<em>dict</em>) – The data passed to the request</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>Result</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="services.csr.CSR.signout_create">
+<code class="sig-name descname"><span class="pre">signout_create</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sesh</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#services.csr.CSR.signout_create" title="Permalink to this definition">¶</a></dt>
+<dd><p>Signout</p>
+<p>Called to sign out a user and destroy their session</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>data</strong> (<em>dict</em>) – Data sent with the request</p></li>
+<li><p><strong>sesh</strong> (<em>Sesh._Session</em>) – The session associated with the user</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>Services.Response</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="services.csr.CSR.templateEmail_create">
+<code class="sig-name descname"><span class="pre">templateEmail_create</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sesh</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#services.csr.CSR.templateEmail_create" title="Permalink to this definition">¶</a></dt>
+<dd><p>Template Email Create</p>
+<p>Create a new email template</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>data</strong> (<em>mixed</em>) – Data sent with the request</p></li>
+<li><p><strong>sesh</strong> (<em>Sesh._Session</em>) – The session associated with the request</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>Services.Response</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="services.csr.CSR.templateEmail_delete">
+<code class="sig-name descname"><span class="pre">templateEmail_delete</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sesh</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#services.csr.CSR.templateEmail_delete" title="Permalink to this definition">¶</a></dt>
+<dd><p>Template Email Delete</p>
+<p>Delete an existing email template</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>data</strong> (<em>mixed</em>) – Data sent with the request</p></li>
+<li><p><strong>sesh</strong> (<em>Sesh._Session</em>) – The session associated with the request</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>Services.Response</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="services.csr.CSR.templateEmail_read">
+<code class="sig-name descname"><span class="pre">templateEmail_read</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sesh</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#services.csr.CSR.templateEmail_read" title="Permalink to this definition">¶</a></dt>
+<dd><p>Template Email Read</p>
+<p>Fetches an existing email template</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>data</strong> (<em>mixed</em>) – Data sent with the request</p></li>
+<li><p><strong>sesh</strong> (<em>Sesh._Session</em>) – The session associated with the request</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>Services.Response</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="services.csr.CSR.templateEmail_update">
+<code class="sig-name descname"><span class="pre">templateEmail_update</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sesh</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#services.csr.CSR.templateEmail_update" title="Permalink to this definition">¶</a></dt>
+<dd><p>Template Email Update</p>
+<p>Updated an existing email template</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>data</strong> (<em>mixed</em>) – Data sent with the request</p></li>
+<li><p><strong>sesh</strong> (<em>Sesh._Session</em>) – The session associated with the request</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>Services.Response</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="services.csr.CSR.templateEmails_read">
+<code class="sig-name descname"><span class="pre">templateEmails_read</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sesh</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#services.csr.CSR.templateEmails_read" title="Permalink to this definition">¶</a></dt>
+<dd><p>Template Emails</p>
+<p>Fetches all existing email templates</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>data</strong> (<em>mixed</em>) – Data sent with the request</p></li>
+<li><p><strong>sesh</strong> (<em>Sesh._Session</em>) – The session associated with the request</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>Services.Response</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="services.csr.CSR.templateSms_create">
+<code class="sig-name descname"><span class="pre">templateSms_create</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sesh</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#services.csr.CSR.templateSms_create" title="Permalink to this definition">¶</a></dt>
+<dd><p>Template Sms Create</p>
+<p>Create a new sms template</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>data</strong> (<em>mixed</em>) – Data sent with the request</p></li>
+<li><p><strong>sesh</strong> (<em>Sesh._Session</em>) – The session associated with the request</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>Services.Response</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="services.csr.CSR.templateSms_delete">
+<code class="sig-name descname"><span class="pre">templateSms_delete</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sesh</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#services.csr.CSR.templateSms_delete" title="Permalink to this definition">¶</a></dt>
+<dd><p>Template Sms Delete</p>
+<p>Delete an existing sms template</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>data</strong> (<em>mixed</em>) – Data sent with the request</p></li>
+<li><p><strong>sesh</strong> (<em>Sesh._Session</em>) – The session associated with the request</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>Services.Response</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="services.csr.CSR.templateSms_read">
+<code class="sig-name descname"><span class="pre">templateSms_read</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sesh</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#services.csr.CSR.templateSms_read" title="Permalink to this definition">¶</a></dt>
+<dd><p>Template Sms Read</p>
+<p>Fetches an existing sms template</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>data</strong> (<em>mixed</em>) – Data sent with the request</p></li>
+<li><p><strong>sesh</strong> (<em>Sesh._Session</em>) – The session associated with the request</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>Services.Response</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="services.csr.CSR.templateSms_update">
+<code class="sig-name descname"><span class="pre">templateSms_update</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sesh</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#services.csr.CSR.templateSms_update" title="Permalink to this definition">¶</a></dt>
+<dd><p>Template Sms Update</p>
+<p>Updated an existing sms template</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>data</strong> (<em>mixed</em>) – Data sent with the request</p></li>
+<li><p><strong>sesh</strong> (<em>Sesh._Session</em>) – The session associated with the request</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>Services.Response</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="services.csr.CSR.templateSmss_read">
+<code class="sig-name descname"><span class="pre">templateSmss_read</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sesh</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#services.csr.CSR.templateSmss_read" title="Permalink to this definition">¶</a></dt>
+<dd><p>Template SMSs</p>
+<p>Fetches all existing sms templates</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>data</strong> (<em>mixed</em>) – Data sent with the request</p></li>
+<li><p><strong>sesh</strong> (<em>Sesh._Session</em>) – The session associated with the request</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>Services.Response</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+
+
+           </div>
+           
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &#169; Copyright 2021, MaleExcelMedical.
+
+    </p>
+  </div>
+    
+    
+    
+    Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    
+    provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+
+  
+  
+    
+   
+
+</body>
+</html>

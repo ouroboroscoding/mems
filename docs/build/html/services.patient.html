@@ -1,0 +1,577 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" />
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  
+  <title>services.patient module &mdash; MeMS 1.50 documentation</title>
+  
+
+  
+  <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+
+  
+  
+
+  
+  
+
+  
+
+  
+  <!--[if lt IE 9]>
+    <script src="_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+    
+      <script type="text/javascript" id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
+        <script src="_static/jquery.js"></script>
+        <script src="_static/underscore.js"></script>
+        <script src="_static/doctools.js"></script>
+    
+    <script type="text/javascript" src="_static/js/theme.js"></script>
+
+    
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" /> 
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+          
+
+          
+            <a href="index.html" class="icon icon-home"> MeMS
+          
+
+          
+          </a>
+
+          
+            
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <!-- Local TOC -->
+              <div class="local-toc"><ul>
+<li><a class="reference internal" href="#">services.patient module</a></li>
+</ul>
+</div>
+            
+          
+        </div>
+        
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">MeMS</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="index.html" class="icon icon-home"></a> &raquo;</li>
+        
+      <li>services.patient module</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+          
+            <a href="_sources/services.patient.rst.txt" rel="nofollow"> View page source</a>
+          
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <div class="section" id="module-services.patient">
+<span id="services-patient-module"></span><h1>services.patient module<a class="headerlink" href="#module-services.patient" title="Permalink to this headline">¶</a></h1>
+<p>Patient Service</p>
+<p>Handles all Patient (person associated with customer) requests</p>
+<dl class="py class">
+<dt id="services.patient.Patient">
+<em class="property"><span class="pre">class</span> </em><code class="sig-prename descclassname"><span class="pre">services.patient.</span></code><code class="sig-name descname"><span class="pre">Patient</span></code><a class="headerlink" href="#services.patient.Patient" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">RestOC.Services.Service</span></code></p>
+<p>Patient Service class</p>
+<p>Service for Patientorization, sign in, sign up, etc.</p>
+<dl class="py method">
+<dt id="services.patient.Patient.accountByCRM_read">
+<code class="sig-name descname"><span class="pre">accountByCRM_read</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sesh</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#services.patient.Patient.accountByCRM_read" title="Permalink to this definition">¶</a></dt>
+<dd><p>Account By CRM</p>
+<p>Returns the ID of the patient account by looking it up from their CRM
+details</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>data</strong> (<em>dict</em>) – Data sent with the request</p></li>
+<li><p><strong>sesh</strong> (<em>Sesh._Session</em>) – The session associated with the request</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>Services.Response</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="services.patient.Patient.accountEmail_update">
+<code class="sig-name descname"><span class="pre">accountEmail_update</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sesh</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#services.patient.Patient.accountEmail_update" title="Permalink to this definition">¶</a></dt>
+<dd><p>Account Email Update</p>
+<p>Changes the accounts email address</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>data</strong> (<em>dict</em>) – Data sent with the request</p></li>
+<li><p><strong>sesh</strong> (<em>Sesh._Session</em>) – The session associated with the request</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>Services.Response</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="services.patient.Patient.accountForgot_create">
+<code class="sig-name descname"><span class="pre">accountForgot_create</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#services.patient.Patient.accountForgot_create" title="Permalink to this definition">¶</a></dt>
+<dd><p>Account Password Forgot (Generate)</p>
+<p>Creates the key that will be used to allow a patient to change their
+password if they forgot it</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>data</strong> (<em>dict</em>) – Data sent with the request</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>Services.Response</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="services.patient.Patient.accountForgot_update">
+<code class="sig-name descname"><span class="pre">accountForgot_update</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#services.patient.Patient.accountForgot_update" title="Permalink to this definition">¶</a></dt>
+<dd><p>Account Password Forgot (Change Password)</p>
+<p>Validates the key and changes the password to the given value</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>data</strong> (<em>dict</em>) – Data sent with the request</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>Services.Response</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="services.patient.Patient.accountPayment_update">
+<code class="sig-name descname"><span class="pre">accountPayment_update</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sesh</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#services.patient.Patient.accountPayment_update" title="Permalink to this definition">¶</a></dt>
+<dd><p>Account Payment</p>
+<p>Updates the payment source associated with the patient</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>data</strong> (<em>dict</em>) – Data sent with the request</p></li>
+<li><p><strong>sesh</strong> (<em>Sesh._Session</em>) – The session associated with the request</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>Services.Response</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="services.patient.Patient.accountPhone_update">
+<code class="sig-name descname"><span class="pre">accountPhone_update</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sesh</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#services.patient.Patient.accountPhone_update" title="Permalink to this definition">¶</a></dt>
+<dd><p>Account Phone Update</p>
+<p>Handles the patient changing their phone number</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>data</strong> (<em>dict</em>) – Data sent with the request</p></li>
+<li><p><strong>sesh</strong> (<em>Sesh._Session</em>) – The session associated with the request</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>Services.Response</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="services.patient.Patient.accountRx_update">
+<code class="sig-name descname"><span class="pre">accountRx_update</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sesh</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#services.patient.Patient.accountRx_update" title="Permalink to this definition">¶</a></dt>
+<dd><p>Account RX Update</p>
+<p>Allows setting of RX type/ID after account creation</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>data</strong> (<em>dict</em>) – Data sent with the request</p></li>
+<li><p><strong>sesh</strong> (<em>Sesh._Session</em>) – The session associated with the request</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>Services.Response</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="services.patient.Patient.accountVerify_update">
+<code class="sig-name descname"><span class="pre">accountVerify_update</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#services.patient.Patient.accountVerify_update" title="Permalink to this definition">¶</a></dt>
+<dd><p>Account Veverify</p>
+<p>Validates the email via key and marks the acccount as verified</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>data</strong> (<em>dict</em>) – Data sent with the request</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>Services.Response</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="services.patient.Patient.account_create">
+<code class="sig-name descname"><span class="pre">account_create</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sesh</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#services.patient.Patient.account_create" title="Permalink to this definition">¶</a></dt>
+<dd><p>Account Create</p>
+<p>Creates a new patient portal account and sends the signup email</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>data</strong> (<em>dict</em>) – Data sent with the request</p></li>
+<li><p><strong>sesh</strong> (<em>Sesh._Session</em>) – The session associated with the request</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>Services.Response</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="services.patient.Patient.account_read">
+<code class="sig-name descname"><span class="pre">account_read</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sesh</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#services.patient.Patient.account_read" title="Permalink to this definition">¶</a></dt>
+<dd><p>Account Read</p>
+<p>Returns the account data associated with the signed in user</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>data</strong> (<em>dict</em>) – Data sent with the request</p></li>
+<li><p><strong>sesh</strong> (<em>Sesh._Session</em>) – The session associated with the request</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>Services.Response</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="services.patient.Patient.initialise">
+<code class="sig-name descname"><span class="pre">initialise</span></code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#services.patient.Patient.initialise" title="Permalink to this definition">¶</a></dt>
+<dd><p>Initialise</p>
+<p>Initialises the instance and returns itself for chaining</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>Patient</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="services.patient.Patient.install">
+<em class="property"><span class="pre">classmethod</span> </em><code class="sig-name descname"><span class="pre">install</span></code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#services.patient.Patient.install" title="Permalink to this definition">¶</a></dt>
+<dd><p>Install</p>
+<p>The service’s install method, used to setup storage or other one time
+install configurations</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>bool</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="services.patient.Patient.session_read">
+<code class="sig-name descname"><span class="pre">session_read</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sesh</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#services.patient.Patient.session_read" title="Permalink to this definition">¶</a></dt>
+<dd><p>Session</p>
+<p>Returns the ID of the patient logged into the current session</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>data</strong> (<em>dict</em>) – Data sent with the request</p></li>
+<li><p><strong>sesh</strong> (<em>Sesh._Session</em>) – The session associated with the request</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>Services.Response</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="services.patient.Patient.setupAttempts_read">
+<code class="sig-name descname"><span class="pre">setupAttempts_read</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sesh</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#services.patient.Patient.setupAttempts_read" title="Permalink to this definition">¶</a></dt>
+<dd><p>Setup Attempts</p>
+<p>Returns the list of failed setup attempts on a specific key</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>data</strong> (<em>dict</em>) – Data sent with the request</p></li>
+<li><p><strong>sesh</strong> (<em>Sesh._Session</em>) – The session associated with the request</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>Services.Response</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="services.patient.Patient.setupReset_update">
+<code class="sig-name descname"><span class="pre">setupReset_update</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sesh</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#services.patient.Patient.setupReset_update" title="Permalink to this definition">¶</a></dt>
+<dd><p>Setup Reset</p>
+<p>Resets the attempt count on the setup account so the patient can
+try again</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>data</strong> (<em>dict</em>) – Data sent with the request</p></li>
+<li><p><strong>sesh</strong> (<em>Sesh._Session</em>) – The session associated with the request</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>Services.Response</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="services.patient.Patient.setupStart_create">
+<code class="sig-name descname"><span class="pre">setupStart_create</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sesh</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#services.patient.Patient.setupStart_create" title="Permalink to this definition">¶</a></dt>
+<dd><p>Setup Start</p>
+<p>Creates a record used in starting the process to create a customer
+patient login account, then sends out an email to the customer to
+get them to verify themselves</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>data</strong> (<em>dict</em>) – Data sent with the request</p></li>
+<li><p><strong>sesh</strong> (<em>Sesh._Session</em>) – The session associated with the request</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>Services.Response</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="services.patient.Patient.setupUpdate_update">
+<code class="sig-name descname"><span class="pre">setupUpdate_update</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sesh</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#services.patient.Patient.setupUpdate_update" title="Permalink to this definition">¶</a></dt>
+<dd><p>Account Setup Update</p>
+<p>Updates the setup data in an existing record</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>data</strong> (<em>dict</em>) – Data sent with the request</p></li>
+<li><p><strong>sesh</strong> (<em>Sesh._Session</em>) – The session associated with the request</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>Services.Response</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="services.patient.Patient.setupValidate_create">
+<code class="sig-name descname"><span class="pre">setupValidate_create</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#services.patient.Patient.setupValidate_create" title="Permalink to this definition">¶</a></dt>
+<dd><p>Setup Update</p>
+<p>Checks the passed key against the setup table to make sure the patient
+is who they say they are,</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>data</strong> (<em>dict</em>) – Data sent with the request</p></li>
+<li><p><strong>sesh</strong> (<em>Sesh._Session</em>) – The session associated with the request</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>Services.Response</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="services.patient.Patient.signin_create">
+<code class="sig-name descname"><span class="pre">signin_create</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">environ</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#services.patient.Patient.signin_create" title="Permalink to this definition">¶</a></dt>
+<dd><p>Signin</p>
+<p>Signs a patient into the system</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>data</strong> (<em>dict</em>) – The data passed to the request</p></li>
+<li><p><strong>environ</strong> (<em>dict</em>) – Info related to the request</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>Result</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="services.patient.Patient.signout_create">
+<code class="sig-name descname"><span class="pre">signout_create</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sesh</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#services.patient.Patient.signout_create" title="Permalink to this definition">¶</a></dt>
+<dd><p>Signout</p>
+<p>Called to sign out a patient and destroy their session</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>data</strong> (<em>dict</em>) – Data sent with the request</p></li>
+<li><p><strong>sesh</strong> (<em>Sesh._Session</em>) – The session associated with the account</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>Services.Response</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="services.patient.Patient.supportRequest_create">
+<code class="sig-name descname"><span class="pre">supportRequest_create</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sesh</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#services.patient.Patient.supportRequest_create" title="Permalink to this definition">¶</a></dt>
+<dd><p>Support Request</p>
+<p>A patient is requesting support contact them</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>data</strong> (<em>dict</em>) – Data sent with the request</p></li>
+<li><p><strong>sesh</strong> (<em>Sesh._Session</em>) – The session associated with the account</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>Services.Response</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+
+
+           </div>
+           
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &#169; Copyright 2021, MaleExcelMedical.
+
+    </p>
+  </div>
+    
+    
+    
+    Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    
+    provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+
+  
+  
+    
+   
+
+</body>
+</html>

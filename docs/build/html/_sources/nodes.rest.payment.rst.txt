@@ -1,0 +1,7 @@
+nodes.rest.payment module
+=========================
+
+.. automodule:: nodes.rest.payment
+   :members:
+   :undoc-members:
+   :show-inheritance:

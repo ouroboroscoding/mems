@@ -1,0 +1,7 @@
+nodes.rest.products module
+==========================
+
+.. automodule:: nodes.rest.products
+   :members:
+   :undoc-members:
+   :show-inheritance:

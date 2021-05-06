@@ -1,0 +1,26 @@
+tools package
+=============
+
+Submodules
+----------
+
+.. toctree::
+   :maxdepth: 4
+
+   tools.allergies
+   tools.fake_msg
+   tools.no_eligibility
+   tools.passwd
+   tools.pharmacy_switch
+   tools.prescriptions
+   tools.trigger
+   tools.triggers
+   tools.update_shipping
+
+Module contents
+---------------
+
+.. automodule:: tools
+   :members:
+   :undoc-members:
+   :show-inheritance:

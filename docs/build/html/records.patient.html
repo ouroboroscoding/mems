@@ -1,0 +1,405 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" />
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  
+  <title>records.patient module &mdash; MeMS 1.50 documentation</title>
+  
+
+  
+  <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+
+  
+  
+
+  
+  
+
+  
+
+  
+  <!--[if lt IE 9]>
+    <script src="_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+    
+      <script type="text/javascript" id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
+        <script src="_static/jquery.js"></script>
+        <script src="_static/underscore.js"></script>
+        <script src="_static/doctools.js"></script>
+    
+    <script type="text/javascript" src="_static/js/theme.js"></script>
+
+    
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" /> 
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+          
+
+          
+            <a href="index.html" class="icon icon-home"> MeMS
+          
+
+          
+          </a>
+
+          
+            
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <!-- Local TOC -->
+              <div class="local-toc"><ul>
+<li><a class="reference internal" href="#">records.patient module</a></li>
+</ul>
+</div>
+            
+          
+        </div>
+        
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">MeMS</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="index.html" class="icon icon-home"></a> &raquo;</li>
+        
+      <li>records.patient module</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+          
+            <a href="_sources/records.patient.rst.txt" rel="nofollow"> View page source</a>
+          
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <div class="section" id="module-records.patient">
+<span id="records-patient-module"></span><h1>records.patient module<a class="headerlink" href="#module-records.patient" title="Permalink to this headline">¶</a></h1>
+<p>Patient Records</p>
+<p>Handles the record structures for the patient service</p>
+<dl class="py class">
+<dt id="records.patient.Account">
+<em class="property"><span class="pre">class</span> </em><code class="sig-prename descclassname"><span class="pre">records.patient.</span></code><code class="sig-name descname"><span class="pre">Account</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">record</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">{}</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">custom</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">{}</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#records.patient.Account" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">RestOC.Record_MySQL.Record</span></code></p>
+<p>Represents a single patient in the system</p>
+<dl class="py method">
+<dt id="records.patient.Account.cache">
+<em class="property"><span class="pre">classmethod</span> </em><code class="sig-name descname"><span class="pre">cache</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">_id</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">raw</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#records.patient.Account.cache" title="Permalink to this definition">¶</a></dt>
+<dd><p>Cache</p>
+<p>Fetches the Users from the cache and returns them</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>_id</strong> (<em>str|str</em><em>[</em><em>]</em>) – The ID(s) to fetch</p></li>
+<li><p><strong>raw</strong> (<em>bool</em>) – Return raw records or Users</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>Account|Account[]|dict|dict[]</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="records.patient.Account.cacheClear">
+<em class="property"><span class="pre">classmethod</span> </em><code class="sig-name descname"><span class="pre">cacheClear</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">_id</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#records.patient.Account.cacheClear" title="Permalink to this definition">¶</a></dt>
+<dd><p>Cache Clear</p>
+<p>Removes a user from the cache</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>_id</strong> (<em>str</em>) – The ID of the user to remove</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>None</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="records.patient.Account.config">
+<em class="property"><span class="pre">classmethod</span> </em><code class="sig-name descname"><span class="pre">config</span></code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#records.patient.Account.config" title="Permalink to this definition">¶</a></dt>
+<dd><p>Config</p>
+<p>Returns the configuration data associated with the record type</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>dict</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="records.patient.Account.passwordHash">
+<em class="property"><span class="pre">static</span> </em><code class="sig-name descname"><span class="pre">passwordHash</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">passwd</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#records.patient.Account.passwordHash" title="Permalink to this definition">¶</a></dt>
+<dd><p>Password Hash</p>
+<p>Returns a hashed password with a unique salt</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>passwd</strong> (<em>str</em>) – The password to hash</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>str</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="records.patient.Account.passwordStrength">
+<em class="property"><span class="pre">classmethod</span> </em><code class="sig-name descname"><span class="pre">passwordStrength</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">passwd</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#records.patient.Account.passwordStrength" title="Permalink to this definition">¶</a></dt>
+<dd><p>Password Strength</p>
+<p>Returns true if a password is secure enough</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>passwd</strong> (<em>str</em>) – The password to check</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>bool</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="records.patient.Account.passwordValidate">
+<code class="sig-name descname"><span class="pre">passwordValidate</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">passwd</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#records.patient.Account.passwordValidate" title="Permalink to this definition">¶</a></dt>
+<dd><p>Password Validate</p>
+<p>Validates the given password against the current instance</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>passwd</strong> (<em>str</em>) – The password to validate</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>bool</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="records.patient.Account.redis">
+<em class="property"><span class="pre">classmethod</span> </em><code class="sig-name descname"><span class="pre">redis</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">redis</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#records.patient.Account.redis" title="Permalink to this definition">¶</a></dt>
+<dd><p>Redis</p>
+<p>Stores the Redis connection to be used to fetch and store Users</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>redis</strong> (<em>StrictRedis</em>) – A Redis instance</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>None</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt id="records.patient.AccountSetup">
+<em class="property"><span class="pre">class</span> </em><code class="sig-prename descclassname"><span class="pre">records.patient.</span></code><code class="sig-name descname"><span class="pre">AccountSetup</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">record</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">{}</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">custom</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">{}</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#records.patient.AccountSetup" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">RestOC.Record_MySQL.Record</span></code></p>
+<p>Represents the initial starting of a patient user record</p>
+<dl class="py method">
+<dt id="records.patient.AccountSetup.config">
+<em class="property"><span class="pre">classmethod</span> </em><code class="sig-name descname"><span class="pre">config</span></code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#records.patient.AccountSetup.config" title="Permalink to this definition">¶</a></dt>
+<dd><p>Config</p>
+<p>Returns the configuration data associated with the record type</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>dict</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt id="records.patient.AccountSetupAttempt">
+<em class="property"><span class="pre">class</span> </em><code class="sig-prename descclassname"><span class="pre">records.patient.</span></code><code class="sig-name descname"><span class="pre">AccountSetupAttempt</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">record</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">{}</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">custom</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">{}</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#records.patient.AccountSetupAttempt" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">RestOC.Record_MySQL.Record</span></code></p>
+<p>Represents a failed attempt to setup a patient account</p>
+<dl class="py method">
+<dt id="records.patient.AccountSetupAttempt.config">
+<em class="property"><span class="pre">classmethod</span> </em><code class="sig-name descname"><span class="pre">config</span></code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#records.patient.AccountSetupAttempt.config" title="Permalink to this definition">¶</a></dt>
+<dd><p>Config</p>
+<p>Returns the configuration data associated with the record type</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>dict</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt id="records.patient.Activity">
+<em class="property"><span class="pre">class</span> </em><code class="sig-prename descclassname"><span class="pre">records.patient.</span></code><code class="sig-name descname"><span class="pre">Activity</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">record</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">{}</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">custom</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">{}</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#records.patient.Activity" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">RestOC.Record_MySQL.Record</span></code></p>
+<p>Represents an action by a patient</p>
+<dl class="py method">
+<dt id="records.patient.Activity.config">
+<em class="property"><span class="pre">classmethod</span> </em><code class="sig-name descname"><span class="pre">config</span></code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#records.patient.Activity.config" title="Permalink to this definition">¶</a></dt>
+<dd><p>Config</p>
+<p>Returns the configuration data associated with the record type</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>dict</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt id="records.patient.Verify">
+<em class="property"><span class="pre">class</span> </em><code class="sig-prename descclassname"><span class="pre">records.patient.</span></code><code class="sig-name descname"><span class="pre">Verify</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">record</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">{}</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">custom</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">{}</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#records.patient.Verify" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">RestOC.Record_MySQL.Record</span></code></p>
+<p>Represents an attempt to reset a forgotten password</p>
+<dl class="py method">
+<dt id="records.patient.Verify.config">
+<em class="property"><span class="pre">classmethod</span> </em><code class="sig-name descname"><span class="pre">config</span></code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#records.patient.Verify.config" title="Permalink to this definition">¶</a></dt>
+<dd><p>Config</p>
+<p>Returns the configuration data associated with the record type</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>dict</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="records.patient.Verify.delete">
+<code class="sig-name descname"><span class="pre">delete</span></code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#records.patient.Verify.delete" title="Permalink to this definition">¶</a></dt>
+<dd><p>Delete</p>
+<p>Overrides base delete since there’s no primary key</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>uint</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+
+
+           </div>
+           
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &#169; Copyright 2021, MaleExcelMedical.
+
+    </p>
+  </div>
+    
+    
+    
+    Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    
+    provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+
+  
+  
+    
+   
+
+</body>
+</html>

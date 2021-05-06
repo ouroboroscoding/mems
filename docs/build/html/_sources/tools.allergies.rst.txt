@@ -1,0 +1,7 @@
+tools.allergies module
+======================
+
+.. automodule:: tools.allergies
+   :members:
+   :undoc-members:
+   :show-inheritance:

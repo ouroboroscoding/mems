@@ -20,21 +20,24 @@ from services.qualmed import QualMed
 # Local imports
 from . import init
 
-# Init the REST info
-oRestConf = init(
-	dbs=['primary'],
-	services={'qualmed':QualMed()}
-)
+# Only run if called directly
+if __name__ == "__main__":
 
-# Create the HTTP server and map requests to service
-REST.Server({
+	# Init the REST info
+	oRestConf = init(
+		dbs=['primary'],
+		services={'qualmed':QualMed()}
+	)
 
-	"/item": {"methods": REST.ALL, "session": True},
-	"/items": {"methods": REST.READ, "session": True}
+	# Create the HTTP server and map requests to service
+	REST.Server({
 
-}, 'qualmed', "https?://(.*\\.)?%s" % Conf.get(("rest","allowed")).replace('.', '\\.')).run(
-	host=oRestConf['qualmed']['host'],
-	port=oRestConf['qualmed']['port'],
-	workers=oRestConf['qualmed']['workers'],
-	timeout='timeout' in oRestConf['qualmed'] and oRestConf['qualmed']['timeout'] or 30
-)
+		"/item": {"methods": REST.ALL, "session": True},
+		"/items": {"methods": REST.READ, "session": True}
+
+	}, 'qualmed', "https?://(.*\\.)?%s" % Conf.get(("rest","allowed")).replace('.', '\\.')).run(
+		host=oRestConf['qualmed']['host'],
+		port=oRestConf['qualmed']['port'],
+		workers=oRestConf['qualmed']['workers'],
+		timeout='timeout' in oRestConf['qualmed'] and oRestConf['qualmed']['timeout'] or 30
+	)

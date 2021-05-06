@@ -20,18 +20,21 @@ from services.justcall import JustCall
 # Local imports
 from . import init
 
-# Init the REST info
-oRestConf = init(
-	services={'justcall':JustCall()}
-)
+# Only run if called directly
+if __name__ == "__main__":
 
-# Create the HTTP server and map requests to service
-REST.Server({
-	"/logs": {"methods": REST.READ, "session": True}
+	# Init the REST info
+	oRestConf = init(
+		services={'justcall':JustCall()}
+	)
 
-}, 'justcall', "https?://(.*\\.)?%s" % Conf.get(("rest","allowed")).replace('.', '\\.')).run(
-	host=oRestConf['justcall']['host'],
-	port=oRestConf['justcall']['port'],
-	workers=oRestConf['justcall']['workers'],
-	timeout='timeout' in oRestConf['justcall'] and oRestConf['justcall']['timeout'] or 30
-)
+	# Create the HTTP server and map requests to service
+	REST.Server({
+		"/logs": {"methods": REST.READ, "session": True}
+
+	}, 'justcall', "https?://(.*\\.)?%s" % Conf.get(("rest","allowed")).replace('.', '\\.')).run(
+		host=oRestConf['justcall']['host'],
+		port=oRestConf['justcall']['port'],
+		workers=oRestConf['justcall']['workers'],
+		timeout='timeout' in oRestConf['justcall'] and oRestConf['justcall']['timeout'] or 30
+	)

@@ -20,21 +20,24 @@ from services.reports import Reports
 # Local imports
 from . import init
 
-# Init the REST info
-oRestConf = init(
-	dbs=['primary'],
-	services={'reports':Reports()}
-)
+# Only run if called directly
+if __name__ == "__main__":
 
-# Create the HTTP server and map requests to service
-REST.Server({
+	# Init the REST info
+	oRestConf = init(
+		dbs=['primary'],
+		services={'reports':Reports()}
+	)
 
-	"/recipients": {"methods": REST.ALL, "session": True},
-	"/recipients/internal": {"methods": REST.READ}
+	# Create the HTTP server and map requests to service
+	REST.Server({
 
-}, 'reports', "https?://(.*\\.)?%s" % Conf.get(("rest","allowed")).replace('.', '\\.')).run(
-	host=oRestConf['reports']['host'],
-	port=oRestConf['reports']['port'],
-	workers=oRestConf['reports']['workers'],
-	timeout='timeout' in oRestConf['reports'] and oRestConf['reports']['timeout'] or 30
-)
+		"/recipients": {"methods": REST.ALL, "session": True},
+		"/recipients/internal": {"methods": REST.READ}
+
+	}, 'reports', "https?://(.*\\.)?%s" % Conf.get(("rest","allowed")).replace('.', '\\.')).run(
+		host=oRestConf['reports']['host'],
+		port=oRestConf['reports']['port'],
+		workers=oRestConf['reports']['workers'],
+		timeout='timeout' in oRestConf['reports'] and oRestConf['reports']['timeout'] or 30
+	)

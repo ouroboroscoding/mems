@@ -71,6 +71,6 @@ if __name__ == "__main__":
 		}, raw=['ref', 'value'])
 
 		print(lAnswers)
-			lAnswers = [d['value'] for d in lAnswers]
+		lAnswers = [d['value'] for d in lAnswers]
 
 	print('Answers: %s' % ', '.join(lAnswers))
