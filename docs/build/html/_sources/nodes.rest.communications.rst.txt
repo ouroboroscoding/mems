@@ -1,0 +1,7 @@
+nodes.rest.communications module
+================================
+
+.. automodule:: nodes.rest.communications
+   :members:
+   :undoc-members:
+   :show-inheritance:

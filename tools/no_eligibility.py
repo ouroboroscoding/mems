@@ -22,48 +22,51 @@ from RestOC import Conf, Record_Base, Record_MySQL
 # Record imports
 from records.welldyne import Eligibility
 
-# Load the config
-Conf.load('config.json')
-sConfOverride = 'config.%s.json' % platform.node()
-if os.path.isfile(sConfOverride):
-	Conf.load_merge(sConfOverride)
+# Only run if called directly
+if __name__ == "__main__":
 
-# Add the global prepend and primary host to mysql
-Record_Base.dbPrepend(Conf.get(("mysql", "prepend"), ''))
-Record_MySQL.addHost('monolith', Conf.get(("mysql", "hosts", "monolith_read")))
+	# Load the config
+	Conf.load('config.json')
+	sConfOverride = 'config.%s.json' % platform.node()
+	if os.path.isfile(sConfOverride):
+		Conf.load_merge(sConfOverride)
 
-# Start the new list
-lLines = []
+	# Add the global prepend and primary host to mysql
+	Record_Base.dbPrepend(Conf.get(("mysql", "prepend"), ''))
+	Record_MySQL.addHost('monolith', Conf.get(("mysql", "hosts", "monolith_read")))
 
-# Open the initial eligibility file
-with open(sys.argv[1], 'r') as oIn:
+	# Start the new list
+	lLines = []
 
-	# Open the file to write to
-	with open('./NO_ELIGIBILITY.TXT', 'w') as oOut:
+	# Open the initial eligibility file
+	with open(sys.argv[1], 'r') as oIn:
 
-		# Init count
-		iCount = 0
+		# Open the file to write to
+		with open('./NO_ELIGIBILITY.TXT', 'w') as oOut:
 
-		# Go through each line
-		for sLine in oIn:
+			# Init count
+			iCount = 0
 
-			iCount += 1
-			print('\r%d' % iCount, end='')
+			# Go through each line
+			for sLine in oIn:
 
-			# Get the member ID
-			sMember = sLine[15:21].lstrip('0')
+				iCount += 1
+				print('\r%d' % iCount, end='')
 
-			# Check eligibility
-			dElig = Eligibility.filter({"customerId": sMember}, raw=True, limit=1)
+				# Get the member ID
+				sMember = sLine[15:21].lstrip('0')
 
-			# If we have none, or it's 0000-00-00
-			if not dElig or dElig['memberThru'] == '0000-00-00 00:00:00':
+				# Check eligibility
+				dElig = Eligibility.filter({"customerId": sMember}, raw=True, limit=1)
 
-				# Generate the line
-				sLine = '%s%s%s' % (sLine[0:313], '20200601', sLine[321:])
+				# If we have none, or it's 0000-00-00
+				if not dElig or dElig['memberThru'] == '0000-00-00 00:00:00':
 
-				# Add to the output
-				oOut.write(sLine)
-				oOut.flush()
+					# Generate the line
+					sLine = '%s%s%s' % (sLine[0:313], '20200601', sLine[321:])
 
-print(' done')
+					# Add to the output
+					oOut.write(sLine)
+					oOut.flush()
+
+	print(' done')

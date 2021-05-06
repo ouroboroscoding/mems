@@ -20,25 +20,28 @@ from services.customers import Customers
 # Local imports
 from . import init
 
-# Init the REST info
-oRestConf = init(
-	dbs=['primary'],
-	services={'customers':Customers()}
-)
+# Only run if called directly
+if __name__ == "__main__":
 
-# Create the HTTP server and map requests to service
-REST.Server({
+	# Init the REST info
+	oRestConf = init(
+		dbs=['primary'],
+		services={'customers':Customers()}
+	)
 
-	"/address": {"methods": REST.CREATE | REST.READ | REST.UPDATE, "session": True},
-	"/customer": {"methods": REST.CREATE | REST.READ | REST.UPDATE, "session": True},
-	"/customer/addresses": {"methods": REST.READ, "session": True},
-	"/customer/notes": {"methods": REST.READ, "session": True},
-	"/note": {"methods": REST.CREATE, "session": True},
-	"/search": {"methods": REST.READ, "session": True}
+	# Create the HTTP server and map requests to service
+	REST.Server({
 
-}, 'customers', "https?://(.*\\.)?%s" % Conf.get(("rest","allowed")).replace('.', '\\.')).run(
-	host=oRestConf['customers']['host'],
-	port=oRestConf['customers']['port'],
-	workers=oRestConf['customers']['workers'],
-	timeout='timeout' in oRestConf['customers'] and oRestConf['customers']['timeout'] or 30
-)
+		"/address": {"methods": REST.CREATE | REST.READ | REST.UPDATE, "session": True},
+		"/customer": {"methods": REST.CREATE | REST.READ | REST.UPDATE, "session": True},
+		"/customer/addresses": {"methods": REST.READ, "session": True},
+		"/customer/notes": {"methods": REST.READ, "session": True},
+		"/note": {"methods": REST.CREATE, "session": True},
+		"/search": {"methods": REST.READ, "session": True}
+
+	}, 'customers', "https?://(.*\\.)?%s" % Conf.get(("rest","allowed")).replace('.', '\\.')).run(
+		host=oRestConf['customers']['host'],
+		port=oRestConf['customers']['port'],
+		workers=oRestConf['customers']['workers'],
+		timeout='timeout' in oRestConf['customers'] and oRestConf['customers']['timeout'] or 30
+	)

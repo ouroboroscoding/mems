@@ -1,0 +1,7 @@
+nodes.rest.prescriptions module
+===============================
+
+.. automodule:: nodes.rest.prescriptions
+   :members:
+   :undoc-members:
+   :show-inheritance:

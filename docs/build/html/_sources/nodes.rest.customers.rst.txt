@@ -1,0 +1,7 @@
+nodes.rest.customers module
+===========================
+
+.. automodule:: nodes.rest.customers
+   :members:
+   :undoc-members:
+   :show-inheritance:

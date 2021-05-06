@@ -20,37 +20,40 @@ from services.welldyne import WellDyne
 # Local imports
 from . import init
 
-# Init the REST info
-oRestConf = init(
-	dbs=['primary', 'monolith'],
-	services={'welldyne':WellDyne()}
-)
+# Only run if called directly
+if __name__ == "__main__":
 
-# Create the HTTP server and map requests to service
-REST.Server({
+	# Init the REST info
+	oRestConf = init(
+		dbs=['primary', 'monolith'],
+		services={'welldyne':WellDyne()}
+	)
 
-	"/adhoc": {"methods": REST.CREATE | REST.DELETE, "session": True},
-	"/adhoc/manual": {"methods": REST.READ | REST.DELETE, "session": True},
-	"/adhocs": {"methods": REST.READ, "session": True},
+	# Create the HTTP server and map requests to service
+	REST.Server({
 
-	"/never/started": {"methods": REST.DELETE, "session": True},
-	"/never/started/poll": {"methods": REST.UPDATE, "session": True},
-	"/never/started/ready": {"methods": REST.UPDATE, "session": True},
-	"/never/starteds": {"methods": REST.READ, "session": True},
+		"/adhoc": {"methods": REST.CREATE | REST.DELETE, "session": True},
+		"/adhoc/manual": {"methods": REST.READ | REST.DELETE, "session": True},
+		"/adhocs": {"methods": REST.READ, "session": True},
 
-	"/outbound/adhoc": {"methods": REST.UPDATE, "session": True},
-	"/outbound/ready": {"methods": REST.UPDATE, "session": True},
-	"/outbounds": {"methods": REST.READ, "session": True},
+		"/never/started": {"methods": REST.DELETE, "session": True},
+		"/never/started/poll": {"methods": REST.UPDATE, "session": True},
+		"/never/started/ready": {"methods": REST.UPDATE, "session": True},
+		"/never/starteds": {"methods": REST.READ, "session": True},
 
-	"/postback": {"methods": REST.CREATE, "environ": True},
+		"/outbound/adhoc": {"methods": REST.UPDATE, "session": True},
+		"/outbound/ready": {"methods": REST.UPDATE, "session": True},
+		"/outbounds": {"methods": REST.READ, "session": True},
 
-	"/stats": {"methods": REST.READ, "session": True},
+		"/postback": {"methods": REST.CREATE, "environ": True},
 
-	"/trigger/info": {"methods": REST.READ, "session": True}
+		"/stats": {"methods": REST.READ, "session": True},
 
-}, 'welldyne', "https?://(.*\\.)?%s" % Conf.get(("rest","allowed")).replace('.', '\\.')).run(
-	host=oRestConf['welldyne']['host'],
-	port=oRestConf['welldyne']['port'],
-	workers=oRestConf['welldyne']['workers'],
-	timeout='timeout' in oRestConf['welldyne'] and oRestConf['welldyne']['timeout'] or 30
-)
+		"/trigger/info": {"methods": REST.READ, "session": True}
+
+	}, 'welldyne', "https?://(.*\\.)?%s" % Conf.get(("rest","allowed")).replace('.', '\\.')).run(
+		host=oRestConf['welldyne']['host'],
+		port=oRestConf['welldyne']['port'],
+		workers=oRestConf['welldyne']['workers'],
+		timeout='timeout' in oRestConf['welldyne'] and oRestConf['welldyne']['timeout'] or 30
+	)

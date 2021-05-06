@@ -1,0 +1,7 @@
+nodes.rest.patient module
+=========================
+
+.. automodule:: nodes.rest.patient
+   :members:
+   :undoc-members:
+   :show-inheritance:

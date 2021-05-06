@@ -1,0 +1,7 @@
+tools.update\_shipping module
+=============================
+
+.. automodule:: tools.update_shipping
+   :members:
+   :undoc-members:
+   :show-inheritance:

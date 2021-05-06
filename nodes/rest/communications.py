@@ -21,34 +21,37 @@ from RestOC import Conf, REST, Services, SMTP
 # App imports
 from services.communications import Service as Communications
 
-# Load the config
-Conf.load('config.json')
-sConfOverride = 'config.%s.json' % platform.node()
-if os.path.isfile(sConfOverride):
-	Conf.load_merge(sConfOverride)
+# Only run if called directly
+if __name__ == "__main__":
 
-# Init the SMTP module
-SMTP.init(**Conf.get(('email', 'smtp')))
+	# Load the config
+	Conf.load('config.json')
+	sConfOverride = 'config.%s.json' % platform.node()
+	if os.path.isfile(sConfOverride):
+		Conf.load_merge(sConfOverride)
 
-# Create the REST config instance
-oRestConf = REST.Config(Conf.get("rest"))
+	# Init the SMTP module
+	SMTP.init(**Conf.get(('email', 'smtp')))
 
-# Set verbose mode if requested
-if 'VERBOSE' in os.environ and os.environ['VERBOSE'] == '1':
-	Services.verbose()
+	# Create the REST config instance
+	oRestConf = REST.Config(Conf.get("rest"))
 
-# Register the Services that will be accessible
-Services.register({
-	"communications": Communications()
-}, oRestConf, Conf.get(('services', 'salt')))
+	# Set verbose mode if requested
+	if 'VERBOSE' in os.environ and os.environ['VERBOSE'] == '1':
+		Services.verbose()
 
-# Create the HTTP server and map requests to service
-REST.Server({
-	"/email": {"methods": REST.POST},
-	"/sms": {"methods": REST.POST}
-}, 'communications').run(
-	host=oRestConf['communications']['host'],
-	port=oRestConf['communications']['port'],
-	workers=oRestConf['communications']['workers'],
-	timeout='timeout' in oRestConf['communications'] and oRestConf['communications']['timeout'] or 30
-)
+	# Register the Services that will be accessible
+	Services.register({
+		"communications": Communications()
+	}, oRestConf, Conf.get(('services', 'salt')))
+
+	# Create the HTTP server and map requests to service
+	REST.Server({
+		"/email": {"methods": REST.POST},
+		"/sms": {"methods": REST.POST}
+	}, 'communications').run(
+		host=oRestConf['communications']['host'],
+		port=oRestConf['communications']['port'],
+		workers=oRestConf['communications']['workers'],
+		timeout='timeout' in oRestConf['communications'] and oRestConf['communications']['timeout'] or 30
+	)
