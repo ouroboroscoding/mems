@@ -24,7 +24,9 @@ def run():
 	Record_MySQL.Commands.execute(
 		'primary',
 		"ALTER TABLE `mems`.`csr_agent` " \
-		"DROP COLUMN `claims_timeout`"
+		"DROP COLUMN `claims_timeout`, " \
+		"ADD COLUMN `type` ENUM('agent', 'pa') NOT NULL DEFAULT 'agent' AFTER `memo_id`, " \
+		"ADD COLUMN `escalate` TINYINT(1) UNSIGNED NOT NULL DEFAULT 0 AFTER `type`"
 	)
 
 	# Modify the provider table
@@ -36,5 +38,3 @@ def run():
 
 	# Return OK
 	return True
-
-

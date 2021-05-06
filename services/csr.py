@@ -12,6 +12,8 @@ __email__		= "bast@maleexcel.com"
 __created__		= "2020-05-17"
 
 # Python imports
+from operator import itemgetter
+from time import time
 import uuid
 
 # Pip imports
@@ -320,6 +322,8 @@ class CSR(Services.Service):
 
 		# Pull out CSR only values
 		dAgent = {}
+		if 'type' in data: dAgent['type'] = data.pop('type')
+		if 'escalate' in data: dAgent['escalate'] = data.pop('escalate')
 		if 'claims_max' in data: dAgent['claims_max'] = data.pop('claims_max')
 
 		# Send the data to monolith to create the memo user
@@ -418,7 +422,7 @@ class CSR(Services.Service):
 
 		# Try to update the claims vars
 		lErrors = []
-		for s in ['claims_max']:
+		for s in ['type', 'escalate', 'claims_max']:
 			if s in data:
 				try: oAgent[s] = data.pop(s)
 				except ValueError as e: lErrors.append(e.args[0])
@@ -481,6 +485,8 @@ class CSR(Services.Service):
 		# Create the agent and return the response
 		return self._agent_create({
 			"memo_id": oResponse.data,
+			"type": 'agent',
+			"escalate": 0,
 			"claims_max": 20
 		}, sesh)
 
@@ -499,7 +505,7 @@ class CSR(Services.Service):
 		"""
 
 		# Fetch all the agents
-		lAgents = Agent.get(raw=['memo_id'])
+		lAgents = Agent.get(raw=['memo_id', 'type', 'escalate'])
 
 		# Fetch their names
 		oResponse = Services.read('monolith', 'user/name', {
@@ -507,8 +513,21 @@ class CSR(Services.Service):
 			"id": [d['memo_id'] for d in lAgents]
 		}, sesh)
 
-		# Regardless of what we got, retun the effect
-		return oResponse
+		# Convert the IDs
+		dMemoNames = DictHelper.keysToInts(oResponse.data)
+
+		# Add the names to the agents
+		for d in lAgents:
+			try: dName = dMemoNames[d['memo_id']]
+			except KeyError: dName = {"firstName": 'Not', "lastName": 'Found'}
+			d['firstName'] = dName['firstName']
+			d['lastName'] = dName['lastName']
+
+		# Order by first then last name
+		lAgents = sorted(lAgents, key=itemgetter('firstName', 'lastName'))
+
+		# Return the agents
+		return Services.Response(lAgents)
 
 	def agentPasswd_update(self, data, sesh):
 		"""Agent Password Update
@@ -658,7 +677,7 @@ class CSR(Services.Service):
 				d['dsClinicianId'] = None
 
 		# Return the agents in order of userName
-		return Services.Response(sorted(lAgents, key=lambda o: o['name']))
+		return Services.Response(sorted(lAgents, key=lambda o: o['userName']))
 
 	def list_create(self, data, sesh):
 		"""List Create
@@ -1552,8 +1571,9 @@ class CSR(Services.Service):
 				# Add ticket ID to the item
 				lItems[i]['ticket'] = UUID_PLACEHOLDER
 
-				# Add the memo ID from the session
-				lItems[i]['memo_id'] = sesh['memo_id']
+				# Make sure the identifier is a string
+				if 'identifier' in lItems[i]:
+					lItems[i]['identifier'] = str(lItems[i]['identifier'])
 
 				# Create a new instance
 				try:
@@ -1654,7 +1674,7 @@ class CSR(Services.Service):
 
 		# Create a new instance
 		try:
-			oAction = TicketAction(oAction)
+			oAction = TicketAction(data)
 		except ValueError as e:
 			return Services.Error(1001, e.args[0])
 
@@ -1663,7 +1683,7 @@ class CSR(Services.Service):
 			oAction.create()
 		)
 
-	def ticketOpenUser_read(self, data):
+	def ticketExists_read(self, data):
 		"""Ticket Exists
 
 		Internal only request to validate a ticket ID
@@ -1711,8 +1731,9 @@ class CSR(Services.Service):
 		if not Ticket.exists(data['ticket']):
 			return Services.Error(1104)
 
-		# Add the memo ID from the session
-		data['memo_id'] = sesh['memo_id']
+		# Make sure the identifier is a string
+		if 'identifier' in data:
+			data['identifier'] = str(data['identifier'])
 
 		# Create a new instance
 		try:
@@ -1720,10 +1741,11 @@ class CSR(Services.Service):
 		except ValueError as e:
 			return Services.Error(1001, e.args[0])
 
-		# Add the item and return the result
-		return Services.Response(
-			oItem.create()
-		)
+		# Create the item and check for duplicates
+		try:
+			return Services.Response(oItem.create())
+		except DuplicateException:
+			return Services.Error(1101)
 
 	def ticketOpenUser_read(self, data, sesh):
 		"""Ticket Open User Read
@@ -1762,7 +1784,7 @@ class CSR(Services.Service):
 		dFilter['resolved'] = None
 
 		# Find the ticket
-		dTicket = Ticket.filter(dFilter, raw=['_id'])
+		dTicket = Ticket.filter(dFilter, raw=['_id'], limit=1)
 
 		# Return the ID or false
 		return Services.Response(

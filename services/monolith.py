@@ -448,6 +448,7 @@ class Monolith(Services.Service):
 
 		# Make sure the ticket exists
 		oResponse = Services.read('csr', 'ticket/exists', {
+			"_internal_": Services.internalKey(),
 			"_id": data['ticket']
 		})
 		if oResponse.errorExists():
@@ -513,6 +514,7 @@ class Monolith(Services.Service):
 		# Attempt to create the record
 		try:
 			oCustomerClaimed = CustomerClaimed({
+				"ticket": data['ticket'],
 				"phoneNumber": data['phoneNumber'],
 				"user": sesh['memo_id'],
 				"orderId": data['orderId'],

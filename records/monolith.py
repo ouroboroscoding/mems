@@ -890,6 +890,7 @@ class CustomerMsgPhone(Record_MySQL.Record):
 		sSQL = "SELECT\n" \
 				"	`cmp`.`customerPhone`,\n" \
 				"	`cmp`.`customerName`,\n" \
+				"	`cc`.`ticket`,\n" \
 				"	`cc`.`transferredBy`,\n" \
 				"	`cc`.`viewed`,\n" \
 				"	`cc`.`provider`,\n" \
