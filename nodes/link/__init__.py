@@ -24,21 +24,6 @@ from shared import Environment
 # Local imports
 from nodes import emailError, resJSON, show500
 
-# Load the config
-Conf.load('config.json')
-sConfOverride = 'config.%s.json' % platform.node()
-if os.path.isfile(sConfOverride):
-	Conf.load_merge(sConfOverride)
-
-# Create the REST config instance
-oRestConf = REST.Config(Conf.get("rest"))
-
-# Get all the services
-dServices = {k:None for k in Conf.get(('rest', 'services'))}
-
-# Register all services
-Services.register(dServices, oRestConf, Conf.get(('services', 'salt')))
-
 @bottle.get('/<code>')
 def redirect(code):
 	"""Redirect
@@ -121,10 +106,28 @@ def redirect(code):
 #	# Return the stats
 #	return resJSON(oResponse.data)
 
-# Run the webserver
-bottle.run(
-	host=oRestConf['link_domain']['host'],
-	port=oRestConf['link_domain']['port'],
-	server="gunicorn",
-	workers=oRestConf['link_domain']['workers']
-)
+# Only run if called directly
+if __name__ == "__main__":
+
+	# Load the config
+	Conf.load('config.json')
+	sConfOverride = 'config.%s.json' % platform.node()
+	if os.path.isfile(sConfOverride):
+		Conf.load_merge(sConfOverride)
+
+	# Create the REST config instance
+	oRestConf = REST.Config(Conf.get("rest"))
+
+	# Get all the services
+	dServices = {k:None for k in Conf.get(('rest', 'services'))}
+
+	# Register all services
+	Services.register(dServices, oRestConf, Conf.get(('services', 'salt')))
+
+	# Run the webserver
+	bottle.run(
+		host=oRestConf['link_domain']['host'],
+		port=oRestConf['link_domain']['port'],
+		server="gunicorn",
+		workers=oRestConf['link_domain']['workers']
+	)

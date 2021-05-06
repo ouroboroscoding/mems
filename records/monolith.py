@@ -1396,7 +1396,7 @@ class HrtPatient(Record_MySQL.Record):
 		dStruct = cls.struct(custom)
 
 		# Generate SQL
-		sSQL = "SELECT `joinDate`, `customerId`, `phoneNumber`, `firstName`, `lastName` " \
+		sSQL = "SELECT `joinDate`, `customerId`, `phoneNumber`, `firstName`, `lastName`, `shipState` " \
 				"FROM `%(db)s`.`%(table)s` as `hrt`" \
 				"LEFT JOIN `%(db)s`.`kt_customer` as `kt` ON `hrt`.`ktCustomerId` = `kt`.`customerId` " \
 				"WHERE `hrt`.`stage` = '%(stage)s' " \

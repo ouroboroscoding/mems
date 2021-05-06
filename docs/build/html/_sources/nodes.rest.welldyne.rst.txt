@@ -1,0 +1,7 @@
+nodes.rest.welldyne module
+==========================
+
+.. automodule:: nodes.rest.welldyne
+   :members:
+   :undoc-members:
+   :show-inheritance:

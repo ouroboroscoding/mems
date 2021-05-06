@@ -22,45 +22,48 @@ from RestOC import Conf, Record_Base, Record_MySQL, REST, Services
 # Cron imports
 from crons.shared import Allergies, PharmacyFill
 
-# If the version argument is missing
-if len(sys.argv) < 3:
-	print('Must specify the type, id, and order:\n\tpython -m tools.trigger knk 285168 95AC0F4D96')
-	sys.exit(1)
+# Only run if called directly
+if __name__ == "__main__":
 
-# Load the config
-Conf.load('config.json')
-sConfOverride = 'config.%s.json' % platform.node()
-if os.path.isfile(sConfOverride):
-	Conf.load_merge(sConfOverride)
+	# If the version argument is missing
+	if len(sys.argv) < 3:
+		print('Must specify the type, id, and order:\n\tpython -m tools.trigger knk 285168 95AC0F4D96')
+		sys.exit(1)
 
-# Add the global prepend and primary host to mysql
-Record_Base.dbPrepend(Conf.get(("mysql", "prepend"), ''))
-Record_MySQL.addHost('primary', Conf.get(("mysql", "hosts", "primary")))
-Record_MySQL.addHost('monolith', Conf.get(("mysql", "hosts", "monolith")))
+	# Load the config
+	Conf.load('config.json')
+	sConfOverride = 'config.%s.json' % platform.node()
+	if os.path.isfile(sConfOverride):
+		Conf.load_merge(sConfOverride)
 
-# Register all services
-Services.register({
-		'auth':None,
-		'prescriptions':None
-	},
-	REST.Config(Conf.get("rest")),
-	Conf.get(('services', 'salt'))
-)
+	# Add the global prepend and primary host to mysql
+	Record_Base.dbPrepend(Conf.get(("mysql", "prepend"), ''))
+	Record_MySQL.addHost('primary', Conf.get(("mysql", "hosts", "primary")))
+	Record_MySQL.addHost('monolith', Conf.get(("mysql", "hosts", "monolith")))
 
-# Init PharmacyFill
-PharmacyFill.initialise()
+	# Register all services
+	Services.register({
+			'auth':None,
+			'prescriptions':None
+		},
+		REST.Config(Conf.get("rest")),
+		Conf.get(('services', 'salt'))
+	)
 
-# Try to process the record
-dRes = PharmacyFill.process({
-	"crm_type": sys.argv[1],
-	"crm_id": sys.argv[2],
-	"crm_order": sys.argv[3]
-})
+	# Init PharmacyFill
+	PharmacyFill.initialise()
 
-# Add allergies
-for d in dRes['data']:
-	d['allergies'] = Allergies.fetch(d)
+	# Try to process the record
+	dRes = PharmacyFill.process({
+		"crm_type": sys.argv[1],
+		"crm_id": sys.argv[2],
+		"crm_order": sys.argv[3]
+	})
 
-# Print the result
-print('Status: %s' % (dRes['status'] and 'Success' or 'Failure'))
-print('Data: %s' % dRes['data'])
+	# Add allergies
+	for d in dRes['data']:
+		d['allergies'] = Allergies.fetch(d)
+
+	# Print the result
+	print('Status: %s' % (dRes['status'] and 'Success' or 'Failure'))
+	print('Data: %s' % dRes['data'])

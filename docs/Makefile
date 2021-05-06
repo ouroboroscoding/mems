@@ -22,7 +22,9 @@ help:
 	find ./ -name '*.rst' -not -name 'index.rst' -delete
 	cd ../
 	sphinx-apidoc -f -o source ../crons --separate
+	sphinx-apidoc -f -o source ../nodes --separate
 	sphinx-apidoc -f -o source ../records --separate
 	sphinx-apidoc -f -o source ../shared --separate
 	sphinx-apidoc -f -o source ../services --separate
+	sphinx-apidoc -f -o source ../tools --separate
 	@$(SPHINXBUILD) -M $@ "$(SOURCEDIR)" "$(BUILDDIR)" $(SPHINXOPTS) $(O)

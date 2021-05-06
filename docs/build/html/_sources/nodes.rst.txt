@@ -1,0 +1,21 @@
+nodes package
+=============
+
+Subpackages
+-----------
+
+.. toctree::
+   :maxdepth: 4
+
+   nodes.external
+   nodes.link
+   nodes.rest
+   nodes.websocket
+
+Module contents
+---------------
+
+.. automodule:: nodes
+   :members:
+   :undoc-members:
+   :show-inheritance:

@@ -1,0 +1,7 @@
+nodes.rest.auth module
+======================
+
+.. automodule:: nodes.rest.auth
+   :members:
+   :undoc-members:
+   :show-inheritance:

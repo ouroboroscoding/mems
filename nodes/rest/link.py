@@ -20,28 +20,31 @@ from services.link import Link
 # Local imports
 from . import init
 
-# Init the REST info
-oRestConf = init(
-	dbs=['primary'],
-	services={'link':Link()}
-)
+# Only run if called directly
+if __name__ == "__main__":
 
-# Create the HTTP server and map requests to service
-REST.Server([
+	# Init the REST info
+	oRestConf = init(
+		dbs=['primary'],
+		services={'link':Link()}
+	)
 
-	# Public
-	{"uri": "/stats", "methods": REST.READ},
+	# Create the HTTP server and map requests to service
+	REST.Server([
 
-	{"uri": "/view", "methods": REST.CREATE},
+		# Public
+		{"uri": "/stats", "methods": REST.READ},
 
-	# Private
-	{"uri": "/url", "methods": REST.CREATE | REST.DELETE, "session": True},
+		{"uri": "/view", "methods": REST.CREATE},
 
-	{"uri": "/urls", "methods": REST.READ, "session": True}
+		# Private
+		{"uri": "/url", "methods": REST.CREATE | REST.DELETE, "session": True},
 
-], 'link', "https?://(.*\\.)?%s" % Conf.get(("rest","allowed")).replace('.', '\\.')).run(
-	host=oRestConf['link']['host'],
-	port=oRestConf['link']['port'],
-	workers=oRestConf['link']['workers'],
-	timeout='timeout' in oRestConf['link'] and oRestConf['link']['timeout'] or 30
-)
+		{"uri": "/urls", "methods": REST.READ, "session": True}
+
+	], 'link', "https?://(.*\\.)?%s" % Conf.get(("rest","allowed")).replace('.', '\\.')).run(
+		host=oRestConf['link']['host'],
+		port=oRestConf['link']['port'],
+		workers=oRestConf['link']['workers'],
+		timeout='timeout' in oRestConf['link'] and oRestConf['link']['timeout'] or 30
+	)

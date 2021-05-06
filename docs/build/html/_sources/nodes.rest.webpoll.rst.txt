@@ -1,0 +1,7 @@
+nodes.rest.webpoll module
+=========================
+
+.. automodule:: nodes.rest.webpoll
+   :members:
+   :undoc-members:
+   :show-inheritance:

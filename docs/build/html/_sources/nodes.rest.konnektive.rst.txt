@@ -1,0 +1,7 @@
+nodes.rest.konnektive module
+============================
+
+.. automodule:: nodes.rest.konnektive
+   :members:
+   :undoc-members:
+   :show-inheritance:

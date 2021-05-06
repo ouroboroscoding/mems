@@ -1,0 +1,792 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" />
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  
+  <title>services.providers module &mdash; MeMS 1.50 documentation</title>
+  
+
+  
+  <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+
+  
+  
+
+  
+  
+
+  
+
+  
+  <!--[if lt IE 9]>
+    <script src="_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+    
+      <script type="text/javascript" id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
+        <script src="_static/jquery.js"></script>
+        <script src="_static/underscore.js"></script>
+        <script src="_static/doctools.js"></script>
+    
+    <script type="text/javascript" src="_static/js/theme.js"></script>
+
+    
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" /> 
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+          
+
+          
+            <a href="index.html" class="icon icon-home"> MeMS
+          
+
+          
+          </a>
+
+          
+            
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <!-- Local TOC -->
+              <div class="local-toc"><ul>
+<li><a class="reference internal" href="#">services.providers module</a></li>
+</ul>
+</div>
+            
+          
+        </div>
+        
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">MeMS</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="index.html" class="icon icon-home"></a> &raquo;</li>
+        
+      <li>services.providers module</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+          
+            <a href="_sources/services.providers.rst.txt" rel="nofollow"> View page source</a>
+          
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <div class="section" id="module-services.providers">
+<span id="services-providers-module"></span><h1>services.providers module<a class="headerlink" href="#module-services.providers" title="Permalink to this headline">¶</a></h1>
+<p>Providers Service</p>
+<p>Handles all Providers requests</p>
+<dl class="py class">
+<dt id="services.providers.Providers">
+<em class="property"><span class="pre">class</span> </em><code class="sig-prename descclassname"><span class="pre">services.providers.</span></code><code class="sig-name descname"><span class="pre">Providers</span></code><a class="headerlink" href="#services.providers.Providers" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">RestOC.Services.Service</span></code></p>
+<p>Providers Service class</p>
+<p>Service for Providers access</p>
+<dl class="py method">
+<dt id="services.providers.Providers.calendlySingle_create">
+<code class="sig-name descname"><span class="pre">calendlySingle_create</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sesh</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#services.providers.Providers.calendlySingle_create" title="Permalink to this definition">¶</a></dt>
+<dd><p>Calendly Single Create</p>
+<p>Creates a single use key for Calendly appointments</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>data</strong> (<em>mixed</em>) – Data sent with the request</p></li>
+<li><p><strong>sesh</strong> (<em>Sesh._Session</em>) – The session associated with the request</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>Services.Response</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="services.providers.Providers.calendlySingle_delete">
+<code class="sig-name descname"><span class="pre">calendlySingle_delete</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#services.providers.Providers.calendlySingle_delete" title="Permalink to this definition">¶</a></dt>
+<dd><p>Calendly Single Delete</p>
+<p>Deletes a single use calendly key</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>data</strong> (<em>mixed</em>) – Data sent with the request</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>Services.Response</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="services.providers.Providers.calendlySingle_read">
+<code class="sig-name descname"><span class="pre">calendlySingle_read</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#services.providers.Providers.calendlySingle_read" title="Permalink to this definition">¶</a></dt>
+<dd><p>Calendly Single Read</p>
+<p>Returns Calendly data needed to create an embed, assuming the key exists</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>data</strong> (<em>mixed</em>) – Data sent with the request</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>Services.Response</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="services.providers.Providers.customerToRx_read">
+<code class="sig-name descname"><span class="pre">customerToRx_read</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sesh</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#services.providers.Providers.customerToRx_read" title="Permalink to this definition">¶</a></dt>
+<dd><p>Customer To RX Read</p>
+<p>Returns all productions and their prescriptions for a customer</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>data</strong> (<em>mixed</em>) – Data sent with the request</p></li>
+<li><p><strong>sesh</strong> (<em>Sesh._Session</em>) – The session associated with the request</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>Services.Response</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="services.providers.Providers.customerToRx_update">
+<code class="sig-name descname"><span class="pre">customerToRx_update</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sesh</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#services.providers.Providers.customerToRx_update" title="Permalink to this definition">¶</a></dt>
+<dd><p>Customer To RX Update</p>
+<p>Sets the prescription IDs associated with the products the customer
+has</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>data</strong> (<em>mixed</em>) – Data sent with the request</p></li>
+<li><p><strong>sesh</strong> (<em>Sesh._Session</em>) – The session associated with the request</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>Services.Response</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="services.providers.Providers.hours_read">
+<code class="sig-name descname"><span class="pre">hours_read</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sesh</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#services.providers.Providers.hours_read" title="Permalink to this definition">¶</a></dt>
+<dd><p>Hours</p>
+<p>Returns breakdown of hours worked by provider</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>data</strong> (<em>mixed</em>) – Data sent with the request</p></li>
+<li><p><strong>sesh</strong> (<em>Sesh._Session</em>) – The session associated with the request</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>Services.Response</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="services.providers.Providers.initialise">
+<code class="sig-name descname"><span class="pre">initialise</span></code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#services.providers.Providers.initialise" title="Permalink to this definition">¶</a></dt>
+<dd><p>Initialise</p>
+<p>Initialises the instance and returns itself for chaining</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>Monolith</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="services.providers.Providers.install">
+<em class="property"><span class="pre">classmethod</span> </em><code class="sig-name descname"><span class="pre">install</span></code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#services.providers.Providers.install" title="Permalink to this definition">¶</a></dt>
+<dd><p>Install</p>
+<p>The service’s install method, used to setup storage or other one time
+install configurations</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>bool</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="services.providers.Providers.prescriptions_create">
+<code class="sig-name descname"><span class="pre">prescriptions_create</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sesh</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#services.providers.Providers.prescriptions_create" title="Permalink to this definition">¶</a></dt>
+<dd><p>Prescriptions Create</p>
+<p>Sends the prescription requests to the prescription service, then stores
+the IDs to the asociated order items as un-approved</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>data</strong> (<em>mixed</em>) – Data sent with the request</p></li>
+<li><p><strong>sesh</strong> (<em>Sesh._Session</em>) – The session associated with the request</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>Services.Response</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="services.providers.Providers.productToRx_create">
+<code class="sig-name descname"><span class="pre">productToRx_create</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sesh</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#services.providers.Providers.productToRx_create" title="Permalink to this definition">¶</a></dt>
+<dd><p>Product To RX</p>
+<p>Creates a new record of an unnaproved prescription</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>data</strong> (<em>mixed</em>) – Data sent with the request</p></li>
+<li><p><strong>sesh</strong> (<em>Sesh._Session</em>) – The session associated with the request</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>Services.Response</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="services.providers.Providers.providerInternal_read">
+<code class="sig-name descname"><span class="pre">providerInternal_read</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sesh</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#services.providers.Providers.providerInternal_read" title="Permalink to this definition">¶</a></dt>
+<dd><p>Provider Internal</p>
+<p>Fetches a memo user by their Memo ID rather then their primary key.
+Internal function, can not be used from outside</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>data</strong> (<em>mixed</em>) – Data sent with the request</p></li>
+<li><p><strong>sesh</strong> (<em>Sesh._Session</em>) – The session associated with the request</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>Services.Response</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="services.providers.Providers.providerMemo_create">
+<code class="sig-name descname"><span class="pre">providerMemo_create</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sesh</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#services.providers.Providers.providerMemo_create" title="Permalink to this definition">¶</a></dt>
+<dd><p>Provider from Memo</p>
+<p>Creates an provider record from an existing Memo user instead of
+creating a new one</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>data</strong> (<em>mixed</em>) – Data sent with the request</p></li>
+<li><p><strong>sesh</strong> (<em>Sesh._Session</em>) – The session associated with the request</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>Services.Response</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="services.providers.Providers.providerNames_read">
+<code class="sig-name descname"><span class="pre">providerNames_read</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sesh</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#services.providers.Providers.providerNames_read" title="Permalink to this definition">¶</a></dt>
+<dd><p>Provider Names</p>
+<p>Returns the list of providers who can have issues transfered / escalated to
+them</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>data</strong> (<em>mixed</em>) – Data sent with the request</p></li>
+<li><p><strong>sesh</strong> (<em>Sesh._Session</em>) – The session associated with the request</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>Services.Response</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="services.providers.Providers.providerPasswd_update">
+<code class="sig-name descname"><span class="pre">providerPasswd_update</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sesh</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#services.providers.Providers.providerPasswd_update" title="Permalink to this definition">¶</a></dt>
+<dd><p>Provider Password Update</p>
+<p>Updates an provider’s password in monolith</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>data</strong> (<em>mixed</em>) – Data sent with the request</p></li>
+<li><p><strong>sesh</strong> (<em>Sesh._Session</em>) – The session associated with the request</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>Services.Response</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="services.providers.Providers.providerPermissions_read">
+<code class="sig-name descname"><span class="pre">providerPermissions_read</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sesh</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#services.providers.Providers.providerPermissions_read" title="Permalink to this definition">¶</a></dt>
+<dd><p>Provider Permissions Read</p>
+<p>Returns all permissions associated with an provider</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>data</strong> (<em>mixed</em>) – Data sent with the request</p></li>
+<li><p><strong>sesh</strong> (<em>Sesh._Session</em>) – The session associated with the request</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>Services.Response</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="services.providers.Providers.providerPermissions_update">
+<code class="sig-name descname"><span class="pre">providerPermissions_update</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sesh</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#services.providers.Providers.providerPermissions_update" title="Permalink to this definition">¶</a></dt>
+<dd><p>Provider Permissions Update</p>
+<p>Updates the permissions associated with an provider</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>data</strong> (<em>mixed</em>) – Data sent with the request</p></li>
+<li><p><strong>sesh</strong> (<em>Sesh._Session</em>) – The session associated with the request</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>Services.Response</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="services.providers.Providers.providerTracking_read">
+<code class="sig-name descname"><span class="pre">providerTracking_read</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sesh</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#services.providers.Providers.providerTracking_read" title="Permalink to this definition">¶</a></dt>
+<dd><p>Provider Tracking</p>
+<p>Returns all tracking records related to a specfic provider in the given
+timeframe</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>data</strong> (<em>mixed</em>) – Data sent with the request</p></li>
+<li><p><strong>sesh</strong> (<em>Sesh._Session</em>) – The session associated with the request</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>Services.Response</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="services.providers.Providers.provider_create">
+<code class="sig-name descname"><span class="pre">provider_create</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sesh</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#services.providers.Providers.provider_create" title="Permalink to this definition">¶</a></dt>
+<dd><p>Provider Create</p>
+<p>Creates a user record associated with the memo user in order to apply
+permissions to it</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>data</strong> (<em>mixed</em>) – Data sent with the request</p></li>
+<li><p><strong>sesh</strong> (<em>Sesh._Session</em>) – The session associated with the request</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>Services.Response</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="services.providers.Providers.provider_delete">
+<code class="sig-name descname"><span class="pre">provider_delete</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sesh</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#services.providers.Providers.provider_delete" title="Permalink to this definition">¶</a></dt>
+<dd><p>Provider Delete</p>
+<p>Deletes an existing memo user record associated</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>data</strong> (<em>mixed</em>) – Data sent with the request</p></li>
+<li><p><strong>sesh</strong> (<em>Sesh._Session</em>) – The session associated with the request</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>Services.Response</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="services.providers.Providers.provider_read">
+<code class="sig-name descname"><span class="pre">provider_read</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sesh</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#services.providers.Providers.provider_read" title="Permalink to this definition">¶</a></dt>
+<dd><p>Provider Read</p>
+<p>Fetches one, many, or all user records</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>data</strong> (<em>mixed</em>) – Data sent with the request</p></li>
+<li><p><strong>sesh</strong> (<em>Sesh._Session</em>) – The session associated with the request</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>Services.Response</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="services.providers.Providers.provider_update">
+<code class="sig-name descname"><span class="pre">provider_update</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sesh</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#services.providers.Providers.provider_update" title="Permalink to this definition">¶</a></dt>
+<dd><p>Provider Update</p>
+<p>Updates an existing provider (via memo user)</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>data</strong> (<em>mixed</em>) – Data sent with the request</p></li>
+<li><p><strong>sesh</strong> (<em>Sesh._Session</em>) – The session associated with the request</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>Services.Response</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="services.providers.Providers.providers_read">
+<code class="sig-name descname"><span class="pre">providers_read</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sesh</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#services.providers.Providers.providers_read" title="Permalink to this definition">¶</a></dt>
+<dd><p>Providers</p>
+<p>Returns all providers in the system</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>data</strong> (<em>mixed</em>) – Data sent with the request</p></li>
+<li><p><strong>sesh</strong> (<em>Sesh._Session</em>) – The session associated with the request</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>Services.Response</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="services.providers.Providers.request_create">
+<code class="sig-name descname"><span class="pre">request_create</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sesh</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#services.providers.Providers.request_create" title="Permalink to this definition">¶</a></dt>
+<dd><p>Request Create</p>
+<p>Stores a request made in the provider portal so we can make sense of
+provider activity</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>data</strong> (<em>dict</em>) – Data sent with the request</p></li>
+<li><p><strong>sesh</strong> (<em>Sesh._Session</em>) – The session associated with the request</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>Services.Response</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="services.providers.Providers.roundrobin_read">
+<code class="sig-name descname"><span class="pre">roundrobin_read</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sesh</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#services.providers.Providers.roundrobin_read" title="Permalink to this definition">¶</a></dt>
+<dd><p>Round Robin</p>
+<p>Returns all the agent IDs in the round robin table</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>data</strong> (<em>dict</em>) – Data sent with the request</p></li>
+<li><p><strong>sesh</strong> (<em>Sesh._Session</em>) – The session associated with the request</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>Services.Response</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="services.providers.Providers.session_read">
+<code class="sig-name descname"><span class="pre">session_read</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sesh</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#services.providers.Providers.session_read" title="Permalink to this definition">¶</a></dt>
+<dd><p>Session</p>
+<p>Returns the ID of the user logged into the current session</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>data</strong> (<em>dict</em>) – Data sent with the request</p></li>
+<li><p><strong>sesh</strong> (<em>Sesh._Session</em>) – The session associated with the request</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>Services.Response</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="services.providers.Providers.signin_create">
+<code class="sig-name descname"><span class="pre">signin_create</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#services.providers.Providers.signin_create" title="Permalink to this definition">¶</a></dt>
+<dd><p>Signin</p>
+<p>Signs a user into the system</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>data</strong> (<em>dict</em>) – The data passed to the request</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>Result</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="services.providers.Providers.signout_create">
+<code class="sig-name descname"><span class="pre">signout_create</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sesh</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#services.providers.Providers.signout_create" title="Permalink to this definition">¶</a></dt>
+<dd><p>Signout</p>
+<p>Called to sign out a user and destroy their session</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>data</strong> (<em>dict</em>) – Data sent with the request</p></li>
+<li><p><strong>sesh</strong> (<em>Sesh._Session</em>) – The session associated with the user</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>Services.Response</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="services.providers.Providers.template_create">
+<code class="sig-name descname"><span class="pre">template_create</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sesh</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#services.providers.Providers.template_create" title="Permalink to this definition">¶</a></dt>
+<dd><p>Template Email Create</p>
+<p>Create a new email template</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>data</strong> (<em>mixed</em>) – Data sent with the request</p></li>
+<li><p><strong>sesh</strong> (<em>Sesh._Session</em>) – The session associated with the request</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>Services.Response</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="services.providers.Providers.template_delete">
+<code class="sig-name descname"><span class="pre">template_delete</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sesh</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#services.providers.Providers.template_delete" title="Permalink to this definition">¶</a></dt>
+<dd><p>Template Email Delete</p>
+<p>Delete an existing email template</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>data</strong> (<em>mixed</em>) – Data sent with the request</p></li>
+<li><p><strong>sesh</strong> (<em>Sesh._Session</em>) – The session associated with the request</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>Services.Response</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="services.providers.Providers.template_read">
+<code class="sig-name descname"><span class="pre">template_read</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sesh</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#services.providers.Providers.template_read" title="Permalink to this definition">¶</a></dt>
+<dd><p>Template Email Read</p>
+<p>Fetches an existing email template</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>data</strong> (<em>mixed</em>) – Data sent with the request</p></li>
+<li><p><strong>sesh</strong> (<em>Sesh._Session</em>) – The session associated with the request</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>Services.Response</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="services.providers.Providers.template_update">
+<code class="sig-name descname"><span class="pre">template_update</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sesh</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#services.providers.Providers.template_update" title="Permalink to this definition">¶</a></dt>
+<dd><p>Template Email Update</p>
+<p>Updated an existing email template</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>data</strong> (<em>mixed</em>) – Data sent with the request</p></li>
+<li><p><strong>sesh</strong> (<em>Sesh._Session</em>) – The session associated with the request</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>Services.Response</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="services.providers.Providers.templates_read">
+<code class="sig-name descname"><span class="pre">templates_read</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sesh</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#services.providers.Providers.templates_read" title="Permalink to this definition">¶</a></dt>
+<dd><p>Template Emails</p>
+<p>Fetches all existing email templates</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>data</strong> (<em>mixed</em>) – Data sent with the request</p></li>
+<li><p><strong>sesh</strong> (<em>Sesh._Session</em>) – The session associated with the request</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>Services.Response</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="services.providers.Providers.tracking_create">
+<code class="sig-name descname"><span class="pre">tracking_create</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sesh</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#services.providers.Providers.tracking_create" title="Permalink to this definition">¶</a></dt>
+<dd><p>Tracking</p>
+<p>Internal only request to add tracking to a provider</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>data</strong> (<em>mixed</em>) – Data sent with the request</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>Services.Response</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+
+
+           </div>
+           
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &#169; Copyright 2021, MaleExcelMedical.
+
+    </p>
+  </div>
+    
+    
+    
+    Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    
+    provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+
+  
+  
+    
+   
+
+</body>
+</html>

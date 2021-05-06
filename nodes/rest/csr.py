@@ -20,54 +20,57 @@ from services.csr import CSR
 # Local imports
 from . import init
 
-# Init the REST info
-oRestConf = init(
-	dbs=['primary'],
-	services={'csr':CSR()},
-	templates='templates'
-)
+# Only run if called directly
+if __name__ == "__main__":
 
-# Create the HTTP server and map requests to service
-REST.Server({
-	"/agent": {"methods": REST.ALL, "session": True},
-	"/agents": {"methods": REST.READ, "session": True},
-	"/agent/memo": {"methods": REST.CREATE, "session": True},
-	"/agent/names": {"methods": REST.READ, "session": True},
-	"/agent/passwd": {"methods": REST.UPDATE, "session": True},
-	"/agent/permissions": {"methods": REST.READ | REST.UPDATE, "session": True},
+	# Init the REST info
+	oRestConf = init(
+		dbs=['primary'],
+		services={'csr':CSR()},
+		templates='templates'
+	)
 
-	"/list": {"methods": REST.CREATE | REST.UPDATE | REST.DELETE, "session": True},
-	"/list/item": {"methods": REST.CREATE | REST.DELETE, "session": True},
-	"/lists": {"methods": REST.READ, "session": True},
+	# Create the HTTP server and map requests to service
+	REST.Server({
+		"/agent": {"methods": REST.ALL, "session": True},
+		"/agents": {"methods": REST.READ, "session": True},
+		"/agent/memo": {"methods": REST.CREATE, "session": True},
+		"/agent/names": {"methods": REST.READ, "session": True},
+		"/agent/passwd": {"methods": REST.UPDATE, "session": True},
+		"/agent/permissions": {"methods": REST.READ | REST.UPDATE, "session": True},
 
-	"/patient/account": {"methods": REST.CREATE, "session": True},
+		"/list": {"methods": REST.CREATE | REST.UPDATE | REST.DELETE, "session": True},
+		"/list/item": {"methods": REST.CREATE | REST.DELETE, "session": True},
+		"/lists": {"methods": REST.READ, "session": True},
 
-	"/reminder": {"methods": REST.CREATE | REST.UPDATE | REST.DELETE, "session": True},
-	"/reminder/resolve": {"methods": REST.UPDATE, "session": True},
-	"/reminders": {"methods": REST.READ, "session": True},
-	"/reminders/count": {"methods": REST.READ, "session": True},
+		"/patient/account": {"methods": REST.CREATE, "session": True},
 
-	"/session": {"methods": REST.READ, "session": True},
-	"/signin": {"methods": REST.CREATE},
-	"/signout": {"methods": REST.CREATE},
+		"/reminder": {"methods": REST.CREATE | REST.UPDATE | REST.DELETE, "session": True},
+		"/reminder/resolve": {"methods": REST.UPDATE, "session": True},
+		"/reminders": {"methods": REST.READ, "session": True},
+		"/reminders/count": {"methods": REST.READ, "session": True},
 
-	"/template/email": {"methods": REST.ALL, "session": True},
-	"/template/emails": {"methods": REST.READ, "session": True},
-	"/template/sms": {"methods": REST.ALL, "session": True},
-	"/template/smss": {"methods": REST.READ, "session": True},
+		"/session": {"methods": REST.READ, "session": True},
+		"/signin": {"methods": REST.CREATE},
+		"/signout": {"methods": REST.CREATE},
 
-	"/ticket": {"methods": REST.ALL, "session": True},
-	"/ticket/action": {"methods": REST.CREATE, "session": True},
-	"/ticket/exists": {"methods": REST.READ},
-	"/ticket/item": {"methods": REST.CREATE, "session": True},
-	"/ticket/open/user": {"methods": REST.READ, "session": True},
-	"/ticket/resolve": {"methods": REST.UPDATE, "session": True},
-	"/tickets/customer": {"methods": REST.READ, "session": True},
-	"/tickets/user": {"methods": REST.READ, "session": True}
+		"/template/email": {"methods": REST.ALL, "session": True},
+		"/template/emails": {"methods": REST.READ, "session": True},
+		"/template/sms": {"methods": REST.ALL, "session": True},
+		"/template/smss": {"methods": REST.READ, "session": True},
 
-}, 'csr', "https?://(.*\\.)?%s" % Conf.get(("rest","allowed")).replace('.', '\\.')).run(
-	host=oRestConf['csr']['host'],
-	port=oRestConf['csr']['port'],
-	workers=oRestConf['csr']['workers'],
-	timeout='timeout' in oRestConf['csr'] and oRestConf['csr']['timeout'] or 30
-)
+		"/ticket": {"methods": REST.ALL, "session": True},
+		"/ticket/action": {"methods": REST.CREATE, "session": True},
+		"/ticket/exists": {"methods": REST.READ},
+		"/ticket/item": {"methods": REST.CREATE, "session": True},
+		"/ticket/open/user": {"methods": REST.READ, "session": True},
+		"/ticket/resolve": {"methods": REST.UPDATE, "session": True},
+		"/tickets/customer": {"methods": REST.READ, "session": True},
+		"/tickets/user": {"methods": REST.READ, "session": True}
+
+	}, 'csr', "https?://(.*\\.)?%s" % Conf.get(("rest","allowed")).replace('.', '\\.')).run(
+		host=oRestConf['csr']['host'],
+		port=oRestConf['csr']['port'],
+		workers=oRestConf['csr']['workers'],
+		timeout='timeout' in oRestConf['csr'] and oRestConf['csr']['timeout'] or 30
+	)
