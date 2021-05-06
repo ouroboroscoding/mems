@@ -1,0 +1,7 @@
+tools.trigger module
+====================
+
+.. automodule:: tools.trigger
+   :members:
+   :undoc-members:
+   :show-inheritance:

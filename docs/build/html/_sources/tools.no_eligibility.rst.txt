@@ -1,0 +1,7 @@
+tools.no\_eligibility module
+============================
+
+.. automodule:: tools.no_eligibility
+   :members:
+   :undoc-members:
+   :show-inheritance:

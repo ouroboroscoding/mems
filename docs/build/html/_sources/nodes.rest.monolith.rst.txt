@@ -1,0 +1,7 @@
+nodes.rest.monolith module
+==========================
+
+.. automodule:: nodes.rest.monolith
+   :members:
+   :undoc-members:
+   :show-inheritance:

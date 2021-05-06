@@ -1,0 +1,7 @@
+nodes.rest.providers module
+===========================
+
+.. automodule:: nodes.rest.providers
+   :members:
+   :undoc-members:
+   :show-inheritance:

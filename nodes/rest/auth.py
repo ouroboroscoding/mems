@@ -20,37 +20,40 @@ from services.auth import Auth
 # Local imports
 from . import init
 
-# Init the REST info
-oRestConf = init(
-	dbs=['primary'],
-	services={'auth':Auth()},
-	templates='templates'
-)
+# Only run if called directly
+if __name__ == "__main__":
 
-# Create the HTTP server and map requests to service
-REST.Server({
+	# Init the REST info
+	oRestConf = init(
+		dbs=['primary'],
+		services={'auth':Auth()},
+		templates='templates'
+	)
 
-	"/permissions": {"methods": REST.READ | REST.UPDATE, "session": True},
-	"/permissions/self": {"methods": REST.READ, "session": True},
+	# Create the HTTP server and map requests to service
+	REST.Server({
 
-	"/rights/verify": {"methods": REST.READ, "session": True},
+		"/permissions": {"methods": REST.READ | REST.UPDATE, "session": True},
+		"/permissions/self": {"methods": REST.READ, "session": True},
 
-	"/search": {"methods": REST.READ, "session": True},
+		"/rights/verify": {"methods": REST.READ, "session": True},
 
-	"/session": {"methods": REST.READ, "session": True},
+		"/search": {"methods": REST.READ, "session": True},
 
-	"/signin": {"methods": REST.POST},
-	"/signout": {"methods": REST.POST, "session": True},
+		"/session": {"methods": REST.READ, "session": True},
 
-	"/user": {"methods": REST.CREATE | REST.READ | REST.UPDATE, "session": True},
-	"/user/email": {"methods": REST.UPDATE, "session": True},
-	"/user/names": {"methods": REST.READ, "session": True},
-	"/user/passwd": {"methods": REST.UPDATE, "session": True},
-	"/user/passwd/forgot": {"methods": REST.CREATE | REST.UPDATE}
+		"/signin": {"methods": REST.POST},
+		"/signout": {"methods": REST.POST, "session": True},
 
-}, 'auth', "https?://(.*\\.)?%s" % Conf.get(("rest","allowed")).replace('.', '\\.')).run(
-	host=oRestConf['auth']['host'],
-	port=oRestConf['auth']['port'],
-	workers=oRestConf['auth']['workers'],
-	timeout='timeout' in oRestConf['auth'] and oRestConf['auth']['timeout'] or 30
-)
+		"/user": {"methods": REST.CREATE | REST.READ | REST.UPDATE, "session": True},
+		"/user/email": {"methods": REST.UPDATE, "session": True},
+		"/user/names": {"methods": REST.READ, "session": True},
+		"/user/passwd": {"methods": REST.UPDATE, "session": True},
+		"/user/passwd/forgot": {"methods": REST.CREATE | REST.UPDATE}
+
+	}, 'auth', "https?://(.*\\.)?%s" % Conf.get(("rest","allowed")).replace('.', '\\.')).run(
+		host=oRestConf['auth']['host'],
+		port=oRestConf['auth']['port'],
+		workers=oRestConf['auth']['workers'],
+		timeout='timeout' in oRestConf['auth'] and oRestConf['auth']['timeout'] or 30
+	)

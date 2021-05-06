@@ -20,41 +20,44 @@ from services.patient import Patient
 # Local imports
 from . import init
 
-# Init the REST info
-oRestConf = init(
-	dbs=['primary'],
-	services={'patient':Patient()},
-	templates='templates'
-)
+# Only run if called directly
+if __name__ == "__main__":
 
-# Create the HTTP server and map requests to service
-REST.Server({
+	# Init the REST info
+	oRestConf = init(
+		dbs=['primary'],
+		services={'patient':Patient()},
+		templates='templates'
+	)
 
-	"/account": {"methods": REST.CREATE | REST.READ, "session": True},
-	"/account/byCRM": {"methods": REST.READ, "session": True},
-	"/account/email": {"methods": REST.UPDATE, "session": True},
-	"/account/forgot": {"methods": REST.CREATE | REST.UPDATE},
-	"/account/payment": {"methods": REST.UPDATE, "session": True},
-	"/account/phone": {"methods": REST.UPDATE, "session": True},
-	"/account/rx": {"methods": REST.UPDATE, "session": True},
-	"/account/verify": {"methods": REST.UPDATE},
+	# Create the HTTP server and map requests to service
+	REST.Server({
 
-	"/session": {"methods": REST.READ, "session": True},
+		"/account": {"methods": REST.CREATE | REST.READ, "session": True},
+		"/account/byCRM": {"methods": REST.READ, "session": True},
+		"/account/email": {"methods": REST.UPDATE, "session": True},
+		"/account/forgot": {"methods": REST.CREATE | REST.UPDATE},
+		"/account/payment": {"methods": REST.UPDATE, "session": True},
+		"/account/phone": {"methods": REST.UPDATE, "session": True},
+		"/account/rx": {"methods": REST.UPDATE, "session": True},
+		"/account/verify": {"methods": REST.UPDATE},
 
-	"/setup/attempts": {"methods": REST.READ, "session": True},
-	"/setup/reset": {"methods": REST.UPDATE, "session": True},
-	"/setup/start": {"methods": REST.CREATE, "session": True},
-	"/setup/update": {"methods": REST.UPDATE, "session": True},
-	"/setup/validate": {"methods": REST.CREATE},
+		"/session": {"methods": REST.READ, "session": True},
 
-	"/signin": {"methods": REST.POST, "environ": True},
-	"/signout": {"methods": REST.POST, "session": True},
+		"/setup/attempts": {"methods": REST.READ, "session": True},
+		"/setup/reset": {"methods": REST.UPDATE, "session": True},
+		"/setup/start": {"methods": REST.CREATE, "session": True},
+		"/setup/update": {"methods": REST.UPDATE, "session": True},
+		"/setup/validate": {"methods": REST.CREATE},
 
-	"/support_request": {"methods": REST.CREATE, "session": True}
+		"/signin": {"methods": REST.POST, "environ": True},
+		"/signout": {"methods": REST.POST, "session": True},
 
-}, 'patient', "https?://(.*\\.)?%s" % Conf.get(("rest","allowed")).replace('.', '\\.')).run(
-	host=oRestConf['patient']['host'],
-	port=oRestConf['patient']['port'],
-	workers=oRestConf['patient']['workers'],
-	timeout='timeout' in oRestConf['patient'] and oRestConf['patient']['timeout'] or 30
-)
+		"/support_request": {"methods": REST.CREATE, "session": True}
+
+	}, 'patient', "https?://(.*\\.)?%s" % Conf.get(("rest","allowed")).replace('.', '\\.')).run(
+		host=oRestConf['patient']['host'],
+		port=oRestConf['patient']['port'],
+		workers=oRestConf['patient']['workers'],
+		timeout='timeout' in oRestConf['patient'] and oRestConf['patient']['timeout'] or 30
+	)

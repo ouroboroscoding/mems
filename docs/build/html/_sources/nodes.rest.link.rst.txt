@@ -1,0 +1,7 @@
+nodes.rest.link module
+======================
+
+.. automodule:: nodes.rest.link
+   :members:
+   :undoc-members:
+   :show-inheritance:

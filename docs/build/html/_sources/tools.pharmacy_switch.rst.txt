@@ -1,0 +1,7 @@
+tools.pharmacy\_switch module
+=============================
+
+.. automodule:: tools.pharmacy_switch
+   :members:
+   :undoc-members:
+   :show-inheritance:

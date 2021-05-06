@@ -20,22 +20,25 @@ from services.webpoll import WebPoll
 # Local imports
 from . import init
 
-# Init the REST info
-oRestConf = init(
-	services={'webpoll':WebPoll()}
-)
+# Only run if called directly
+if __name__ == "__main__":
 
-# Create the HTTP server and map requests to service
-REST.Server({
-	"/clear": {"methods": REST.UPDATE, "session": True},
-	"/join": {"methods": REST.CREATE, "session": True},
-	"/leave": {"methods": REST.CREATE, "session": True},
-	"/pull": {"methods": REST.READ, "session": True},
-	"/websocket": {"methods": REST.READ, "session": True}
+	# Init the REST info
+	oRestConf = init(
+		services={'webpoll':WebPoll()}
+	)
 
-}, 'webpoll', "https?://(.*\\.)?%s" % Conf.get(("rest","allowed")).replace('.', '\\.')).run(
-	host=oRestConf['webpoll']['host'],
-	port=oRestConf['webpoll']['port'],
-	workers=oRestConf['webpoll']['workers'],
-	timeout='timeout' in oRestConf['webpoll'] and oRestConf['webpoll']['timeout'] or 30
-)
+	# Create the HTTP server and map requests to service
+	REST.Server({
+		"/clear": {"methods": REST.UPDATE, "session": True},
+		"/join": {"methods": REST.CREATE, "session": True},
+		"/leave": {"methods": REST.CREATE, "session": True},
+		"/pull": {"methods": REST.READ, "session": True},
+		"/websocket": {"methods": REST.READ, "session": True}
+
+	}, 'webpoll', "https?://(.*\\.)?%s" % Conf.get(("rest","allowed")).replace('.', '\\.')).run(
+		host=oRestConf['webpoll']['host'],
+		port=oRestConf['webpoll']['port'],
+		workers=oRestConf['webpoll']['workers'],
+		timeout='timeout' in oRestConf['webpoll'] and oRestConf['webpoll']['timeout'] or 30
+	)

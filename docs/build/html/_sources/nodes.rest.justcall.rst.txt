@@ -1,0 +1,7 @@
+nodes.rest.justcall module
+==========================
+
+.. automodule:: nodes.rest.justcall
+   :members:
+   :undoc-members:
+   :show-inheritance:

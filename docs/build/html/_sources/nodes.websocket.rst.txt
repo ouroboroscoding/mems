@@ -1,0 +1,10 @@
+nodes.websocket package
+=======================
+
+Module contents
+---------------
+
+.. automodule:: nodes.websocket
+   :members:
+   :undoc-members:
+   :show-inheritance:
