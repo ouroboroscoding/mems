@@ -2686,10 +2686,10 @@ class Monolith(Services.Service):
 
 		# Store transfer note
 		oSmpNote = SmpNote(dNote)
-		oSmpNote.create()
+		sID = oSmpNote.create()
 
-		# Return OK
-		return Services.Response(True)
+		# Return the Note ID
+		return Services.Response(sID);
 
 	def customerProviderTransfer_update(self, data, sesh):
 		"""Customer Provider Transfer
@@ -2732,6 +2732,7 @@ class Monolith(Services.Service):
 		dData = {
 			"customerId": int(dDetails['customerId']),
 			"continuous": 0,
+			"ticket": oClaim['ticket'],
 			"user": data['user_id'],
 			"transferredBy": sesh['memo_id'],
 			"viewed": False
@@ -2794,10 +2795,10 @@ class Monolith(Services.Service):
 			"createdAt": sDT,
 			"updatedAt": sDT
 		})
-		oSmpNote.create()
+		sNoteID = oSmpNote.create()
 
-		# Return OK
-		return Services.Response(True)
+		# Return the note ID
+		return Services.Response(sNoteID)
 
 	def customerProviders_read(self, data, sesh):
 		"""Customer Providers
@@ -4178,10 +4179,10 @@ class Monolith(Services.Service):
 			"createdAt": sDT,
 			"updatedAt": sDT
 		})
-		oSmpNote.create()
+		sNoteID = oSmpNote.create()
 
-		# Return OK
-		return Services.Response(True)
+		# Return the note ID
+		return Services.Response(sNoteID)
 
 	def orderContinuousDecline_update(self, data, sesh):
 		"""Order Continuous Decline
@@ -4307,7 +4308,7 @@ class Monolith(Services.Service):
 			"createdAt": sDT,
 			"updatedAt": sDT
 		})
-		oSmpNote.create()
+		sNoteID = oSmpNote.create()
 
 		# Find the order status (fuck this is fucking stupid as fuck, fuck memo)
 		oStatus = SmpOrderStatus.filter({
@@ -4329,8 +4330,8 @@ class Monolith(Services.Service):
 			# Notify the patient of the decline
 			SMSWorkflow.providerDeclines(data['orderId'], sesh['memo_id'], self)
 
-		# Return OK
-		return Services.Response(True)
+		# Return the note ID
+		return Services.Response(sNoteID)
 
 	def orderLabel_update(self, data, sesh):
 		"""Order Label
