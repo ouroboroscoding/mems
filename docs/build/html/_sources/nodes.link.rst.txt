@@ -1,8 +1,5 @@
-nodes.link package
-==================
-
-Module contents
----------------
+nodes.link module
+=================
 
 .. automodule:: nodes.link
    :members:

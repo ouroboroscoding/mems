@@ -7,10 +7,17 @@ Subpackages
 .. toctree::
    :maxdepth: 4
 
-   nodes.external
-   nodes.link
    nodes.rest
    nodes.websocket
+
+Submodules
+----------
+
+.. toctree::
+   :maxdepth: 4
+
+   nodes.external
+   nodes.link
 
 Module contents
 ---------------
