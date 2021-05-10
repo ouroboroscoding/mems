@@ -77,12 +77,7 @@ class Reports(Services.Service):
 		"""
 
 		# Make sure the user has the proper permission to do this
-		oResponse = Services.read('auth', 'rights/verify', {
-			"name": "report_recipients",
-			"right": Rights.CREATE
-		}, sesh)
-		if not oResponse.data:
-			return Services.Response(error=Rights.INVALID)
+		Rights.check(sesh, 'report_recipients', Rights.CREATE)
 
 		# Verify fields
 		try: DictHelper.eval(data, ['name', 'addresses'])
@@ -125,12 +120,7 @@ class Reports(Services.Service):
 		"""
 
 		# Make sure the user has the proper permission to do this
-		oResponse = Services.read('auth', 'rights/verify', {
-			"name": "report_recipients",
-			"right": Rights.DELETE
-		}, sesh)
-		if not oResponse.data:
-			return Services.Response(error=Rights.INVALID)
+		Rights.check(sesh, 'report_recipients', Rights.DELETE)
 
 		# Verify fields
 		try: DictHelper.eval(data, ['_id'])
@@ -160,12 +150,7 @@ class Reports(Services.Service):
 		"""
 
 		# Make sure the user has the proper permission to do this
-		oResponse = Services.read('auth', 'rights/verify', {
-			"name": "report_recipients",
-			"right": Rights.READ
-		}, sesh)
-		if not oResponse.data:
-			return Services.Response(error=Rights.INVALID)
+		Rights.check(sesh, 'report_recipients', Rights.READ)
 
 		for d in Recipients.get(raw=True):
 			print(d)
@@ -226,12 +211,7 @@ class Reports(Services.Service):
 		"""
 
 		# Make sure the user has the proper permission to do this
-		oResponse = Services.read('auth', 'rights/verify', {
-			"name": "report_recipients",
-			"right": Rights.READ
-		}, sesh)
-		if not oResponse.data:
-			return Services.Response(error=Rights.INVALID)
+		Rights.check(sesh, 'report_recipients', Rights.READ)
 
 		# Verify fields
 		try: DictHelper.eval(data, ['_id'])

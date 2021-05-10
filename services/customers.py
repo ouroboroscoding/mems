@@ -84,13 +84,7 @@ class Customers(Services.Service):
 		except ValueError as e: return Services.Response(error=(1001, [(f, 'missing') for f in e.args]))
 
 		# Make sure the user has the proper permission to do this
-		oResponse = Services.read('auth', 'rights/verify', {
-			"name": "customers",
-			"right": Rights.UPDATE,
-			"ident": data['customer']
-		}, sesh)
-		if not oResponse.data:
-			return Services.Response(error=Rights.INVALID)
+		Rights.check(sesh, 'customers', Rights.UPDATE, data['customer'])
 
 		# Make sure the customer exists
 		if not Customer.exists(data['customer']):
@@ -140,13 +134,7 @@ class Customers(Services.Service):
 			return Services.Response(error=1104)
 
 		# Make sure the user has the proper permission to do this
-		oResponse = Services.read('auth', 'rights/verify', {
-			"name": "customers",
-			"right": Rights.READ,
-			"ident": dAddress['customer']
-		}, sesh)
-		if not oResponse.data:
-			return Services.Response(error=Rights.INVALID)
+		Rights.check(sesh, 'customers', Rights.READ, dAddress['customer'])
 
 		# Return the address record
 		return Services.Response(dAddress)
@@ -174,13 +162,7 @@ class Customers(Services.Service):
 			return Services.Response(error=1104)
 
 		# Make sure the user has the proper permission to do this
-		oResponse = Services.read('auth', 'rights/verify', {
-			"name": "customers",
-			"right": Rights.UPDATE,
-			"ident": oAddress['customer']
-		}, sesh)
-		if not oResponse.data:
-			return Services.Response(error=Rights.INVALID)
+		Rights.check(sesh, 'customers', Rights.UPDATE, oAddress['customer'])
 
 		# Remove fields that can't be changed
 		del data['_id']
@@ -281,12 +263,7 @@ class Customers(Services.Service):
 		"""
 
 		# Make sure the user has the proper permission to do this
-		oResponse = Services.read('auth', 'rights/verify', {
-			"name": "customers",
-			"right": Rights.CREATE
-		}, sesh)
-		if not oResponse.data:
-			return Services.Response(error=Rights.INVALID)
+		Rights.check(sesh, 'customers', Rights.CREATE)
 
 		# At minimum we need an email address
 		try: DictHelper.eval(data, ['email'])
@@ -334,13 +311,7 @@ class Customers(Services.Service):
 		except ValueError as e: return Services.Response(error=(1001, [(f, 'missing') for f in e.args]))
 
 		# Make sure the user has the proper permission to do this
-		oResponse = Services.read('auth', 'rights/verify', {
-			"name": "customers",
-			"right": Rights.READ,
-			"ident": data['_id']
-		}, sesh)
-		if not oResponse.data:
-			return Services.Response(error=Rights.INVALID)
+		Rights.check(sesh, 'customers', Rights.READ, data['_id'])
 
 		# Find the customer
 		dCustomer = Customer.get(data['_id'], raw=True)
@@ -383,13 +354,7 @@ class Customers(Services.Service):
 		except ValueError as e: return Services.Response(error=(1001, [(f, 'missing') for f in e.args]))
 
 		# Make sure the user has the proper permission to do this
-		oResponse = Services.read('auth', 'rights/verify', {
-			"name": "customers",
-			"right": Rights.UPDATE,
-			"ident": data['_id']
-		}, sesh)
-		if not oResponse.data:
-			return Services.Response(error=Rights.INVALID)
+		Rights.check(sesh, 'customers', Rights.UPDATE, data['_id'])
 
 		# Fetch the customer
 		oCustomer = Customer.get(data['_id'])
@@ -434,13 +399,7 @@ class Customers(Services.Service):
 		except ValueError as e: return Services.Response(error=(1001, [(f, 'missing') for f in e.args]))
 
 		# Make sure the user has the proper permission to do this
-		oResponse = Services.read('auth', 'rights/verify', {
-			"name": "customers",
-			"right": Rights.READ,
-			"ident": data['customer']
-		}, sesh)
-		if not oResponse.data:
-			return Services.Response(error=Rights.INVALID)
+		Rights.check(sesh, 'customers', Rights.READ, data['customer'])
 
 		# If the deactivated flag wasn't passed
 		if 'deactivated' not in data:
@@ -476,13 +435,7 @@ class Customers(Services.Service):
 		except ValueError as e: return Services.Response(error=(1001, [(f, 'missing') for f in e.args]))
 
 		# Make sure the user has the proper permission to do this
-		oResponse = Services.read('auth', 'rights/verify', {
-			"name": "customers_notes",
-			"right": Rights.READ,
-			"ident": data['customer']
-		}, sesh)
-		if not oResponse.data:
-			return Services.Response(error=Rights.INVALID)
+		Rights.check(sesh, 'customers_notes', Rights.READ, data['customer'])
 
 		# Get all the notes
 		lNotes = Note.filter({
@@ -525,13 +478,7 @@ class Customers(Services.Service):
 		except ValueError as e: return Services.Response(error=(1001, [(f, 'missing') for f in e.args]))
 
 		# Make sure the user has the proper permission to do this
-		oResponse = Services.read('auth', 'rights/verify', {
-			"name": "customers_notes",
-			"right": Rights.CREATE,
-			"ident": data['customer']
-		}, sesh)
-		if not oResponse.data:
-			return Services.Response(error=Rights.INVALID)
+		Rights.check(sesh, 'customers_notes', Rights.CREATE, data['customer'])
 
 		# Make sure the customer exists
 		if not Customer.exists(data['customer']):
