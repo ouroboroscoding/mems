@@ -1,8 +1,5 @@
-nodes.external package
-======================
-
-Module contents
----------------
+nodes.external module
+=====================
 
 .. automodule:: nodes.external
    :members:
