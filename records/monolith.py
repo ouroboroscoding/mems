@@ -103,6 +103,7 @@ class Calendly(Record_MySQL.Record):
 		sSQL = "SELECT\n" \
 				"	`cal`.`prov_name`,\n" \
 				"	`cal`.`prov_emailAddress`,\n" \
+				"	`cal`.`location`,\n" \
 				"	UNIX_TIMESTAMP(`cal`.`start`) as `start`, \n" \
 				"	UNIX_TIMESTAMP(`cal`.`end`) as `end`\n" \
 				"FROM `%(db)s`.`%(table)s` as `cal`,\n" \
@@ -165,6 +166,7 @@ class Calendly(Record_MySQL.Record):
 				"	`cal`.`pat_name` as `name`,\n" \
 				"	`cal`.`pat_emailAddress` as `emailAddress`,\n" \
 				"	`cal`.`pat_phoneNumber` as `phoneNumber`,\n" \
+				"	`cal`.`location` as `location`,\n" \
 				"	UNIX_TIMESTAMP(`cal`.`start`) as `start`, \n" \
 				"	UNIX_TIMESTAMP(`cal`.`end`) as `end`,\n" \
 				"	`ev`.`type`\n" \
