@@ -1513,7 +1513,7 @@ class CSR(Services.Service):
 		"""
 
 		# Check internal key or rights
-		Rights.internalOrCheck(data, sesh, 'csr_claims', Rights.CREATE)
+		Rights.internalOrCheck(data, sesh, ['csr_claims', 'order_claims'], Rights.CREATE)
 
 		# If we got any actions
 		try: dAction = data.pop('action')
@@ -1651,7 +1651,7 @@ class CSR(Services.Service):
 		"""
 
 		# Check internal key or rights
-		Rights.internalOrCheck(data, sesh, 'csr_claims', Rights.CREATE)
+		Rights.internalOrCheck(data, sesh, ['csr_claims', 'order_claims'], Rights.CREATE)
 
 		# Verify minimum fields
 		try: DictHelper.eval(data, ['ticket', 'type', 'subtype'])
@@ -1721,7 +1721,7 @@ class CSR(Services.Service):
 		"""
 
 		# Check internal key or rights
-		Rights.internalOrCheck(data, sesh, 'csr_claims', Rights.CREATE)
+		Rights.internalOrCheck(data, sesh, ['csr_claims', 'order_claims'], Rights.CREATE)
 
 		# Verify minimum fields
 		try: DictHelper.eval(data, ['ticket'])
@@ -1762,7 +1762,7 @@ class CSR(Services.Service):
 		"""
 
 		# Check internal key or rights
-		Rights.internalOrCheck(data, sesh, 'csr_claims', Rights.CREATE)
+		Rights.internalOrCheck(data, sesh, ['csr_claims', 'order_claims'], Rights.CREATE)
 
 		# Init the filter
 		dFilter = {}
@@ -1805,7 +1805,7 @@ class CSR(Services.Service):
 		"""
 
 		# Check rights
-		Rights.check(sesh, 'csr_claims', Rights.CREATE)
+		Rights.check(sesh, ['csr_claims', 'order_claims'], Rights.CREATE)
 
 		# Verify minimum fields
 		try: DictHelper.eval(data, ['_id', 'subtype'])
@@ -1860,7 +1860,7 @@ class CSR(Services.Service):
 		"""
 
 		# Check rights
-		Rights.check(data, sesh, 'csr_claims', Rights.READ)
+		Rights.check(data, sesh, ['csr_claims', 'order_claims'], Rights.READ)
 
 		# If we have crm type and ID
 		if 'crm_type' in data and 'crm_id' in data:

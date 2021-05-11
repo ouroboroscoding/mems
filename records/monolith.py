@@ -2094,6 +2094,7 @@ class KtOrderClaim(Record_MySQL.Record):
 				"	`ktoc`.`orderId`,\n" \
 				"	`ktoc`.`transferredBy`,\n" \
 				"	`ktoc`.`viewed`,\n" \
+				"	`ktoc`.`ticket`,\n" \
 				"	`ktoc`.`continuous`,\n" \
 				"	CONCAT(`ktc`.`firstName`, ' ', `ktc`.`lastName`) as `customerName`,\n" \
 				"	IFNULL(`c`.`type`, 'view') as `type`\n" \

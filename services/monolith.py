@@ -2538,7 +2538,8 @@ class Monolith(Services.Service):
 				"continuous": oClaim['continuous'],
 				"user": oClaim['provider'],
 				"transferredBy": sesh['memo_id'],
-				"viewed": False
+				"viewed": False,
+				"ticket": None
 			}
 
 			# Create a new claim instance for the agent and store in the DB
@@ -2635,7 +2636,8 @@ class Monolith(Services.Service):
 			"ticket": oClaim['ticket'],
 			"user": data['user_id'],
 			"transferredBy": sesh['memo_id'],
-			"viewed": False
+			"viewed": False,
+			"ticket": oClaim['ticket']
 		}
 
 		# Create a new claim instance for the agent and store in the DB
@@ -4368,6 +4370,7 @@ class Monolith(Services.Service):
 		dData = {
 			"phoneNumber": dKtCustomer['phoneNumber'],
 			"user": data['agent'],
+			"ticket": 'ticket' in data and data['ticket'] or oOrderClaim['ticket'],
 			"transferredBy": sesh['memo_id'],
 			"provider": sesh['memo_id'],
 			"orderId": oOrderClaim['orderId'],
@@ -4477,7 +4480,7 @@ class Monolith(Services.Service):
 
 		# Store transfer note
 		oSmpNote = SmpNote(dNote)
-		oSmpNote.create()
+		sNoteID = oSmpNote.create()
 
 		# See if we have a customer msg summary
 		dCMP = CustomerMsgPhone.existsByCustomerId(data['customerId'])
@@ -4500,7 +4503,7 @@ class Monolith(Services.Service):
 			oConvo.create()
 
 		# Return OK
-		return Services.Response(True)
+		return Services.Response(sNoteID)
 
 	def ordersPendingCounts_read(self, data, sesh):
 		"""Orders Pending Counts
