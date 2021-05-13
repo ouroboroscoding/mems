@@ -446,7 +446,7 @@ class Monolith(Services.Service):
 
 		# If continuous was not passed
 		if 'continuous' not in data:
-			data['continuous'] = None
+			data['continuous'] = 0
 
 		# Check how many claims this user already has
 		iCount = CustomerClaimed.count(filter={
@@ -2251,7 +2251,7 @@ class Monolith(Services.Service):
 
 		# Go through each record and add a continuous list
 		for d in lRecords:
-			d['continuous'] = d['customerId'] in dOrdersCont and dOrdersCont[d['customerId']] or False
+			d['continuous'] = d['customerId'] in dOrdersCont and dOrdersCont[d['customerId']] or 0
 
 		# Return the results
 		return Services.Response(lRecords)
@@ -2892,6 +2892,54 @@ class Monolith(Services.Service):
 
 		# Return whatever is found
 		return Services.Response(dRecords)
+
+	def internalIncomingSms_read(self, data):
+		"""Internal: Incoming SMS
+
+		Used by the CSR service to get the list of incoming SMS message IDs in
+		a range so they can be associated to tickets
+
+		Arguments:
+			data (dict): Data sent with the request
+
+		Returns:
+			Services.Response
+		"""
+
+		# Check for internal key
+		Rights.internal(data)
+
+		# Verify fields
+		try: DictHelper.eval(data, ['customerPhone', 'start', 'end'])
+		except ValueError as e: return Services.Response(error=(1001, [(f, 'missing') for f in e.args]))
+
+		# Make sure start and end are unsigned ints
+		lErrors = []
+		for f in ['start', 'end']:
+			try:
+				data[f] = int(data[f])
+				if data[f] < 0:
+					lErrors.append([f, 'must be unsigned'])
+			except ValueError:
+				lErrors.append([f, 'not an integer'])
+
+		# If we got any errors
+		if lErrors:
+			return Services.Error(1001, lErrors)
+
+		# Get the IDs of the messages in the range
+		Record_MySQL.verbose(True)
+		lMessages = CustomerCommunication.filter({
+			"fromPhone": data['customerPhone'],
+			"createdAt": {"between": [
+				Record_MySQL.Literal('FROM_UNIXTIME(%d)' % data['start']),
+				Record_MySQL.Literal('FROM_UNIXTIME(%d)' % data['end'])
+			]}
+		}, raw=['id'])
+		Record_MySQL.verbose(False)
+
+		# Fetch the IDs and return
+		return Services.Response([d['id'] for d in lMessages])
 
 	def internalTicketInfo(self, data):
 		"""Internal: Ticket Info
@@ -3629,7 +3677,7 @@ class Monolith(Services.Service):
 
 		# If 'continuous' is missing, assume false
 		if 'continuous' not in data:
-			data['continuous'] = False
+			data['continuous'] = 0
 
 		# Check how many claims this user already has
 		iCount = KtOrderClaim.count(filter={
@@ -4375,7 +4423,7 @@ class Monolith(Services.Service):
 			"provider": sesh['memo_id'],
 			"orderId": oOrderClaim['orderId'],
 			"continuous": oOrderClaim['continuous'],
-			"viewed": False
+			"viewed": 0
 		}
 
 		# Get the user name

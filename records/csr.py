@@ -232,14 +232,11 @@ class TemplateSMS(Record_MySQL.Record):
 class Ticket(Record_MySQL.Record):
 	"""Ticket
 
-	Represents an support ticket
+	Represents a support ticket
 	"""
 
 	_conf = None
 	"""Configuration"""
-
-	_resolved = None
-	"""Holds the unsigned integer representing resolved"""
 
 	@classmethod
 	def config(cls):
@@ -262,32 +259,18 @@ class Ticket(Record_MySQL.Record):
 		return cls._conf
 
 	@classmethod
-	def withResolution(ids=None, between=None):
-		"""With Resolutions
+	def withState(ids=None):
+		"""With State
 
-		Returns tickets with their associated resolutions, even if not resolved
-		yet
+		Returns tickets with their associated opened and resolved records based
+		on the given IDs. To first get IDs take a look at the idsByRange method
 
 		Arguments:
-			ids (str[]): Optional list of IDs to return
-			between (list): Optional range of tickets 0 => start, 1 => end
+			ids (str[]): List of IDs to return
 
 		Returns:
 			list
 		"""
-
-		# Init the WHERE
-		lWhere = []
-
-		# If we have IDs
-		if ids:
-			lWhere.append("`t`.`_id` IN ('%s')" % "','".join(ids))
-
-		# If we have a range
-		if between:
-			lWhere.append("`t`.`resolved` BETWEEN FROM_UNIXTIME(%d) AND FROM_UNIXTIME(%d)" % (
-				between[0], between[1]
-			))
 
 		# Fetch the record structure
 		dStruct = cls.struct(custom)
@@ -295,19 +278,22 @@ class Ticket(Record_MySQL.Record):
 		# Generate the SQL
 		sSQL = "SELECT\n" \
 				"	`t`.*,\n" \
-				"	`a`.`memo_id`,\n" \
-				"	`a`.`subtype`\n" \
+				"	`o`.`_created` as `opened_ts`,\n" \
+				"	`o`.`type` as `opened_type`,\n" \
+				"	`o`.`memo_id` as `opened_user`,\n" \
+				"	`r`.`_created` as `resolved_ts`,\n" \
+				"	`r`.`type` as `resolved_type`,\n" \
+				"	`r`.`memo_id` as `resolved_user`\n" \
 				"FROM `%(db)s`.`%(table)s` as `t`\n" \
-				"LEFT JOIN `%(db)s`.`ticket_action` as `a` ON (\n" \
-				"	`t`.`_id` = `a`.`ticket` AND\n" \
-				"	`a`.`type` = %(resolved)d\n" \
-				")\n" \
-				"WHERE %s\n" \
+				"JOIN `%(db)s`.`%(table)s_opened` as `o` ON\n" \
+				"	`t`.`_id` = `o`.`_ticket`\n" \
+				"LEFT JOIN `%(db)s`.`%(table)s_resolved` as `r` ON\n" \
+				"	`t`.`_id` = `r`.`_ticket`\n" \
+				"WHERE `t`.`_id` IN ('%(ids)s')\n" \
 				"ORDER BY `_created`" % {
 			"db": dStruct['db'],
 			"table": dStruct['table'],
-			"list": list_id,
-			"resolved": TicketAction.resolved()
+			"ids": "','".join(ids)
 		}
 
 		# Delete all the records
@@ -316,6 +302,112 @@ class Ticket(Record_MySQL.Record):
 			sSQL,
 			Record_MySQL.ESelect.ALL
 		)
+
+	@classmethod
+	def unresolved(cls, filter, custom={}):
+		"""Unresolved
+
+		Returns the ID if any ticket is found not yet resolved based on the
+		filter
+
+		Arguments:
+			filter (dict): The filter to use for the lookup
+			custom (dict): Custom Host and DB info
+				'host' the name of the host to get/set data on
+				'append' optional postfix for dynamic DBs
+
+		Returns:
+			str|None
+		"""
+
+		# Fetch the record structure
+		dStruct = cls.struct(custom)
+
+		# Go through each value
+		lWhere = [];
+		for n,v in filter.items():
+
+			# Generate theSQL and append it to the list
+			lWhere.append(
+				'`%s` %s' % (n, cls.processValue(dStruct, n, v))
+			)
+
+		# Generate the SQL
+		sSQL = "SELECT `t`.`_id`\n" \
+				"FROM `%(db)s`.`%(table)s` as `t`\n" \
+				"LEFT JOIN `%(db)s`.`%(table)s_resolved` as `r` ON\n" \
+				"	`t`.`_id` = `r`.`_ticket`\n" \
+				"WHERE `r`.`type` is NULL\n" \
+				"AND %(where)s" % {
+			"db": dStruct['db'],
+			"table": dStruct['table'],
+			"where": ' AND '.join(lWhere)
+		}
+
+		# Delete all the records
+		Record_MySQL.Commands.select(
+			dStruct['host'],
+			sSQL,
+			Record_MySQL.ESelect.CELL
+		)
+
+	@classmethod
+	def idsByRange(cls, start, end, memo_id=None, custom={}):
+		"""User Associated
+
+		Combines the opened, resolved, and actions tables into a single
+		union and returns the distinct ticket IDs found to be associated in
+		the given date/time range
+
+		Arguments:
+			start (uint): The start timestamp of the range
+			end (uint): The end timestamp of the range
+			memo_id (int): The ID of the memo user to fetch tickets for
+
+		Returns:
+			list
+		"""
+
+		# Fetch the record structure
+		dStruct = cls.struct(custom)
+
+		# Generate the where clauses
+		sWhere = '`_created` BETWEEN FROM_UNIXTIME(%d) AND FROM_UNIXTIME(%d)' % (
+			start, end
+		)
+		if memo_id:
+			sWhere += '\nAND `memo_id` = %d' % memo_id
+
+		# Generate the SQL
+		sSQL = "SELECT `_ticket`\n" \
+				"FROM `%(db)s`.`%(table)s_opened`\n" \
+				"WHERE %(where)s\n" \
+				"UNION\n" \
+				"SELECT `_ticket`\n" \
+				"FROM `%(db)s`.`%(table)s_resolved`\n" \
+				"WHERE %(where)s\n" \
+				"UNION\n" \
+				"SELECT DISTINCT `ticket`\n" \
+				"FROM `%(db)s`.`%(table)s_action`\n" \
+				"WHERE %(where)s\n" % {
+			"db": dStruct['db'],
+			"table": dStruct['table'],
+			"where": sWhere
+		}
+
+		# Get the ticket IDs
+		lIDs = Record_MySQL.Commands.select(
+			dStruct['host'],
+			sSQL,
+			ESelect.COLUMN
+		)
+
+		# If we have any
+		if lIDs:
+			lIDs = list(set(lIDs))
+
+		# Return the IDs
+		return lIDs
 
 # TicketAction class
 class TicketAction(Record_MySQL.Record):
@@ -326,12 +418,6 @@ class TicketAction(Record_MySQL.Record):
 
 	_conf = None
 	"""Configuration"""
-
-	_resolved = None
-	"""The unsigned integer used to represent 'Resolved'"""
-
-	subtypes = None
-	"""The allowed subtypes of actions based on the type"""
 
 	types = None
 	"""The allowed types of actions"""
@@ -405,30 +491,6 @@ class TicketAction(Record_MySQL.Record):
 		cls.types = DictHelper.keysToInts(
 			JSON.load('definitions/csr/ticket_action_types.json')
 		)
-		cls.subtypes = DictHelper.keysToInts(
-			JSON.load('definitions/csr/ticket_action_subtypes.json')
-		)
-
-		# Go through each acton type
-		for i,s in cls.types.items():
-
-			# If the string is resolved
-			if s == 'Resolved':
-
-				# Set the value in the table
-				cls._resolved = i
-				break
-
-	@classmethod
-	def resolved(cls):
-		"""Resolved
-
-		Returns the resolved ID
-
-		Returns:
-			uint
-		"""
-		return cls._resolved
 
 # TicketItem class
 class TicketItem(Record_MySQL.Record):
@@ -439,6 +501,46 @@ class TicketItem(Record_MySQL.Record):
 
 	_conf = None
 	"""Configuration"""
+
+	@classmethod
+	def addSMS(cls, ticket, ids, custom={}):
+		"""Add SMS
+
+		Adds a list of SMS ids while ignoring any duplicates
+
+		Arguments:
+			ticket (str): The ID of the ticket
+			ids (list): The IDs to add as items
+			custom (dict): Custom Host and DB info
+				'host' the name of the host to get/set data on
+				'append' optional postfix for dynamic DBs
+
+		Returns:
+			None
+		"""
+
+		# Fetch the record structure
+		dStruct = cls.struct(custom)
+
+		# Generate the values
+		lValues = [
+			"(UUID(), '%s', 'sms', '%s')" % (ticket, s)
+			for s in ids
+		]
+
+		# Generate the SQL
+		sSQL = 'INSERT IGNORE INTO `%(db)s`.`%(table)s` (`_id`, `ticket`, `type`, `identifier`) VALUES\n' \
+				'%(inserts)s' % {
+			"db": dStruct['db'],
+			"table": dStruct['table'],
+			"inserts": ',\n'.join(lValues)
+		}
+
+		# Execute the inserts
+		Record_MySQL.Commands.execute(
+			dStruct['host'],
+			sSQL
+		)
 
 	@classmethod
 	def byTicket(cls, ticket, custom={}):
@@ -489,6 +591,66 @@ class TicketItem(Record_MySQL.Record):
 		if not cls._conf:
 			cls._conf = Record_MySQL.Record.generateConfig(
 				Tree.fromFile('definitions/csr/ticket_item.json'),
+				'mysql'
+			)
+
+		# Return the config
+		return cls._conf
+
+# TicketOpened class
+class TicketOpened(Record_MySQL.Record):
+	"""Ticket Opened
+
+	Represents when a support ticket was opened
+	"""
+
+	_conf = None
+	"""Configuration"""
+
+	@classmethod
+	def config(cls):
+		"""Config
+
+		Returns the configuration data associated with the record type
+
+		Returns:
+			dict
+		"""
+
+		# If we haven loaded the config yet
+		if not cls._conf:
+			cls._conf = Record_MySQL.Record.generateConfig(
+				Tree.fromFile('definitions/csr/ticket_opened.json'),
+				'mysql'
+			)
+
+		# Return the config
+		return cls._conf
+
+# TicketResolved class
+class TicketResolved(Record_MySQL.Record):
+	"""Ticket Resolved
+
+	Represents when a support ticket was resolved
+	"""
+
+	_conf = None
+	"""Configuration"""
+
+	@classmethod
+	def config(cls):
+		"""Config
+
+		Returns the configuration data associated with the record type
+
+		Returns:
+			dict
+		"""
+
+		# If we haven loaded the config yet
+		if not cls._conf:
+			cls._conf = Record_MySQL.Record.generateConfig(
+				Tree.fromFile('definitions/csr/ticket_resolved.json'),
 				'mysql'
 			)
 

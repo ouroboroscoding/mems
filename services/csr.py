@@ -26,7 +26,8 @@ from shared import Rights
 # Records imports
 from records.csr import Agent, CustomList, CustomListItem, Reminder, \
 						TemplateEmail, TemplateSMS, \
-						Ticket, TicketAction, TicketItem
+						Ticket, TicketAction, TicketItem, \
+						TicketOpened, TicketResolved
 
 # Valid DOB
 _DOB = Node('date')
@@ -41,7 +42,7 @@ class CSR(Services.Service):
 	"""
 
 	_install = [Agent, CustomList, CustomListItem, TemplateEmail, TemplateSMS,
-				Ticket, TicketAction, TicketItem]
+				Ticket, TicketAction, TicketItem, TicketOpened, TicketResolved]
 	"""Record types called in install"""
 
 	def initialise(self):
@@ -1515,13 +1516,49 @@ class CSR(Services.Service):
 		# Check internal key or rights
 		Rights.internalOrCheck(data, sesh, ['csr_claims', 'order_claims'], Rights.CREATE)
 
-		# If we got any actions
-		try: dAction = data.pop('action')
-		except KeyError: dAction = False
+		# Create a new opened instance
+		try:
+			oOpened = TicketOpened({
+				"_ticket": UUID_PLACEHOLDER,
+				"type": data['type'],
+				"memo_id": sesh['memo_id']
+			})
 
-		# If we got any items
-		try: lItems = data.pop('items')
-		except KeyError: lItems = False
+			# Remove the type from the data so it doesn't trip up the Ticket
+			#	create
+			data.pop('type')
+
+		except ValueError as e:
+			return Services.Error(1001, ['action.%s' % l[0] for l in e.args[0]])
+
+		# Try to pop off the items
+		try: lItemsData = data.pop('items')
+		except KeyError: lItemsData = False
+
+		# Create a list of items records
+		lItems = []
+
+		# If the pop worked
+		if lItemsData:
+
+			# Go through each item
+			for i in range(len(lItemsData)):
+
+				# Add ticket ID to the item
+				lItemsData[i]['ticket'] = UUID_PLACEHOLDER
+
+				# Make sure the identifier is a string
+				if 'identifier' in lItemsData[i]:
+					lItemsData[i]['identifier'] = str(lItemsData[i]['identifier'])
+
+				# Create a new instance
+				try:
+					oItem = TicketItem(lItemsData[i])
+				except ValueError as e:
+					return Services.Error(1001, ['item.%d.%s' % (i, l[0]) for l in e.args[0]])
+
+			# Add it to the list
+			lItems.append(oItem)
 
 		# Create an instance to test the fields
 		try:
@@ -1529,67 +1566,16 @@ class CSR(Services.Service):
 		except ValueError as e:
 			return Services.Error(1001, e.args[0])
 
-		# Create a list of sub records
-		lSubs = []
-
-		# If we have an action
-		if dAction:
-
-			# Verify minimum fields
-			try: DictHelper.eval(dAction, ['type', 'subtype'])
-			except ValueError as e: return Services.Error(1001, [('action.%s' % f, 'missing') for f in e.args])
-
-			# Make sure the type is valid
-			if dAction['type'] not in TicketAction.types:
-				return Services.Error(1001, [('action.type', 'invalid')])
-
-			# Make sure the subtype is valid
-			if dAction['subtype'] not in TicketAction.subtypes[dAction['type']]:
-				return Services.Error(1001, [('action.subtype', 'invalid')])
-
-			# Add the ticket ID to the action
-			dAction['ticket'] = UUID_PLACEHOLDER
-
-			# Add the memo ID from the session
-			dAction['memo_id'] = sesh['memo_id']
-
-			# Create a new instance
-			try:
-				oAction = TicketAction(dAction)
-			except ValueError as e:
-				return Services.Error(1001, ['action.%s' % l[0] for l in e.args[0]])
-
-			# Add it to the list
-			lSubs.append(oAction)
-
-		# If we have items
-		if lItems:
-
-			# Go through each item
-			for i in range(len(lItems)):
-
-				# Add ticket ID to the item
-				lItems[i]['ticket'] = UUID_PLACEHOLDER
-
-				# Make sure the identifier is a string
-				if 'identifier' in lItems[i]:
-					lItems[i]['identifier'] = str(lItems[i]['identifier'])
-
-				# Create a new instance
-				try:
-					oItem = TicketItem(lItems[i])
-				except ValueError as e:
-					return Services.Error(1001, ['item.%d.%s' % (i, l[0]) for l in e.args[0]])
-
-			# Add it to the list
-			lSubs.append(oItem)
-
 		# Create the ticket and store the ID
 		sID = oTicket.create()
 
+		# Create the opened
+		oOpened['_ticket'] = sID
+		oOpened.create()
+
 		# If we have sub items, add the real ID to each and create
-		if lSubs:
-			for o in lSubs:
+		if lItems:
+			for o in lItems:
 				o['ticket'] = sID
 				o.create()
 
@@ -1625,11 +1611,17 @@ class CSR(Services.Service):
 			# Check permissions
 			Rights.check(sesh, 'csr_overwrite', Rights.CREATE)
 
+		# Delete the opened
+		TicketOpened.deleteGet(data['_id'], 'ticket')
+
 		# Delete the actions
 		TicketAction.deleteGet(data['_id'], 'ticket')
 
 		# Delete the items
 		TicketItem.deleteGet(data['_id'], 'ticket')
+
+		# Delete the resolved
+		TicketResolved.deleteGet(data['_id'], 'ticket')
 
 		# Delete the ticket
 		oTicket.delete()
@@ -1654,20 +1646,20 @@ class CSR(Services.Service):
 		Rights.internalOrCheck(data, sesh, ['csr_claims', 'order_claims'], Rights.CREATE)
 
 		# Verify minimum fields
-		try: DictHelper.eval(data, ['ticket', 'type', 'subtype'])
+		try: DictHelper.eval(data, ['ticket', 'name', 'type'])
 		except ValueError as e: return Services.Response(error=(1001, [(f, 'missing') for f in e.args]))
 
 		# If the ticket doesn't exist
 		if not Ticket.exists(data['ticket']):
 			return Services.Error(1104)
 
-		# Make sure the type is valid
-		if data['type'] not in TicketAction.types:
+		# Make sure the name is valid
+		if data['name'] not in TicketAction.types:
 			return Services.Error(1001, [('type', 'invalid')])
 
-		# Make sure the subtype is valid
-		if data['subtype'] not in TicketAction.subtypes[data['type']]:
-			return Services.Error(1001, [('subtype', 'invalid')])
+		# Make sure the type is valid
+		if data['type'] not in TicketAction.types[data['name']]:
+			return Services.Error(1001, [('type', 'invalid')])
 
 		# Add the memo ID from the session
 		data['memo_id'] = sesh['memo_id']
@@ -1780,15 +1772,12 @@ class CSR(Services.Service):
 		else:
 			return Services.Error(1001, [('crm_type', 'missing'), ('crm_id', 'missing')])
 
-		# Check if resolved is null
-		dFilter['resolved'] = None
-
 		# Find the ticket
-		dTicket = Ticket.filter(dFilter, raw=['_id'], limit=1)
+		mID = Ticket.unresolved(dFilter)
 
 		# Return the ID or false
 		return Services.Response(
-			dTicket and dTicket['_id'] or False
+			mID and mID or False
 		)
 
 	def ticketResolve_update(self, data, sesh):
@@ -1808,43 +1797,80 @@ class CSR(Services.Service):
 		Rights.check(sesh, ['csr_claims', 'order_claims'], Rights.CREATE)
 
 		# Verify minimum fields
-		try: DictHelper.eval(data, ['_id', 'subtype'])
+		try: DictHelper.eval(data, ['_id', 'type'])
 		except ValueError as e: return Services.Response(error=(1001, [(f, 'missing') for f in e.args]))
 
 		# Find the ticket
-		oTicket = Ticket.get(data['_id'])
-		if not oTicket:
+		dTicket = Ticket.get(data['_id'], raw=['_created', 'phone_number'])
+		if not dTicket:
 			return Services.Error(1104)
-
-		# Init the action data with the resolved type
-		dAction = {"type": TicketAction.resolved()}
-
-		# Make sure the subtype is valid
-		if data['subtype'] not in TicketAction.subtypes[dAction['type']]:
-			return Services.Error(1001, [('action.subtype', 'invalid')])
-		dAction['subtype'] = data['subtype']
-
-		# Add the ticket ID to the action
-		dAction['ticket'] = data['_id']
-
-		# Add the memo ID from the session
-		dAction['memo_id'] = sesh['memo_id']
 
 		# Create a new instance
 		try:
-			oAction = TicketAction(dAction)
+			oResolved = TicketResolved({
+				"_ticket": data['_id'],
+				"type": data['type'],
+				"memo_id": sesh['memo_id']
+			})
 		except ValueError as e:
-			return Services.Error(1001, ['action.%s' % l[0] for l in e.args[0]])
+			return Services.Error(1001, e.args[0])
 
-		# Store the data
-		oAction.create()
+		# Check for incoming SMS messages to add
+		oResponse = Services.read('monolith', 'internal/incoming_sms', {
+			"_internal_": Services.internalKey(),
+			"customerPhone": dTicket['phone_number'],
+			"start": dTicket['_created'],
+			"end": int(time())
+		})
+		if oResponse.errorExists():
+			return oResponse
 
-		# Mark the ticket as resolved
-		oTicket['resolved'] = int(time())
-		oTicket.save()
+		# If we have any messages
+		if oResponse.data:
+			TicketItem.addSMS(data['_id'], oResponse.data)
 
-		# Return OK
-		return Services.Response(True)
+		# Store the data and return the result
+		return Services.Response(
+			oResolved.create()
+		)
+
+	def tickets_read(self, data, sesh):
+		"""Tickets by User
+
+		Returns all the tickets a user has any action on
+
+		Arguments:
+			data (mixed): Data sent with the request
+			sesh (Sesh._Session): The session associated with the request
+
+		Returns:
+			Services.Response
+		"""
+
+		# Verify minimum fields
+		try: DictHelper.eval(data, ['start', 'end'])
+		except ValueError as e: return Services.Response(error=(1001, [(f, 'missing') for f in e.args]))
+
+		# If the user is not sent, or not the one signed in
+		if 'memo_id' not in data or data['memo_id'] != sesh['memo_id']:
+
+			# Check rights
+			Rights.check(data, sesh, 'csr_overwrite', Rights.READ)
+
+		# Get a list of the unique tickets IDS the user is associated with
+		lTicketIDs = Tickets.idsByRange(
+			data['start'], data['end'],
+			'memo_id' in data and data['memo_id'] or None
+		)
+
+		# Fetch the tickets by IDs with the opened and resolved info if any
+		#	exists
+		lTickets = Ticket.withState(
+			list(dTicketActions.keys())
+		)
+
+		# Return the tickets
+		return Services.Response(lTickets)
 
 	def ticketsCustomer_read(self, data, sesh):
 		"""Tickets by Customer
@@ -1869,7 +1895,7 @@ class CSR(Services.Service):
 			lTickets = Ticket.filter({
 				"crm_type": data['crm_type'],
 				"crm_id": data['crm_id']
-			}, raw=True, orderby='_created')
+			}, raw=['_id'], orderby='_created')
 
 		# Else, if we got a phone number
 		elif 'phone_number' in data:
@@ -1877,69 +1903,14 @@ class CSR(Services.Service):
 			# Find all the records by phone number
 			lTickets = Ticket.filter({
 				"phone_number": data['phone_number']
-			}, raw=True, orderby='_created')
+			}, raw=['_id'], orderby='_created')
 
 		# Else, missing data
 		else:
 			return Services.Error(1001, [('crm_type', 'missing'), ('crm_id', 'missing')])
 
-		# Return the tickets
-		return Services.Response(lTickets)
-
-	def ticketsUser_read(self, data, sesh):
-		"""Tickets by User
-
-		Returns all the tickets a user has any action on
-
-		Arguments:
-			data (mixed): Data sent with the request
-			sesh (Sesh._Session): The session associated with the request
-
-		Returns:
-			Services.Response
-		"""
-
-		# If the user is not the one signed in
-		if ('user' in data and data['user'] != sesh['user_id']) or \
-			('memo_id' in data and data['memo_id'] != sesh['memo_id']):
-
-			# Check rights
-			Rights.check(data, sesh, 'csr_overwrite', Rights.READ)
-
-		# If the memo_id is missing
-		if 'memo_id' not in data:
-			return Services.Error(1001, [('memo_id', 'missing')])
-
-		# Init the filter data
-		dFilter = {"memo_id": data['memo_id']}
-
-		# If we got a range
-		if 'range' in data:
-			dFilter['_created'] = {"between": [
-				data['range']['start'],
-				data['range']['end']
-			]}
-
-		# Get a list of the actions and ticket IDS the user is associated with
-		lActions = Actions.filter(dFilter, raw=['ticket', 'type'])
-
-		# Go through all the actions found and generate a list of unique tickets
-		#	and their actions
-		dTicketActions = {}
-		for d in lActions:
-			try: dTicketActions[d['ticket']].append(d['type'])
-			except KeyError: dTicketActions[d['ticket']] =[d['type']]
-
-		# Fetch the tickets by IDs in order by created
-		lTickets = Ticket.withResolution(
-			list(dTicketActions.keys())
-		)
-
-		# Go through each ticket and add the associated actions for the user
-		for d in lTickets:
-			d['actions'] = d['_id'] in dTicketActions and \
-							dTicketActions[d['_id']] or \
-							'N/A'
+		# Get the tickets with the state
+		lTickets = Tickets.withState([d['_id'] for d in lTickets])
 
 		# Return the tickets
 		return Services.Response(lTickets)

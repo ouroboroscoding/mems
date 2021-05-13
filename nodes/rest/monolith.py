@@ -76,6 +76,7 @@ if __name__ == "__main__":
 
 		"/internal/customersWithClaimed": {"methods": REST.READ, "session": True},
 		"/internal/ticketInfo": {"methods": REST.READ},
+		"/internal/incoming_sms": {"methods": REST.READ},
 
 		"/message/incoming": {"methods": REST.CREATE},
 		"/message/outgoing": {"methods": REST.CREATE},
