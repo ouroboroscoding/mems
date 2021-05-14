@@ -259,7 +259,7 @@ class Ticket(Record_MySQL.Record):
 		return cls._conf
 
 	@classmethod
-	def withState(ids=None):
+	def withState(cls, ids=None, custom={}):
 		"""With State
 
 		Returns tickets with their associated opened and resolved records based
@@ -267,6 +267,9 @@ class Ticket(Record_MySQL.Record):
 
 		Arguments:
 			ids (str[]): List of IDs to return
+			custom (dict): Custom Host and DB info
+				'host' the name of the host to get/set data on
+				'append' optional postfix for dynamic DBs
 
 		Returns:
 			list
@@ -290,14 +293,14 @@ class Ticket(Record_MySQL.Record):
 				"LEFT JOIN `%(db)s`.`%(table)s_resolved` as `r` ON\n" \
 				"	`t`.`_id` = `r`.`_ticket`\n" \
 				"WHERE `t`.`_id` IN ('%(ids)s')\n" \
-				"ORDER BY `_created`" % {
+				"ORDER BY `o`.`_created`" % {
 			"db": dStruct['db'],
 			"table": dStruct['table'],
 			"ids": "','".join(ids)
 		}
 
 		# Delete all the records
-		Record_MySQL.Commands.select(
+		return Record_MySQL.Commands.select(
 			dStruct['host'],
 			sSQL,
 			Record_MySQL.ESelect.ALL
@@ -379,11 +382,11 @@ class Ticket(Record_MySQL.Record):
 			sWhere += '\nAND `memo_id` = %d' % memo_id
 
 		# Generate the SQL
-		sSQL = "SELECT `_ticket`\n" \
+		sSQL = "SELECT `_ticket` as `ticket`\n" \
 				"FROM `%(db)s`.`%(table)s_opened`\n" \
 				"WHERE %(where)s\n" \
 				"UNION\n" \
-				"SELECT `_ticket`\n" \
+				"SELECT `_ticket` as `ticket`\n" \
 				"FROM `%(db)s`.`%(table)s_resolved`\n" \
 				"WHERE %(where)s\n" \
 				"UNION\n" \
@@ -399,7 +402,7 @@ class Ticket(Record_MySQL.Record):
 		lIDs = Record_MySQL.Commands.select(
 			dStruct['host'],
 			sSQL,
-			ESelect.COLUMN
+			Record_MySQL.ESelect.COLUMN
 		)
 
 		# If we have any
@@ -491,6 +494,24 @@ class TicketAction(Record_MySQL.Record):
 		cls.types = DictHelper.keysToInts(
 			JSON.load('definitions/csr/ticket_action_types.json')
 		)
+
+	@classmethod
+	def typeText(cls, name, type_):
+		"""Type Text
+
+		Returns the text representation of the action type
+
+		Arguments:
+			name (str): The action name
+			type (uint): The action type
+
+		Returns:
+			str
+		"""
+		if name not in cls.types or type_ not in cls.types[name]:
+			return 'MISSING'
+		else:
+			return cls.types[name][type_]
 
 # TicketItem class
 class TicketItem(Record_MySQL.Record):

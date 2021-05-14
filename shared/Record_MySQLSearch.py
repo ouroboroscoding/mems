@@ -86,4 +86,4 @@ class Record(Record_MySQL.Record):
 				raise ValueError(k, 'invalid type')
 
 		# Pass the newly generate fields to filter and return the result
-		return cls.filter(dFields, raw, orderby, limit, custom)
+		return cls.filter(dFields, raw=raw, orderby=orderby, limit=limit, custom=custom)

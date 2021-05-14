@@ -534,6 +534,49 @@ class CustomerCommunication(Record_MySQL.Record):
 	"""Configuration"""
 
 	@classmethod
+	def byIDs(cls, ids, custom={}):
+		"""By IDs
+
+		Returns all the messages associated with the given IDs
+
+		Arguments:
+			ids (int[]): The IDs to fetch
+			custom (dict): Custom Host and DB info
+				'host' the name of the host to get/set data on
+				'append' optional postfix for dynamic DBs
+
+		Returns:
+			list
+		"""
+
+		# Fetch the record structure
+		dStruct = cls.struct(custom)
+
+		# Generate the SQL
+		sSQL = "SELECT\n" \
+				"	`id`,\n" \
+				"	`status`,\n" \
+				"	`errorMessage`,\n" \
+				"	`fromPhone`,\n" \
+				"	`fromName`,\n" \
+				"	`notes`,\n" \
+				"	UNIX_TIMESTAMP(`createdAt`) as `createdAt`,\n" \
+				"	`type`\n" \
+				"FROM `%(db)s`.`%(table)s`\n" \
+				"WHERE `id` IN (%(ids)s)" % {
+				"db": dStruct['db'],
+				"table": dStruct['table'],
+				"ids": ','.join(map(str, ids))
+			}
+
+		# Fetch and return the data
+		return Record_MySQL.Commands.select(
+			dStruct['host'],
+			sSQL,
+			Record_MySQL.ESelect.ALL
+		)
+
+	@classmethod
 	def config(cls):
 		"""Config
 
@@ -2831,6 +2874,51 @@ class SmpNote(Record_MySQL.Record):
 			"db": dStruct['db'],
 			"table": dStruct['table'],
 			"id": customer_id
+		}
+
+		# Execute and return the select
+		return Record_MySQL.Commands.select(
+			dStruct['host'],
+			sSQL,
+			Record_MySQL.ESelect.ALL
+		)
+
+	@classmethod
+	def byIDs(cls, ids, custom={}):
+		"""By IDs
+
+		Fetches all notes associated with the given IDs
+
+		Arguments:
+			ids (int[]): The list of IDs to fetch
+			custom (dict): Custom Host and DB info
+				'host' the name of the host to get/set data on
+				'append' optional postfix for dynamic DBs
+
+		Returns:
+			list
+		"""
+
+		# Fetch the record structure
+		dStruct = cls.struct(custom)
+
+		# Generate SQL
+		sSQL = "SELECT\n" \
+				"	`smp`.`id`,\n" \
+				"	`smp`.`action`,\n" \
+				"	`smp`.`note`,\n" \
+				"	UNIX_TIMESTAMP(`smp`.`createdAt`) as `createdAt`,\n" \
+				"	CONCAT(`user`.`firstName`, ' ', `user`.`lastName`) AS `createdBy`,\n" \
+				"	`user`.`userRole` AS `userRole`\n" \
+				"FROM\n" \
+				"	`%(db)s`.`%(table)s` as `smp`,\n" \
+				"	`%(db)s`.`user` as `user`\n" \
+				"WHERE\n" \
+				"	`smp`.`id` IN (%(ids)s) AND\n" \
+				"	`smp`.`createdBy` = `user`.`id`" % {
+			"db": dStruct['db'],
+			"table": dStruct['table'],
+			"ids": ','.join(map(str, ids))
 		}
 
 		# Execute and return the select

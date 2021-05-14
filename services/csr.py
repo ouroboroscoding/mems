@@ -520,7 +520,7 @@ class CSR(Services.Service):
 		# Add the names to the agents
 		for d in lAgents:
 			try: dName = dMemoNames[d['memo_id']]
-			except KeyError: dName = {"firstName": 'Not', "lastName": 'Found'}
+			except KeyError: dName = {"firstName": 'NAME', "lastName": 'MISSING'}
 			d['firstName'] = dName['firstName']
 			d['lastName'] = dName['lastName']
 
@@ -670,9 +670,9 @@ class CSR(Services.Service):
 				d['dsClinicianId'] = dMemoUsers[d['memo_id']]['dsClinicianId']
 			else:
 				d['userName'] = 'n/a'
-				d['name'] = 'Not Found'
-				d['firstName'] = 'Not'
-				d['lastName'] = 'Found'
+				d['name'] = 'NAME MISSING'
+				d['firstName'] = 'NAME'
+				d['lastName'] = 'MISSING'
 				d['email'] = ''
 				d['dsClinicId'] = None
 				d['dsClinicianId'] = None
@@ -1675,6 +1675,122 @@ class CSR(Services.Service):
 			oAction.create()
 		)
 
+	def ticketDetails_read(self, data, sesh):
+		"""Ticket Details
+
+		Returns all the details associated with the ticket in chronological
+		order
+
+		Arguments:
+			data (mixed): Data sent with the request
+			sesh (Sesh._Session): The session associated with the request
+
+		Returns:
+			Services.Response
+		"""
+
+		# Check rights
+		Rights.check(sesh, ['csr_overwrite', 'csr_claims'], Rights.READ)
+
+		# Check ID is passed
+		if '_id' not in data:
+			return Services.Error(1001, [('_id', 'missing')])
+
+		# Make sure the ticket exists
+		if not Ticket.exists(data['_id']):
+			return Services.Error(1104)
+
+		# Start the set of user IDs
+		lUserIDs = set()
+
+		# Start the list of details
+		lDetails = []
+
+		# Get the opened state
+		dOpened = TicketOpened.get(data['_id'], raw=['_created', 'type', 'memo_id'])
+		lUserIDs.add(dOpened['memo_id'])
+		dOpened['msgType'] = 'action'
+		dOpened['name'] = 'Opened'
+		lDetails.append(dOpened)
+
+		# Get the actions
+		lActions = TicketAction.filter({"ticket": data['_id']}, raw=['_created', 'name', 'type', 'memo_id'])
+		for d in lActions:
+			d['msgType'] = 'action'
+			d['type'] = TicketAction.typeText(d['name'], d['type'])
+			lDetails.append(d)
+
+		# Get the resolved state
+		dResolved = TicketResolved.get(data['_id'], raw=['_created', 'type', 'memo_id'])
+		if dResolved:
+			lUserIDs.add(dResolved['memo_id'])
+			dResolved['msgType'] = 'action'
+			dResolved['name'] = 'Resolved'
+			lDetails.append(dResolved)
+
+		# Fetch all the user names
+		oResponse = Services.read('monolith', 'user/name', {
+			"_internal_": Services.internalKey(),
+			"id": list(lUserIDs)
+		}, sesh)
+
+		# Convert the IDs
+		dMemoNames = DictHelper.keysToInts(oResponse.data)
+
+		# Go through each detail and add the name
+		for d in lDetails:
+			try: dName = dMemoNames[d['memo_id']]
+			except KeyError: dName = {"firstName": 'NAME', "lastName": 'MISSING'}
+			d['created_by'] = '%s %s' % (dName['firstName'], dName['lastName'])
+
+		# Init the types of items
+		dItemTypes = {
+			"email": [],
+			"jc_call": [],
+			"jc_sms": [],
+			"note": [],
+			"sms": []
+		}
+
+		# Get the items
+		lItems = TicketItem.filter({"ticket": data['_id']}, raw=['type', 'identifier'])
+		for d in lItems:
+			dItemTypes[d['type']].append(d['identifier'])
+
+		# Init the memo call data
+		dData = {}
+		if dItemTypes['sms']:
+			dData['messages'] = dItemTypes['sms']
+		if dItemTypes['note']:
+			dData['notes'] = dItemTypes['note']
+
+		# If we have any data
+		if dData:
+
+			# Fetch the sms and notes from monolith
+			dData['_internal_'] = Services.internalKey()
+			oResponse = Services.read('monolith', 'internal/ticketInfo', dData)
+
+			# If we have messages
+			if 'messages' in oResponse.data:
+				for d in oResponse.data['messages']:
+					d['_created'] = d['createdAt']
+					d['msgType'] = 'sms'
+					lDetails.append(d)
+
+			# If we have notes
+			if 'notes' in oResponse.data:
+				for d in oResponse.data['notes']:
+					d['_created'] = d['createdAt']
+					d['msgType'] = 'note'
+					lDetails.append(d)
+
+		# Sort the details by created timestamp
+		lDetails.sort( key=itemgetter('_created'))
+
+		# Return all the details
+		return Services.Response(lDetails)
+
 	def ticketExists_read(self, data):
 		"""Ticket Exists
 
@@ -1851,23 +1967,60 @@ class CSR(Services.Service):
 		try: DictHelper.eval(data, ['start', 'end'])
 		except ValueError as e: return Services.Response(error=(1001, [(f, 'missing') for f in e.args]))
 
-		# If the user is not sent, or not the one signed in
-		if 'memo_id' not in data or data['memo_id'] != sesh['memo_id']:
+		# If there's no memo_id in the session
+		if 'memo_id' not in sesh:
 
 			# Check rights
-			Rights.check(data, sesh, 'csr_overwrite', Rights.READ)
+			Rights.check(sesh, 'csr_overwrite', Rights.READ)
+
+		# Else,
+		else:
+
+			# If the user is not sent, or not the one signed in
+			if 'memo_id' not in data or data['memo_id'] != sesh['memo_id']:
+				return Services.Error(Rights.INVALID)
 
 		# Get a list of the unique tickets IDS the user is associated with
-		lTicketIDs = Tickets.idsByRange(
+		lTicketIDs = Ticket.idsByRange(
 			data['start'], data['end'],
 			'memo_id' in data and data['memo_id'] or None
 		)
 
 		# Fetch the tickets by IDs with the opened and resolved info if any
 		#	exists
-		lTickets = Ticket.withState(
-			list(dTicketActions.keys())
-		)
+		lTickets = Ticket.withState(lTicketIDs)
+
+		# If there's no tickets
+		if not lTickets:
+			return Services.Response([])
+
+		# Fetch all the user IDs
+		lUsersIDs = set()
+		for d in lTickets:
+			lUsersIDs.add(d['opened_user'])
+			if d['resolved_user']:
+				lUsersIDs.add(d['resolved_user'])
+
+		# Fetch their names
+		oResponse = Services.read('monolith', 'user/name', {
+			"_internal_": Services.internalKey(),
+			"id": list(lUsersIDs)
+		}, sesh)
+
+		# Convert the IDs
+		dMemoNames = DictHelper.keysToInts(oResponse.data)
+
+		# Add the names to the agents
+		for d in lTickets:
+			try: dName = dMemoNames[d['opened_user']]
+			except KeyError: dName = {"firstName": 'NAME', "lastName": 'MISSING'}
+			d['opened_by'] = '%s %s' % (dName['firstName'], dName['lastName'])
+			if d['resolved_user']:
+				try: dName = dMemoNames[d['resolved_user']]
+				except KeyError: dName = {"firstName": 'NAME', "lastName": 'MISSING'}
+				d['resolved_by'] = '%s %s' % (dName['firstName'], dName['lastName'])
+			else:
+				d['resolved_by'] = None
 
 		# Return the tickets
 		return Services.Response(lTickets)
@@ -1910,7 +2063,7 @@ class CSR(Services.Service):
 			return Services.Error(1001, [('crm_type', 'missing'), ('crm_id', 'missing')])
 
 		# Get the tickets with the state
-		lTickets = Tickets.withState([d['_id'] for d in lTickets])
+		lTickets = Ticket.withState([d['_id'] for d in lTickets])
 
 		# Return the tickets
 		return Services.Response(lTickets)

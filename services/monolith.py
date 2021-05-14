@@ -2928,7 +2928,6 @@ class Monolith(Services.Service):
 			return Services.Error(1001, lErrors)
 
 		# Get the IDs of the messages in the range
-		Record_MySQL.verbose(True)
 		lMessages = CustomerCommunication.filter({
 			"fromPhone": data['customerPhone'],
 			"createdAt": {"between": [
@@ -2936,12 +2935,11 @@ class Monolith(Services.Service):
 				Record_MySQL.Literal('FROM_UNIXTIME(%d)' % data['end'])
 			]}
 		}, raw=['id'])
-		Record_MySQL.verbose(False)
 
 		# Fetch the IDs and return
 		return Services.Response([d['id'] for d in lMessages])
 
-	def internalTicketInfo(self, data):
+	def internalTicketInfo_read(self, data):
 		"""Internal: Ticket Info
 
 		Gets a list of IDs for notes, SMSs, emails, etc and returns the data
@@ -2966,13 +2964,12 @@ class Monolith(Services.Service):
 		# If we have message requests
 		if 'messages' in data:
 
+			# Convert all values
+			data['messages'] = [int(s) for s in data['messages']]
+
 			# Fetch all the messages and store them by ID
 			dRet['messages'] = {
-				d['id']:d for d in CustomerCommunication.get(
-					data['messages'],
-					raw=True,
-					orderby='createdAt'
-				)
+				d['id']:d for d in CustomerCommunication.byIDs(data['messages'])
 			}
 
 			# Go through each requested ID
@@ -2980,18 +2977,29 @@ class Monolith(Services.Service):
 
 				# If it's missing
 				if s not in dRet['messages']:
-					dRet['messages'][s] = None
+					dRet['messages'][s] = {
+						"createdAt": 0,
+						"errorMessage": 'MISSING',
+						"fromPhone": 'MISSING',
+						"fromName": 'MISSING',
+						"id": s,
+						"notes": 'THIS SMS MESSAGE WAS STORED IN THE TICKET BUT WAS DELETED FROM MEMO',
+						"status": 'MISSING',
+						"type": 'MISSING'
+					}
+
+			# Store as a list
+			dRet['messages'] = list(dRet['messages'].values())
 
 		# If we have note requests
 		if 'notes' in data:
 
+			# Convert all values
+			data['notes'] = [int(s) for s in data['notes']]
+
 			# Fetch all the notes and store them by ID
 			dRet['notes'] = {
-				d['id']:d for d in SmpNote.get(
-					data['notes'],
-					raw=True,
-					orderby='createdAt'
-				)
+				d['id']:d for d in SmpNote.byIDs(data['notes'])
 			}
 
 			# Go through each requested ID
@@ -2999,7 +3007,16 @@ class Monolith(Services.Service):
 
 				# If it's missing
 				if s not in dRet['notes']:
-					dRet['notes'][s] = None
+					dRet['notes'][s] = {
+						"action": 'MISSING',
+						"createdAt": 0,
+						"createdBy": 'MISSING',
+						"note": 'THIS NOTE WAS STORED IN THE TICKET BUT WAS DELETED FROM MEMO',
+						"userRole": 'System'
+					}
+
+			# Store as a list
+			dRet['notes'] = list(dRet['notes'].values())
 
 		# Return the results
 		return Services.Response(dRet)
