@@ -64,6 +64,7 @@ if __name__ == "__main__":
 		"/ticket/details": {"methods": REST.READ, "session": True},
 		"/ticket/exists": {"methods": REST.READ},
 		"/ticket/item": {"methods": REST.CREATE, "session": True},
+		"/ticket/item/ids": {"methods": REST.READ, "session": True},
 		"/ticket/open/user": {"methods": REST.READ, "session": True},
 		"/ticket/resolve": {"methods": REST.UPDATE, "session": True},
 		"/tickets": {"methods": REST.READ, "session": True},

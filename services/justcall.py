@@ -114,7 +114,7 @@ class JustCall(Services.Service):
 		"""
 		return True
 
-	def log_read(self, data, sesh):
+	def log_read(self, data, sesh=None):
 		"""Log
 
 		Returns a single log by ID
@@ -128,26 +128,42 @@ class JustCall(Services.Service):
 		"""
 
 		# Make sure the user has the proper permission to do this
-		Rights.check(sesh, 'justcall', Rights.READ)
+		Rights.internalOrCheck(data, sesh, 'justcall', Rights.READ)
 
 		# If the ID is missing
 		if 'id' not in data:
 			return Services.Error(1001, [('id', 'missing')])
 
-		# Make the request
-		dRes = self._post('calls/get', {
-			"id": data['id']
-		})
+		# Are we in multiple mode?
+		if isinstance(data['id'], list):
+			bMultiple = True
+		else:
+			bMultiple = False
+			data['id'] = [data['id']]
 
-		# If the request failed
-		if dRes == False:
-			return Services.Error(2100, '404')
+		# Init the results
+		lResults = []
 
-		# Add the text version of the call type
-		dRes['data']['typeText'] = _CALL_TYPES[dRes['data']['type']]
+		# For each ID
+		for iID in data['id']:
+
+			# Make the request
+			dRes = self._post('calls/get', {
+				"id": iID
+			})
+
+			# If the request failed
+			if dRes == False:
+				return Services.Error(2100, '404')
+
+			# Add the text version of the call type
+			dRes['data']['typeText'] = _CALL_TYPES[dRes['data']['type']]
+
+			# Store it
+			lResults.append(dRes['data'])
 
 		# Return the data received
-		return Services.Response(dRes['data'])
+		return Services.Response(bMultiple and lResults or lResults[0])
 
 	def logs_read(self, data, sesh):
 		"""Logs

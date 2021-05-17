@@ -17,6 +17,7 @@ from time import time
 import uuid
 
 # Pip imports
+import arrow
 from FormatOC import Node
 from RestOC import DictHelper, Errors, JSON, Record_MySQL, Services, Sesh
 
@@ -1755,7 +1756,7 @@ class CSR(Services.Service):
 		# Get the items
 		lItems = TicketItem.filter({"ticket": data['_id']}, raw=['type', 'identifier'])
 		for d in lItems:
-			dItemTypes[d['type']].append(d['identifier'])
+			dItemTypes[d['type']].append(int(d['identifier']))
 
 		# Init the memo call data
 		dData = {}
@@ -1783,6 +1784,24 @@ class CSR(Services.Service):
 				for d in oResponse.data['notes']:
 					d['_created'] = d['createdAt']
 					d['msgType'] = 'note'
+					lDetails.append(d)
+
+		# If we have any JustCall calls
+		if dItemTypes['jc_call']:
+
+			# Fetch the logs from JustCall
+			oResponse = Services.read('justcall', 'log', {
+				"_internal_": Services.internalKey(),
+				"id": dItemTypes['jc_call']
+			}, sesh)
+
+			print(oResponse.data)
+
+			# If we have data
+			if oResponse.data:
+				for d in oResponse.data:
+					d['msgType'] = 'justcall'
+					d['_created'] = arrow.get('%s+00:00' % d['time_utc']).timestamp
 					lDetails.append(d)
 
 		# Sort the details by created timestamp
@@ -1852,8 +1871,36 @@ class CSR(Services.Service):
 		# Create the item and check for duplicates
 		try:
 			return Services.Response(oItem.create())
-		except DuplicateException:
+		except Record_MySQL.DuplicateException:
 			return Services.Error(1101)
+
+	def ticketItemIds_read(self, data, sesh):
+		"""Ticket Item IDs
+
+		Returns just the IDs for all the items in the current ticket. Helpful
+		for knowing if an item is in the current ticket
+
+		Arguments:
+			data (mixed): Data sent with the request
+			sesh (Sesh._Session): The session associated with the request
+
+		Returns:
+			Services.Response
+		"""
+
+		# Check internal key or rights
+		Rights.check(sesh, ['csr_claims', 'order_claims'], Rights.CREATE)
+
+		# If the id is missing
+		if '_id' not in data:
+			return Services.Error(1001, [('_id', 'missing')])
+
+		# Fetch all the items in the ticket
+		return Services.Response([
+			d for d in TicketItem.filter({
+				"ticket": data['_id']
+			}, raw=['type', 'identifier'])
+		])
 
 	def ticketOpenUser_read(self, data, sesh):
 		"""Ticket Open User Read
