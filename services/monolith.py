@@ -1153,19 +1153,28 @@ class Monolith(Services.Service):
 		# Make sure the user has the proper permission to do this
 		Rights.check(sesh, 'everify', Rights.UPDATE, data['customerId'])
 
-		# Find the customer by ID
-		dCustomer = KtCustomer.filter(
-			{"customerId": data['customerId']},
-			raw=['customerId', 'firstName', 'lastName',
-					'emailAddress', 'phoneNumber',
-					'shipAddress1', 'shipAddress2', 'shipCity',
-					'shipState', 'shipCountry', 'shipPostalCode'],
-			limit=1
-		)
+		# Bypass Memo that doesn't update the data and fetch the customer info
+		#	from Konnektive so that it's always up to date
+		oResponse = Services.read('konnektive', 'customer', {
+			"customerId": data['customerId']
+		}, sesh)
+		if oResponse.errorExists():
+			return oResponse
 
-		# If there's no customer
-		if not dCustomer:
-			return Services.Error(1104)
+		# Store the customer
+		dCustomer = {
+			"customerId": oResponse.data['customerId'],
+			"firstName": oResponse.data['billing']['firstName'],
+			"lastName": oResponse.data['billing']['lastName'],
+			"emailAddress": oResponse.data['email'],
+			"phoneNumber": oResponse.data['phone'],
+			"shipAddress1": oResponse.data['shipping']['address1'],
+			"shipAddress2": oResponse.data['shipping']['address2'],
+			"shipCity": oResponse.data['shipping']['city'],
+			"shipState": oResponse.data['shipping']['state'],
+			"shipCountry": oResponse.data['shipping']['country'],
+			"shipPostalCode": oResponse.data['shipping']['postalCode']
+		}
 
 		# Look for a landing by customerId
 		dLanding = TfLanding.filter({
