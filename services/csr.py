@@ -1691,7 +1691,7 @@ class CSR(Services.Service):
 		"""
 
 		# Check rights
-		Rights.check(sesh, ['csr_overwrite', 'csr_claims'], Rights.READ)
+		Rights.check(sesh, ['csr_overwrite', 'csr_claims'], Rights.CREATE)
 
 		# Check ID is passed
 		if '_id' not in data:
