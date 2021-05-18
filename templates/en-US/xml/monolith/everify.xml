@@ -9,15 +9,15 @@
     <FirstName>{{ firstName }}</FirstName>
     <LastName>{{ lastName }}</LastName>
     <Ssn>{{ ssn }}</Ssn>
-    <Street>{{ shipAddress }}</Street>
-    <City>{{ shipCity }}</City>
-    <State>{{ shipState }}</State>
-    <ZipCode>{{ shipPostalCode }}</ZipCode>
-    <DateOfBirth>{{ dob }}</DateOfBirth>
+    <Street>{{ address }}</Street>
+    <City>{{ city }}</City>
+    <State>{{ state }}</State>
+    <ZipCode>{{ zipCode }}</ZipCode>
+    <DateOfBirth>{{ dateOfBirth }}</DateOfBirth>
     <DriverLicenseNumber></DriverLicenseNumber>
     <DriverLicenseState></DriverLicenseState>
-    <PhoneNumber>{{ phoneNumber }}</PhoneNumber>
-    <EmailAddress>{{ emailAddress }}</EmailAddress>
+    <PhoneNumber>{{ primaryPhone }}</PhoneNumber>
+    <EmailAddress>{{ email }}</EmailAddress>
     <IpAddress></IpAddress>
   </Identity>
 </PlatformRequest>
