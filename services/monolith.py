@@ -1166,14 +1166,14 @@ class Monolith(Services.Service):
 			"customerId": str(oResponse.data['customerId']),
 			"firstName": oResponse.data['billing']['firstName'],
 			"lastName": oResponse.data['billing']['lastName'],
-			"emailAddress": oResponse.data['email'],
-			"phoneNumber": oResponse.data['phone'],
-			"shipAddress1": oResponse.data['shipping']['address1'],
-			"shipAddress2": oResponse.data['shipping']['address2'],
-			"shipCity": oResponse.data['shipping']['city'],
-			"shipState": oResponse.data['shipping']['state'],
-			"shipCountry": oResponse.data['shipping']['country'],
-			"shipPostalCode": oResponse.data['shipping']['postalCode']
+			"email": oResponse.data['email'],
+			"primaryPhone": oResponse.data['phone'],
+			"address1": oResponse.data['shipping']['address1'],
+			"address2": oResponse.data['shipping']['address2'],
+			"city": oResponse.data['shipping']['city'],
+			"state": oResponse.data['shipping']['state'],
+			"country": oResponse.data['shipping']['country'],
+			"zipCode": oResponse.data['shipping']['postalCode']
 		}
 
 		# Look for a landing by customerId
@@ -1188,8 +1188,8 @@ class Monolith(Services.Service):
 			# Get the latest landing
 			lLandings = TfLanding.find(
 				dCustomer['lastName'],
-				dCustomer['emailAddress'] or '',
-				dCustomer['phoneNumber'],
+				dCustomer['email'] or '',
+				dCustomer['primaryPhone'],
 				['MIP-A1', 'MIP-A2', 'MIP-H1', 'MIP-H2']
 			)
 			if not lLandings:
@@ -1204,7 +1204,7 @@ class Monolith(Services.Service):
 			return Services.Error(1517)
 
 		# Add the DOB
-		dCustomer['dob'] = sDOB
+		dCustomer['dateOfBirth'] = sDOB
 
 		# Trim all fields
 		for k in dCustomer.keys():
@@ -1214,9 +1214,9 @@ class Monolith(Services.Service):
 				dCustomer[k] = ''
 
 		# Convert address 1 + 2 into one line
-		dCustomer['shipAddress'] = dCustomer['shipAddress1']
-		if dCustomer['shipAddress2']:
-			dCustomer['shipAddress'] += ' %s' % dCustomer['shipAddress2']
+		dCustomer['address'] = dCustomer['address1']
+		if dCustomer['address2']:
+			dCustomer['address'] += ' %s' % dCustomer['address2']
 
 		# Add empty ssn
 		dCustomer['ssn'] = ''
@@ -1251,45 +1251,41 @@ class Monolith(Services.Service):
 		# Look for an existing customer
 		dSmpCustomer = SmpCustomer.byCustomerDetails(
 			dCustomer['lastName'],
-			dCustomer['emailAddress'],
-			dCustomer['phoneNumber']
+			dCustomer['email'],
+			dCustomer['primaryPhone']
 		)
 
-		# If we have one, create the instance from it
+		# Remove the customer ID, user, and pass fields as they are not valid in
+		#	SmpCustomer
+		dCustomer.pop('customerId')
+		dCustomer.pop('user')
+		dCustomer.pop('pass')
+
+		# If we have one, create the instance from it and update everything from
+		#	the customer data
 		if dSmpCustomer:
 			bExisting = True
 			oSmpCustomer = SmpCustomer(dSmpCustomer)
+			for k in dCustomer.keys():
+				oSmpCustomer[k] = dCustomer[k]
 			oSmpCustomer['lastIdentiFloAt'] = sDT
 			oSmpCustomer['updatedAt'] = sDT
 
 		# Else, create a new instance
 		else:
 			bExisting = False
-			oSmpCustomer = SmpCustomer({
-				"firstName": dCustomer['firstName'],
-				"lastName": dCustomer['lastName'],
-				"dateOfBirth": dCustomer['dob'],
-				"ssn": '',
-				"gender": 'M',
-				"email": dCustomer['emailAddress'],
-				"address1": dCustomer['shipAddress1'],
-				"address2": dCustomer['shipAddress2'],
-				"city": dCustomer['shipCity'],
-				"state": dCustomer['shipState'],
-				"country": dCustomer['shipCountry'],
-				"zipCode": dCustomer['shipPostalCode'],
-				"primaryPhone": dCustomer['phoneNumber'],
-				"identiFloCode": '',
-				"identiFloOutcome": '',
-				"idfResultAddress": '',
-				"idfResultPhone": '',
-				"idfResultDateOfBirth": '',
-				"idfResultSocialSecurity": '',
-				"identiFloErrorMessage": '',
-				"lastIdentiFloAt": sDT,
-				"createdAt": sDT,
-				"updatedAt": sDT
-			})
+			dCustomer['gender'] = 'M'
+			dCustomer['identiFloCode'] = ''
+			dCustomer['identiFloOutcome'] = ''
+			dCustomer['idfResultAddress'] = ''
+			dCustomer['idfResultPhone'] = ''
+			dCustomer['idfResultDateOfBirth'] = ''
+			dCustomer['idfResultSocialSecurity'] = ''
+			dCustomer['identiFloErrorMessage'] = ''
+			dCustomer['lastIdentiFloAt'] = sDT
+			dCustomer['createdAt'] = sDT
+			dCustomer['updatedAt'] = sDT
+			oSmpCustomer = SmpCustomer(dCustomer)
 
 		# If we have errors
 		if 'Errors' in dRes['TransactionDetails'] and dRes['TransactionDetails']['Errors']:
