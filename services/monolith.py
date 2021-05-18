@@ -1163,7 +1163,7 @@ class Monolith(Services.Service):
 
 		# Store the customer
 		dCustomer = {
-			"customerId": oResponse.data['customerId'],
+			"customerId": str(oResponse.data['customerId']),
 			"firstName": oResponse.data['billing']['firstName'],
 			"lastName": oResponse.data['billing']['lastName'],
 			"emailAddress": oResponse.data['email'],
@@ -1178,7 +1178,7 @@ class Monolith(Services.Service):
 
 		# Look for a landing by customerId
 		dLanding = TfLanding.filter({
-			"ktCustomerId": str(data['customerId']),
+			"ktCustomerId": dCustomer['customerId'],
 			"formId": ['MIP-A1', 'MIP-A2', 'MIP-H1', 'MIP-H2']
 		}, raw=['landing_id'], limit=1, orderby=[['submitted_at', 'DESC']])
 
