@@ -1255,11 +1255,9 @@ class Monolith(Services.Service):
 			dCustomer['primaryPhone']
 		)
 
-		# Remove the customer ID, user, and pass fields as they are not valid in
-		#	SmpCustomer
-		dCustomer.pop('customerId')
-		dCustomer.pop('user')
-		dCustomer.pop('pass')
+		# Remove the fields that aren't valid in SmpCustomer
+		for f in ['customerId', 'address', 'user', 'pass']:
+			dCustomer.pop(f)
 
 		# If we have one, create the instance from it and update everything from
 		#	the customer data
