@@ -1710,12 +1710,13 @@ class CSR(Services.Service):
 		# Get the opened state
 		dOpened = TicketOpened.get(data['_id'], raw=['_created', 'type', 'memo_id'])
 		lUserIDs.add(dOpened['memo_id'])
+		dOpened['_id'] = '%s-opened' % data['_id']
 		dOpened['msgType'] = 'action'
 		dOpened['name'] = 'Opened'
 		lDetails.append(dOpened)
 
 		# Get the actions
-		lActions = TicketAction.filter({"ticket": data['_id']}, raw=['_created', 'name', 'type', 'memo_id'])
+		lActions = TicketAction.filter({"ticket": data['_id']}, raw=['_id', '_created', 'name', 'type', 'memo_id'])
 		for d in lActions:
 			d['msgType'] = 'action'
 			d['type'] = TicketAction.typeText(d['name'], d['type'])
@@ -1725,6 +1726,7 @@ class CSR(Services.Service):
 		dResolved = TicketResolved.get(data['_id'], raw=['_created', 'type', 'memo_id'])
 		if dResolved:
 			lUserIDs.add(dResolved['memo_id'])
+			dResolved['_id'] = '%s-resolved' % data['_id']
 			dResolved['msgType'] = 'action'
 			dResolved['name'] = 'Resolved'
 			lDetails.append(dResolved)
@@ -1805,7 +1807,7 @@ class CSR(Services.Service):
 					lDetails.append(d)
 
 		# Sort the details by created timestamp
-		lDetails.sort( key=itemgetter('_created'))
+		lDetails.sort(key=itemgetter('_created'))
 
 		# Return all the details
 		return Services.Response(lDetails)
@@ -2086,31 +2088,58 @@ class CSR(Services.Service):
 		"""
 
 		# Check rights
-		Rights.check(data, sesh, ['csr_claims', 'order_claims'], Rights.READ)
+		Rights.check(sesh, ['csr_claims', 'order_claims'], Rights.CREATE)
 
 		# If we have crm type and ID
 		if 'crm_type' in data and 'crm_id' in data:
-
-			# Find all the records by ID
-			lTickets = Ticket.filter({
+			dFilter = {
 				"crm_type": data['crm_type'],
-				"crm_id": data['crm_id']
-			}, raw=['_id'], orderby='_created')
+				"crm_id": str(data['crm_id'])
+			}
 
 		# Else, if we got a phone number
 		elif 'phone_number' in data:
-
-			# Find all the records by phone number
-			lTickets = Ticket.filter({
+			dFilter = {
 				"phone_number": data['phone_number']
-			}, raw=['_id'], orderby='_created')
+			}
 
 		# Else, missing data
 		else:
 			return Services.Error(1001, [('crm_type', 'missing'), ('crm_id', 'missing')])
 
+		# Find all the record IDs
+		lTickets = Ticket.filter(dFilter, raw=['_id'], orderby='_created')
+
 		# Get the tickets with the state
 		lTickets = Ticket.withState([d['_id'] for d in lTickets])
+
+		# Fetch all the user IDs
+		lUsersIDs = set()
+		for d in lTickets:
+			lUsersIDs.add(d['opened_user'])
+			if d['resolved_user']:
+				lUsersIDs.add(d['resolved_user'])
+
+		# Fetch their names
+		oResponse = Services.read('monolith', 'user/name', {
+			"_internal_": Services.internalKey(),
+			"id": list(lUsersIDs)
+		}, sesh)
+
+		# Convert the IDs
+		dMemoNames = DictHelper.keysToInts(oResponse.data)
+
+		# Add the names to the agents
+		for d in lTickets:
+			try: dName = dMemoNames[d['opened_user']]
+			except KeyError: dName = {"firstName": 'NAME', "lastName": 'MISSING'}
+			d['opened_by'] = '%s %s' % (dName['firstName'], dName['lastName'])
+			if d['resolved_user']:
+				try: dName = dMemoNames[d['resolved_user']]
+				except KeyError: dName = {"firstName": 'NAME', "lastName": 'MISSING'}
+				d['resolved_by'] = '%s %s' % (dName['firstName'], dName['lastName'])
+			else:
+				d['resolved_by'] = None
 
 		# Return the tickets
 		return Services.Response(lTickets)
