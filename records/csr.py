@@ -564,41 +564,6 @@ class TicketItem(Record_MySQL.Record):
 		)
 
 	@classmethod
-	def byTicket(cls, ticket, custom={}):
-		"""By Ticket
-
-		Return all items associated with a specific ticket ID
-
-		Arguments:
-			ticket (str): The ID of the ticket
-			custom (dict): Custom Host and DB info
-				'host' the name of the host to get/set data on
-				'append' optional postfix for dynamic DBs
-
-		Returns:
-			list
-		"""
-
-		# Fetch the record structure
-		dStruct = cls.struct(custom)
-
-		# Generate the SQL
-		sSQL = "SELECT *\n" \
-				"FROM `%(db)s`.`%(table)s`\n" \
-				"WHERE `ticket` = '%(ticket)s'" % {
-			"db": dStruct['db'],
-			"table": dStruct['table'],
-			"ticket": ticket
-		}
-
-		# Delete all the records
-		Record_MySQL.Commands.select(
-			dStruct['host'],
-			sSQL,
-			Record_MySQL.ESelect.ALL
-		)
-
-	@classmethod
 	def config(cls):
 		"""Config
 
@@ -629,6 +594,52 @@ class TicketOpened(Record_MySQL.Record):
 	"""Configuration"""
 
 	@classmethod
+	def countByUser(cls, memo_id, range=None, custom={}):
+		"""Count By User
+
+		Returns the total count of opened tickets by a specific user, with or
+		without a specific range
+
+		Arguments:
+			memo_id (uint): The ID of the user
+			range (list): Optional range to filter by, 0 = start, 1 = end
+			custom (dict): Custom Host and DB info
+				'host' the name of the host to get/set data on
+				'append' optional postfix for dynamic DBs
+
+		Returns:
+			uint
+		"""
+
+		# Fetch the record structure
+		dStruct = cls.struct(custom)
+
+		# Init where
+		lWhere = ['`memo_id` = %d' % memo_id]
+
+		# If we have a range
+		if range:
+			lWhere.append('`_created` BETWEEN FROM_UNIXTIME(%d) AND FROM_UNIXTIME(%d)' % (
+				range[0], range[1]
+			))
+
+		# Generate the SQL
+		sSQL = "SELECT COUNT(*) as `count`\n" \
+				"FROM `%(db)s`.`%(table)s`\n" \
+				"WHERE %(where)s" % {
+			"db": dStruct['db'],
+			"table": dStruct['table'],
+			"where": '\nAND '.join(lWhere)
+		}
+
+		# Delete all the records
+		return Record_MySQL.Commands.select(
+			dStruct['host'],
+			sSQL,
+			Record_MySQL.ESelect.CELL
+		)
+
+	@classmethod
 	def config(cls):
 		"""Config
 
@@ -657,6 +668,52 @@ class TicketResolved(Record_MySQL.Record):
 
 	_conf = None
 	"""Configuration"""
+
+	@classmethod
+	def countByUser(cls, memo_id, range=None, custom={}):
+		"""Count By User
+
+		Returns the total count of opened tickets by a specific user, with or
+		without a specific range
+
+		Arguments:
+			memo_id (uint): The ID of the user
+			range (list): Optional range to filter by, 0 = start, 1 = end
+			custom (dict): Custom Host and DB info
+				'host' the name of the host to get/set data on
+				'append' optional postfix for dynamic DBs
+
+		Returns:
+			uint
+		"""
+
+		# Fetch the record structure
+		dStruct = cls.struct(custom)
+
+		# Init where
+		lWhere = ['`memo_id` = %d' % memo_id]
+
+		# If we have a range
+		if range:
+			lWhere.append('`_created` BETWEEN FROM_UNIXTIME(%d) AND FROM_UNIXTIME(%d)' % (
+				range[0], range[1]
+			))
+
+		# Generate the SQL
+		sSQL = "SELECT COUNT(*) as `count`\n" \
+				"FROM `%(db)s`.`%(table)s`\n" \
+				"WHERE %(where)s" % {
+			"db": dStruct['db'],
+			"table": dStruct['table'],
+			"where": '\nAND '.join(lWhere)
+		}
+
+		# Delete all the records
+		return Record_MySQL.Commands.select(
+			dStruct['host'],
+			sSQL,
+			Record_MySQL.ESelect.CELL
+		)
 
 	@classmethod
 	def config(cls):

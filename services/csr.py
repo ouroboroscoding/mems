@@ -2012,10 +2012,6 @@ class CSR(Services.Service):
 			Services.Response
 		"""
 
-		# Verify minimum fields
-		try: DictHelper.eval(data, ['start', 'end'])
-		except ValueError as e: return Services.Response(error=(1001, [(f, 'missing') for f in e.args]))
-
 		# If there's no memo_id in the session
 		if 'memo_id' not in sesh:
 
@@ -2028,6 +2024,10 @@ class CSR(Services.Service):
 			# If the user is not sent, or not the one signed in
 			if 'memo_id' not in data or data['memo_id'] != sesh['memo_id']:
 				return Services.Error(Rights.INVALID)
+
+		# Verify minimum fields
+		try: DictHelper.eval(data, ['start', 'end'])
+		except ValueError as e: return Services.Response(error=(1001, [(f, 'missing') for f in e.args]))
 
 		# Get a list of the unique tickets IDS the user is associated with
 		lTicketIDs = Ticket.idsByRange(
@@ -2143,3 +2143,69 @@ class CSR(Services.Service):
 
 		# Return the tickets
 		return Services.Response(lTickets)
+
+
+	def ticketStats_read(self, data, sesh):
+		"""Ticket Stats
+
+		Fetches the stat for the specified user and type by each range passed
+
+		Arguments:
+			data (mixed): Data sent with the request
+			sesh (Sesh._Session): The session associated with the request
+
+		Returns:
+			Services.Response
+		"""
+
+		# Verify minimum fields
+		try: DictHelper.eval(data, ['memo_id', 'ranges', 'type'])
+		except ValueError as e: return Services.Response(error=(1001, [(f, 'missing') for f in e.args]))
+
+		# If there's no memo_id in the session
+		if 'memo_id' not in sesh:
+
+			# Check rights
+			Rights.check(sesh, 'csr_overwrite', Rights.READ)
+
+		# Else,
+		else:
+
+			# If the user is not sent, or not the one signed in
+			if data['memo_id'] != sesh['memo_id']:
+				return Services.Error(Rights.INVALID)
+
+		# If ranges is not a list
+		if not isinstance(data['ranges'], dict):
+			return Services.Error(1001, [('ranges', 'not an object')])
+
+		# If the type is opened
+		if data['type'] == 'opened':
+			RecordClass = TicketOpened
+
+		# Else, if the type is resolved
+		elif data['type'] == 'resolved':
+			RecordClass = TicketResolved
+
+		# Else, we received an invalid class
+		else:
+			return Services.Error(1001, [('type', 'invalid')])
+
+		# Init the return dict
+		dRet = {}
+
+		# Go through each range and fetch the counts
+		for k in data['ranges']:
+
+			# If ranges is not a list
+			if not isinstance(data['ranges'][k], list):
+				return Services.Error(1001, [('ranges.%s' % str(k), 'not a list')])
+
+			# Fetch the count and store it by key
+			dRet[k] = RecordClass.countByUser(
+				data['memo_id'],
+				data['ranges'][k]
+			)
+
+		# Return the results
+		return Services.Response(dRet)
