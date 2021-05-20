@@ -905,6 +905,7 @@ class Monolith(Services.Service):
 				"clinician_id": data['clinician_id']
 		}, sesh)
 		if oResponse.errorExists():
+			oDsPatient.delete()
 			return oResponse
 
 		# Store the patient ID
