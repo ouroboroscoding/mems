@@ -323,7 +323,7 @@ class Prescriptions(Services.Service):
 
 		# If we got an error
 		if dRes['Result']['ResultCode'] == 'ERROR':
-			return Services.Response(error=(1602, dData['Result']['ResultDescription']))
+			return Services.Response(error=(1602, dRes['Result']['ResultDescription']))
 
 		# Return the ID
 		return Services.Response(dRes['Id'])
