@@ -1613,7 +1613,7 @@ class CSR(Services.Service):
 			Rights.check(sesh, 'csr_overwrite', Rights.CREATE)
 
 		# Delete the opened
-		TicketOpened.deleteGet(data['_id'], 'ticket')
+		TicketOpened.deleteGet(data['_id'])
 
 		# Delete the actions
 		TicketAction.deleteGet(data['_id'], 'ticket')
@@ -1622,7 +1622,7 @@ class CSR(Services.Service):
 		TicketItem.deleteGet(data['_id'], 'ticket')
 
 		# Delete the resolved
-		TicketResolved.deleteGet(data['_id'], 'ticket')
+		TicketResolved.deleteGet(data['_id'])
 
 		# Delete the ticket
 		oTicket.delete()
