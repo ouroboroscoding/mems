@@ -2144,7 +2144,6 @@ class CSR(Services.Service):
 		# Return the tickets
 		return Services.Response(lTickets)
 
-
 	def ticketStats_read(self, data, sesh):
 		"""Ticket Stats
 
