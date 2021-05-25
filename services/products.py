@@ -77,12 +77,7 @@ class Products(Services.Service):
 		"""
 
 		# Make sure the user has the proper permission to do this
-		oResponse = Services.read('auth', 'rights/verify', {
-			"name": "products",
-			"right": Rights.CREATE
-		}, sesh)
-		if not oResponse.data:
-			return Services.Response(error=Rights.INVALID)
+		Rights.check(sesh, 'products', Rights.CREATE)
 
 		# Create a new instance to validate the data
 		try:
@@ -117,13 +112,7 @@ class Products(Services.Service):
 		except ValueError as e: return Services.Response(error=(1001, [(f, 'missing') for f in e.args]))
 
 		# Make sure the user has the proper permission to do this
-		oResponse = Services.read('auth', 'rights/verify', {
-			"name": "products",
-			"right": Rights.UPDATE,
-			"ident": data['_id']
-		}, sesh)
-		if not oResponse.data:
-			return Services.Response(error=Rights.INVALID)
+		Rights.check(sesh, 'products', Rights.UPDATE, data['_id'])
 
 		# Fetch the group
 		oGroup = Group.get(data['_id'])
@@ -164,12 +153,7 @@ class Products(Services.Service):
 		"""
 
 		# Make sure the user has the proper permission to do this
-		oResponse = Services.read('auth', 'rights/verify', {
-			"name": "products",
-			"right": Rights.READ
-		}, sesh)
-		if not oResponse.data:
-			return Services.Response(error=Rights.INVALID)
+		Rights.check(sesh, 'products', Rights.READ)
 
 		# Return all the groups
 		return Services.Response(
@@ -190,12 +174,7 @@ class Products(Services.Service):
 		"""
 
 		# Make sure the user has the proper permission to do this
-		oResponse = Services.read('auth', 'rights/verify', {
-			"name": "products",
-			"right": Rights.CREATE
-		}, sesh)
-		if not oResponse.data:
-			return Services.Response(error=Rights.INVALID)
+		Rights.check(sesh, 'products', Rights.CREATE)
 
 		# Create a new instance to validate the data
 		try:
@@ -230,13 +209,7 @@ class Products(Services.Service):
 		except ValueError as e: return Services.Response(error=(1001, [(f, 'missing') for f in e.args]))
 
 		# Make sure the user has the proper permission to do this
-		oResponse = Services.read('auth', 'rights/verify', {
-			"name": "products",
-			"right": Rights.UPDATE,
-			"ident": data['_id']
-		}, sesh)
-		if not oResponse.data:
-			return Services.Response(error=Rights.INVALID)
+		Rights.check(sesh, 'products', Rights.UPDATE, data['_id'])
 
 		# Fetch the medication
 		oMedication = Medication.get(data['_id'])
@@ -277,12 +250,7 @@ class Products(Services.Service):
 		"""
 
 		# Make sure the user has the proper permission to do this
-		oResponse = Services.read('auth', 'rights/verify', {
-			"name": "products",
-			"right": Rights.READ
-		}, sesh)
-		if not oResponse.data:
-			return Services.Response(error=Rights.INVALID)
+		Rights.check(sesh, 'products', Rights.READ)
 
 		# Return all the groups
 		return Services.Response(
@@ -303,12 +271,7 @@ class Products(Services.Service):
 		"""
 
 		# Make sure the user has the proper permission to do this
-		oResponse = Services.read('auth', 'rights/verify', {
-			"name": "products",
-			"right": Rights.CREATE
-		}, sesh)
-		if not oResponse.data:
-			return Services.Response(error=Rights.INVALID)
+		Rights.check(sesh, 'products', Rights.CREATE)
 
 		# Create a new instance to validate the data
 		try:
@@ -343,13 +306,7 @@ class Products(Services.Service):
 		except ValueError as e: return Services.Response(error=(1001, [(f, 'missing') for f in e.args]))
 
 		# Make sure the user has the proper permission to do this
-		oResponse = Services.read('auth', 'rights/verify', {
-			"name": "products",
-			"right": Rights.READ,
-			"ident": data['_id']
-		}, sesh)
-		if not oResponse.data:
-			return Services.Response(error=Rights.INVALID)
+		Rights.check(sesh, 'products', Rights.READ, data['_id'])
 
 		# Find the product
 		dProduct = Product.get(data['_id'], raw=True)
@@ -377,13 +334,7 @@ class Products(Services.Service):
 		except ValueError as e: return Services.Response(error=(1001, [(f, 'missing') for f in e.args]))
 
 		# Make sure the user has the proper permission to do this
-		oResponse = Services.read('auth', 'rights/verify', {
-			"name": "products",
-			"right": Rights.UPDATE,
-			"ident": data['_id']
-		}, sesh)
-		if not oResponse.data:
-			return Services.Response(error=Rights.INVALID)
+		Rights.check(sesh, 'products', Rights.UPDATE, data['_id'])
 
 		# Fetch the product
 		oProduct = Product.get(data['_id'])
@@ -433,12 +384,7 @@ class Products(Services.Service):
 		"""
 
 		# Make sure the user has the proper permission to do this
-		oResponse = Services.read('auth', 'rights/verify', {
-			"name": "products",
-			"right": Rights.READ
-		}, sesh)
-		if not oResponse.data:
-			return Services.Response(error=Rights.INVALID)
+		Rights.check(sesh, 'products', Rights.READ)
 
 		# Return all the groups
 		return Services.Response(

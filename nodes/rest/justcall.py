@@ -30,6 +30,7 @@ if __name__ == "__main__":
 
 	# Create the HTTP server and map requests to service
 	REST.Server({
+		"/log": {"methods": REST.READ},
 		"/logs": {"methods": REST.READ, "session": True}
 
 	}, 'justcall', "https?://(.*\\.)?%s" % Conf.get(("rest","allowed")).replace('.', '\\.')).run(

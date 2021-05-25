@@ -77,12 +77,7 @@ class QualMed(Services.Service):
 		"""
 
 		# Make sure the user has the proper permission to do this
-		oResponse = Services.read('auth', 'rights/verify', {
-			"name": "qualmed",
-			"right": Rights.CREATE
-		}, sesh)
-		if not oResponse.data:
-			return Services.Response(error=Rights.INVALID)
+		Rights.check(sesh, 'qualmed', Rights.CREATE)
 
 		# Verify fields
 		try: DictHelper.eval(data, ['customer'])
@@ -126,13 +121,7 @@ class QualMed(Services.Service):
 			return Services.Response(error=1104)
 
 		# Make sure the user has the proper permission to do this
-		oResponse = Services.read('auth', 'rights/verify', {
-			"name": "qualmed",
-			"right": Rights.DELETE,
-			"ident": oItem['customer']
-		}, sesh)
-		if not oResponse.data:
-			return Services.Response(error=Rights.INVALID)
+		Rights.check(sesh, 'qualmed', Rights.DELETE, oItem['customer'])
 
 		# Delete the instance and return the result
 		return Services.Response(
@@ -162,13 +151,7 @@ class QualMed(Services.Service):
 			return Services.Response(error=1104)
 
 		# Make sure the user has the proper permission to do this
-		oResponse = Services.read('auth', 'rights/verify', {
-			"name": "qualmed",
-			"right": Rights.READ,
-			"ident": dItem['customer']
-		}, sesh)
-		if not oResponse.data:
-			return Services.Response(error=Rights.INVALID)
+		Rights.check(sesh, 'qualmed', Rights.READ, dItem['customer'])
 
 		# Return the raw data
 		return Services.Response(dItem)
@@ -196,13 +179,7 @@ class QualMed(Services.Service):
 			return Services.Response(error=1104)
 
 		# Make sure the user has the proper permission to do this
-		oResponse = Services.read('auth', 'rights/verify', {
-			"name": "qualmed",
-			"right": Rights.UPDATE,
-			"ident": oItem['customer']
-		}, sesh)
-		if not oResponse.data:
-			return Services.Response(error=Rights.INVALID)
+		Rights.check(sesh, 'qualmed', Rights.UPDATE, oItem['customer'])
 
 		# Remove fields that can't be changed
 		del data['_id']
@@ -243,13 +220,7 @@ class QualMed(Services.Service):
 		except ValueError as e: return Services.Response(error=(1001, [(f, 'missing') for f in e.args]))
 
 		# Make sure the user has the proper permission to do this
-		oResponse = Services.read('auth', 'rights/verify', {
-			"name": "qualmed",
-			"right": Rights.READ,
-			"ident": data['customer']
-		}, sesh)
-		if not oResponse.data:
-			return Services.Response(error=Rights.INVALID)
+		Rights.check(sesh, 'qualmed', Rights.READ, data['customer'])
 
 		# Return all the items
 		return Services.Response(

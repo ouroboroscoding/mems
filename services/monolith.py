@@ -100,9 +100,6 @@ class Monolith(Services.Service):
 		# Init the Sync module
 		Sync.init()
 
-		# Store conf
-		self._conf = Conf.get(('services', 'monolith'))
-
 		# Store identiflo config
 		self._identiflo = Conf.get('identiflo')
 
@@ -141,12 +138,7 @@ class Monolith(Services.Service):
 		"""
 
 		# Make sure the user has the proper permission to do this
-		oResponse = Services.read('auth', 'rights/verify', {
-			"name": "csr_overwrite",
-			"right": Rights.DELETE
-		}, sesh)
-		if not oResponse.data:
-			return Services.Response(error=Rights.INVALID)
+		Rights.check(sesh, 'csr_overwrite', Rights.DELETE)
 
 		# Verify fields
 		try: DictHelper.eval(data, ['phoneNumber'])
@@ -189,12 +181,7 @@ class Monolith(Services.Service):
 		"""
 
 		# Make sure the user has the proper permission to do this
-		oResponse = Services.read('auth', 'rights/verify', {
-			"name": "csr_overwrite",
-			"right": Rights.READ
-		}, sesh)
-		if not oResponse.data:
-			return Services.Response(error=Rights.INVALID)
+		Rights.check(sesh, 'csr_overwrite', Rights.READ)
 
 		# Fetch all the current claims
 		lClaims = CustomerClaimed.get(raw=True, orderby=[['createdAt', 'DESC']])
@@ -408,12 +395,7 @@ class Monolith(Services.Service):
 		"""
 
 		# Make sure the user has the proper permission to do this
-		oResponse = Services.read('auth', 'rights/verify', {
-			"name": "calendly",
-			"right": Rights.READ
-		}, sesh)
-		if not oResponse.data:
-			return Services.Response(error=Rights.INVALID)
+		Rights.check(sesh, 'calendly', Rights.READ)
 
 		# Verify fields
 		try: DictHelper.eval(data, ['customerId'])
@@ -438,16 +420,21 @@ class Monolith(Services.Service):
 		"""
 
 		# Make sure the user has the proper permission to do this
-		oResponse = Services.read('auth', 'rights/verify', {
-			"name": "csr_claims",
-			"right": Rights.CREATE
-		}, sesh)
-		if not oResponse.data:
-			return Services.Response(error=Rights.INVALID)
+		Rights.check(sesh, 'csr_claims', Rights.CREATE)
 
 		# Verify fields
-		try: DictHelper.eval(data, ['phoneNumber'])
+		try: DictHelper.eval(data, ['phoneNumber', 'ticket'])
 		except ValueError as e: return Services.Response(error=(1001, [(f, 'missing') for f in e.args]))
+
+		# Make sure the ticket exists
+		oResponse = Services.read('csr', 'ticket/exists', {
+			"_internal_": Services.internalKey(),
+			"_id": data['ticket']
+		})
+		if oResponse.errorExists():
+			return oResponse
+		elif oResponse.data == False:
+			return Services.Error(2003, 'ticket')
 
 		# If not order ID was passed
 		if 'orderId' not in data:
@@ -459,7 +446,7 @@ class Monolith(Services.Service):
 
 		# If continuous was not passed
 		if 'continuous' not in data:
-			data['continuous'] = None
+			data['continuous'] = 0
 
 		# Check how many claims this user already has
 		iCount = CustomerClaimed.count(filter={
@@ -507,6 +494,7 @@ class Monolith(Services.Service):
 		# Attempt to create the record
 		try:
 			oCustomerClaimed = CustomerClaimed({
+				"ticket": data['ticket'],
 				"phoneNumber": data['phoneNumber'],
 				"user": sesh['memo_id'],
 				"orderId": data['orderId'],
@@ -526,7 +514,7 @@ class Monolith(Services.Service):
 		# If we got a duplicate exception
 		except Record_MySQL.DuplicateException:
 
-			# Fine the user who claimed it
+			# Find the user who claimed it
 			dClaim = CustomerClaimed.get(data['phoneNumber'], raw=['user']);
 
 			# Return the error with the user ID
@@ -546,12 +534,7 @@ class Monolith(Services.Service):
 		"""
 
 		# Make sure the user has the proper permission to do this
-		oResponse = Services.read('auth', 'rights/verify', {
-			"name": "csr_claims",
-			"right": Rights.DELETE
-		}, sesh)
-		if not oResponse.data:
-			return Services.Response(error=Rights.INVALID)
+		Rights.check(sesh, 'csr_claims', Rights.DELETE)
 
 		# Verify fields
 		try: DictHelper.eval(data, ['phoneNumber'])
@@ -585,12 +568,7 @@ class Monolith(Services.Service):
 		"""
 
 		# Make sure the user has the proper permission to do this
-		oResponse = Services.read('auth', 'rights/verify', {
-			"name": "csr_claims",
-			"right": Rights.UPDATE
-		}, sesh)
-		if not oResponse.data:
-			return Services.Response(error=Rights.INVALID)
+		Rights.check(sesh, 'csr_claims', Rights.UPDATE)
 
 		# Verify fields
 		try: DictHelper.eval(data, ['phoneNumber', 'user_id'])
@@ -601,101 +579,72 @@ class Monolith(Services.Service):
 
 		# If the claim doesn't exist
 		if not oClaim:
+			return Services.Response(False)
 
-			# If the person transferring has overwrite permissions
-			if not Rights.check(sesh, 'csr_overwrite', Rights.CREATE, None, True):
-				return Services.Response(error=(1104, data['phoneNumber']))
+		# If the current owner of the claim is not the person transfering,
+		#	check permissions
+		if oClaim['user'] != sesh['memo_id']:
 
-			# Else, create a new claim
-			oClaim = CustomerClaimed({
-				"phoneNumber": data['phoneNumber'],
-				"user": data['user_id'],
-				"orderId": None,
-				"provider": None,
-				"continuous": None,
-				"transferredBy": sesh['memo_id'],
-				"viewed": False
-			})
-			oClaim.create()
+			# Make sure the user has the proper rights
+			Rights.check(sesh, 'csr_overwrite', Rights.CREATE)
 
-			# No original claim
+			# Store the old user
+			iOldUser = oClaim['user']
+
+		# Else, no old user
+		else:
 			iOldUser = None
 
-		# Else, the claim exists
-		else:
+		# Find the user
+		if not User.exists(data['user_id']):
+			return Services.Response(error=(1104, data['user_id']))
 
-			# If the current owner of the claim is not the person transfering,
-			#	check permissions
-			if oClaim['user'] != sesh['memo_id']:
+		# Switch the user associated to the logged in user
+		oClaim['user'] = data['user_id']
+		oClaim['transferredBy'] = sesh['memo_id']
+		oClaim['viewed'] = False
+		oClaim.save()
 
-				# Make sure the user has the proper rights
-				oResponse = Services.read('auth', 'rights/verify', {
-					"name": "csr_overwrite",
-					"right": Rights.CREATE
-				}, sesh)
-				if not oResponse.data:
-					return Services.Response(error=Rights.INVALID)
+		# Claim data
+		dData = {
+			"ticket": oClaim['ticket'],
+			"phoneNumber": data['phoneNumber'],
+			"orderId": oClaim['orderId'],
+			"provider": oClaim['provider'],
+			"continuous": oClaim['continuous'],
+			"transferredBy": sesh['memo_id'],
+			"viewed": False
+		}
 
-				# Store the old user
-				iOldUser = oClaim['user']
+		# Get a list of all the user IDs
+		lUserIDs = set()
+		if dData['provider']: lUserIDs.add(dData['provider'])
+		if dData['transferredBy']:
+			dData['transferredBy'] = int(dData['transferredBy'])
+			lUserIDs.add(dData['transferredBy'])
 
-			# Else, no old user
-			else:
-				iOldUser = None
+		# If we have any IDs
+		if lUserIDs:
 
-			# Find the user
-			if not User.exists(data['user_id']):
-				return Services.Response(error=(1104, data['user_id']))
-
-			# Switch the user associated to the logged in user
-			oClaim['user'] = data['user_id']
-			oClaim['transferredBy'] = sesh['memo_id']
-			oClaim['viewed'] = False
-			oClaim.save()
-
-		# If the user transferred it to themselves, they don't need a
-		#	notification
-		if data['user_id'] != sesh['memo_id']:
-
-			# Claim data
-			dData = {
-				"phoneNumber": data['phoneNumber'],
-				"orderId": oClaim['orderId'],
-				"provider": oClaim['provider'],
-				"continuous": oClaim['continuous'],
-				"transferredBy": sesh['memo_id'],
-				"viewed": False
+			# Get the names of all the users
+			dUsers = {
+				d['id']: '%s %s' % (d['firstName'], d['lastName'])
+				for d in User.get(list(lUserIDs), raw=['id', 'firstName', 'lastName'])
 			}
 
-			# Get a list of all the user IDs
-			lUserIDs = set()
-			if dData['provider']: lUserIDs.add(dData['provider'])
+			# Add provider name
+			if dData['provider']:
+				dData['providerName'] = dData['provider'] in dUsers and dUsers[dData['provider']] or 'N/A'
+
+			# Add transferred name
 			if dData['transferredBy']:
-				dData['transferredBy'] = int(dData['transferredBy'])
-				lUserIDs.add(dData['transferredBy'])
+				dData['transferredByName'] = dData['transferredBy'] in dUsers and dUsers[dData['transferredBy']] or 'N/A'
 
-			# If we have any IDs
-			if lUserIDs:
-
-				# Get the names of all the users
-				dUsers = {
-					d['id']: '%s %s' % (d['firstName'], d['lastName'])
-					for d in User.get(list(lUserIDs), raw=['id', 'firstName', 'lastName'])
-				}
-
-				# Add provider name
-				if dData['provider']:
-					dData['providerName'] = dData['provider'] in dUsers and dUsers[dData['provider']] or 'N/A'
-
-				# Add transferred name
-				if dData['transferredBy']:
-					dData['transferredByName'] = dData['transferredBy'] in dUsers and dUsers[dData['transferredBy']] or 'N/A'
-
-			# Sync the transfer for anyone interested
-			Sync.push('monolith', 'user-%s' % str(data['user_id']), {
-				"type": 'claim_transfered',
-				"claim": dData
-			})
+		# Sync the transfer for anyone interested
+		Sync.push('monolith', 'user-%s' % str(data['user_id']), {
+			"type": 'claim_transfered',
+			"claim": dData
+		})
 
 		# If the claim was forceable removed
 		if iOldUser:
@@ -723,12 +672,7 @@ class Monolith(Services.Service):
 		"""
 
 		# Make sure the user has the proper permission to do this
-		oResponse = Services.read('auth', 'rights/verify', {
-			"name": "csr_claims",
-			"right": Rights.UPDATE
-		}, sesh)
-		if not oResponse.data:
-			return Services.Response(error=Rights.INVALID)
+		Rights.check(sesh, 'csr_claims', Rights.UPDATE)
 
 		# Verify fields
 		try: DictHelper.eval(data, ['phoneNumber'])
@@ -765,12 +709,7 @@ class Monolith(Services.Service):
 		"""
 
 		# Make sure the user has the proper permission to do this
-		oResponse = Services.read('auth', 'rights/verify', {
-			"name": "memo_mips",
-			"right": Rights.READ
-		}, sesh)
-		if not oResponse.data:
-			return Services.Response(error=Rights.INVALID)
+		Rights.check(sesh, 'memo_mips', Rights.READ)
 
 		# Verify fields
 		try: DictHelper.eval(data, ['customerId'])
@@ -834,12 +773,7 @@ class Monolith(Services.Service):
 		"""
 
 		# Make sure the user has the proper permission to do this
-		oResponse = Services.read('auth', 'rights/verify', {
-			"name": "prescriptions",
-			"right": Rights.CREATE
-		}, sesh)
-		if not oResponse.data:
-			return Services.Response(error=Rights.INVALID)
+		Rights.check(sesh, 'prescriptions', Rights.CREATE)
 
 		# Verify fields
 		try: DictHelper.eval(data, ['customerId', 'clinician_id'])
@@ -946,12 +880,7 @@ class Monolith(Services.Service):
 		"""
 
 		# Make sure the user has the proper permission to do this
-		oResponse = Services.read('auth', 'rights/verify', {
-			"name": "prescriptions",
-			"right": Rights.READ
-		}, sesh)
-		if not oResponse.data:
-			return Services.Response(error=Rights.INVALID)
+		Rights.check(sesh, 'prescriptions', Rights.READ)
 
 		# Verify fields
 		try: DictHelper.eval(data, ['customerId'])
@@ -985,12 +914,7 @@ class Monolith(Services.Service):
 		"""
 
 		# Make sure the user has the proper permission to do this
-		oResponse = Services.read('auth', 'rights/verify', {
-			"name": "prescriptions",
-			"right": Rights.CREATE
-		}, sesh)
-		if not oResponse.data:
-			return Services.Response(error=Rights.INVALID)
+		Rights.check(sesh, 'prescriptions', Rights.CREATE)
 
 		# Verify fields
 		try: DictHelper.eval(data, ['customerId', 'clinician_id'])
@@ -1770,12 +1694,7 @@ class Monolith(Services.Service):
 		"""
 
 		# Make sure the user has the proper permission to do this
-		oResponse = Services.read('auth', 'rights/verify', {
-			"name": "csr_messaging",
-			"right": Rights.READ
-		}, sesh)
-		if not oResponse.data:
-			return Services.Response(error=Rights.INVALID)
+		Rights.check(sesh, 'csr_messaging', Rights.READ)
 
 		# Verify fields
 		try: DictHelper.eval(data, ['customerPhone'])
@@ -1797,6 +1716,60 @@ class Monolith(Services.Service):
 			"type": sType
 		})
 
+	def customerMessagesIncoming_read(self, data, sesh):
+		"""Customer Messages Incoming Read
+
+		Returns the number of messages requested from what has been sent by
+		the customer
+
+		Arguments:
+			data (dict): Data sent with the request
+			sesh (Sesh._Session): The session associated with the request
+
+		Returns:
+			Services.Response
+		"""
+
+		# Verify fields
+		try: DictHelper.eval(data, ['customerPhone'])
+		except ValueError as e: return Services.Response(error=(1001, [(f, 'missing') for f in e.args]))
+
+		# If the start isn't set
+		if 'start' not in data:
+			data['start'] = 0
+
+		# If the limit isn't set
+		if 'count' not in data:
+			data['count'] = 3
+
+		# Make sure start and count are unsigned ints
+		lErrors = []
+		for f in ['start', 'count']:
+			try: data[f] = int(data[f])
+			except ValueError: lErrors.append([f, 'not an integer'])
+
+		# If the start is less than 0
+		if data['start'] < 0:
+			lErrors.append(['start', 'not a positive number'])
+
+		# If the count is less than 1
+		if data['count'] < 1:
+			lErrors.append(['count', 'must be at least 1'])
+
+		# If we got any errors
+		if lErrors:
+			return Services.Error(1001, lErrors)
+
+		# Fetch the incoming messages
+		lMsgs = CustomerCommunication.incoming(
+			data['customerPhone'],
+			data['start'],
+			data['count']
+		)
+
+		# Return the messages
+		return Services.Response(lMsgs)
+
 	def customerMips_read(self, data, sesh):
 		"""Customer MIPs
 
@@ -1812,12 +1785,7 @@ class Monolith(Services.Service):
 		"""
 
 		# Make sure the user has the proper permission to do this
-		oResponse = Services.read('auth', 'rights/verify', {
-			"name": "memo_mips",
-			"right": Rights.READ
-		}, sesh)
-		if not oResponse.data:
-			return Services.Response(error=Rights.INVALID)
+		Rights.check(sesh, 'memo_mips', Rights.READ)
 
 		# Verify fields
 		try: DictHelper.eval(data, ['customerId'])
@@ -1937,12 +1905,7 @@ class Monolith(Services.Service):
 		"""
 
 		# Make sure the user has the proper permission to do this
-		oResponse = Services.read('auth', 'rights/verify', {
-			"name": "memo_mips",
-			"right": Rights.UPDATE
-		}, sesh)
-		if not oResponse.data:
-			return Services.Response(error=Rights.INVALID)
+		Rights.check(sesh, 'memo_mips', Rights.UPDATE)
 
 		# Verify fields
 		try: DictHelper.eval(data, ['landing_id', 'ref', 'value'])
@@ -2069,12 +2032,7 @@ class Monolith(Services.Service):
 		except ValueError as e: return Services.Response(error=(1001, [(f, 'missing') for f in e.args]))
 
 		# Make sure the user has the proper permission to do this
-		oResponse = Services.read('auth', 'rights/verify', {
-			"name": "memo_notes",
-			"right": Rights.CREATE
-		}, sesh)
-		if not oResponse.data:
-			return Services.Response(error=Rights.INVALID)
+		Rights.check(sesh, 'memo_notes', Rights.CREATE)
 
 		# Get current date/time
 		sDT = arrow.get().format('YYYY-MM-DD HH:mm:ss')
@@ -2194,12 +2152,7 @@ class Monolith(Services.Service):
 		"""
 
 		# Make sure the user has the proper permission to do this
-		oResponse = Services.read('auth', 'rights/verify', {
-			"name": "memo_notes",
-			"right": Rights.READ
-		}, sesh)
-		if not oResponse.data:
-			return Services.Response(error=Rights.INVALID)
+		Rights.check(sesh, 'memo_notes', Rights.READ)
 
 		# Verify fields
 		try: DictHelper.eval(data, ['customerId'])
@@ -2255,12 +2208,7 @@ class Monolith(Services.Service):
 		"""
 
 		# Make sure the user has the proper permission to do this
-		oResponse = Services.read('auth', 'rights/verify', {
-			"name": "customers",
-			"right": Rights.READ
-		}, sesh)
-		if not oResponse.data:
-			return Services.Response(error=Rights.INVALID)
+		Rights.check(sesh, 'customers', Rights.READ)
 
 		# Verify fields
 		try: DictHelper.eval(data, ['filter'])
@@ -2306,7 +2254,7 @@ class Monolith(Services.Service):
 
 		# Go through each record and add a continuous list
 		for d in lRecords:
-			d['continuous'] = d['customerId'] in dOrdersCont and dOrdersCont[d['customerId']] or False
+			d['continuous'] = d['customerId'] in dOrdersCont and dOrdersCont[d['customerId']] or 0
 
 		# Return the results
 		return Services.Response(lRecords)
@@ -2357,12 +2305,7 @@ class Monolith(Services.Service):
 		"""
 
 		# Make sure the user has the proper permission to do this
-		oResponse = Services.read('auth', 'rights/verify', {
-			"name": "csr_messaging",
-			"right": Rights.CREATE
-		}, sesh)
-		if not oResponse.data:
-			return Services.Response(error=Rights.INVALID)
+		Rights.check(sesh, 'csr_messaging', Rights.CREATE)
 
 		# Verify fields
 		try: DictHelper.eval(data, ['phoneNumber', 'service'])
@@ -2413,12 +2356,7 @@ class Monolith(Services.Service):
 		"""
 
 		# Make sure the user has the proper permission to do this
-		oResponse = Services.read('auth', 'rights/verify', {
-			"name": "csr_messaging",
-			"right": Rights.CREATE
-		}, sesh)
-		if not oResponse.data:
-			return Services.Response(error=Rights.INVALID)
+		Rights.check(sesh, 'csr_messaging', Rights.CREATE)
 
 		# Verify fields
 		try: DictHelper.eval(data, ['phoneNumber', 'service'])
@@ -2473,12 +2411,7 @@ class Monolith(Services.Service):
 		"""
 
 		# Make sure the user has the proper permission to do this
-		oResponse = Services.read('auth', 'rights/verify', {
-			"name": "csr_messaging",
-			"right": Rights.CREATE
-		}, sesh)
-		if not oResponse.data:
-			return Services.Response(error=Rights.INVALID)
+		Rights.check(sesh, 'csr_messaging', Rights.CREATE)
 
 		# Verify fields
 		try: DictHelper.eval(data, ['phoneNumber'])
@@ -2608,7 +2541,8 @@ class Monolith(Services.Service):
 				"continuous": oClaim['continuous'],
 				"user": oClaim['provider'],
 				"transferredBy": sesh['memo_id'],
-				"viewed": False
+				"viewed": False,
+				"ticket": None
 			}
 
 			# Create a new claim instance for the agent and store in the DB
@@ -2656,10 +2590,10 @@ class Monolith(Services.Service):
 
 		# Store transfer note
 		oSmpNote = SmpNote(dNote)
-		oSmpNote.create()
+		sID = oSmpNote.create()
 
-		# Return OK
-		return Services.Response(True)
+		# Return the Note ID
+		return Services.Response(sID);
 
 	def customerProviderTransfer_update(self, data, sesh):
 		"""Customer Provider Transfer
@@ -2702,9 +2636,11 @@ class Monolith(Services.Service):
 		dData = {
 			"customerId": int(dDetails['customerId']),
 			"continuous": 0,
+			"ticket": oClaim['ticket'],
 			"user": data['user_id'],
 			"transferredBy": sesh['memo_id'],
-			"viewed": False
+			"viewed": False,
+			"ticket": oClaim['ticket']
 		}
 
 		# Create a new claim instance for the agent and store in the DB
@@ -2764,10 +2700,10 @@ class Monolith(Services.Service):
 			"createdAt": sDT,
 			"updatedAt": sDT
 		})
-		oSmpNote.create()
+		sNoteID = oSmpNote.create()
 
-		# Return OK
-		return Services.Response(True)
+		# Return the note ID
+		return Services.Response(sNoteID)
 
 	def customerProviders_read(self, data, sesh):
 		"""Customer Providers
@@ -2959,6 +2895,134 @@ class Monolith(Services.Service):
 
 		# Return whatever is found
 		return Services.Response(dRecords)
+
+	def internalIncomingSms_read(self, data):
+		"""Internal: Incoming SMS
+
+		Used by the CSR service to get the list of incoming SMS message IDs in
+		a range so they can be associated to tickets
+
+		Arguments:
+			data (dict): Data sent with the request
+
+		Returns:
+			Services.Response
+		"""
+
+		# Check for internal key
+		Rights.internal(data)
+
+		# Verify fields
+		try: DictHelper.eval(data, ['customerPhone', 'start', 'end'])
+		except ValueError as e: return Services.Response(error=(1001, [(f, 'missing') for f in e.args]))
+
+		# Make sure start and end are unsigned ints
+		lErrors = []
+		for f in ['start', 'end']:
+			try:
+				data[f] = int(data[f])
+				if data[f] < 0:
+					lErrors.append([f, 'must be unsigned'])
+			except ValueError:
+				lErrors.append([f, 'not an integer'])
+
+		# If we got any errors
+		if lErrors:
+			return Services.Error(1001, lErrors)
+
+		# Get the IDs of the messages in the range
+		lMessages = CustomerCommunication.filter({
+			"fromPhone": data['customerPhone'],
+			"createdAt": {"between": [
+				Record_MySQL.Literal('FROM_UNIXTIME(%d)' % data['start']),
+				Record_MySQL.Literal('FROM_UNIXTIME(%d)' % data['end'])
+			]}
+		}, raw=['id'])
+
+		# Fetch the IDs and return
+		return Services.Response([d['id'] for d in lMessages])
+
+	def internalTicketInfo_read(self, data):
+		"""Internal: Ticket Info
+
+		Gets a list of IDs for notes, SMSs, emails, etc and returns the data
+		associated with each
+
+		Arguments:
+			data (dict): Data sent with the request
+
+		Returns:
+			Services.Response
+		"""
+
+		# Check for internal key
+		Rights.internal(data)
+
+		# Init the return
+		dRet = {}
+
+		# If we have email requests
+		#if 'email' in data:
+
+		# If we have message requests
+		if 'messages' in data:
+
+			# Convert all values
+			data['messages'] = [int(s) for s in data['messages']]
+
+			# Fetch all the messages and store them by ID
+			dRet['messages'] = {
+				d['id']:d for d in CustomerCommunication.byIDs(data['messages'])
+			}
+
+			# Go through each requested ID
+			for s in data['messages']:
+
+				# If it's missing
+				if s not in dRet['messages']:
+					dRet['messages'][s] = {
+						"createdAt": 0,
+						"errorMessage": 'MISSING',
+						"fromPhone": 'MISSING',
+						"fromName": 'MISSING',
+						"id": s,
+						"notes": 'THIS SMS MESSAGE WAS STORED IN THE TICKET BUT WAS DELETED FROM MEMO',
+						"status": 'MISSING',
+						"type": 'MISSING'
+					}
+
+			# Store as a list
+			dRet['messages'] = list(dRet['messages'].values())
+
+		# If we have note requests
+		if 'notes' in data:
+
+			# Convert all values
+			data['notes'] = [int(s) for s in data['notes']]
+
+			# Fetch all the notes and store them by ID
+			dRet['notes'] = {
+				d['id']:d for d in SmpNote.byIDs(data['notes'])
+			}
+
+			# Go through each requested ID
+			for s in data['notes']:
+
+				# If it's missing
+				if s not in dRet['notes']:
+					dRet['notes'][s] = {
+						"action": 'MISSING',
+						"createdAt": 0,
+						"createdBy": 'MISSING',
+						"note": 'THIS NOTE WAS STORED IN THE TICKET BUT WAS DELETED FROM MEMO',
+						"userRole": 'System'
+					}
+
+			# Store as a list
+			dRet['notes'] = list(dRet['notes'].values())
+
+		# Return the results
+		return Services.Response(dRet)
 
 	def messageIncoming_create(self, data):
 		"""Message Incoming
@@ -3233,12 +3297,7 @@ class Monolith(Services.Service):
 		"""
 
 		# Make sure the user has the proper permission to do this
-		oResponse = Services.read('auth', 'rights/verify', {
-			"name": "csr_messaging",
-			"right": Rights.READ
-		}, sesh)
-		if not oResponse.data:
-			return Services.Response(error=Rights.INVALID)
+		Rights.check(sesh, 'csr_messaging', Rights.READ)
 
 		# Get the claimed records
 		lClaimed = CustomerMsgPhone.claimed(sesh['memo_id'])
@@ -3355,12 +3414,7 @@ class Monolith(Services.Service):
 		"""
 
 		# Make sure the user has the proper permission to do this
-		oResponse = Services.read('auth', 'rights/verify', {
-			"name": "csr_messaging",
-			"right": Rights.READ
-		}, sesh)
-		if not oResponse.data:
-			return Services.Response(error=Rights.INVALID)
+		Rights.check(sesh, 'csr_messaging', Rights.READ)
 
 		# Must search at least one
 		if 'phone' not in data and \
@@ -3388,12 +3442,7 @@ class Monolith(Services.Service):
 		"""
 
 		# Make sure the user has the proper permission to do this
-		oResponse = Services.read('auth', 'rights/verify', {
-			"name": "csr_messaging",
-			"right": Rights.READ
-		}, sesh)
-		if not oResponse.data:
-			return Services.Response(error=Rights.INVALID)
+		Rights.check(sesh, 'csr_messaging', Rights.READ)
 
 		# Must search at least one
 		if 'id' not in data and \
@@ -3463,12 +3512,7 @@ class Monolith(Services.Service):
 		"""
 
 		# Make sure the user has the proper permission to do this
-		oResponse = Services.read('auth', 'rights/verify', {
-			"name": "csr_messaging",
-			"right": Rights.READ
-		}, sesh)
-		if not oResponse.data:
-			return Services.Response(error=Rights.INVALID)
+		Rights.check(sesh, 'csr_messaging', Rights.READ)
 
 		# If the order wasn't passed
 		if 'order' not in data:
@@ -3645,12 +3689,7 @@ class Monolith(Services.Service):
 		"""
 
 		# Make sure the user has the proper permission to do this
-		oResponse = Services.read('auth', 'rights/verify', {
-			"name": "order_claims",
-			"right": Rights.CREATE
-		}, sesh)
-		if not oResponse.data:
-			return Services.Response(error=Rights.INVALID)
+		Rights.check(sesh, 'order_claims', Rights.CREATE)
 
 		# Verify fields
 		try: DictHelper.eval(data, ['customerId', 'orderId'])
@@ -3658,7 +3697,7 @@ class Monolith(Services.Service):
 
 		# If 'continuous' is missing, assume false
 		if 'continuous' not in data:
-			data['continuous'] = False
+			data['continuous'] = 0
 
 		# Check how many claims this user already has
 		iCount = KtOrderClaim.count(filter={
@@ -3727,12 +3766,7 @@ class Monolith(Services.Service):
 		"""
 
 		# Make sure the user has the proper permission to do this
-		oResponse = Services.read('auth', 'rights/verify', {
-			"name": "order_claims",
-			"right": Rights.DELETE
-		}, sesh)
-		if not oResponse.data:
-			return Services.Response(error=Rights.INVALID)
+		Rights.check(sesh, 'order_claims', Rights.DELETE)
 
 		# Verify fields
 		try: DictHelper.eval(data, ['customerId', 'reason'])
@@ -3787,12 +3821,7 @@ class Monolith(Services.Service):
 		"""
 
 		# Make sure the user has the proper permission to do this
-		oResponse = Services.read('auth', 'rights/verify', {
-			"name": "order_claims",
-			"right": Rights.CREATE
-		}, sesh)
-		if not oResponse.data:
-			return Services.Response(error=Rights.INVALID)
+		Rights.check(sesh, 'order_claims', Rights.CREATE)
 
 		# Verify fields
 		try: DictHelper.eval(data, ['customerId'])
@@ -3843,12 +3872,7 @@ class Monolith(Services.Service):
 		"""
 
 		# Make sure the user has the proper permission to do this
-		oResponse = Services.read('auth', 'rights/verify', {
-			"name": "order_claims",
-			"right": Rights.CREATE
-		}, sesh)
-		if not oResponse.data:
-			return Services.Response(error=Rights.INVALID)
+		Rights.check(sesh, 'order_claims', Rights.CREATE)
 
 		# Get all the claims
 		lClaimed = KtOrderClaim.byUser(sesh['memo_id'])
@@ -4085,10 +4109,10 @@ class Monolith(Services.Service):
 			"createdAt": sDT,
 			"updatedAt": sDT
 		})
-		oSmpNote.create()
+		sNoteID = oSmpNote.create()
 
-		# Return OK
-		return Services.Response(True)
+		# Return the note ID
+		return Services.Response(sNoteID)
 
 	def orderContinuousDecline_update(self, data, sesh):
 		"""Order Continuous Decline
@@ -4214,7 +4238,7 @@ class Monolith(Services.Service):
 			"createdAt": sDT,
 			"updatedAt": sDT
 		})
-		oSmpNote.create()
+		sNoteID = oSmpNote.create()
 
 		# Find the order status (fuck this is fucking stupid as fuck, fuck memo)
 		oStatus = SmpOrderStatus.filter({
@@ -4236,8 +4260,8 @@ class Monolith(Services.Service):
 			# Notify the patient of the decline
 			SMSWorkflow.providerDeclines(data['orderId'], sesh['memo_id'], self)
 
-		# Return OK
-		return Services.Response(True)
+		# Return the note ID
+		return Services.Response(sNoteID)
 
 	def orderLabel_update(self, data, sesh):
 		"""Order Label
@@ -4253,12 +4277,7 @@ class Monolith(Services.Service):
 		"""
 
 		# Make sure the user has the proper permission to do this
-		oResponse = Services.read('auth', 'rights/verify', {
-			"name": "memo_notes",
-			"right": Rights.CREATE
-		}, sesh)
-		if not oResponse.data:
-			return Services.Response(error=Rights.INVALID)
+		Rights.check(sesh, 'memo_notes', Rights.CREATE)
 
 		# Verify fields
 		try: DictHelper.eval(data, ['orderId', 'label'])
@@ -4373,12 +4392,7 @@ class Monolith(Services.Service):
 		"""
 
 		# Make sure the user has the proper permission to do this
-		oResponse = Services.read('auth', 'rights/verify', {
-			"name": "order_claims",
-			"right": Rights.CREATE
-		}, sesh)
-		if not oResponse.data:
-			return Services.Response(error=Rights.INVALID)
+		Rights.check(sesh, 'order_claims', Rights.CREATE)
 
 		# Verify fields
 		try: DictHelper.eval(data, ['customerId', 'agent', 'note'])
@@ -4424,11 +4438,12 @@ class Monolith(Services.Service):
 		dData = {
 			"phoneNumber": dKtCustomer['phoneNumber'],
 			"user": data['agent'],
+			"ticket": 'ticket' in data and data['ticket'] or oOrderClaim['ticket'],
 			"transferredBy": sesh['memo_id'],
 			"provider": sesh['memo_id'],
 			"orderId": oOrderClaim['orderId'],
 			"continuous": oOrderClaim['continuous'],
-			"viewed": False
+			"viewed": 0
 		}
 
 		# Get the user name
@@ -4533,7 +4548,7 @@ class Monolith(Services.Service):
 
 		# Store transfer note
 		oSmpNote = SmpNote(dNote)
-		oSmpNote.create()
+		sNoteID = oSmpNote.create()
 
 		# See if we have a customer msg summary
 		dCMP = CustomerMsgPhone.existsByCustomerId(data['customerId'])
@@ -4556,7 +4571,7 @@ class Monolith(Services.Service):
 			oConvo.create()
 
 		# Return OK
-		return Services.Response(True)
+		return Services.Response(sNoteID)
 
 	def ordersPendingCounts_read(self, data, sesh):
 		"""Orders Pending Counts
@@ -4629,12 +4644,7 @@ class Monolith(Services.Service):
 		"""
 
 		# Make sure the user has the proper permission to do this
-		oResponse = Services.read('auth', 'rights/verify', {
-			"name": "csr_messaging",
-			"right": Rights.READ
-		}, sesh)
-		if not oResponse.data:
-			return Services.Response(error=Rights.INVALID)
+		Rights.check(sesh, 'csr_messaging', Rights.READ)
 
 		# Get the pending orders
 		lPending = KtOrder.queueCsr() + KtOrderContinuous.queueCsr()
@@ -5127,12 +5137,7 @@ class Monolith(Services.Service):
 		"""
 
 		# Make sure the user has the proper permission to do this
-		oResponse = Services.read('auth', 'rights/verify', {
-			"name": "prov_overwrite",
-			"right": Rights.DELETE
-		}, sesh)
-		if not oResponse.data:
-			return Services.Response(error=Rights.INVALID)
+		Rights.check(sesh, 'prov_overwrite', Rights.DELETE)
 
 		# Verify fields
 		try: DictHelper.eval(data, ['customerId'])
@@ -5175,12 +5180,7 @@ class Monolith(Services.Service):
 		"""
 
 		# Make sure the user has the proper permission to do this
-		oResponse = Services.read('auth', 'rights/verify', {
-			"name": "prov_overwrite",
-			"right": Rights.READ
-		}, sesh)
-		if not oResponse.data:
-			return Services.Response(error=Rights.INVALID)
+		Rights.check(sesh, 'prov_overwrite', Rights.READ)
 
 		# Fetch all the current claims
 		lClaims = KtOrderClaim.get(raw=True, orderby=[['createdAt', 'DESC']])
@@ -5228,12 +5228,7 @@ class Monolith(Services.Service):
 		"""
 
 		# Make sure the user has the proper permission to do this
-		oResponse = Services.read('auth', 'rights/verify', {
-			"name": "memo_notes",
-			"right": Rights.CREATE
-		}, sesh)
-		if not oResponse.data:
-			return Services.Response(error=Rights.INVALID)
+		Rights.check(sesh, 'memo_notes', Rights.CREATE)
 
 		# Verify fields
 		try: DictHelper.eval(data, ['customerId', 'content'])
@@ -5397,12 +5392,7 @@ class Monolith(Services.Service):
 		"""
 
 		# Make sure the user has the proper permission to do this
-		oResponse = Services.read('auth', 'rights/verify', {
-			"name": "csr_stats",
-			"right": Rights.READ
-		}, sesh)
-		if not oResponse.data:
-			return Services.Response(error=Rights.INVALID)
+		Rights.check(sesh, 'csr_stats', Rights.READ)
 
 		# Fetch and return claim stats
 		return Services.Response(

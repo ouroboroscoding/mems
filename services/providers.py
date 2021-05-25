@@ -583,7 +583,6 @@ class Providers(Services.Service):
 		# Pull out Providers only values
 		dProvider = {}
 		if 'claims_max' in data: dProvider['claims_max'] = data.pop('claims_max')
-		if 'claims_timeout' in data: dProvider['claims_timeout'] = data.pop('claims_timeout')
 		if 'agent' in data: dProvider['agent'] = data.pop('agent')
 
 		# Send the data to monolith to create the memo user
@@ -683,7 +682,7 @@ class Providers(Services.Service):
 
 		# Try to update the claims vars
 		lErrors = []
-		for s in ['claims_max', 'claims_timeout', 'agent']:
+		for s in ['claims_max', 'agent']:
 			if s in data:
 				try: oProvider[s] = data.pop(s)
 				except ValueError as e: lErrors.append(e.args[0])
@@ -877,8 +876,7 @@ class Providers(Services.Service):
 		# Create the agent and return the response
 		return self._provider_create({
 			"memo_id": oResponse.data,
-			"claims_max": 20,
-			"claims_timeout": 48
+			"claims_max": 20
 		}, sesh)
 
 	def providerTracking_read(self, data, sesh):
@@ -1131,7 +1129,6 @@ class Providers(Services.Service):
 		oSesh['agent'] = dProvider['agent']
 		oSesh['user_id'] = dProvider['_id']
 		oSesh['claims_max'] = dProvider['claims_max']
-		oSesh['claims_timeout'] = dProvider['claims_timeout']
 		oSesh.save()
 
 		# Look for a pre-existing signin with no sign out

@@ -175,10 +175,6 @@
 		"customers": {
 			"address_services": []
 		},
-		"monolith": {
-			"claims_max": 20,
-			"claims_timeout": 172800
-		},
 		"patient": {
 			"max_attempts": 3,
 			"override": false,

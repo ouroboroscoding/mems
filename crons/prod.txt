@@ -14,7 +14,6 @@
 3 11 * * * cd /me/mems; /root/venvs/mems/bin/python -m crons expiring &> /dev/null
 
 # Monolith Claims and Campaigns
-15,45 * * * * cd /me/mems; /root/venvs/mems/bin/python -m crons monolith claims_timeout &> /dev/null
 28 * * * * cd /me/mems; /root/venvs/mems/bin/python -m crons monolith invalid_campaigns &> /dev/null
 20 * * * * cd /me/mems; /root/venvs/mems/bin/python -m crons monolith.hrt_join_date &> /dev/null
 

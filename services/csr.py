@@ -12,21 +12,29 @@ __email__		= "bast@maleexcel.com"
 __created__		= "2020-05-17"
 
 # Python imports
+from operator import itemgetter
+from time import time
 import uuid
 
 # Pip imports
+import arrow
 from FormatOC import Node
-from RestOC import DictHelper, Errors, Record_MySQL, Services, Sesh
+from RestOC import DictHelper, Errors, JSON, Record_MySQL, Services, Sesh
 
 # Shared imports
 from shared import Rights
 
 # Records imports
 from records.csr import Agent, CustomList, CustomListItem, Reminder, \
-						TemplateEmail, TemplateSMS
+						TemplateEmail, TemplateSMS, \
+						Ticket, TicketAction, TicketItem, \
+						TicketOpened, TicketResolved
 
 # Valid DOB
 _DOB = Node('date')
+
+# Placeholder UUID
+UUID_PLACEHOLDER = 'aaaaaaaa-aaaa-4aaa-aaaa-aaaaaaaaaaaa'
 
 class CSR(Services.Service):
 	"""CSR Service class
@@ -34,7 +42,8 @@ class CSR(Services.Service):
 	Service for CSR access
 	"""
 
-	_install = [Agent, CustomList, CustomListItem, TemplateEmail, TemplateSMS]
+	_install = [Agent, CustomList, CustomListItem, TemplateEmail, TemplateSMS,
+				Ticket, TicketAction, TicketItem, TicketOpened, TicketResolved]
 	"""Record types called in install"""
 
 	def initialise(self):
@@ -45,6 +54,9 @@ class CSR(Services.Service):
 		Returns:
 			Monolith
 		"""
+
+		# Init the Ticket record class so that we get the action types
+		TicketAction.init()
 
 		# Return self for chaining
 		return self
@@ -140,12 +152,7 @@ class CSR(Services.Service):
 		"""
 
 		# Make sure the user has the proper permission to do this
-		oResponse = Services.read('auth', 'rights/verify', {
-			"name": "csr_templates",
-			"right": Rights.CREATE
-		}, sesh)
-		if not oResponse.data:
-			return Services.Response(error=Rights.INVALID)
+		Rights.check(sesh, 'csr_templates', Rights.CREATE)
 
 		# Verify minimum fields
 		try: DictHelper.eval(data, ['title', 'content'])
@@ -181,13 +188,7 @@ class CSR(Services.Service):
 		except ValueError as e: return Services.Response(error=(1001, [(f, 'missing') for f in e.args]))
 
 		# Make sure the user has the proper permission to do this
-		oResponse = Services.read('auth', 'rights/verify', {
-			"name": "csr_templates",
-			"right": Rights.DELETE,
-			"ident": data['_id']
-		}, sesh)
-		if not oResponse.data:
-			return Services.Response(error=Rights.INVALID)
+		Rights.check(sesh, 'csr_templates', Rights.DELETE, data['_id'])
 
 		# If the record does not exist
 		if not _class.exists(data['_id']):
@@ -219,13 +220,7 @@ class CSR(Services.Service):
 		except ValueError as e: return Services.Response(error=(1001, [(f, 'missing') for f in e.args]))
 
 		# Make sure the user has the proper permission to do this
-		oResponse = Services.read('auth', 'rights/verify', {
-			"name": "csr_templates",
-			"right": Rights.READ,
-			"ident": data['_id']
-		}, sesh)
-		if not oResponse.data:
-			return Services.Response(error=Rights.INVALID)
+		Rights.check(sesh, 'csr_templates', Rights.READ, data['_id'])
 
 		# Look for the template
 		dTemplate = _class.get(data['_id'], raw=True)
@@ -256,13 +251,7 @@ class CSR(Services.Service):
 		except ValueError as e: return Services.Response(error=(1001, [(f, 'missing') for f in e.args]))
 
 		# Make sure the user has the proper permission to do this
-		oResponse = Services.read('auth', 'rights/verify', {
-			"name": "csr_templates",
-			"right": Rights.UPDATE,
-			"ident": data['_id']
-		}, sesh)
-		if not oResponse.data:
-			return Services.Response(error=Rights.INVALID)
+		Rights.check(sesh, 'csr_templates', Rights.UPDATE, data['_id'])
 
 		# Fetch the template
 		oTemplate = _class.get(data['_id'])
@@ -305,12 +294,7 @@ class CSR(Services.Service):
 		"""
 
 		# Make sure the user has the proper permission to do this
-		oResponse = Services.read('auth', 'rights/verify', {
-			"name": "csr_templates",
-			"right": Rights.READ
-		}, sesh)
-		if not oResponse.data:
-			return Services.Response(error=Rights.INVALID)
+		Rights.check(sesh, 'csr_templates', Rights.READ)
 
 		# Fetch and return the templates
 		return Services.Response(
@@ -332,12 +316,7 @@ class CSR(Services.Service):
 		"""
 
 		# Make sure the user has the proper permission to do this
-		oResponse = Services.read('auth', 'rights/verify', {
-			"name": "csr_agents",
-			"right": Rights.CREATE
-		}, sesh)
-		if not oResponse.data:
-			return Services.Response(error=Rights.INVALID)
+		Rights.check(sesh, 'csr_agents', Rights.CREATE)
 
 		# Verify minimum fields
 		try: DictHelper.eval(data, ['userName', 'firstName', 'lastName', 'password'])
@@ -345,8 +324,9 @@ class CSR(Services.Service):
 
 		# Pull out CSR only values
 		dAgent = {}
+		if 'type' in data: dAgent['type'] = data.pop('type')
+		if 'escalate' in data: dAgent['escalate'] = data.pop('escalate')
 		if 'claims_max' in data: dAgent['claims_max'] = data.pop('claims_max')
-		if 'claims_timeout' in data: dAgent['claims_timeout'] = data.pop('claims_timeout')
 
 		# Send the data to monolith to create the memo user
 		data['_internal_'] = Services.internalKey()
@@ -377,12 +357,7 @@ class CSR(Services.Service):
 		except ValueError as e: return Services.Response(error=(1001, [(f, 'missing') for f in e.args]))
 
 		# Make sure the user has the proper permission to do this
-		oResponse = Services.read('auth', 'rights/verify', {
-			"name": "csr_agents",
-			"right": Rights.DELETE
-		}, sesh)
-		if not oResponse.data:
-			return Services.Response(error=Rights.INVALID)
+		Rights.check(sesh, 'csr_agents', Rights.DELETE)
 
 		# Find the Agent
 		oAgent = Agent.get(data['_id'])
@@ -440,12 +415,7 @@ class CSR(Services.Service):
 		except ValueError as e: return Services.Response(error=(1001, [(f, 'missing') for f in e.args]))
 
 		# Make sure the user has the proper permission to do this
-		oResponse = Services.read('auth', 'rights/verify', {
-			"name": "csr_agents",
-			"right": Rights.UPDATE
-		}, sesh)
-		if not oResponse.data:
-			return Services.Response(error=Rights.INVALID)
+		Rights.check(sesh, 'csr_agents', Rights.UPDATE)
 
 		# Find the agent
 		oAgent = Agent.get(data['_id'])
@@ -454,7 +424,7 @@ class CSR(Services.Service):
 
 		# Try to update the claims vars
 		lErrors = []
-		for s in ['claims_max', 'claims_timeout']:
+		for s in ['type', 'escalate', 'claims_max']:
 			if s in data:
 				try: oAgent[s] = data.pop(s)
 				except ValueError as e: lErrors.append(e.args[0])
@@ -500,12 +470,7 @@ class CSR(Services.Service):
 		"""
 
 		# Make sure the user has the proper permission to do this
-		oResponse = Services.read('auth', 'rights/verify', {
-			"name": "csr_agents",
-			"right": Rights.CREATE
-		}, sesh)
-		if not oResponse.data:
-			return Services.Response(error=Rights.INVALID)
+		Rights.check(sesh, 'csr_agents', Rights.CREATE)
 
 		# Verify minimum fields
 		try: DictHelper.eval(data, ['userName'])
@@ -522,8 +487,9 @@ class CSR(Services.Service):
 		# Create the agent and return the response
 		return self._agent_create({
 			"memo_id": oResponse.data,
-			"claims_max": 20,
-			"claims_timeout": 48
+			"type": 'agent',
+			"escalate": 0,
+			"claims_max": 20
 		}, sesh)
 
 	def agentNames_read(self, data, sesh):
@@ -541,7 +507,7 @@ class CSR(Services.Service):
 		"""
 
 		# Fetch all the agents
-		lAgents = Agent.get(raw=['memo_id'])
+		lAgents = Agent.get(raw=['memo_id', 'type', 'escalate'])
 
 		# Fetch their names
 		oResponse = Services.read('monolith', 'user/name', {
@@ -549,8 +515,21 @@ class CSR(Services.Service):
 			"id": [d['memo_id'] for d in lAgents]
 		}, sesh)
 
-		# Regardless of what we got, retun the effect
-		return oResponse
+		# Convert the IDs
+		dMemoNames = DictHelper.keysToInts(oResponse.data)
+
+		# Add the names to the agents
+		for d in lAgents:
+			try: dName = dMemoNames[d['memo_id']]
+			except KeyError: dName = {"firstName": 'NAME', "lastName": 'MISSING'}
+			d['firstName'] = dName['firstName']
+			d['lastName'] = dName['lastName']
+
+		# Order by first then last name
+		lAgents = sorted(lAgents, key=itemgetter('firstName', 'lastName'))
+
+		# Return the agents
+		return Services.Response(lAgents)
 
 	def agentPasswd_update(self, data, sesh):
 		"""Agent Password Update
@@ -570,13 +549,7 @@ class CSR(Services.Service):
 		except ValueError as e: return Services.Response(error=(1001, [(f, 'missing') for f in e.args]))
 
 		# Make sure the user has the proper permission to do this
-		oResponse = Services.read('auth', 'rights/verify', {
-			"name": "csr_agents",
-			"right": Rights.UPDATE,
-			"ident": data['agent_id']
-		}, sesh)
-		if not oResponse.data:
-			return Services.Response(error=Rights.INVALID)
+		Rights.check(sesh, 'csr_agents', Rights.UPDATE, data['agent_id'])
 
 		# Find the Agent
 		dAgent = Agent.get(data['agent_id'], raw=['memo_id'])
@@ -611,13 +584,7 @@ class CSR(Services.Service):
 		except ValueError as e: return Services.Response(error=(1001, [(f, 'missing') for f in e.args]))
 
 		# Make sure the user has the proper permission to do this
-		oResponse = Services.read('auth', 'rights/verify', {
-			"name": "csr_agents",
-			"right": Rights.READ,
-			"ident": data['agent_id']
-		}, sesh)
-		if not oResponse.data:
-			return Services.Response(error=Rights.INVALID)
+		Rights.check(sesh, 'csr_agents', Rights.READ, data['agent_id'])
 
 		# Fetch the permissions from the auth service
 		oResponse = Services.read('auth', 'permissions', {
@@ -646,13 +613,7 @@ class CSR(Services.Service):
 		except ValueError as e: return Services.Response(error=(1001, [(f, 'missing') for f in e.args]))
 
 		# Make sure the user has the proper permission to do this
-		oResponse = Services.read('auth', 'rights/verify', {
-			"name": "csr_agents",
-			"right": Rights.READ,
-			"ident": data['agent_id']
-		}, sesh)
-		if not oResponse.data:
-			return Services.Response(error=Rights.INVALID)
+		Rights.check(sesh, 'csr_agents', Rights.UPDATE, data['agent_id'])
 
 		# Fetch the permissions from the auth service
 		oResponse = Services.update('auth', 'permissions', {
@@ -678,12 +639,7 @@ class CSR(Services.Service):
 		"""
 
 		# Make sure the user has the proper permission to do this
-		oResponse = Services.read('auth', 'rights/verify', {
-			"name": "csr_agents",
-			"right": Rights.READ
-		}, sesh)
-		if not oResponse.data:
-			return Services.Response(error=Rights.INVALID)
+		Rights.check(sesh, 'csr_agents', Rights.READ)
 
 		# Fetch all the agents
 		lAgents = Agent.get(raw=True)
@@ -715,15 +671,15 @@ class CSR(Services.Service):
 				d['dsClinicianId'] = dMemoUsers[d['memo_id']]['dsClinicianId']
 			else:
 				d['userName'] = 'n/a'
-				d['name'] = 'Not Found'
-				d['firstName'] = 'Not'
-				d['lastName'] = 'Found'
+				d['name'] = 'NAME MISSING'
+				d['firstName'] = 'NAME'
+				d['lastName'] = 'MISSING'
 				d['email'] = ''
 				d['dsClinicId'] = None
 				d['dsClinicianId'] = None
 
 		# Return the agents in order of userName
-		return Services.Response(sorted(lAgents, key=lambda o: o['name']))
+		return Services.Response(sorted(lAgents, key=lambda o: o['userName']))
 
 	def list_create(self, data, sesh):
 		"""List Create
@@ -739,12 +695,7 @@ class CSR(Services.Service):
 		"""
 
 		# Make sure the user has at least csr messaging permission
-		oResponse = Services.read('auth', 'rights/verify', {
-			"name": "csr_messaging",
-			"right": Rights.READ
-		}, sesh)
-		if not oResponse.data:
-			return Services.Response(error=Rights.INVALID)
+		Rights.check(sesh, 'csr_messaging', Rights.READ)
 
 		# Verify minimum fields
 		try: DictHelper.eval(data, ['title'])
@@ -778,12 +729,7 @@ class CSR(Services.Service):
 		"""
 
 		# Make sure the user has at least csr messaging permission
-		oResponse = Services.read('auth', 'rights/verify', {
-			"name": "csr_messaging",
-			"right": Rights.READ
-		}, sesh)
-		if not oResponse.data:
-			return Services.Response(error=Rights.INVALID)
+		Rights.check(sesh, 'csr_messaging', Rights.READ)
 
 		# Verify minimum fields
 		try: DictHelper.eval(data, ['_id'])
@@ -820,12 +766,7 @@ class CSR(Services.Service):
 		"""
 
 		# Make sure the user has at least csr messaging permission
-		oResponse = Services.read('auth', 'rights/verify', {
-			"name": "csr_messaging",
-			"right": Rights.READ
-		}, sesh)
-		if not oResponse.data:
-			return Services.Response(error=Rights.INVALID)
+		Rights.check(sesh, 'csr_messaging', Rights.READ)
 
 		# Verify minimum fields
 		try: DictHelper.eval(data, ['_id', 'title'])
@@ -863,12 +804,7 @@ class CSR(Services.Service):
 		"""
 
 		# Make sure the user has at least csr messaging permission
-		oResponse = Services.read('auth', 'rights/verify', {
-			"name": "csr_messaging",
-			"right": Rights.READ
-		}, sesh)
-		if not oResponse.data:
-			return Services.Response(error=Rights.INVALID)
+		Rights.check(sesh, 'csr_messaging', Rights.READ)
 
 		# Verify minimum fields
 		try: DictHelper.eval(data, ['list', 'customer', 'name', 'number'])
@@ -911,12 +847,7 @@ class CSR(Services.Service):
 		"""
 
 		# Make sure the user has at least csr messaging permission
-		oResponse = Services.read('auth', 'rights/verify', {
-			"name": "csr_messaging",
-			"right": Rights.READ
-		}, sesh)
-		if not oResponse.data:
-			return Services.Response(error=Rights.INVALID)
+		Rights.check(sesh, 'csr_messaging', Rights.READ)
 
 		# Verify minimum fields
 		try: DictHelper.eval(data, ['_id'])
@@ -955,12 +886,7 @@ class CSR(Services.Service):
 		"""
 
 		# Make sure the user has at least csr messaging permission
-		oResponse = Services.read('auth', 'rights/verify', {
-			"name": "csr_messaging",
-			"right": Rights.READ
-		}, sesh)
-		if not oResponse.data:
-			return Services.Response(error=Rights.INVALID)
+		Rights.check(sesh, 'csr_messaging', Rights.READ)
 
 		# Find all lists associated with the user
 		lLists = CustomList.filter({
@@ -1407,7 +1333,6 @@ class CSR(Services.Service):
 		# Store the user ID and claim vars in the session
 		oSesh['user_id'] = dAgent['_id']
 		oSesh['claims_max'] = dAgent['claims_max']
-		oSesh['claims_timeout'] = dAgent['claims_timeout']
 		oSesh.save()
 
 		# Return the session ID and primary user data
@@ -1575,3 +1500,711 @@ class CSR(Services.Service):
 			Services.Response
 		"""
 		return self._templates_read(data, sesh, TemplateSMS)
+
+	def ticket_create(self, data, sesh):
+		"""Ticket Create
+
+		Creates a new ticket
+
+		Arguments:
+			data (mixed): Data sent with the request
+			sesh (Sesh._Session): The session associated with the request
+
+		Returns:
+			Services.Response
+		"""
+
+		# Check internal key or rights
+		Rights.internalOrCheck(data, sesh, ['csr_claims', 'order_claims'], Rights.CREATE)
+
+		# Create a new opened instance
+		try:
+			oOpened = TicketOpened({
+				"_ticket": UUID_PLACEHOLDER,
+				"type": data['type'],
+				"memo_id": sesh['memo_id']
+			})
+
+			# Remove the type from the data so it doesn't trip up the Ticket
+			#	create
+			data.pop('type')
+
+		except ValueError as e:
+			return Services.Error(1001, ['action.%s' % l[0] for l in e.args[0]])
+
+		# Try to pop off the items
+		try: lItemsData = data.pop('items')
+		except KeyError: lItemsData = False
+
+		# Create a list of items records
+		lItems = []
+
+		# If the pop worked
+		if lItemsData:
+
+			# Go through each item
+			for i in range(len(lItemsData)):
+
+				# Add ticket ID to the item
+				lItemsData[i]['ticket'] = UUID_PLACEHOLDER
+
+				# Make sure the identifier is a string
+				if 'identifier' in lItemsData[i]:
+					lItemsData[i]['identifier'] = str(lItemsData[i]['identifier'])
+
+				# Create a new instance
+				try:
+					oItem = TicketItem(lItemsData[i])
+				except ValueError as e:
+					return Services.Error(1001, ['item.%d.%s' % (i, l[0]) for l in e.args[0]])
+
+			# Add it to the list
+			lItems.append(oItem)
+
+		# Create an instance to test the fields
+		try:
+			oTicket = Ticket(data)
+		except ValueError as e:
+			return Services.Error(1001, e.args[0])
+
+		# Create the ticket and store the ID
+		sID = oTicket.create()
+
+		# Create the opened
+		oOpened['_ticket'] = sID
+		oOpened.create()
+
+		# If we have sub items, add the real ID to each and create
+		if lItems:
+			for o in lItems:
+				o['ticket'] = sID
+				o.create()
+
+		# Return the ID of the new ticket
+		return Services.Response(sID)
+
+	def ticket_delete(self, data, sesh):
+		"""Ticket Delete
+
+		Deletes a ticket if it was recently created or if the user has rights
+		to do so
+
+		Arguments:
+			data (mixed): Data sent with the request
+			sesh (Sesh._Session): The session associated with the request
+
+		Returns:
+			Services.Response
+		"""
+
+		# If the ID is missing
+		if '_id' not in data:
+			return Services.Error(1001, [('_id', 'missing')])
+
+		# Find the ticket
+		oTicket = Ticket.get(data['_id'])
+		if not oTicket:
+			return Services.Error(1104)
+
+		# If the ticket is older than a minute
+		if oTicket['_created'] - int(time()) > 60:
+
+			# Check permissions
+			Rights.check(sesh, 'csr_overwrite', Rights.CREATE)
+
+		# Delete the opened
+		TicketOpened.deleteGet(data['_id'])
+
+		# Delete the actions
+		TicketAction.deleteGet(data['_id'], 'ticket')
+
+		# Delete the items
+		TicketItem.deleteGet(data['_id'], 'ticket')
+
+		# Delete the resolved
+		TicketResolved.deleteGet(data['_id'])
+
+		# Delete the ticket
+		oTicket.delete()
+
+		# Return OK
+		return Services.Response(True)
+
+	def ticketAction_create(self, data, sesh):
+		"""Ticket Action Create
+
+		Adds a new action to an existing ticket
+
+		Arguments:
+			data (mixed): Data sent with the request
+			sesh (Sesh._Session): The session associated with the request
+
+		Returns:
+			Services.Response
+		"""
+
+		# Check internal key or rights
+		Rights.internalOrCheck(data, sesh, ['csr_claims', 'order_claims'], Rights.CREATE)
+
+		# Verify minimum fields
+		try: DictHelper.eval(data, ['ticket', 'name', 'type'])
+		except ValueError as e: return Services.Response(error=(1001, [(f, 'missing') for f in e.args]))
+
+		# If the ticket doesn't exist
+		if not Ticket.exists(data['ticket']):
+			return Services.Error(1104)
+
+		# Make sure the name is valid
+		if data['name'] not in TicketAction.types:
+			return Services.Error(1001, [('type', 'invalid')])
+
+		# Make sure the type is valid
+		if data['type'] not in TicketAction.types[data['name']]:
+			return Services.Error(1001, [('type', 'invalid')])
+
+		# Add the memo ID from the session
+		data['memo_id'] = sesh['memo_id']
+
+		# Create a new instance
+		try:
+			oAction = TicketAction(data)
+		except ValueError as e:
+			return Services.Error(1001, e.args[0])
+
+		# Store the data and return the result
+		return Services.Response(
+			oAction.create()
+		)
+
+	def ticketDetails_read(self, data, sesh):
+		"""Ticket Details
+
+		Returns all the details associated with the ticket in chronological
+		order
+
+		Arguments:
+			data (mixed): Data sent with the request
+			sesh (Sesh._Session): The session associated with the request
+
+		Returns:
+			Services.Response
+		"""
+
+		# Check rights
+		Rights.check(sesh, ['csr_overwrite', 'csr_claims'], Rights.CREATE)
+
+		# Check ID is passed
+		if '_id' not in data:
+			return Services.Error(1001, [('_id', 'missing')])
+
+		# Make sure the ticket exists
+		if not Ticket.exists(data['_id']):
+			return Services.Error(1104)
+
+		# Start the set of user IDs
+		lUserIDs = set()
+
+		# Start the list of details
+		lDetails = []
+
+		# Get the opened state
+		dOpened = TicketOpened.get(data['_id'], raw=['_created', 'type', 'memo_id'])
+		lUserIDs.add(dOpened['memo_id'])
+		dOpened['_id'] = '%s-opened' % data['_id']
+		dOpened['msgType'] = 'action'
+		dOpened['name'] = 'Opened'
+		lDetails.append(dOpened)
+
+		# Get the actions
+		lActions = TicketAction.filter({"ticket": data['_id']}, raw=['_id', '_created', 'name', 'type', 'memo_id'])
+		for d in lActions:
+			d['msgType'] = 'action'
+			d['type'] = TicketAction.typeText(d['name'], d['type'])
+			lDetails.append(d)
+
+		# Get the resolved state
+		dResolved = TicketResolved.get(data['_id'], raw=['_created', 'type', 'memo_id'])
+		if dResolved:
+			lUserIDs.add(dResolved['memo_id'])
+			dResolved['_id'] = '%s-resolved' % data['_id']
+			dResolved['msgType'] = 'action'
+			dResolved['name'] = 'Resolved'
+			lDetails.append(dResolved)
+
+		# Fetch all the user names
+		oResponse = Services.read('monolith', 'user/name', {
+			"_internal_": Services.internalKey(),
+			"id": list(lUserIDs)
+		}, sesh)
+
+		# Convert the IDs
+		dMemoNames = DictHelper.keysToInts(oResponse.data)
+
+		# Go through each detail and add the name
+		for d in lDetails:
+			try: dName = dMemoNames[d['memo_id']]
+			except KeyError: dName = {"firstName": 'NAME', "lastName": 'MISSING'}
+			d['created_by'] = '%s %s' % (dName['firstName'], dName['lastName'])
+
+		# Init the types of items
+		dItemTypes = {
+			"email": [],
+			"jc_call": [],
+			"jc_sms": [],
+			"note": [],
+			"sms": []
+		}
+
+		# Get the items
+		lItems = TicketItem.filter({"ticket": data['_id']}, raw=['type', 'identifier'])
+		for d in lItems:
+			dItemTypes[d['type']].append(int(d['identifier']))
+
+		# Init the memo call data
+		dData = {}
+		if dItemTypes['sms']:
+			dData['messages'] = dItemTypes['sms']
+		if dItemTypes['note']:
+			dData['notes'] = dItemTypes['note']
+
+		# If we have any data
+		if dData:
+
+			# Fetch the sms and notes from monolith
+			dData['_internal_'] = Services.internalKey()
+			oResponse = Services.read('monolith', 'internal/ticketInfo', dData)
+
+			# If we have messages
+			if 'messages' in oResponse.data:
+				for d in oResponse.data['messages']:
+					d['_created'] = d['createdAt']
+					d['msgType'] = 'sms'
+					lDetails.append(d)
+
+			# If we have notes
+			if 'notes' in oResponse.data:
+				for d in oResponse.data['notes']:
+					d['_created'] = d['createdAt']
+					d['msgType'] = 'note'
+					lDetails.append(d)
+
+		# If we have any JustCall calls
+		if dItemTypes['jc_call']:
+
+			# Fetch the logs from JustCall
+			oResponse = Services.read('justcall', 'log', {
+				"_internal_": Services.internalKey(),
+				"id": dItemTypes['jc_call']
+			}, sesh)
+
+			print(oResponse.data)
+
+			# If we have data
+			if oResponse.data:
+				for d in oResponse.data:
+					d['msgType'] = 'justcall'
+					d['_created'] = arrow.get('%s+00:00' % d['time_utc']).timestamp
+					lDetails.append(d)
+
+		# Sort the details by created timestamp
+		lDetails.sort(key=itemgetter('_created'))
+
+		# Return all the details
+		return Services.Response(lDetails)
+
+	def ticketExists_read(self, data):
+		"""Ticket Exists
+
+		Internal only request to validate a ticket ID
+
+		Arguments:
+			data (mixed): Data sent with the request
+
+		Returns:
+			Services.Response
+		"""
+
+		# Check rights
+		Rights.internal(data)
+
+		# If the ID is missing
+		if '_id' not in data:
+			return Services.Error(1001, [('_id', 'missing')])
+
+		# Check for the record and return the result
+		return Services.Response(
+			Ticket.exists(data['_id'])
+		)
+
+	def ticketItem_create(self, data, sesh):
+		"""Ticket Item Create
+
+		Adds an item to an existing ticket
+
+		Arguments:
+			data (mixed): Data sent with the request
+			sesh (Sesh._Session): The session associated with the request
+
+		Returns:
+			Services.Response
+		"""
+
+		# Check internal key or rights
+		Rights.internalOrCheck(data, sesh, ['csr_claims', 'order_claims'], Rights.CREATE)
+
+		# Verify minimum fields
+		try: DictHelper.eval(data, ['ticket'])
+		except ValueError as e: return Services.Response(error=(1001, [(f, 'missing') for f in e.args]))
+
+		# If the ticket doesn't exist
+		if not Ticket.exists(data['ticket']):
+			return Services.Error(1104)
+
+		# Make sure the identifier is a string
+		if 'identifier' in data:
+			data['identifier'] = str(data['identifier'])
+
+		# Create a new instance
+		try:
+			oItem = TicketItem(data)
+		except ValueError as e:
+			return Services.Error(1001, e.args[0])
+
+		# Create the item and check for duplicates
+		try:
+			return Services.Response(oItem.create())
+		except Record_MySQL.DuplicateException:
+			return Services.Error(1101)
+
+	def ticketItemIds_read(self, data, sesh):
+		"""Ticket Item IDs
+
+		Returns just the IDs for all the items in the current ticket. Helpful
+		for knowing if an item is in the current ticket
+
+		Arguments:
+			data (mixed): Data sent with the request
+			sesh (Sesh._Session): The session associated with the request
+
+		Returns:
+			Services.Response
+		"""
+
+		# Check internal key or rights
+		Rights.check(sesh, ['csr_claims', 'order_claims'], Rights.CREATE)
+
+		# If the id is missing
+		if '_id' not in data:
+			return Services.Error(1001, [('_id', 'missing')])
+
+		# Fetch all the items in the ticket
+		return Services.Response([
+			d for d in TicketItem.filter({
+				"ticket": data['_id']
+			}, raw=['type', 'identifier'])
+		])
+
+	def ticketOpenUser_read(self, data, sesh):
+		"""Ticket Open User Read
+
+		Returns if the given phone number or customer ID already has a ticket
+		associated or not. Returns the ID of the ticket, else False
+
+		Arguments:
+			data (mixed): Data sent with the request
+			sesh (Sesh._Session): The session associated with the request
+
+		Returns:
+			Services.Response
+		"""
+
+		# Check internal key or rights
+		Rights.internalOrCheck(data, sesh, ['csr_claims', 'order_claims'], Rights.CREATE)
+
+		# Init the filter
+		dFilter = {}
+
+		# If we have a CRM type and ID
+		if 'crm_type' in data and 'crm_id' in data:
+			dFilter['crm_type'] = data['crm_type']
+			dFilter['crm_id'] = str(data['crm_id'])
+
+		# Else, if we have a phone number
+		elif 'phone_number' in data:
+			dFilter['phone_number'] = data['phone_number']
+
+		# Else, invalid data
+		else:
+			return Services.Error(1001, [('crm_type', 'missing'), ('crm_id', 'missing')])
+
+		# Find the ticket
+		mID = Ticket.unresolved(dFilter)
+
+		# Return the ID or false
+		return Services.Response(
+			mID and mID or False
+		)
+
+	def ticketResolve_update(self, data, sesh):
+		"""Ticket Resolve Update
+
+		Resolves an existing ticket
+
+		Arguments:
+			data (mixed): Data sent with the request
+			sesh (Sesh._Session): The session associated with the request
+
+		Returns:
+			Services.Response
+		"""
+
+		# Check rights
+		Rights.check(sesh, ['csr_claims', 'order_claims'], Rights.CREATE)
+
+		# Verify minimum fields
+		try: DictHelper.eval(data, ['_id', 'type'])
+		except ValueError as e: return Services.Response(error=(1001, [(f, 'missing') for f in e.args]))
+
+		# Find the ticket
+		dTicket = Ticket.get(data['_id'], raw=['_created', 'phone_number'])
+		if not dTicket:
+			return Services.Error(1104)
+
+		# Create a new instance
+		try:
+			oResolved = TicketResolved({
+				"_ticket": data['_id'],
+				"type": data['type'],
+				"memo_id": sesh['memo_id']
+			})
+		except ValueError as e:
+			return Services.Error(1001, e.args[0])
+
+		# Check for incoming SMS messages to add
+		oResponse = Services.read('monolith', 'internal/incoming_sms', {
+			"_internal_": Services.internalKey(),
+			"customerPhone": dTicket['phone_number'],
+			"start": dTicket['_created'],
+			"end": int(time())
+		})
+		if oResponse.errorExists():
+			return oResponse
+
+		# If we have any messages
+		if oResponse.data:
+			TicketItem.addSMS(data['_id'], oResponse.data)
+
+		# Store the data and return the result
+		return Services.Response(
+			oResolved.create()
+		)
+
+	def tickets_read(self, data, sesh):
+		"""Tickets by User
+
+		Returns all the tickets a user has any action on
+
+		Arguments:
+			data (mixed): Data sent with the request
+			sesh (Sesh._Session): The session associated with the request
+
+		Returns:
+			Services.Response
+		"""
+
+		# If there's no memo_id in the session
+		if 'memo_id' not in sesh:
+
+			# Check rights
+			Rights.check(sesh, 'csr_overwrite', Rights.READ)
+
+		# Else,
+		else:
+
+			# If the user is not sent, or not the one signed in
+			if 'memo_id' not in data or data['memo_id'] != sesh['memo_id']:
+				return Services.Error(Rights.INVALID)
+
+		# Verify minimum fields
+		try: DictHelper.eval(data, ['start', 'end'])
+		except ValueError as e: return Services.Response(error=(1001, [(f, 'missing') for f in e.args]))
+
+		# Get a list of the unique tickets IDS the user is associated with
+		lTicketIDs = Ticket.idsByRange(
+			data['start'], data['end'],
+			'memo_id' in data and data['memo_id'] or None
+		)
+
+		# Fetch the tickets by IDs with the opened and resolved info if any
+		#	exists
+		lTickets = Ticket.withState(lTicketIDs)
+
+		# If there's no tickets
+		if not lTickets:
+			return Services.Response([])
+
+		# Fetch all the user IDs
+		lUsersIDs = set()
+		for d in lTickets:
+			lUsersIDs.add(d['opened_user'])
+			if d['resolved_user']:
+				lUsersIDs.add(d['resolved_user'])
+
+		# Fetch their names
+		oResponse = Services.read('monolith', 'user/name', {
+			"_internal_": Services.internalKey(),
+			"id": list(lUsersIDs)
+		}, sesh)
+
+		# Convert the IDs
+		dMemoNames = DictHelper.keysToInts(oResponse.data)
+
+		# Add the names to the agents
+		for d in lTickets:
+			try: dName = dMemoNames[d['opened_user']]
+			except KeyError: dName = {"firstName": 'NAME', "lastName": 'MISSING'}
+			d['opened_by'] = '%s %s' % (dName['firstName'], dName['lastName'])
+			if d['resolved_user']:
+				try: dName = dMemoNames[d['resolved_user']]
+				except KeyError: dName = {"firstName": 'NAME', "lastName": 'MISSING'}
+				d['resolved_by'] = '%s %s' % (dName['firstName'], dName['lastName'])
+			else:
+				d['resolved_by'] = None
+
+		# Return the tickets
+		return Services.Response(lTickets)
+
+	def ticketsCustomer_read(self, data, sesh):
+		"""Tickets by Customer
+
+		Returns all the tickets associated with a specific customer
+
+		Arguments:
+			data (mixed): Data sent with the request
+			sesh (Sesh._Session): The session associated with the request
+
+		Returns:
+			Services.Response
+		"""
+
+		# Check rights
+		Rights.check(sesh, ['csr_claims', 'order_claims'], Rights.CREATE)
+
+		# If we have crm type and ID
+		if 'crm_type' in data and 'crm_id' in data:
+			dFilter = {
+				"crm_type": data['crm_type'],
+				"crm_id": str(data['crm_id'])
+			}
+
+		# Else, if we got a phone number
+		elif 'phone_number' in data:
+			dFilter = {
+				"phone_number": data['phone_number']
+			}
+
+		# Else, missing data
+		else:
+			return Services.Error(1001, [('crm_type', 'missing'), ('crm_id', 'missing')])
+
+		# Find all the record IDs
+		lTickets = Ticket.filter(dFilter, raw=['_id'], orderby='_created')
+
+		# Get the tickets with the state
+		lTickets = Ticket.withState([d['_id'] for d in lTickets])
+
+		# Fetch all the user IDs
+		lUsersIDs = set()
+		for d in lTickets:
+			lUsersIDs.add(d['opened_user'])
+			if d['resolved_user']:
+				lUsersIDs.add(d['resolved_user'])
+
+		# Fetch their names
+		oResponse = Services.read('monolith', 'user/name', {
+			"_internal_": Services.internalKey(),
+			"id": list(lUsersIDs)
+		}, sesh)
+
+		# Convert the IDs
+		dMemoNames = DictHelper.keysToInts(oResponse.data)
+
+		# Add the names to the agents
+		for d in lTickets:
+			try: dName = dMemoNames[d['opened_user']]
+			except KeyError: dName = {"firstName": 'NAME', "lastName": 'MISSING'}
+			d['opened_by'] = '%s %s' % (dName['firstName'], dName['lastName'])
+			if d['resolved_user']:
+				try: dName = dMemoNames[d['resolved_user']]
+				except KeyError: dName = {"firstName": 'NAME', "lastName": 'MISSING'}
+				d['resolved_by'] = '%s %s' % (dName['firstName'], dName['lastName'])
+			else:
+				d['resolved_by'] = None
+
+		# Return the tickets
+		return Services.Response(lTickets)
+
+	def ticketStats_read(self, data, sesh):
+		"""Ticket Stats
+
+		Fetches the stat for the specified user and type by each range passed
+
+		Arguments:
+			data (mixed): Data sent with the request
+			sesh (Sesh._Session): The session associated with the request
+
+		Returns:
+			Services.Response
+		"""
+
+		# Verify minimum fields
+		try: DictHelper.eval(data, ['memo_id', 'ranges', 'type'])
+		except ValueError as e: return Services.Response(error=(1001, [(f, 'missing') for f in e.args]))
+
+		# If there's no memo_id in the session
+		if 'memo_id' not in sesh:
+
+			# Check rights
+			Rights.check(sesh, 'csr_overwrite', Rights.READ)
+
+		# Else,
+		else:
+
+			# If the user is not sent, or not the one signed in
+			if data['memo_id'] != sesh['memo_id']:
+				return Services.Error(Rights.INVALID)
+
+		# If ranges is not a list
+		if not isinstance(data['ranges'], dict):
+			return Services.Error(1001, [('ranges', 'not an object')])
+
+		# If the type is opened
+		if data['type'] == 'opened':
+			RecordClass = TicketOpened
+
+		# Else, if the type is resolved
+		elif data['type'] == 'resolved':
+			RecordClass = TicketResolved
+
+		# Else, we received an invalid class
+		else:
+			return Services.Error(1001, [('type', 'invalid')])
+
+		# Init the return dict
+		dRet = {}
+
+		# Go through each range and fetch the counts
+		for k in data['ranges']:
+
+			# If ranges is not a list
+			if not isinstance(data['ranges'][k], list):
+				return Services.Error(1001, [('ranges.%s' % str(k), 'not a list')])
+
+			# Fetch the count and store it by key
+			dRet[k] = RecordClass.countByUser(
+				data['memo_id'],
+				data['ranges'][k]
+			)
+
+		# Return the results
+		return Services.Response(dRet)
