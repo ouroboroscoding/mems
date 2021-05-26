@@ -299,7 +299,7 @@ class Konnektive(Services.Service):
 
 		# If the phone was passed
 		if 'phone' in data:
-			dQuery['phoneNumber'] = StrHelper.digits(data['phone'])
+			dQuery['phoneNumber'] = StrHelper.digits(data['phone'])[-10:]
 
 		# If we got billing info
 		if 'billing' in data:
