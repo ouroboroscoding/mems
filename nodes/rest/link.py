@@ -18,7 +18,7 @@ from RestOC import Conf, REST
 from services.link import Link
 
 # Local imports
-from . import init
+from . import init, serviceError
 
 # Only run if called directly
 if __name__ == "__main__":

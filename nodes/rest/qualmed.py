@@ -18,7 +18,7 @@ from RestOC import Conf, REST
 from services.qualmed import QualMed
 
 # Local imports
-from . import init
+from . import init, serviceError
 
 # Only run if called directly
 if __name__ == "__main__":
@@ -35,7 +35,11 @@ if __name__ == "__main__":
 		"/item": {"methods": REST.ALL, "session": True},
 		"/items": {"methods": REST.READ, "session": True}
 
-	}, 'qualmed', "https?://(.*\\.)?%s" % Conf.get(("rest","allowed")).replace('.', '\\.')).run(
+		},
+		'qualmed',
+		"https?://(.*\\.)?%s" % Conf.get(("rest","allowed")).replace('.', '\\.'),
+		error_callback=serviceError
+	).run(
 		host=oRestConf['qualmed']['host'],
 		port=oRestConf['qualmed']['port'],
 		workers=oRestConf['qualmed']['workers'],

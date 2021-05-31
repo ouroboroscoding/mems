@@ -18,7 +18,7 @@ from RestOC import Conf, REST
 from services.csr import CSR
 
 # Local imports
-from . import init
+from . import init, serviceError
 
 # Only run if called directly
 if __name__ == "__main__":
@@ -71,7 +71,11 @@ if __name__ == "__main__":
 		"/tickets": {"methods": REST.READ, "session": True},
 		"/tickets/customer": {"methods": REST.READ, "session": True}
 
-	}, 'csr', "https?://(.*\\.)?%s" % Conf.get(("rest","allowed")).replace('.', '\\.')).run(
+		},
+		'csr',
+		"https?://(.*\\.)?%s" % Conf.get(("rest","allowed")).replace('.', '\\.'),
+		error_callback=serviceError
+	).run(
 		host=oRestConf['csr']['host'],
 		port=oRestConf['csr']['port'],
 		workers=oRestConf['csr']['workers'],

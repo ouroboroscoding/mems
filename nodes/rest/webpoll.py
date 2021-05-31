@@ -18,7 +18,7 @@ from RestOC import Conf, REST
 from services.webpoll import WebPoll
 
 # Local imports
-from . import init
+from . import init, serviceError
 
 # Only run if called directly
 if __name__ == "__main__":
@@ -36,7 +36,11 @@ if __name__ == "__main__":
 		"/pull": {"methods": REST.READ, "session": True},
 		"/websocket": {"methods": REST.READ, "session": True}
 
-	}, 'webpoll', "https?://(.*\\.)?%s" % Conf.get(("rest","allowed")).replace('.', '\\.')).run(
+		},
+		'webpoll',
+		"https?://(.*\\.)?%s" % Conf.get(("rest","allowed")).replace('.', '\\.'),
+		error_callback=serviceError
+	).run(
 		host=oRestConf['webpoll']['host'],
 		port=oRestConf['webpoll']['port'],
 		workers=oRestConf['webpoll']['workers'],
