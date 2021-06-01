@@ -21,6 +21,9 @@ from RestOC import Conf, REST, Services, SMTP
 # App imports
 from services.communications import Service as Communications
 
+# Local imports
+from . import serviceError
+
 # Only run if called directly
 if __name__ == "__main__":
 

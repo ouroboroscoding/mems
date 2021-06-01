@@ -18,7 +18,7 @@ from RestOC import Conf, REST
 from services.auth import Auth
 
 # Local imports
-from . import init, serviceError, serviceError
+from . import init, serviceError
 
 # Only run if called directly
 if __name__ == "__main__":
