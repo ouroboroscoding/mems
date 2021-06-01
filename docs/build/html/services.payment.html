@@ -13,6 +13,8 @@
   
   <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
   <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+  <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+  <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
 
   
   
@@ -29,6 +31,7 @@
   
     
       <script type="text/javascript" id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
+        <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
         <script src="_static/jquery.js"></script>
         <script src="_static/underscore.js"></script>
         <script src="_static/doctools.js"></script>
@@ -157,14 +160,14 @@
 <p>Payment Service</p>
 <p>Handles all Payment requests</p>
 <dl class="py class">
-<dt id="services.payment.Payment">
-<em class="property"><span class="pre">class</span> </em><code class="sig-prename descclassname"><span class="pre">services.payment.</span></code><code class="sig-name descname"><span class="pre">Payment</span></code><a class="headerlink" href="#services.payment.Payment" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="services.payment.Payment">
+<em class="property"><span class="pre">class</span> </em><span class="sig-prename descclassname"><span class="pre">services.payment.</span></span><span class="sig-name descname"><span class="pre">Payment</span></span><a class="headerlink" href="#services.payment.Payment" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">RestOC.Services.Service</span></code></p>
 <p>Payment Service class</p>
 <p>Service for Payment access</p>
 <dl class="py method">
-<dt id="services.payment.Payment.auth_create">
-<code class="sig-name descname"><span class="pre">auth_create</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#services.payment.Payment.auth_create" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="services.payment.Payment.auth_create">
+<span class="sig-name descname"><span class="pre">auth_create</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#services.payment.Payment.auth_create" title="Permalink to this definition">¶</a></dt>
 <dd><p>Authorize</p>
 <p>Check for funds</p>
 <dl class="field-list simple">
@@ -178,8 +181,8 @@
 </dd></dl>
 
 <dl class="py method">
-<dt id="services.payment.Payment.capture_create">
-<code class="sig-name descname"><span class="pre">capture_create</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#services.payment.Payment.capture_create" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="services.payment.Payment.capture_create">
+<span class="sig-name descname"><span class="pre">capture_create</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#services.payment.Payment.capture_create" title="Permalink to this definition">¶</a></dt>
 <dd><p>Capture</p>
 <p>Captures a previous authrization</p>
 <dl class="field-list simple">
@@ -193,8 +196,8 @@
 </dd></dl>
 
 <dl class="py method">
-<dt id="services.payment.Payment.credit_create">
-<code class="sig-name descname"><span class="pre">credit_create</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#services.payment.Payment.credit_create" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="services.payment.Payment.credit_create">
+<span class="sig-name descname"><span class="pre">credit_create</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#services.payment.Payment.credit_create" title="Permalink to this definition">¶</a></dt>
 <dd><p>Credit</p>
 <p>Credits a previous transaction</p>
 <dl class="field-list simple">
@@ -208,8 +211,8 @@
 </dd></dl>
 
 <dl class="py method">
-<dt id="services.payment.Payment.initialise">
-<code class="sig-name descname"><span class="pre">initialise</span></code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#services.payment.Payment.initialise" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="services.payment.Payment.initialise">
+<span class="sig-name descname"><span class="pre">initialise</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#services.payment.Payment.initialise" title="Permalink to this definition">¶</a></dt>
 <dd><p>Initialise</p>
 <p>Initialises the instance and returns itself for chaining</p>
 <dl class="field-list simple">
@@ -220,8 +223,8 @@
 </dd></dl>
 
 <dl class="py method">
-<dt id="services.payment.Payment.install">
-<em class="property"><span class="pre">classmethod</span> </em><code class="sig-name descname"><span class="pre">install</span></code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#services.payment.Payment.install" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="services.payment.Payment.install">
+<em class="property"><span class="pre">classmethod</span> </em><span class="sig-name descname"><span class="pre">install</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#services.payment.Payment.install" title="Permalink to this definition">¶</a></dt>
 <dd><p>Install</p>
 <p>The service’s install method, used to setup storage or other one time
 install configurations</p>
@@ -233,8 +236,8 @@ install configurations</p>
 </dd></dl>
 
 <dl class="py method">
-<dt id="services.payment.Payment.sale_create">
-<code class="sig-name descname"><span class="pre">sale_create</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#services.payment.Payment.sale_create" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="services.payment.Payment.sale_create">
+<span class="sig-name descname"><span class="pre">sale_create</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#services.payment.Payment.sale_create" title="Permalink to this definition">¶</a></dt>
 <dd><p>Sale</p>
 <p>Immediately captures funds (if available)</p>
 <dl class="field-list simple">
@@ -248,8 +251,8 @@ install configurations</p>
 </dd></dl>
 
 <dl class="py method">
-<dt id="services.payment.Payment.void_create">
-<code class="sig-name descname"><span class="pre">void_create</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#services.payment.Payment.void_create" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="services.payment.Payment.void_create">
+<span class="sig-name descname"><span class="pre">void_create</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#services.payment.Payment.void_create" title="Permalink to this definition">¶</a></dt>
 <dd><p>Void</p>
 <p>Voids a previous Authorize transaction</p>
 <dl class="field-list simple">

@@ -1,7 +1,7 @@
 # coding=utf8
 """ Prescriptions Records
 
-Handles the record structures for the prescriptions service
+Handles the record structures for the Prescriptions service
 """
 
 __author__		= "Chris Nasr"

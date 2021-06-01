@@ -13,6 +13,8 @@
   
   <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
   <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+  <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+  <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
 
   
   
@@ -29,6 +31,7 @@
   
     
       <script type="text/javascript" id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
+        <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
         <script src="_static/jquery.js"></script>
         <script src="_static/underscore.js"></script>
         <script src="_static/doctools.js"></script>
@@ -157,14 +160,14 @@
 <p>Qualified Medication Service</p>
 <p>Handles all Qualified Medication requests</p>
 <dl class="py class">
-<dt id="services.qualmed.QualMed">
-<em class="property"><span class="pre">class</span> </em><code class="sig-prename descclassname"><span class="pre">services.qualmed.</span></code><code class="sig-name descname"><span class="pre">QualMed</span></code><a class="headerlink" href="#services.qualmed.QualMed" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="services.qualmed.QualMed">
+<em class="property"><span class="pre">class</span> </em><span class="sig-prename descclassname"><span class="pre">services.qualmed.</span></span><span class="sig-name descname"><span class="pre">QualMed</span></span><a class="headerlink" href="#services.qualmed.QualMed" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">RestOC.Services.Service</span></code></p>
 <p>QualMed Service class</p>
 <p>Service for qualified medication items</p>
 <dl class="py method">
-<dt id="services.qualmed.QualMed.initialise">
-<code class="sig-name descname"><span class="pre">initialise</span></code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#services.qualmed.QualMed.initialise" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="services.qualmed.QualMed.initialise">
+<span class="sig-name descname"><span class="pre">initialise</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#services.qualmed.QualMed.initialise" title="Permalink to this definition">¶</a></dt>
 <dd><p>Initialise</p>
 <p>Initialises the instance and returns itself for chaining</p>
 <dl class="field-list simple">
@@ -175,8 +178,8 @@
 </dd></dl>
 
 <dl class="py method">
-<dt id="services.qualmed.QualMed.install">
-<em class="property"><span class="pre">classmethod</span> </em><code class="sig-name descname"><span class="pre">install</span></code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#services.qualmed.QualMed.install" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="services.qualmed.QualMed.install">
+<em class="property"><span class="pre">classmethod</span> </em><span class="sig-name descname"><span class="pre">install</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#services.qualmed.QualMed.install" title="Permalink to this definition">¶</a></dt>
 <dd><p>Install</p>
 <p>The service’s install method, used to setup storage or other one time
 install configurations</p>
@@ -188,8 +191,8 @@ install configurations</p>
 </dd></dl>
 
 <dl class="py method">
-<dt id="services.qualmed.QualMed.item_create">
-<code class="sig-name descname"><span class="pre">item_create</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sesh</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#services.qualmed.QualMed.item_create" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="services.qualmed.QualMed.item_create">
+<span class="sig-name descname"><span class="pre">item_create</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sesh</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#services.qualmed.QualMed.item_create" title="Permalink to this definition">¶</a></dt>
 <dd><p>Item Create</p>
 <p>Creates a new qualified medication item</p>
 <dl class="field-list simple">
@@ -206,8 +209,8 @@ install configurations</p>
 </dd></dl>
 
 <dl class="py method">
-<dt id="services.qualmed.QualMed.item_delete">
-<code class="sig-name descname"><span class="pre">item_delete</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sesh</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#services.qualmed.QualMed.item_delete" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="services.qualmed.QualMed.item_delete">
+<span class="sig-name descname"><span class="pre">item_delete</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sesh</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#services.qualmed.QualMed.item_delete" title="Permalink to this definition">¶</a></dt>
 <dd><p>Item Delete</p>
 <p>Deletes a new product</p>
 <dl class="field-list simple">
@@ -224,8 +227,8 @@ install configurations</p>
 </dd></dl>
 
 <dl class="py method">
-<dt id="services.qualmed.QualMed.item_read">
-<code class="sig-name descname"><span class="pre">item_read</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sesh</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#services.qualmed.QualMed.item_read" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="services.qualmed.QualMed.item_read">
+<span class="sig-name descname"><span class="pre">item_read</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sesh</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#services.qualmed.QualMed.item_read" title="Permalink to this definition">¶</a></dt>
 <dd><p>Item Read</p>
 <p>Fetches and returns an existing item</p>
 <dl class="field-list simple">
@@ -242,8 +245,8 @@ install configurations</p>
 </dd></dl>
 
 <dl class="py method">
-<dt id="services.qualmed.QualMed.item_update">
-<code class="sig-name descname"><span class="pre">item_update</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sesh</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#services.qualmed.QualMed.item_update" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="services.qualmed.QualMed.item_update">
+<span class="sig-name descname"><span class="pre">item_update</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sesh</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#services.qualmed.QualMed.item_update" title="Permalink to this definition">¶</a></dt>
 <dd><p>Item Update</p>
 <p>Updates an existing item</p>
 <dl class="field-list simple">
@@ -260,8 +263,8 @@ install configurations</p>
 </dd></dl>
 
 <dl class="py method">
-<dt id="services.qualmed.QualMed.items_read">
-<code class="sig-name descname"><span class="pre">items_read</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sesh</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#services.qualmed.QualMed.items_read" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="services.qualmed.QualMed.items_read">
+<span class="sig-name descname"><span class="pre">items_read</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sesh</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#services.qualmed.QualMed.items_read" title="Permalink to this definition">¶</a></dt>
 <dd><p>Items</p>
 <p>Returns all the qualified medication for a single customer</p>
 <dl class="field-list simple">

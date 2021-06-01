@@ -13,6 +13,8 @@
   
   <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
   <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+  <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+  <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
 
   
   
@@ -29,6 +31,7 @@
   
     
       <script type="text/javascript" id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
+        <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
         <script src="_static/jquery.js"></script>
         <script src="_static/underscore.js"></script>
         <script src="_static/doctools.js"></script>
@@ -243,6 +246,8 @@
 </li>
       <li><a href="shared.USPS.html#shared.USPS.address_verify">address_verify() (in module shared.USPS)</a>
 </li>
+      <li><a href="records.csr.html#records.csr.TicketItem.addSMS">addSMS() (records.csr.TicketItem class method)</a>
+</li>
       <li><a href="records.welldyne.html#records.welldyne.AdHoc">AdHoc (class in records.welldyne)</a>
 </li>
       <li><a href="services.welldyne.html#services.welldyne.WellDyne.adhoc_create">adhoc_create() (services.welldyne.WellDyne method)</a>
@@ -327,23 +332,31 @@
 </li>
       <li><a href="shared.RocketGate.html#shared.RocketGate.GatewayRequest.BILLING_ZIPCODE">BILLING_ZIPCODE (shared.RocketGate.GatewayRequest attribute)</a>
 </li>
-  </ul></td>
-  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="records.monolith.html#records.monolith.Calendly.byCustomer">byCustomer() (records.monolith.Calendly class method)</a>
 
       <ul>
         <li><a href="records.monolith.html#records.monolith.SmpNote.byCustomer">(records.monolith.SmpNote class method)</a>
 </li>
       </ul></li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="records.monolith.html#records.monolith.SmpCustomer.byCustomerDetails">byCustomerDetails() (records.monolith.SmpCustomer class method)</a>
 </li>
       <li><a href="records.monolith.html#records.monolith.SmpCustomer.byCustomerId">byCustomerId() (records.monolith.SmpCustomer class method)</a>
 </li>
+      <li><a href="records.monolith.html#records.monolith.CustomerCommunication.byIDs">byIDs() (records.monolith.CustomerCommunication class method)</a>
+
+      <ul>
+        <li><a href="records.monolith.html#records.monolith.SmpNote.byIDs">(records.monolith.SmpNote class method)</a>
+</li>
+      </ul></li>
       <li><a href="records.monolith.html#records.monolith.KtCustomer.byNameAndZip">byNameAndZip() (records.monolith.KtCustomer class method)</a>
 </li>
       <li><a href="records.monolith.html#records.monolith.KtCustomer.byPhone">byPhone() (records.monolith.KtCustomer class method)</a>
 </li>
       <li><a href="records.monolith.html#records.monolith.Calendly.byProvider">byProvider() (records.monolith.Calendly class method)</a>
+</li>
+      <li><a href="records.csr.html#records.csr.TicketAction.byTicket">byTicket() (records.csr.TicketAction class method)</a>
 </li>
       <li><a href="records.auth.html#records.auth.Permission.byUser">byUser() (records.auth.Permission class method)</a>
 
@@ -467,6 +480,16 @@
         <li><a href="records.csr.html#records.csr.TemplateEmail.config">(records.csr.TemplateEmail class method)</a>
 </li>
         <li><a href="records.csr.html#records.csr.TemplateSMS.config">(records.csr.TemplateSMS class method)</a>
+</li>
+        <li><a href="records.csr.html#records.csr.Ticket.config">(records.csr.Ticket class method)</a>
+</li>
+        <li><a href="records.csr.html#records.csr.TicketAction.config">(records.csr.TicketAction class method)</a>
+</li>
+        <li><a href="records.csr.html#records.csr.TicketItem.config">(records.csr.TicketItem class method)</a>
+</li>
+        <li><a href="records.csr.html#records.csr.TicketOpened.config">(records.csr.TicketOpened class method)</a>
+</li>
+        <li><a href="records.csr.html#records.csr.TicketResolved.config">(records.csr.TicketResolved class method)</a>
 </li>
         <li><a href="records.customers.html#records.customers.Address.config">(records.customers.Address class method)</a>
 </li>
@@ -633,6 +656,12 @@
         <li><a href="crons.missed_calls.signia.html#crons.missed_calls.signia.convert_date">(in module crons.missed_calls.signia)</a>
 </li>
       </ul></li>
+      <li><a href="records.csr.html#records.csr.TicketOpened.countByUser">countByUser() (records.csr.TicketOpened class method)</a>
+
+      <ul>
+        <li><a href="records.csr.html#records.csr.TicketResolved.countByUser">(records.csr.TicketResolved class method)</a>
+</li>
+      </ul></li>
       <li><a href="records.monolith.html#records.monolith.CustomerClaimed.counts">counts() (records.monolith.CustomerClaimed class method)</a>
 </li>
       <li><a href="shared.Rights.html#shared.Rights.CREATE">CREATE (in module shared.Rights)</a>
@@ -713,13 +742,6 @@
 
       <ul>
         <li><a href="crons.monolith.html#module-crons.monolith">module</a>
-</li>
-      </ul></li>
-      <li>
-    crons.monolith.claims_timeout
-
-      <ul>
-        <li><a href="crons.monolith.claims_timeout.html#module-crons.monolith.claims_timeout">module</a>
 </li>
       </ul></li>
       <li>
@@ -900,6 +922,8 @@
       <li><a href="services.hubspot.html#services.hubspot.HubSpot.customerLabel_update">customerLabel_update() (services.hubspot.HubSpot method)</a>
 </li>
       <li><a href="services.monolith.html#services.monolith.Monolith.customerMessages_read">customerMessages_read() (services.monolith.Monolith method)</a>
+</li>
+      <li><a href="services.monolith.html#services.monolith.Monolith.customerMessagesIncoming_read">customerMessagesIncoming_read() (services.monolith.Monolith method)</a>
 </li>
       <li><a href="services.monolith.html#services.monolith.Monolith.customerMipAnswer_update">customerMipAnswer_update() (services.monolith.Monolith method)</a>
 </li>
@@ -1163,7 +1187,11 @@
   <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="records.monolith.html#records.monolith.Campaign.ids">ids() (records.monolith.Campaign class method)</a>
 </li>
+      <li><a href="records.csr.html#records.csr.Ticket.idsByRange">idsByRange() (records.csr.Ticket class method)</a>
+</li>
       <li><a href="records.monolith.html#records.monolith.CustomerMsgPhone.INCOMING">INCOMING (records.monolith.CustomerMsgPhone attribute)</a>
+</li>
+      <li><a href="records.monolith.html#records.monolith.CustomerCommunication.incoming">incoming() (records.monolith.CustomerCommunication class method)</a>
 </li>
       <li><a href="records.link.html#records.link.UrlRecord.incrementView">incrementView() (records.link.UrlRecord method)</a>
 </li>
@@ -1175,6 +1203,8 @@
         <li><a href="records.monolith.html#records.monolith.init">(in module records.monolith)</a>
 </li>
         <li><a href="shared.Sync.html#shared.Sync.init">(in module shared.Sync)</a>
+</li>
+        <li><a href="records.csr.html#records.csr.TicketAction.init">(records.csr.TicketAction class method)</a>
 </li>
       </ul></li>
       <li><a href="services.auth.html#services.auth.Auth.initialise">initialise() (services.auth.Auth method)</a>
@@ -1257,7 +1287,15 @@
         <li><a href="services.welldyne.html#services.welldyne.WellDyne.install">(services.welldyne.WellDyne class method)</a>
 </li>
       </ul></li>
+      <li><a href="shared.Rights.html#shared.Rights.internal">internal() (in module shared.Rights)</a>
+</li>
       <li><a href="services.monolith.html#services.monolith.Monolith.internalCustomersWithClaimed_read">internalCustomersWithClaimed_read() (services.monolith.Monolith method)</a>
+</li>
+      <li><a href="services.monolith.html#services.monolith.Monolith.internalIncomingSms_read">internalIncomingSms_read() (services.monolith.Monolith method)</a>
+</li>
+      <li><a href="shared.Rights.html#shared.Rights.internalOrCheck">internalOrCheck() (in module shared.Rights)</a>
+</li>
+      <li><a href="services.monolith.html#services.monolith.Monolith.internalTicketInfo_read">internalTicketInfo_read() (services.monolith.Monolith method)</a>
 </li>
       <li><a href="shared.Rights.html#shared.Rights.INVALID">INVALID (in module shared.Rights)</a>
 </li>
@@ -1333,10 +1371,10 @@
 </li>
       <li><a href="services.csr.html#services.csr.CSR.list_delete">list_delete() (services.csr.CSR method)</a>
 </li>
-  </ul></td>
-  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="services.csr.html#services.csr.CSR.list_update">list_update() (services.csr.CSR method)</a>
 </li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="services.csr.html#services.csr.CSR.listItem_create">listItem_create() (services.csr.CSR method)</a>
 </li>
       <li><a href="services.csr.html#services.csr.CSR.listItem_delete">listItem_delete() (services.csr.CSR method)</a>
@@ -1348,6 +1386,8 @@
       <li><a href="shared.RocketGate.html#shared.RocketGate.GatewayService.LIVE_HOST_16">LIVE_HOST_16 (shared.RocketGate.GatewayService attribute)</a>
 </li>
       <li><a href="shared.RocketGate.html#shared.RocketGate.GatewayService.LIVE_HOST_17">LIVE_HOST_17 (shared.RocketGate.GatewayService attribute)</a>
+</li>
+      <li><a href="services.justcall.html#services.justcall.JustCall.log_read">log_read() (services.justcall.JustCall method)</a>
 </li>
       <li><a href="services.justcall.html#services.justcall.JustCall.logs_read">logs_read() (services.justcall.JustCall method)</a>
 </li>
@@ -1414,8 +1454,6 @@
         <li><a href="crons.missed_calls.signia.html#module-crons.missed_calls.signia">crons.missed_calls.signia</a>
 </li>
         <li><a href="crons.monolith.html#module-crons.monolith">crons.monolith</a>
-</li>
-        <li><a href="crons.monolith.claims_timeout.html#module-crons.monolith.claims_timeout">crons.monolith.claims_timeout</a>
 </li>
         <li><a href="crons.monolith.hard_declines.html#module-crons.monolith.hard_declines">crons.monolith.hard_declines</a>
 </li>
@@ -2444,10 +2482,6 @@
 </li>
         <li><a href="crons.missed_calls.html#crons.missed_calls.run">(in module crons.missed_calls)</a>
 </li>
-        <li><a href="crons.monolith.html#crons.monolith.run">(in module crons.monolith)</a>
-</li>
-        <li><a href="crons.monolith.claims_timeout.html#crons.monolith.claims_timeout.run">(in module crons.monolith.claims_timeout)</a>
-</li>
         <li><a href="crons.monolith.hard_declines.html#crons.monolith.hard_declines.run">(in module crons.monolith.hard_declines)</a>
 </li>
         <li><a href="crons.monolith.hrt_join_date.html#crons.monolith.hrt_join_date.run">(in module crons.monolith.hrt_join_date)</a>
@@ -2512,6 +2546,8 @@
       <li><a href="services.docs.html#services.docs.Docs.service_read">service_read() (services.docs.Docs method)</a>
 </li>
       <li><a href="services.docs.html#services.docs.Docs.service_update">service_update() (services.docs.Docs method)</a>
+</li>
+      <li><a href="nodes.rest.html#nodes.rest.serviceError">serviceError() (in module nodes.rest)</a>
 </li>
       <li><a href="records.docs.html#records.docs.ServiceRecord">ServiceRecord (class in records.docs)</a>
 </li>
@@ -2934,6 +2970,42 @@
         <li><a href="records.monolith.html#records.monolith.CustomerCommunication.thread">(records.monolith.CustomerCommunication class method)</a>
 </li>
       </ul></li>
+      <li><a href="records.csr.html#records.csr.Ticket">Ticket (class in records.csr)</a>
+</li>
+      <li><a href="services.csr.html#services.csr.CSR.ticket_create">ticket_create() (services.csr.CSR method)</a>
+</li>
+      <li><a href="services.csr.html#services.csr.CSR.ticket_delete">ticket_delete() (services.csr.CSR method)</a>
+</li>
+      <li><a href="records.csr.html#records.csr.TicketAction">TicketAction (class in records.csr)</a>
+</li>
+      <li><a href="services.csr.html#services.csr.CSR.ticketAction_create">ticketAction_create() (services.csr.CSR method)</a>
+</li>
+      <li><a href="services.csr.html#services.csr.CSR.ticketDetails_read">ticketDetails_read() (services.csr.CSR method)</a>
+</li>
+      <li><a href="services.csr.html#services.csr.CSR.ticketExists_read">ticketExists_read() (services.csr.CSR method)</a>
+</li>
+      <li><a href="records.csr.html#records.csr.TicketItem">TicketItem (class in records.csr)</a>
+</li>
+      <li><a href="services.csr.html#services.csr.CSR.ticketItem_create">ticketItem_create() (services.csr.CSR method)</a>
+</li>
+      <li><a href="services.csr.html#services.csr.CSR.ticketItemIds_read">ticketItemIds_read() (services.csr.CSR method)</a>
+</li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="records.csr.html#records.csr.TicketOpened">TicketOpened (class in records.csr)</a>
+</li>
+      <li><a href="services.csr.html#services.csr.CSR.ticketOpenUser_read">ticketOpenUser_read() (services.csr.CSR method)</a>
+</li>
+      <li><a href="services.csr.html#services.csr.CSR.ticketResolve_update">ticketResolve_update() (services.csr.CSR method)</a>
+</li>
+      <li><a href="records.csr.html#records.csr.TicketResolved">TicketResolved (class in records.csr)</a>
+</li>
+      <li><a href="services.csr.html#services.csr.CSR.tickets_read">tickets_read() (services.csr.CSR method)</a>
+</li>
+      <li><a href="services.csr.html#services.csr.CSR.ticketsCustomer_read">ticketsCustomer_read() (services.csr.CSR method)</a>
+</li>
+      <li><a href="services.csr.html#services.csr.CSR.ticketStats_read">ticketStats_read() (services.csr.CSR method)</a>
+</li>
       <li>
     tools
 
@@ -2941,8 +3013,6 @@
         <li><a href="tools.html#module-tools">module</a>
 </li>
       </ul></li>
-  </ul></td>
-  <td style="width: 33%; vertical-align: top;"><ul>
       <li>
     tools.allergies
 
@@ -3019,6 +3089,10 @@
 </li>
       <li><a href="services.welldyne.html#services.welldyne.WellDyne.triggerInfo_read">triggerInfo_read() (services.welldyne.WellDyne method)</a>
 </li>
+      <li><a href="records.csr.html#records.csr.TicketAction.types">types (records.csr.TicketAction attribute)</a>
+</li>
+      <li><a href="records.csr.html#records.csr.TicketAction.typeText">typeText() (records.csr.TicketAction class method)</a>
+</li>
   </ul></td>
 </tr></table>
 
@@ -3034,6 +3108,8 @@
       <li><a href="records.monolith.html#records.monolith.CustomerMsgPhone.unclaimedCount">unclaimedCount() (records.monolith.CustomerMsgPhone class method)</a>
 </li>
       <li><a href="records.monolith.html#records.monolith.HrtLabResultTests.unique">unique() (records.monolith.HrtLabResultTests class method)</a>
+</li>
+      <li><a href="records.csr.html#records.csr.Ticket.unresolved">unresolved() (records.csr.Ticket class method)</a>
 </li>
       <li><a href="shared.Rights.html#shared.Rights.UPDATE">UPDATE (in module shared.Rights)</a>
 </li>
@@ -3059,14 +3135,14 @@
         <li><a href="records.monolith.html#records.monolith.User">(class in records.monolith)</a>
 </li>
       </ul></li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="services.auth.html#services.auth.Auth.user_create">user_create() (services.auth.Auth method)</a>
 
       <ul>
         <li><a href="services.monolith.html#services.monolith.Monolith.user_create">(services.monolith.Monolith method)</a>
 </li>
       </ul></li>
-  </ul></td>
-  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="services.auth.html#services.auth.Auth.user_read">user_read() (services.auth.Auth method)</a>
 
       <ul>
@@ -3152,6 +3228,8 @@
       <li><a href="records.welldyne.html#records.welldyne.Trigger.withErrorsEligibility">withErrorsEligibility() (records.welldyne.Trigger class method)</a>
 </li>
       <li><a href="records.monolith.html#records.monolith.HormonalSympCategories.withQuestions">withQuestions() (records.monolith.HormonalSympCategories class method)</a>
+</li>
+      <li><a href="records.csr.html#records.csr.Ticket.withState">withState() (records.csr.Ticket class method)</a>
 </li>
       <li><a href="records.welldyne.html#records.welldyne.NeverStarted.withTrigger">withTrigger() (records.welldyne.NeverStarted class method)</a>
 

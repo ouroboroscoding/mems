@@ -13,6 +13,8 @@
   
   <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
   <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+  <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+  <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
 
   
   
@@ -29,6 +31,7 @@
   
     
       <script type="text/javascript" id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
+        <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
         <script src="_static/jquery.js"></script>
         <script src="_static/underscore.js"></script>
         <script src="_static/doctools.js"></script>
@@ -157,13 +160,13 @@
 <p>Communications Service</p>
 <p>Manages communications, email, sms, etc</p>
 <dl class="py class">
-<dt id="services.communications.Service">
-<em class="property"><span class="pre">class</span> </em><code class="sig-prename descclassname"><span class="pre">services.communications.</span></code><code class="sig-name descname"><span class="pre">Service</span></code><a class="headerlink" href="#services.communications.Service" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="services.communications.Service">
+<em class="property"><span class="pre">class</span> </em><span class="sig-prename descclassname"><span class="pre">services.communications.</span></span><span class="sig-name descname"><span class="pre">Service</span></span><a class="headerlink" href="#services.communications.Service" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">RestOC.Services.Service</span></code></p>
 <p>The Communications class that extends the base Service class</p>
 <dl class="py method">
-<dt id="services.communications.Service.__init__">
-<code class="sig-name descname"><span class="pre">__init__</span></code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#services.communications.Service.__init__" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="services.communications.Service.__init__">
+<span class="sig-name descname"><span class="pre">__init__</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#services.communications.Service.__init__" title="Permalink to this definition">¶</a></dt>
 <dd><p>Constructor</p>
 <p>Initialises the object</p>
 <dl class="field-list simple">
@@ -174,8 +177,8 @@
 </dd></dl>
 
 <dl class="py method">
-<dt id="services.communications.Service.create">
-<code class="sig-name descname"><span class="pre">create</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">path</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sesh</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">environ</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#services.communications.Service.create" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="services.communications.Service.create">
+<span class="sig-name descname"><span class="pre">create</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">path</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sesh</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">environ</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#services.communications.Service.create" title="Permalink to this definition">¶</a></dt>
 <dd><p>Create</p>
 <p>Overrides base create so we can manage direct requests vs queued</p>
 <dl class="field-list simple">
@@ -194,8 +197,8 @@
 </dd></dl>
 
 <dl class="py method">
-<dt id="services.communications.Service.email">
-<code class="sig-name descname"><span class="pre">email</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#services.communications.Service.email" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="services.communications.Service.email">
+<span class="sig-name descname"><span class="pre">email</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#services.communications.Service.email" title="Permalink to this definition">¶</a></dt>
 <dd><p>Email</p>
 <p>Sends an e-mail, by either sending it to the queue, or sending it
 directly</p>
@@ -210,8 +213,8 @@ directly</p>
 </dd></dl>
 
 <dl class="py method">
-<dt id="services.communications.Service.initialise">
-<code class="sig-name descname"><span class="pre">initialise</span></code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#services.communications.Service.initialise" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="services.communications.Service.initialise">
+<span class="sig-name descname"><span class="pre">initialise</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#services.communications.Service.initialise" title="Permalink to this definition">¶</a></dt>
 <dd><p>Initialise</p>
 <p>Initialises the communications service</p>
 <dl class="field-list simple">
@@ -222,8 +225,8 @@ directly</p>
 </dd></dl>
 
 <dl class="py method">
-<dt id="services.communications.Service.sms">
-<code class="sig-name descname"><span class="pre">sms</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#services.communications.Service.sms" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="services.communications.Service.sms">
+<span class="sig-name descname"><span class="pre">sms</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#services.communications.Service.sms" title="Permalink to this definition">¶</a></dt>
 <dd><p>SMS</p>
 <p>Sends an SMS, by either sending it to the queue, or sending it
 directly</p>

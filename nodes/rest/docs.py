@@ -1,7 +1,7 @@
 # coding=utf8
 """ Docs REST
 
-Handles documentation
+Handles public facing documentation
 """
 
 __author__		= "Chris Nasr"

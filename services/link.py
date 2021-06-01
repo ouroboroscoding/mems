@@ -1,7 +1,7 @@
 # coding=utf8
 """ Link Service
 
-Handles all Documentation requests
+Handles all Link requests
 """
 
 __author__		= "Chris Nasr"

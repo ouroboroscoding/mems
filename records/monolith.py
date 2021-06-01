@@ -1,7 +1,7 @@
 # coding=utf8
 """ Monolith Records
 
-Handles the record structures for the monolith service
+Handles the record structures for the Monolith service
 """
 
 __author__		= "Chris Nasr"

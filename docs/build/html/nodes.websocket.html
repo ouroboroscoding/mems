@@ -13,6 +13,8 @@
   
   <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
   <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+  <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+  <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
 
   
   
@@ -29,6 +31,7 @@
   
     
       <script type="text/javascript" id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
+        <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
         <script src="_static/jquery.js"></script>
         <script src="_static/underscore.js"></script>
         <script src="_static/doctools.js"></script>
@@ -162,14 +165,14 @@
 <p>WebSocket Service</p>
 <p>Handles syncing up changes using websockets and sessions</p>
 <dl class="py class">
-<dt id="nodes.websocket.SyncApplication">
-<em class="property"><span class="pre">class</span> </em><code class="sig-prename descclassname"><span class="pre">nodes.websocket.</span></code><code class="sig-name descname"><span class="pre">SyncApplication</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">ws</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#nodes.websocket.SyncApplication" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="nodes.websocket.SyncApplication">
+<em class="property"><span class="pre">class</span> </em><span class="sig-prename descclassname"><span class="pre">nodes.websocket.</span></span><span class="sig-name descname"><span class="pre">SyncApplication</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">ws</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#nodes.websocket.SyncApplication" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">geventwebsocket.resource.WebSocketApplication</span></code></p>
 <p>Sync Application</p>
 <p>This class will handle all joined connections to the server</p>
 <dl class="py method">
-<dt id="nodes.websocket.SyncApplication.on_close">
-<code class="sig-name descname"><span class="pre">on_close</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">reason</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#nodes.websocket.SyncApplication.on_close" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="nodes.websocket.SyncApplication.on_close">
+<span class="sig-name descname"><span class="pre">on_close</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">reason</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#nodes.websocket.SyncApplication.on_close" title="Permalink to this definition">¶</a></dt>
 <dd><p>On Close</p>
 <p>Called when an existing client websocket is closed</p>
 <dl class="field-list simple">
@@ -180,22 +183,22 @@
 </dd></dl>
 
 <dl class="py method">
-<dt id="nodes.websocket.SyncApplication.on_message">
-<code class="sig-name descname"><span class="pre">on_message</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">message</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#nodes.websocket.SyncApplication.on_message" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="nodes.websocket.SyncApplication.on_message">
+<span class="sig-name descname"><span class="pre">on_message</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">message</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#nodes.websocket.SyncApplication.on_message" title="Permalink to this definition">¶</a></dt>
 <dd><p>On Message</p>
 <p>Called when a new message is received from an existing client websocket</p>
 </dd></dl>
 
 <dl class="py method">
-<dt id="nodes.websocket.SyncApplication.on_open">
-<code class="sig-name descname"><span class="pre">on_open</span></code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#nodes.websocket.SyncApplication.on_open" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="nodes.websocket.SyncApplication.on_open">
+<span class="sig-name descname"><span class="pre">on_open</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#nodes.websocket.SyncApplication.on_open" title="Permalink to this definition">¶</a></dt>
 <dd><p>On Open</p>
 <p>Will be called when a new client connects to the server</p>
 </dd></dl>
 
 <dl class="py method">
-<dt id="nodes.websocket.SyncApplication.on_publish">
-<code class="sig-name descname"><span class="pre">on_publish</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">message</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#nodes.websocket.SyncApplication.on_publish" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="nodes.websocket.SyncApplication.on_publish">
+<span class="sig-name descname"><span class="pre">on_publish</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">message</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#nodes.websocket.SyncApplication.on_publish" title="Permalink to this definition">¶</a></dt>
 <dd><p>On Publish</p>
 <p>Called when new pubsub messages arrive on a channel this web socket
 is subscribed to</p>
@@ -212,8 +215,8 @@ is subscribed to</p>
 </dd></dl>
 
 <dl class="py function">
-<dt id="nodes.websocket.init">
-<code class="sig-prename descclassname"><span class="pre">nodes.websocket.</span></code><code class="sig-name descname"><span class="pre">init</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">verbose</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#nodes.websocket.init" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="nodes.websocket.init">
+<span class="sig-prename descclassname"><span class="pre">nodes.websocket.</span></span><span class="sig-name descname"><span class="pre">init</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">verbose</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#nodes.websocket.init" title="Permalink to this definition">¶</a></dt>
 <dd><p>Init</p>
 <p>Called to initialize the service</p>
 <dl class="field-list simple">
@@ -228,8 +231,8 @@ if set to True, the service will print out what’s going on</p>
 </dd></dl>
 
 <dl class="py function">
-<dt id="nodes.websocket.stop">
-<code class="sig-prename descclassname"><span class="pre">nodes.websocket.</span></code><code class="sig-name descname"><span class="pre">stop</span></code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#nodes.websocket.stop" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="nodes.websocket.stop">
+<span class="sig-prename descclassname"><span class="pre">nodes.websocket.</span></span><span class="sig-name descname"><span class="pre">stop</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#nodes.websocket.stop" title="Permalink to this definition">¶</a></dt>
 <dd><p>Stop</p>
 <p>Unsubscribes from all messages and disconnects all websockets</p>
 <dl class="field-list simple">
@@ -240,8 +243,8 @@ if set to True, the service will print out what’s going on</p>
 </dd></dl>
 
 <dl class="py function">
-<dt id="nodes.websocket.thread">
-<code class="sig-prename descclassname"><span class="pre">nodes.websocket.</span></code><code class="sig-name descname"><span class="pre">thread</span></code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#nodes.websocket.thread" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="nodes.websocket.thread">
+<span class="sig-prename descclassname"><span class="pre">nodes.websocket.</span></span><span class="sig-name descname"><span class="pre">thread</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#nodes.websocket.thread" title="Permalink to this definition">¶</a></dt>
 <dd><p>Thread</p>
 <p>Listens for incoming redis pubsub messages</p>
 <dl class="field-list simple">

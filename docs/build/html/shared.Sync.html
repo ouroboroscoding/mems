@@ -13,6 +13,8 @@
   
   <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
   <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+  <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+  <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
 
   
   
@@ -29,6 +31,7 @@
   
     
       <script type="text/javascript" id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
+        <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
         <script src="_static/jquery.js"></script>
         <script src="_static/underscore.js"></script>
         <script src="_static/doctools.js"></script>
@@ -157,8 +160,8 @@
 <p>Sync Module</p>
 <p>Holds methods for storing and fetching messages from the sync storage</p>
 <dl class="py function">
-<dt id="shared.Sync.clear">
-<code class="sig-prename descclassname"><span class="pre">shared.Sync.</span></code><code class="sig-name descname"><span class="pre">clear</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">auth</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">service</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">key</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">count</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#shared.Sync.clear" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="shared.Sync.clear">
+<span class="sig-prename descclassname"><span class="pre">shared.Sync.</span></span><span class="sig-name descname"><span class="pre">clear</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">auth</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">service</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">key</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">count</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#shared.Sync.clear" title="Permalink to this definition">¶</a></dt>
 <dd><p>Clear</p>
 <p>Removes the given count of messages from the sync cache</p>
 <dl class="field-list simple">
@@ -174,8 +177,8 @@
 </dd></dl>
 
 <dl class="py function">
-<dt id="shared.Sync.init">
-<code class="sig-prename descclassname"><span class="pre">shared.Sync.</span></code><code class="sig-name descname"><span class="pre">init</span></code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#shared.Sync.init" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="shared.Sync.init">
+<span class="sig-prename descclassname"><span class="pre">shared.Sync.</span></span><span class="sig-name descname"><span class="pre">init</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#shared.Sync.init" title="Permalink to this definition">¶</a></dt>
 <dd><p>Initialise</p>
 <p>Initializes the Redis connection so that sync can be fetched and saved</p>
 <dl class="field-list simple">
@@ -186,8 +189,8 @@
 </dd></dl>
 
 <dl class="py function">
-<dt id="shared.Sync.join">
-<code class="sig-prename descclassname"><span class="pre">shared.Sync.</span></code><code class="sig-name descname"><span class="pre">join</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">auth</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">service</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">key</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#shared.Sync.join" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="shared.Sync.join">
+<span class="sig-prename descclassname"><span class="pre">shared.Sync.</span></span><span class="sig-name descname"><span class="pre">join</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">auth</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">service</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">key</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#shared.Sync.join" title="Permalink to this definition">¶</a></dt>
 <dd><p>Join</p>
 <p>Called to add a session to the sync cache</p>
 <dl class="field-list simple">
@@ -203,8 +206,8 @@
 </dd></dl>
 
 <dl class="py function">
-<dt id="shared.Sync.leave">
-<code class="sig-prename descclassname"><span class="pre">shared.Sync.</span></code><code class="sig-name descname"><span class="pre">leave</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">auth</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">service</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">key</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#shared.Sync.leave" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="shared.Sync.leave">
+<span class="sig-prename descclassname"><span class="pre">shared.Sync.</span></span><span class="sig-name descname"><span class="pre">leave</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">auth</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">service</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">key</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#shared.Sync.leave" title="Permalink to this definition">¶</a></dt>
 <dd><p>Leave</p>
 <p>Called to remove a session from the sync cache</p>
 <dl class="field-list simple">
@@ -220,8 +223,8 @@
 </dd></dl>
 
 <dl class="py function">
-<dt id="shared.Sync.pull">
-<code class="sig-prename descclassname"><span class="pre">shared.Sync.</span></code><code class="sig-name descname"><span class="pre">pull</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">auth</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">service</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">key</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#shared.Sync.pull" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="shared.Sync.pull">
+<span class="sig-prename descclassname"><span class="pre">shared.Sync.</span></span><span class="sig-name descname"><span class="pre">pull</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">auth</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">service</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">key</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#shared.Sync.pull" title="Permalink to this definition">¶</a></dt>
 <dd><p>Pull</p>
 <p>Fetches and returns as many messages are in the sync cache for the given
 authorization key and message list key</p>
@@ -240,8 +243,8 @@ authorization key and message list key</p>
 </dd></dl>
 
 <dl class="py function">
-<dt id="shared.Sync.push">
-<code class="sig-prename descclassname"><span class="pre">shared.Sync.</span></code><code class="sig-name descname"><span class="pre">push</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">service</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">key</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">data</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#shared.Sync.push" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="shared.Sync.push">
+<span class="sig-prename descclassname"><span class="pre">shared.Sync.</span></span><span class="sig-name descname"><span class="pre">push</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">service</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">key</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">data</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#shared.Sync.push" title="Permalink to this definition">¶</a></dt>
 <dd><p>Push</p>
 <p>Called to push data to the sync cache</p>
 <dl class="field-list simple">
@@ -259,8 +262,8 @@ authorization key and message list key</p>
 </dd></dl>
 
 <dl class="py function">
-<dt id="shared.Sync.socket">
-<code class="sig-prename descclassname"><span class="pre">shared.Sync.</span></code><code class="sig-name descname"><span class="pre">socket</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">key</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">data</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#shared.Sync.socket" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="shared.Sync.socket">
+<span class="sig-prename descclassname"><span class="pre">shared.Sync.</span></span><span class="sig-name descname"><span class="pre">socket</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">key</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">data</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#shared.Sync.socket" title="Permalink to this definition">¶</a></dt>
 <dd><p>Socket</p>
 <p>Called to store a key used to validate the socket connection</p>
 <dl class="field-list simple">

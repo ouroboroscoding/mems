@@ -13,6 +13,8 @@
   
   <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
   <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+  <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+  <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
 
   
   
@@ -29,6 +31,7 @@
   
     
       <script type="text/javascript" id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
+        <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
         <script src="_static/jquery.js"></script>
         <script src="_static/underscore.js"></script>
         <script src="_static/doctools.js"></script>
@@ -157,14 +160,14 @@
 <p>Web Poll Service</p>
 <p>Handles syncing through long polling between services and DB</p>
 <dl class="py class">
-<dt id="services.webpoll.WebPoll">
-<em class="property"><span class="pre">class</span> </em><code class="sig-prename descclassname"><span class="pre">services.webpoll.</span></code><code class="sig-name descname"><span class="pre">WebPoll</span></code><a class="headerlink" href="#services.webpoll.WebPoll" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="services.webpoll.WebPoll">
+<em class="property"><span class="pre">class</span> </em><span class="sig-prename descclassname"><span class="pre">services.webpoll.</span></span><span class="sig-name descname"><span class="pre">WebPoll</span></span><a class="headerlink" href="#services.webpoll.WebPoll" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">RestOC.Services.Service</span></code></p>
 <p>Polling Service class</p>
 <p>Service for long polling between connected clients and the DB</p>
 <dl class="py method">
-<dt id="services.webpoll.WebPoll.clear_update">
-<code class="sig-name descname"><span class="pre">clear_update</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sesh</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#services.webpoll.WebPoll.clear_update" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="services.webpoll.WebPoll.clear_update">
+<span class="sig-name descname"><span class="pre">clear_update</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sesh</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#services.webpoll.WebPoll.clear_update" title="Permalink to this definition">¶</a></dt>
 <dd><p>Clear</p>
 <p>Clears the given number of messages from the sync cache</p>
 <dl class="field-list simple">
@@ -181,8 +184,8 @@
 </dd></dl>
 
 <dl class="py method">
-<dt id="services.webpoll.WebPoll.initialise">
-<code class="sig-name descname"><span class="pre">initialise</span></code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#services.webpoll.WebPoll.initialise" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="services.webpoll.WebPoll.initialise">
+<span class="sig-name descname"><span class="pre">initialise</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#services.webpoll.WebPoll.initialise" title="Permalink to this definition">¶</a></dt>
 <dd><p>Initialise</p>
 <p>Initialises the instance and returns itself for chaining</p>
 <dl class="field-list simple">
@@ -193,8 +196,8 @@
 </dd></dl>
 
 <dl class="py method">
-<dt id="services.webpoll.WebPoll.join_create">
-<code class="sig-name descname"><span class="pre">join_create</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sesh</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#services.webpoll.WebPoll.join_create" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="services.webpoll.WebPoll.join_create">
+<span class="sig-name descname"><span class="pre">join_create</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sesh</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#services.webpoll.WebPoll.join_create" title="Permalink to this definition">¶</a></dt>
 <dd><p>Join</p>
 <p>Connects a session to an account or contact so that any messages
 associated with either are stored for later polling</p>
@@ -212,8 +215,8 @@ associated with either are stored for later polling</p>
 </dd></dl>
 
 <dl class="py method">
-<dt id="services.webpoll.WebPoll.leave_create">
-<code class="sig-name descname"><span class="pre">leave_create</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sesh</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#services.webpoll.WebPoll.leave_create" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="services.webpoll.WebPoll.leave_create">
+<span class="sig-name descname"><span class="pre">leave_create</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sesh</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#services.webpoll.WebPoll.leave_create" title="Permalink to this definition">¶</a></dt>
 <dd><p>Leave</p>
 <p>Disconnects a session from an account or contact so that messages are
 no longer collected for it</p>
@@ -231,8 +234,8 @@ no longer collected for it</p>
 </dd></dl>
 
 <dl class="py method">
-<dt id="services.webpoll.WebPoll.pull_read">
-<code class="sig-name descname"><span class="pre">pull_read</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sesh</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#services.webpoll.WebPoll.pull_read" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="services.webpoll.WebPoll.pull_read">
+<span class="sig-name descname"><span class="pre">pull_read</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sesh</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#services.webpoll.WebPoll.pull_read" title="Permalink to this definition">¶</a></dt>
 <dd><p>Pull</p>
 <p>A client is requesting an update on anything they might be looking at</p>
 <dl class="field-list simple">
@@ -249,8 +252,8 @@ no longer collected for it</p>
 </dd></dl>
 
 <dl class="py method">
-<dt id="services.webpoll.WebPoll.websocket_read">
-<code class="sig-name descname"><span class="pre">websocket_read</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sesh</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#services.webpoll.WebPoll.websocket_read" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="services.webpoll.WebPoll.websocket_read">
+<span class="sig-name descname"><span class="pre">websocket_read</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sesh</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#services.webpoll.WebPoll.websocket_read" title="Permalink to this definition">¶</a></dt>
 <dd><p>WebSocket</p>
 <p>Generates a unique key for the client that it can use to authorize a
 websocket connection</p>

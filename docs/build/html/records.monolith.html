@@ -13,6 +13,8 @@
   
   <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
   <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+  <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+  <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
 
   
   
@@ -29,6 +31,7 @@
   
     
       <script type="text/javascript" id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
+        <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
         <script src="_static/jquery.js"></script>
         <script src="_static/underscore.js"></script>
         <script src="_static/doctools.js"></script>
@@ -155,15 +158,15 @@
   <div class="section" id="module-records.monolith">
 <span id="records-monolith-module"></span><h1>records.monolith module<a class="headerlink" href="#module-records.monolith" title="Permalink to this headline">¶</a></h1>
 <p>Monolith Records</p>
-<p>Handles the record structures for the monolith service</p>
+<p>Handles the record structures for the Monolith service</p>
 <dl class="py class">
-<dt id="records.monolith.Calendly">
-<em class="property"><span class="pre">class</span> </em><code class="sig-prename descclassname"><span class="pre">records.monolith.</span></code><code class="sig-name descname"><span class="pre">Calendly</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">record</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">{}</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">custom</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">{}</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#records.monolith.Calendly" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="records.monolith.Calendly">
+<em class="property"><span class="pre">class</span> </em><span class="sig-prename descclassname"><span class="pre">records.monolith.</span></span><span class="sig-name descname"><span class="pre">Calendly</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">record</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">{}</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">custom</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">{}</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#records.monolith.Calendly" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">RestOC.Record_MySQL.Record</span></code></p>
 <p>Represents a customer conversation that has been claimed by an agent</p>
 <dl class="py method">
-<dt id="records.monolith.Calendly.byCustomer">
-<em class="property"><span class="pre">classmethod</span> </em><code class="sig-name descname"><span class="pre">byCustomer</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">customer_id</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">custom</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">{}</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#records.monolith.Calendly.byCustomer" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="records.monolith.Calendly.byCustomer">
+<em class="property"><span class="pre">classmethod</span> </em><span class="sig-name descname"><span class="pre">byCustomer</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">customer_id</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">custom</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">{}</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#records.monolith.Calendly.byCustomer" title="Permalink to this definition">¶</a></dt>
 <dd><p>By Customer</p>
 <p>Searches calendly appointments by joining with KtCustomer and comparing
 phone number or email</p>
@@ -183,8 +186,8 @@ phone number or email</p>
 </dd></dl>
 
 <dl class="py method">
-<dt id="records.monolith.Calendly.byProvider">
-<em class="property"><span class="pre">classmethod</span> </em><code class="sig-name descname"><span class="pre">byProvider</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">email</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">new_only</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">custom</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">{}</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#records.monolith.Calendly.byProvider" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="records.monolith.Calendly.byProvider">
+<em class="property"><span class="pre">classmethod</span> </em><span class="sig-name descname"><span class="pre">byProvider</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">email</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">new_only</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">custom</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">{}</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#records.monolith.Calendly.byProvider" title="Permalink to this definition">¶</a></dt>
 <dd><p>By Provider</p>
 <p>Finds Calendly appointments based on the providers email address</p>
 <dl class="field-list simple">
@@ -203,8 +206,8 @@ phone number or email</p>
 </dd></dl>
 
 <dl class="py method">
-<dt id="records.monolith.Calendly.config">
-<em class="property"><span class="pre">classmethod</span> </em><code class="sig-name descname"><span class="pre">config</span></code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#records.monolith.Calendly.config" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="records.monolith.Calendly.config">
+<em class="property"><span class="pre">classmethod</span> </em><span class="sig-name descname"><span class="pre">config</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#records.monolith.Calendly.config" title="Permalink to this definition">¶</a></dt>
 <dd><p>Config</p>
 <p>Returns the configuration data associated with the record type</p>
 <dl class="field-list simple">
@@ -217,14 +220,14 @@ phone number or email</p>
 </dd></dl>
 
 <dl class="py class">
-<dt id="records.monolith.CalendlyEvent">
-<em class="property"><span class="pre">class</span> </em><code class="sig-prename descclassname"><span class="pre">records.monolith.</span></code><code class="sig-name descname"><span class="pre">CalendlyEvent</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">record</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">{}</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">custom</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">{}</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#records.monolith.CalendlyEvent" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="records.monolith.CalendlyEvent">
+<em class="property"><span class="pre">class</span> </em><span class="sig-prename descclassname"><span class="pre">records.monolith.</span></span><span class="sig-name descname"><span class="pre">CalendlyEvent</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">record</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">{}</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">custom</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">{}</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#records.monolith.CalendlyEvent" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">RestOC.Record_MySQL.Record</span></code></p>
 <p>Calendly Event</p>
 <p>Represents a calendly event that a customer can set an appointment for</p>
 <dl class="py method">
-<dt id="records.monolith.CalendlyEvent.config">
-<em class="property"><span class="pre">classmethod</span> </em><code class="sig-name descname"><span class="pre">config</span></code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#records.monolith.CalendlyEvent.config" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="records.monolith.CalendlyEvent.config">
+<em class="property"><span class="pre">classmethod</span> </em><span class="sig-name descname"><span class="pre">config</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#records.monolith.CalendlyEvent.config" title="Permalink to this definition">¶</a></dt>
 <dd><p>Config</p>
 <p>Returns the configuration data associated with the record type</p>
 <dl class="field-list simple">
@@ -237,13 +240,13 @@ phone number or email</p>
 </dd></dl>
 
 <dl class="py class">
-<dt id="records.monolith.Campaign">
-<em class="property"><span class="pre">class</span> </em><code class="sig-prename descclassname"><span class="pre">records.monolith.</span></code><code class="sig-name descname"><span class="pre">Campaign</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">record</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">{}</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">custom</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">{}</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#records.monolith.Campaign" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="records.monolith.Campaign">
+<em class="property"><span class="pre">class</span> </em><span class="sig-prename descclassname"><span class="pre">records.monolith.</span></span><span class="sig-name descname"><span class="pre">Campaign</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">record</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">{}</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">custom</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">{}</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#records.monolith.Campaign" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">RestOC.Record_MySQL.Record</span></code></p>
 <p>Represents a campaign in KNK and the type associated</p>
 <dl class="py method">
-<dt id="records.monolith.Campaign.config">
-<em class="property"><span class="pre">classmethod</span> </em><code class="sig-name descname"><span class="pre">config</span></code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#records.monolith.Campaign.config" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="records.monolith.Campaign.config">
+<em class="property"><span class="pre">classmethod</span> </em><span class="sig-name descname"><span class="pre">config</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#records.monolith.Campaign.config" title="Permalink to this definition">¶</a></dt>
 <dd><p>Config</p>
 <p>Returns the configuration data associated with the record type</p>
 <dl class="field-list simple">
@@ -254,8 +257,8 @@ phone number or email</p>
 </dd></dl>
 
 <dl class="py method">
-<dt id="records.monolith.Campaign.ids">
-<em class="property"><span class="pre">classmethod</span> </em><code class="sig-name descname"><span class="pre">ids</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">custom</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">{}</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#records.monolith.Campaign.ids" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="records.monolith.Campaign.ids">
+<em class="property"><span class="pre">classmethod</span> </em><span class="sig-name descname"><span class="pre">ids</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">custom</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">{}</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#records.monolith.Campaign.ids" title="Permalink to this definition">¶</a></dt>
 <dd><p>IDs</p>
 <p>Returns the set of campaign IDs</p>
 <dl class="field-list simple">
@@ -273,13 +276,13 @@ phone number or email</p>
 </dd></dl>
 
 <dl class="py class">
-<dt id="records.monolith.CustomerClaimed">
-<em class="property"><span class="pre">class</span> </em><code class="sig-prename descclassname"><span class="pre">records.monolith.</span></code><code class="sig-name descname"><span class="pre">CustomerClaimed</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">record</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">{}</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">custom</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">{}</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#records.monolith.CustomerClaimed" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="records.monolith.CustomerClaimed">
+<em class="property"><span class="pre">class</span> </em><span class="sig-prename descclassname"><span class="pre">records.monolith.</span></span><span class="sig-name descname"><span class="pre">CustomerClaimed</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">record</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">{}</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">custom</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">{}</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#records.monolith.CustomerClaimed" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">RestOC.Record_MySQL.Record</span></code></p>
 <p>Represents a customer conversation that has been claimed by an agent</p>
 <dl class="py method">
-<dt id="records.monolith.CustomerClaimed.config">
-<em class="property"><span class="pre">classmethod</span> </em><code class="sig-name descname"><span class="pre">config</span></code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#records.monolith.CustomerClaimed.config" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="records.monolith.CustomerClaimed.config">
+<em class="property"><span class="pre">classmethod</span> </em><span class="sig-name descname"><span class="pre">config</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#records.monolith.CustomerClaimed.config" title="Permalink to this definition">¶</a></dt>
 <dd><p>Config</p>
 <p>Returns the configuration data associated with the record type</p>
 <dl class="field-list simple">
@@ -290,8 +293,8 @@ phone number or email</p>
 </dd></dl>
 
 <dl class="py method">
-<dt id="records.monolith.CustomerClaimed.counts">
-<em class="property"><span class="pre">classmethod</span> </em><code class="sig-name descname"><span class="pre">counts</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">ids</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">custom</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">{}</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#records.monolith.CustomerClaimed.counts" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="records.monolith.CustomerClaimed.counts">
+<em class="property"><span class="pre">classmethod</span> </em><span class="sig-name descname"><span class="pre">counts</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">ids</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">custom</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">{}</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#records.monolith.CustomerClaimed.counts" title="Permalink to this definition">¶</a></dt>
 <dd><p>Counts</p>
 <p>Returns the count of claims per user</p>
 <dl class="field-list simple">
@@ -310,8 +313,8 @@ phone number or email</p>
 </dd></dl>
 
 <dl class="py method">
-<dt id="records.monolith.CustomerClaimed.stats">
-<em class="property"><span class="pre">classmethod</span> </em><code class="sig-name descname"><span class="pre">stats</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">custom</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">{}</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#records.monolith.CustomerClaimed.stats" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="records.monolith.CustomerClaimed.stats">
+<em class="property"><span class="pre">classmethod</span> </em><span class="sig-name descname"><span class="pre">stats</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">custom</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">{}</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#records.monolith.CustomerClaimed.stats" title="Permalink to this definition">¶</a></dt>
 <dd><p>Stats</p>
 <p>Returns stats of claims by user</p>
 <dl class="field-list simple">
@@ -327,8 +330,8 @@ phone number or email</p>
 </dd></dl>
 
 <dl class="py method">
-<dt id="records.monolith.CustomerClaimed.swapNumber">
-<code class="sig-name descname"><span class="pre">swapNumber</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">number</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#records.monolith.CustomerClaimed.swapNumber" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="records.monolith.CustomerClaimed.swapNumber">
+<span class="sig-name descname"><span class="pre">swapNumber</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">number</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#records.monolith.CustomerClaimed.swapNumber" title="Permalink to this definition">¶</a></dt>
 <dd><p>Swap Number</p>
 <p>Swaps the primary key for another value</p>
 <dl class="field-list simple">
@@ -344,14 +347,14 @@ phone number or email</p>
 </dd></dl>
 
 <dl class="py class">
-<dt id="records.monolith.CustomerClaimedLast">
-<em class="property"><span class="pre">class</span> </em><code class="sig-prename descclassname"><span class="pre">records.monolith.</span></code><code class="sig-name descname"><span class="pre">CustomerClaimedLast</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">record</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">{}</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">custom</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">{}</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#records.monolith.CustomerClaimedLast" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="records.monolith.CustomerClaimedLast">
+<em class="property"><span class="pre">class</span> </em><span class="sig-prename descclassname"><span class="pre">records.monolith.</span></span><span class="sig-name descname"><span class="pre">CustomerClaimedLast</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">record</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">{}</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">custom</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">{}</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#records.monolith.CustomerClaimedLast" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">RestOC.Record_MySQL.Record</span></code></p>
 <p>Represents the last time a user looked up new messages on claimed
 conversations</p>
 <dl class="py method">
-<dt id="records.monolith.CustomerClaimedLast.config">
-<em class="property"><span class="pre">classmethod</span> </em><code class="sig-name descname"><span class="pre">config</span></code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#records.monolith.CustomerClaimedLast.config" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="records.monolith.CustomerClaimedLast.config">
+<em class="property"><span class="pre">classmethod</span> </em><span class="sig-name descname"><span class="pre">config</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#records.monolith.CustomerClaimedLast.config" title="Permalink to this definition">¶</a></dt>
 <dd><p>Config</p>
 <p>Returns the configuration data associated with the record type</p>
 <dl class="field-list simple">
@@ -362,8 +365,8 @@ conversations</p>
 </dd></dl>
 
 <dl class="py method">
-<dt id="records.monolith.CustomerClaimedLast.get">
-<em class="property"><span class="pre">classmethod</span> </em><code class="sig-name descname"><span class="pre">get</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">user</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">custom</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">{}</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#records.monolith.CustomerClaimedLast.get" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="records.monolith.CustomerClaimedLast.get">
+<em class="property"><span class="pre">classmethod</span> </em><span class="sig-name descname"><span class="pre">get</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">user</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">custom</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">{}</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#records.monolith.CustomerClaimedLast.get" title="Permalink to this definition">¶</a></dt>
 <dd><p>Get</p>
 <p>Get’s the last timestamp for the given user</p>
 <dl class="field-list simple">
@@ -382,8 +385,8 @@ conversations</p>
 </dd></dl>
 
 <dl class="py method">
-<dt id="records.monolith.CustomerClaimedLast.set">
-<em class="property"><span class="pre">classmethod</span> </em><code class="sig-name descname"><span class="pre">set</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">user</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ts</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">custom</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">{}</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#records.monolith.CustomerClaimedLast.set" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="records.monolith.CustomerClaimedLast.set">
+<em class="property"><span class="pre">classmethod</span> </em><span class="sig-name descname"><span class="pre">set</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">user</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ts</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">custom</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">{}</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#records.monolith.CustomerClaimedLast.set" title="Permalink to this definition">¶</a></dt>
 <dd><p>Set</p>
 <p>Updates the current value for the user or else creates it</p>
 <dl class="field-list simple">
@@ -406,13 +409,33 @@ associated with</p></li>
 </dd></dl>
 
 <dl class="py class">
-<dt id="records.monolith.CustomerCommunication">
-<em class="property"><span class="pre">class</span> </em><code class="sig-prename descclassname"><span class="pre">records.monolith.</span></code><code class="sig-name descname"><span class="pre">CustomerCommunication</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">record</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">{}</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">custom</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">{}</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#records.monolith.CustomerCommunication" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="records.monolith.CustomerCommunication">
+<em class="property"><span class="pre">class</span> </em><span class="sig-prename descclassname"><span class="pre">records.monolith.</span></span><span class="sig-name descname"><span class="pre">CustomerCommunication</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">record</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">{}</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">custom</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">{}</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#records.monolith.CustomerCommunication" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">RestOC.Record_MySQL.Record</span></code></p>
 <p>Represents a message to or from a customer or potential customer</p>
 <dl class="py method">
-<dt id="records.monolith.CustomerCommunication.config">
-<em class="property"><span class="pre">classmethod</span> </em><code class="sig-name descname"><span class="pre">config</span></code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#records.monolith.CustomerCommunication.config" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="records.monolith.CustomerCommunication.byIDs">
+<em class="property"><span class="pre">classmethod</span> </em><span class="sig-name descname"><span class="pre">byIDs</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">ids</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">custom</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">{}</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#records.monolith.CustomerCommunication.byIDs" title="Permalink to this definition">¶</a></dt>
+<dd><p>By IDs</p>
+<p>Returns all the messages associated with the given IDs</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>ids</strong> (<em>int</em><em>[</em><em>]</em>) – The IDs to fetch</p></li>
+<li><p><strong>custom</strong> (<em>dict</em>) – Custom Host and DB info
+‘host’ the name of the host to get/set data on
+‘append’ optional postfix for dynamic DBs</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>list</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="records.monolith.CustomerCommunication.config">
+<em class="property"><span class="pre">classmethod</span> </em><span class="sig-name descname"><span class="pre">config</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#records.monolith.CustomerCommunication.config" title="Permalink to this definition">¶</a></dt>
 <dd><p>Config</p>
 <p>Returns the configuration data associated with the record type</p>
 <dl class="field-list simple">
@@ -423,8 +446,31 @@ associated with</p></li>
 </dd></dl>
 
 <dl class="py method">
-<dt id="records.monolith.CustomerCommunication.newMessages">
-<em class="property"><span class="pre">classmethod</span> </em><code class="sig-name descname"><span class="pre">newMessages</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">numbers</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ts</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">custom</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">{}</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#records.monolith.CustomerCommunication.newMessages" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="records.monolith.CustomerCommunication.incoming">
+<em class="property"><span class="pre">classmethod</span> </em><span class="sig-name descname"><span class="pre">incoming</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">number</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">start</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">count</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">custom</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">{}</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#records.monolith.CustomerCommunication.incoming" title="Permalink to this definition">¶</a></dt>
+<dd><p>Incoming</p>
+<p>Fetches all the records in associated with a phone number in
+reverse chronological order</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>number</strong> (<em>str</em>) – The phone number to look up</p></li>
+<li><p><strong>start</strong> (<em>uint</em>) – The starting record</p></li>
+<li><p><strong>count</strong> (<em>uint</em>) – The amount of records to return after the start</p></li>
+<li><p><strong>custom</strong> (<em>dict</em>) – Custom Host and DB info
+‘host’ the name of the host to get/set data on
+‘append’ optional postfix for dynamic DBs</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>list</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="records.monolith.CustomerCommunication.newMessages">
+<em class="property"><span class="pre">classmethod</span> </em><span class="sig-name descname"><span class="pre">newMessages</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">numbers</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ts</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">custom</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">{}</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#records.monolith.CustomerCommunication.newMessages" title="Permalink to this definition">¶</a></dt>
 <dd><p>New Messages</p>
 <p>Checks for new messages from the given numbers</p>
 <dl class="field-list simple">
@@ -444,8 +490,8 @@ associated with</p></li>
 </dd></dl>
 
 <dl class="py method">
-<dt id="records.monolith.CustomerCommunication.thread">
-<em class="property"><span class="pre">classmethod</span> </em><code class="sig-name descname"><span class="pre">thread</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">number</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">custom</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">{}</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#records.monolith.CustomerCommunication.thread" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="records.monolith.CustomerCommunication.thread">
+<em class="property"><span class="pre">classmethod</span> </em><span class="sig-name descname"><span class="pre">thread</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">number</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">custom</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">{}</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#records.monolith.CustomerCommunication.thread" title="Permalink to this definition">¶</a></dt>
 <dd><p>Thread</p>
 <p>Fetches all the records in or out associated with a phone number in
 chronological order</p>
@@ -467,25 +513,25 @@ chronological order</p>
 </dd></dl>
 
 <dl class="py class">
-<dt id="records.monolith.CustomerMsgPhone">
-<em class="property"><span class="pre">class</span> </em><code class="sig-prename descclassname"><span class="pre">records.monolith.</span></code><code class="sig-name descname"><span class="pre">CustomerMsgPhone</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">record</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">{}</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">custom</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">{}</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#records.monolith.CustomerMsgPhone" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="records.monolith.CustomerMsgPhone">
+<em class="property"><span class="pre">class</span> </em><span class="sig-prename descclassname"><span class="pre">records.monolith.</span></span><span class="sig-name descname"><span class="pre">CustomerMsgPhone</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">record</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">{}</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">custom</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">{}</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#records.monolith.CustomerMsgPhone" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">RestOC.Record_MySQL.Record</span></code></p>
 <p>Represents a summary of all messages to and from a customer or potential
 customer</p>
 <dl class="py attribute">
-<dt id="records.monolith.CustomerMsgPhone.INCOMING">
-<code class="sig-name descname"><span class="pre">INCOMING</span></code><em class="property"> <span class="pre">=</span> <span class="pre">0</span></em><a class="headerlink" href="#records.monolith.CustomerMsgPhone.INCOMING" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="records.monolith.CustomerMsgPhone.INCOMING">
+<span class="sig-name descname"><span class="pre">INCOMING</span></span><em class="property"> <span class="pre">=</span> <span class="pre">0</span></em><a class="headerlink" href="#records.monolith.CustomerMsgPhone.INCOMING" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="py attribute">
-<dt id="records.monolith.CustomerMsgPhone.OUTGOING">
-<code class="sig-name descname"><span class="pre">OUTGOING</span></code><em class="property"> <span class="pre">=</span> <span class="pre">1</span></em><a class="headerlink" href="#records.monolith.CustomerMsgPhone.OUTGOING" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="records.monolith.CustomerMsgPhone.OUTGOING">
+<span class="sig-name descname"><span class="pre">OUTGOING</span></span><em class="property"> <span class="pre">=</span> <span class="pre">1</span></em><a class="headerlink" href="#records.monolith.CustomerMsgPhone.OUTGOING" title="Permalink to this definition">¶</a></dt>
 <dd><p>Direction</p>
 </dd></dl>
 
 <dl class="py method">
-<dt id="records.monolith.CustomerMsgPhone.add">
-<em class="property"><span class="pre">classmethod</span> </em><code class="sig-name descname"><span class="pre">add</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">direction</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">customerPhone</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">message</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">custom</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">{}</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#records.monolith.CustomerMsgPhone.add" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="records.monolith.CustomerMsgPhone.add">
+<em class="property"><span class="pre">classmethod</span> </em><span class="sig-name descname"><span class="pre">add</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">direction</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">customerPhone</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">message</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">custom</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">{}</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#records.monolith.CustomerMsgPhone.add" title="Permalink to this definition">¶</a></dt>
 <dd><p>Add</p>
 <p>Adds an incoming or outgoing message to the conversation summary</p>
 <dl class="field-list simple">
@@ -506,8 +552,8 @@ customer</p>
 </dd></dl>
 
 <dl class="py method">
-<dt id="records.monolith.CustomerMsgPhone.addAutoResponse">
-<em class="property"><span class="pre">classmethod</span> </em><code class="sig-name descname"><span class="pre">addAutoResponse</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">customerPhone</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">message</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">custom</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">{}</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#records.monolith.CustomerMsgPhone.addAutoResponse" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="records.monolith.CustomerMsgPhone.addAutoResponse">
+<em class="property"><span class="pre">classmethod</span> </em><span class="sig-name descname"><span class="pre">addAutoResponse</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">customerPhone</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">message</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">custom</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">{}</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#records.monolith.CustomerMsgPhone.addAutoResponse" title="Permalink to this definition">¶</a></dt>
 <dd><p>Add Auto Response</p>
 <p>Adds an outgoing auto-response message to the conversation summary
 without modifying the hidden or direction flags</p>
@@ -528,8 +574,8 @@ without modifying the hidden or direction flags</p>
 </dd></dl>
 
 <dl class="py method">
-<dt id="records.monolith.CustomerMsgPhone.claimed">
-<em class="property"><span class="pre">classmethod</span> </em><code class="sig-name descname"><span class="pre">claimed</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">user</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">custom</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">{}</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#records.monolith.CustomerMsgPhone.claimed" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="records.monolith.CustomerMsgPhone.claimed">
+<em class="property"><span class="pre">classmethod</span> </em><span class="sig-name descname"><span class="pre">claimed</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">user</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">custom</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">{}</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#records.monolith.CustomerMsgPhone.claimed" title="Permalink to this definition">¶</a></dt>
 <dd><p>Claimed</p>
 <p>Returns all the conversations the user has claimed</p>
 <dl class="field-list simple">
@@ -548,8 +594,8 @@ without modifying the hidden or direction flags</p>
 </dd></dl>
 
 <dl class="py method">
-<dt id="records.monolith.CustomerMsgPhone.config">
-<em class="property"><span class="pre">classmethod</span> </em><code class="sig-name descname"><span class="pre">config</span></code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#records.monolith.CustomerMsgPhone.config" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="records.monolith.CustomerMsgPhone.config">
+<em class="property"><span class="pre">classmethod</span> </em><span class="sig-name descname"><span class="pre">config</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#records.monolith.CustomerMsgPhone.config" title="Permalink to this definition">¶</a></dt>
 <dd><p>Config</p>
 <p>Returns the configuration data associated with the record type</p>
 <dl class="field-list simple">
@@ -560,8 +606,8 @@ without modifying the hidden or direction flags</p>
 </dd></dl>
 
 <dl class="py method">
-<dt id="records.monolith.CustomerMsgPhone.existsByCustomerId">
-<em class="property"><span class="pre">classmethod</span> </em><code class="sig-name descname"><span class="pre">existsByCustomerId</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">customer_id</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">custom</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">{}</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#records.monolith.CustomerMsgPhone.existsByCustomerId" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="records.monolith.CustomerMsgPhone.existsByCustomerId">
+<em class="property"><span class="pre">classmethod</span> </em><span class="sig-name descname"><span class="pre">existsByCustomerId</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">customer_id</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">custom</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">{}</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#records.monolith.CustomerMsgPhone.existsByCustomerId" title="Permalink to this definition">¶</a></dt>
 <dd><p>Exists By Customer ID</p>
 <p>Returns whether summary exists based on the phone number associated
 with the given customerId</p>
@@ -581,8 +627,8 @@ with the given customerId</p>
 </dd></dl>
 
 <dl class="py method">
-<dt id="records.monolith.CustomerMsgPhone.search">
-<em class="property"><span class="pre">classmethod</span> </em><code class="sig-name descname"><span class="pre">search</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">q</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">custom</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">{}</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#records.monolith.CustomerMsgPhone.search" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="records.monolith.CustomerMsgPhone.search">
+<em class="property"><span class="pre">classmethod</span> </em><span class="sig-name descname"><span class="pre">search</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">q</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">custom</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">{}</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#records.monolith.CustomerMsgPhone.search" title="Permalink to this definition">¶</a></dt>
 <dd><p>Search</p>
 <p>Search conversations and return them</p>
 <dl class="field-list simple">
@@ -601,8 +647,8 @@ with the given customerId</p>
 </dd></dl>
 
 <dl class="py method">
-<dt id="records.monolith.CustomerMsgPhone.unclaimed">
-<em class="property"><span class="pre">classmethod</span> </em><code class="sig-name descname"><span class="pre">unclaimed</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">order</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'ASC'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">custom</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">{}</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#records.monolith.CustomerMsgPhone.unclaimed" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="records.monolith.CustomerMsgPhone.unclaimed">
+<em class="property"><span class="pre">classmethod</span> </em><span class="sig-name descname"><span class="pre">unclaimed</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">order</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'ASC'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">custom</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">{}</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#records.monolith.CustomerMsgPhone.unclaimed" title="Permalink to this definition">¶</a></dt>
 <dd><p>Unclaimed</p>
 <p>Fetches open conversations that have not been claimed by any agent</p>
 <dl class="field-list simple">
@@ -621,8 +667,8 @@ with the given customerId</p>
 </dd></dl>
 
 <dl class="py method">
-<dt id="records.monolith.CustomerMsgPhone.unclaimedCount">
-<em class="property"><span class="pre">classmethod</span> </em><code class="sig-name descname"><span class="pre">unclaimedCount</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">custom</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">{}</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#records.monolith.CustomerMsgPhone.unclaimedCount" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="records.monolith.CustomerMsgPhone.unclaimedCount">
+<em class="property"><span class="pre">classmethod</span> </em><span class="sig-name descname"><span class="pre">unclaimedCount</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">custom</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">{}</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#records.monolith.CustomerMsgPhone.unclaimedCount" title="Permalink to this definition">¶</a></dt>
 <dd><p>Unclaimed Count</p>
 <p>Fetches the count of open conversations that have not been claimed by
 any agent</p>
@@ -641,13 +687,13 @@ any agent</p>
 </dd></dl>
 
 <dl class="py class">
-<dt id="records.monolith.DsApproved">
-<em class="property"><span class="pre">class</span> </em><code class="sig-prename descclassname"><span class="pre">records.monolith.</span></code><code class="sig-name descname"><span class="pre">DsApproved</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">record</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">{}</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">custom</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">{}</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#records.monolith.DsApproved" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="records.monolith.DsApproved">
+<em class="property"><span class="pre">class</span> </em><span class="sig-prename descclassname"><span class="pre">records.monolith.</span></span><span class="sig-name descname"><span class="pre">DsApproved</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">record</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">{}</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">custom</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">{}</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#records.monolith.DsApproved" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">RestOC.Record_MySQL.Record</span></code></p>
 <p>Represents a an approved order and whether there’s a prescription for it</p>
 <dl class="py method">
-<dt id="records.monolith.DsApproved.config">
-<em class="property"><span class="pre">classmethod</span> </em><code class="sig-name descname"><span class="pre">config</span></code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#records.monolith.DsApproved.config" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="records.monolith.DsApproved.config">
+<em class="property"><span class="pre">classmethod</span> </em><span class="sig-name descname"><span class="pre">config</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#records.monolith.DsApproved.config" title="Permalink to this definition">¶</a></dt>
 <dd><p>Config</p>
 <p>Returns the configuration data associated with the record type</p>
 <dl class="field-list simple">
@@ -660,13 +706,13 @@ any agent</p>
 </dd></dl>
 
 <dl class="py class">
-<dt id="records.monolith.DsPatient">
-<em class="property"><span class="pre">class</span> </em><code class="sig-prename descclassname"><span class="pre">records.monolith.</span></code><code class="sig-name descname"><span class="pre">DsPatient</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">record</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">{}</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">custom</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">{}</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#records.monolith.DsPatient" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="records.monolith.DsPatient">
+<em class="property"><span class="pre">class</span> </em><span class="sig-prename descclassname"><span class="pre">records.monolith.</span></span><span class="sig-name descname"><span class="pre">DsPatient</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">record</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">{}</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">custom</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">{}</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#records.monolith.DsPatient" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">RestOC.Record_MySQL.Record</span></code></p>
 <p>Represents a customer in DoseSpot</p>
 <dl class="py method">
-<dt id="records.monolith.DsPatient.config">
-<em class="property"><span class="pre">classmethod</span> </em><code class="sig-name descname"><span class="pre">config</span></code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#records.monolith.DsPatient.config" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="records.monolith.DsPatient.config">
+<em class="property"><span class="pre">classmethod</span> </em><span class="sig-name descname"><span class="pre">config</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#records.monolith.DsPatient.config" title="Permalink to this definition">¶</a></dt>
 <dd><p>Config</p>
 <p>Returns the configuration data associated with the record type</p>
 <dl class="field-list simple">
@@ -679,13 +725,13 @@ any agent</p>
 </dd></dl>
 
 <dl class="py class">
-<dt id="records.monolith.Forgot">
-<em class="property"><span class="pre">class</span> </em><code class="sig-prename descclassname"><span class="pre">records.monolith.</span></code><code class="sig-name descname"><span class="pre">Forgot</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">record</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">{}</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">custom</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">{}</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#records.monolith.Forgot" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="records.monolith.Forgot">
+<em class="property"><span class="pre">class</span> </em><span class="sig-prename descclassname"><span class="pre">records.monolith.</span></span><span class="sig-name descname"><span class="pre">Forgot</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">record</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">{}</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">custom</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">{}</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#records.monolith.Forgot" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">RestOC.Record_MySQL.Record</span></code></p>
 <p>Represents an attempt to reset a forgotten password</p>
 <dl class="py method">
-<dt id="records.monolith.Forgot.config">
-<em class="property"><span class="pre">classmethod</span> </em><code class="sig-name descname"><span class="pre">config</span></code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#records.monolith.Forgot.config" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="records.monolith.Forgot.config">
+<em class="property"><span class="pre">classmethod</span> </em><span class="sig-name descname"><span class="pre">config</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#records.monolith.Forgot.config" title="Permalink to this definition">¶</a></dt>
 <dd><p>Config</p>
 <p>Returns the configuration data associated with the record type</p>
 <dl class="field-list simple">
@@ -698,14 +744,14 @@ any agent</p>
 </dd></dl>
 
 <dl class="py class">
-<dt id="records.monolith.HormonalCategoryScore">
-<em class="property"><span class="pre">class</span> </em><code class="sig-prename descclassname"><span class="pre">records.monolith.</span></code><code class="sig-name descname"><span class="pre">HormonalCategoryScore</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">record</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">{}</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">custom</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">{}</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#records.monolith.HormonalCategoryScore" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="records.monolith.HormonalCategoryScore">
+<em class="property"><span class="pre">class</span> </em><span class="sig-prename descclassname"><span class="pre">records.monolith.</span></span><span class="sig-name descname"><span class="pre">HormonalCategoryScore</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">record</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">{}</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">custom</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">{}</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#records.monolith.HormonalCategoryScore" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">RestOC.Record_MySQL.Record</span></code></p>
 <p>Hormonal Category Score</p>
 <p>Represents a single hormonal score</p>
 <dl class="py method">
-<dt id="records.monolith.HormonalCategoryScore.config">
-<em class="property"><span class="pre">classmethod</span> </em><code class="sig-name descname"><span class="pre">config</span></code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#records.monolith.HormonalCategoryScore.config" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="records.monolith.HormonalCategoryScore.config">
+<em class="property"><span class="pre">classmethod</span> </em><span class="sig-name descname"><span class="pre">config</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#records.monolith.HormonalCategoryScore.config" title="Permalink to this definition">¶</a></dt>
 <dd><p>Config</p>
 <p>Returns the configuration data associated with the record type</p>
 <dl class="field-list simple">
@@ -718,14 +764,14 @@ any agent</p>
 </dd></dl>
 
 <dl class="py class">
-<dt id="records.monolith.HormonalSympCategories">
-<em class="property"><span class="pre">class</span> </em><code class="sig-prename descclassname"><span class="pre">records.monolith.</span></code><code class="sig-name descname"><span class="pre">HormonalSympCategories</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">record</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">{}</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">custom</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">{}</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#records.monolith.HormonalSympCategories" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="records.monolith.HormonalSympCategories">
+<em class="property"><span class="pre">class</span> </em><span class="sig-prename descclassname"><span class="pre">records.monolith.</span></span><span class="sig-name descname"><span class="pre">HormonalSympCategories</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">record</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">{}</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">custom</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">{}</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#records.monolith.HormonalSympCategories" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">RestOC.Record_MySQL.Record</span></code></p>
 <p>Hormonal Symptom Category</p>
 <p>Represents a category of hormonal symptom</p>
 <dl class="py method">
-<dt id="records.monolith.HormonalSympCategories.config">
-<em class="property"><span class="pre">classmethod</span> </em><code class="sig-name descname"><span class="pre">config</span></code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#records.monolith.HormonalSympCategories.config" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="records.monolith.HormonalSympCategories.config">
+<em class="property"><span class="pre">classmethod</span> </em><span class="sig-name descname"><span class="pre">config</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#records.monolith.HormonalSympCategories.config" title="Permalink to this definition">¶</a></dt>
 <dd><p>Config</p>
 <p>Returns the configuration data associated with the record type</p>
 <dl class="field-list simple">
@@ -736,8 +782,8 @@ any agent</p>
 </dd></dl>
 
 <dl class="py method">
-<dt id="records.monolith.HormonalSympCategories.withQuestions">
-<em class="property"><span class="pre">classmethod</span> </em><code class="sig-name descname"><span class="pre">withQuestions</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">custom</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">{}</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#records.monolith.HormonalSympCategories.withQuestions" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="records.monolith.HormonalSympCategories.withQuestions">
+<em class="property"><span class="pre">classmethod</span> </em><span class="sig-name descname"><span class="pre">withQuestions</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">custom</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">{}</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#records.monolith.HormonalSympCategories.withQuestions" title="Permalink to this definition">¶</a></dt>
 <dd><p>With Questions</p>
 <p>Returns the set of categories with their associated question title</p>
 <dl class="field-list simple">
@@ -755,14 +801,14 @@ any agent</p>
 </dd></dl>
 
 <dl class="py class">
-<dt id="records.monolith.HrtLabResult">
-<em class="property"><span class="pre">class</span> </em><code class="sig-prename descclassname"><span class="pre">records.monolith.</span></code><code class="sig-name descname"><span class="pre">HrtLabResult</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">record</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">{}</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">custom</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">{}</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#records.monolith.HrtLabResult" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="records.monolith.HrtLabResult">
+<em class="property"><span class="pre">class</span> </em><span class="sig-prename descclassname"><span class="pre">records.monolith.</span></span><span class="sig-name descname"><span class="pre">HrtLabResult</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">record</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">{}</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">custom</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">{}</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#records.monolith.HrtLabResult" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">RestOC.Record_MySQL.Record</span></code></p>
 <p>“HRT Lab Result Tests</p>
 <p>Represents a customers lab results test values in memo</p>
 <dl class="py method">
-<dt id="records.monolith.HrtLabResult.config">
-<em class="property"><span class="pre">classmethod</span> </em><code class="sig-name descname"><span class="pre">config</span></code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#records.monolith.HrtLabResult.config" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="records.monolith.HrtLabResult.config">
+<em class="property"><span class="pre">classmethod</span> </em><span class="sig-name descname"><span class="pre">config</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#records.monolith.HrtLabResult.config" title="Permalink to this definition">¶</a></dt>
 <dd><p>Config</p>
 <p>Returns the configuration data associated with the record type</p>
 <dl class="field-list simple">
@@ -775,14 +821,14 @@ any agent</p>
 </dd></dl>
 
 <dl class="py class">
-<dt id="records.monolith.HrtLabResultTests">
-<em class="property"><span class="pre">class</span> </em><code class="sig-prename descclassname"><span class="pre">records.monolith.</span></code><code class="sig-name descname"><span class="pre">HrtLabResultTests</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">record</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">{}</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">custom</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">{}</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#records.monolith.HrtLabResultTests" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="records.monolith.HrtLabResultTests">
+<em class="property"><span class="pre">class</span> </em><span class="sig-prename descclassname"><span class="pre">records.monolith.</span></span><span class="sig-name descname"><span class="pre">HrtLabResultTests</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">record</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">{}</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">custom</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">{}</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#records.monolith.HrtLabResultTests" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">RestOC.Record_MySQL.Record</span></code></p>
 <p>“HRT Lab Result Tests</p>
 <p>Represents a customers lab results test values in memo</p>
 <dl class="py method">
-<dt id="records.monolith.HrtLabResultTests.config">
-<em class="property"><span class="pre">classmethod</span> </em><code class="sig-name descname"><span class="pre">config</span></code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#records.monolith.HrtLabResultTests.config" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="records.monolith.HrtLabResultTests.config">
+<em class="property"><span class="pre">classmethod</span> </em><span class="sig-name descname"><span class="pre">config</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#records.monolith.HrtLabResultTests.config" title="Permalink to this definition">¶</a></dt>
 <dd><p>Config</p>
 <p>Returns the configuration data associated with the record type</p>
 <dl class="field-list simple">
@@ -793,8 +839,8 @@ any agent</p>
 </dd></dl>
 
 <dl class="py method">
-<dt id="records.monolith.HrtLabResultTests.unique">
-<em class="property"><span class="pre">classmethod</span> </em><code class="sig-name descname"><span class="pre">unique</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">custom</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">{}</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#records.monolith.HrtLabResultTests.unique" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="records.monolith.HrtLabResultTests.unique">
+<em class="property"><span class="pre">classmethod</span> </em><span class="sig-name descname"><span class="pre">unique</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">custom</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">{}</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#records.monolith.HrtLabResultTests.unique" title="Permalink to this definition">¶</a></dt>
 <dd><p>Unique</p>
 <p>Returns a list of unique tests in the DB</p>
 <dl class="field-list simple">
@@ -812,14 +858,14 @@ any agent</p>
 </dd></dl>
 
 <dl class="py class">
-<dt id="records.monolith.HrtPatient">
-<em class="property"><span class="pre">class</span> </em><code class="sig-prename descclassname"><span class="pre">records.monolith.</span></code><code class="sig-name descname"><span class="pre">HrtPatient</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">record</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">{}</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">custom</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">{}</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#records.monolith.HrtPatient" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="records.monolith.HrtPatient">
+<em class="property"><span class="pre">class</span> </em><span class="sig-prename descclassname"><span class="pre">records.monolith.</span></span><span class="sig-name descname"><span class="pre">HrtPatient</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">record</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">{}</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">custom</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">{}</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#records.monolith.HrtPatient" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">RestOC.Record_MySQL.Record</span></code></p>
 <p>“HRT Patient</p>
 <p>Represents the status of an HRT patient</p>
 <dl class="py method">
-<dt id="records.monolith.HrtPatient.config">
-<em class="property"><span class="pre">classmethod</span> </em><code class="sig-name descname"><span class="pre">config</span></code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#records.monolith.HrtPatient.config" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="records.monolith.HrtPatient.config">
+<em class="property"><span class="pre">classmethod</span> </em><span class="sig-name descname"><span class="pre">config</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#records.monolith.HrtPatient.config" title="Permalink to this definition">¶</a></dt>
 <dd><p>Config</p>
 <p>Returns the configuration data associated with the record type</p>
 <dl class="field-list simple">
@@ -830,8 +876,8 @@ any agent</p>
 </dd></dl>
 
 <dl class="py method">
-<dt id="records.monolith.HrtPatient.customers">
-<em class="property"><span class="pre">classmethod</span> </em><code class="sig-name descname"><span class="pre">customers</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">stage</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">status</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dropped</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">custom</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">{}</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#records.monolith.HrtPatient.customers" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="records.monolith.HrtPatient.customers">
+<em class="property"><span class="pre">classmethod</span> </em><span class="sig-name descname"><span class="pre">customers</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">stage</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">status</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dropped</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">custom</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">{}</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#records.monolith.HrtPatient.customers" title="Permalink to this definition">¶</a></dt>
 <dd><p>Customers</p>
 <p>Returns the customer information associated with the hrt patients in
 the given stage/status</p>
@@ -853,8 +899,8 @@ the given stage/status</p>
 </dd></dl>
 
 <dl class="py method">
-<dt id="records.monolith.HrtPatient.stats">
-<em class="property"><span class="pre">classmethod</span> </em><code class="sig-name descname"><span class="pre">stats</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">custom</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">{}</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#records.monolith.HrtPatient.stats" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="records.monolith.HrtPatient.stats">
+<em class="property"><span class="pre">classmethod</span> </em><span class="sig-name descname"><span class="pre">stats</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">custom</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">{}</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#records.monolith.HrtPatient.stats" title="Permalink to this definition">¶</a></dt>
 <dd><p>Stats</p>
 <p>Returns the breakdown of patients in each bucket</p>
 <dl class="field-list simple">
@@ -872,14 +918,14 @@ the given stage/status</p>
 </dd></dl>
 
 <dl class="py class">
-<dt id="records.monolith.HrtPatientDroppedReason">
-<em class="property"><span class="pre">class</span> </em><code class="sig-prename descclassname"><span class="pre">records.monolith.</span></code><code class="sig-name descname"><span class="pre">HrtPatientDroppedReason</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">record</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">{}</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">custom</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">{}</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#records.monolith.HrtPatientDroppedReason" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="records.monolith.HrtPatientDroppedReason">
+<em class="property"><span class="pre">class</span> </em><span class="sig-prename descclassname"><span class="pre">records.monolith.</span></span><span class="sig-name descname"><span class="pre">HrtPatientDroppedReason</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">record</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">{}</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">custom</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">{}</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#records.monolith.HrtPatientDroppedReason" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">RestOC.Record_MySQL.Record</span></code></p>
 <p>“HRT Patient Dropped Reason</p>
 <p>Represents the specific reason an HRT patient was dropped</p>
 <dl class="py method">
-<dt id="records.monolith.HrtPatientDroppedReason.config">
-<em class="property"><span class="pre">classmethod</span> </em><code class="sig-name descname"><span class="pre">config</span></code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#records.monolith.HrtPatientDroppedReason.config" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="records.monolith.HrtPatientDroppedReason.config">
+<em class="property"><span class="pre">classmethod</span> </em><span class="sig-name descname"><span class="pre">config</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#records.monolith.HrtPatientDroppedReason.config" title="Permalink to this definition">¶</a></dt>
 <dd><p>Config</p>
 <p>Returns the configuration data associated with the record type</p>
 <dl class="field-list simple">
@@ -892,13 +938,13 @@ the given stage/status</p>
 </dd></dl>
 
 <dl class="py class">
-<dt id="records.monolith.KtCustomer">
-<em class="property"><span class="pre">class</span> </em><code class="sig-prename descclassname"><span class="pre">records.monolith.</span></code><code class="sig-name descname"><span class="pre">KtCustomer</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">record</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">{}</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">custom</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">{}</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#records.monolith.KtCustomer" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="records.monolith.KtCustomer">
+<em class="property"><span class="pre">class</span> </em><span class="sig-prename descclassname"><span class="pre">records.monolith.</span></span><span class="sig-name descname"><span class="pre">KtCustomer</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">record</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">{}</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">custom</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">{}</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#records.monolith.KtCustomer" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <a class="reference internal" href="shared.Record_MySQLSearch.html#shared.Record_MySQLSearch.Record" title="shared.Record_MySQLSearch.Record"><code class="xref py py-class docutils literal notranslate"><span class="pre">shared.Record_MySQLSearch.Record</span></code></a></p>
 <p>Represents a customer in konnektive</p>
 <dl class="py method">
-<dt id="records.monolith.KtCustomer.byNameAndZip">
-<em class="property"><span class="pre">classmethod</span> </em><code class="sig-name descname"><span class="pre">byNameAndZip</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">zip_</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">custom</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">{}</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#records.monolith.KtCustomer.byNameAndZip" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="records.monolith.KtCustomer.byNameAndZip">
+<em class="property"><span class="pre">classmethod</span> </em><span class="sig-name descname"><span class="pre">byNameAndZip</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">zip_</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">custom</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">{}</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#records.monolith.KtCustomer.byNameAndZip" title="Permalink to this definition">¶</a></dt>
 <dd><p>By Phone</p>
 <p>Returns the ID and claimed state of the customer from their phone number</p>
 <dl class="field-list simple">
@@ -918,8 +964,8 @@ the given stage/status</p>
 </dd></dl>
 
 <dl class="py method">
-<dt id="records.monolith.KtCustomer.byPhone">
-<em class="property"><span class="pre">classmethod</span> </em><code class="sig-name descname"><span class="pre">byPhone</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">number</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">custom</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">{}</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#records.monolith.KtCustomer.byPhone" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="records.monolith.KtCustomer.byPhone">
+<em class="property"><span class="pre">classmethod</span> </em><span class="sig-name descname"><span class="pre">byPhone</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">number</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">custom</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">{}</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#records.monolith.KtCustomer.byPhone" title="Permalink to this definition">¶</a></dt>
 <dd><p>By Phone</p>
 <p>Returns the ID and claimed state of the customer from their phone number</p>
 <dl class="field-list simple">
@@ -938,8 +984,8 @@ the given stage/status</p>
 </dd></dl>
 
 <dl class="py method">
-<dt id="records.monolith.KtCustomer.config">
-<em class="property"><span class="pre">classmethod</span> </em><code class="sig-name descname"><span class="pre">config</span></code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#records.monolith.KtCustomer.config" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="records.monolith.KtCustomer.config">
+<em class="property"><span class="pre">classmethod</span> </em><span class="sig-name descname"><span class="pre">config</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#records.monolith.KtCustomer.config" title="Permalink to this definition">¶</a></dt>
 <dd><p>Config</p>
 <p>Returns the configuration data associated with the record type</p>
 <dl class="field-list simple">
@@ -950,8 +996,8 @@ the given stage/status</p>
 </dd></dl>
 
 <dl class="py method">
-<dt id="records.monolith.KtCustomer.withClaimed">
-<em class="property"><span class="pre">classmethod</span> </em><code class="sig-name descname"><span class="pre">withClaimed</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">customer_ids</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">custom</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">{}</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#records.monolith.KtCustomer.withClaimed" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="records.monolith.KtCustomer.withClaimed">
+<em class="property"><span class="pre">classmethod</span> </em><span class="sig-name descname"><span class="pre">withClaimed</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">customer_ids</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">custom</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">{}</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#records.monolith.KtCustomer.withClaimed" title="Permalink to this definition">¶</a></dt>
 <dd><p>With Claimed</p>
 <p>Returns the id, name, and phone number, as well as claimed status
 for all the customers requested</p>
@@ -973,13 +1019,13 @@ for all the customers requested</p>
 </dd></dl>
 
 <dl class="py class">
-<dt id="records.monolith.KtOrder">
-<em class="property"><span class="pre">class</span> </em><code class="sig-prename descclassname"><span class="pre">records.monolith.</span></code><code class="sig-name descname"><span class="pre">KtOrder</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">record</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">{}</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">custom</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">{}</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#records.monolith.KtOrder" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="records.monolith.KtOrder">
+<em class="property"><span class="pre">class</span> </em><span class="sig-prename descclassname"><span class="pre">records.monolith.</span></span><span class="sig-name descname"><span class="pre">KtOrder</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">record</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">{}</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">custom</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">{}</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#records.monolith.KtOrder" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">RestOC.Record_MySQL.Record</span></code></p>
 <p>Represents a customer’s order in konnektive</p>
 <dl class="py method">
-<dt id="records.monolith.KtOrder.claimDetails">
-<em class="property"><span class="pre">classmethod</span> </em><code class="sig-name descname"><span class="pre">claimDetails</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">order_id</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">custom</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">{}</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#records.monolith.KtOrder.claimDetails" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="records.monolith.KtOrder.claimDetails">
+<em class="property"><span class="pre">classmethod</span> </em><span class="sig-name descname"><span class="pre">claimDetails</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">order_id</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">custom</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">{}</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#records.monolith.KtOrder.claimDetails" title="Permalink to this definition">¶</a></dt>
 <dd><p>Claim Details</p>
 <p>Gets the campaign and customer name associated with the order, details
 useful for claims</p>
@@ -999,8 +1045,8 @@ useful for claims</p>
 </dd></dl>
 
 <dl class="py method">
-<dt id="records.monolith.KtOrder.config">
-<em class="property"><span class="pre">classmethod</span> </em><code class="sig-name descname"><span class="pre">config</span></code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#records.monolith.KtOrder.config" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="records.monolith.KtOrder.config">
+<em class="property"><span class="pre">classmethod</span> </em><span class="sig-name descname"><span class="pre">config</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#records.monolith.KtOrder.config" title="Permalink to this definition">¶</a></dt>
 <dd><p>Config</p>
 <p>Returns the configuration data associated with the record type</p>
 <dl class="field-list simple">
@@ -1011,8 +1057,8 @@ useful for claims</p>
 </dd></dl>
 
 <dl class="py method">
-<dt id="records.monolith.KtOrder.distinctCampaigns">
-<em class="property"><span class="pre">classmethod</span> </em><code class="sig-name descname"><span class="pre">distinctCampaigns</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">custom</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">{}</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#records.monolith.KtOrder.distinctCampaigns" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="records.monolith.KtOrder.distinctCampaigns">
+<em class="property"><span class="pre">classmethod</span> </em><span class="sig-name descname"><span class="pre">distinctCampaigns</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">custom</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">{}</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#records.monolith.KtOrder.distinctCampaigns" title="Permalink to this definition">¶</a></dt>
 <dd><p>Distinct Campaigns</p>
 <p>Returns the set of campaign IDs associated with orders</p>
 <dl class="field-list simple">
@@ -1028,8 +1074,8 @@ useful for claims</p>
 </dd></dl>
 
 <dl class="py method">
-<dt id="records.monolith.KtOrder.ordersByPhone">
-<em class="property"><span class="pre">classmethod</span> </em><code class="sig-name descname"><span class="pre">ordersByPhone</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">phone</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">custom</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">{}</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#records.monolith.KtOrder.ordersByPhone" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="records.monolith.KtOrder.ordersByPhone">
+<em class="property"><span class="pre">classmethod</span> </em><span class="sig-name descname"><span class="pre">ordersByPhone</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">phone</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">custom</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">{}</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#records.monolith.KtOrder.ordersByPhone" title="Permalink to this definition">¶</a></dt>
 <dd><p>Orders By Phone</p>
 <p>Returns the count of orders by a specific phone number</p>
 <dl class="field-list simple">
@@ -1049,8 +1095,8 @@ conversation</p></li>
 </dd></dl>
 
 <dl class="py method">
-<dt id="records.monolith.KtOrder.pendingByCustomers">
-<em class="property"><span class="pre">classmethod</span> </em><code class="sig-name descname"><span class="pre">pendingByCustomers</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">customer_ids</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">custom</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">{}</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#records.monolith.KtOrder.pendingByCustomers" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="records.monolith.KtOrder.pendingByCustomers">
+<em class="property"><span class="pre">classmethod</span> </em><span class="sig-name descname"><span class="pre">pendingByCustomers</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">customer_ids</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">custom</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">{}</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#records.monolith.KtOrder.pendingByCustomers" title="Permalink to this definition">¶</a></dt>
 <dd><p>Pending By Customers</p>
 <p>Returns all the PENDING orders by a set of customers</p>
 <dl class="field-list simple">
@@ -1069,8 +1115,8 @@ conversation</p></li>
 </dd></dl>
 
 <dl class="py method">
-<dt id="records.monolith.KtOrder.queue">
-<em class="property"><span class="pre">classmethod</span> </em><code class="sig-name descname"><span class="pre">queue</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">group</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">states</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">custom</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">{}</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#records.monolith.KtOrder.queue" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="records.monolith.KtOrder.queue">
+<em class="property"><span class="pre">classmethod</span> </em><span class="sig-name descname"><span class="pre">queue</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">group</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">states</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">custom</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">{}</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#records.monolith.KtOrder.queue" title="Permalink to this definition">¶</a></dt>
 <dd><p>Queue</p>
 <p>Returns all pending, unclaimed, async orders in the given states</p>
 <dl class="field-list simple">
@@ -1090,8 +1136,8 @@ conversation</p></li>
 </dd></dl>
 
 <dl class="py method">
-<dt id="records.monolith.KtOrder.queueCount">
-<em class="property"><span class="pre">classmethod</span> </em><code class="sig-name descname"><span class="pre">queueCount</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">group</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">encounter</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">states</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">hide_claimed</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">group_by</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">custom</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">{}</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#records.monolith.KtOrder.queueCount" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="records.monolith.KtOrder.queueCount">
+<em class="property"><span class="pre">classmethod</span> </em><span class="sig-name descname"><span class="pre">queueCount</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">group</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">encounter</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">states</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">hide_claimed</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">group_by</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">custom</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">{}</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#records.monolith.KtOrder.queueCount" title="Permalink to this definition">¶</a></dt>
 <dd><p>Queue Count</p>
 <p>Returns the count of pending orders</p>
 <dl class="field-list simple">
@@ -1114,8 +1160,8 @@ conversation</p></li>
 </dd></dl>
 
 <dl class="py method">
-<dt id="records.monolith.KtOrder.queueCsr">
-<em class="property"><span class="pre">classmethod</span> </em><code class="sig-name descname"><span class="pre">queueCsr</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">custom</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">{}</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#records.monolith.KtOrder.queueCsr" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="records.monolith.KtOrder.queueCsr">
+<em class="property"><span class="pre">classmethod</span> </em><span class="sig-name descname"><span class="pre">queueCsr</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">custom</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">{}</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#records.monolith.KtOrder.queueCsr" title="Permalink to this definition">¶</a></dt>
 <dd><p>Queue CSR</p>
 <p>Returns all pending, unclaimed, orders with a role of CSR</p>
 <dl class="field-list simple">
@@ -1131,8 +1177,8 @@ conversation</p></li>
 </dd></dl>
 
 <dl class="py method">
-<dt id="records.monolith.KtOrder.queueCsrCount">
-<em class="property"><span class="pre">classmethod</span> </em><code class="sig-name descname"><span class="pre">queueCsrCount</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">custom</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">{}</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#records.monolith.KtOrder.queueCsrCount" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="records.monolith.KtOrder.queueCsrCount">
+<em class="property"><span class="pre">classmethod</span> </em><span class="sig-name descname"><span class="pre">queueCsrCount</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">custom</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">{}</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#records.monolith.KtOrder.queueCsrCount" title="Permalink to this definition">¶</a></dt>
 <dd><p>Queue CSR Count</p>
 <p>Returns just the count of pending, unclaimed, orders with a role of CSR</p>
 <dl class="field-list simple">
@@ -1150,8 +1196,8 @@ conversation</p></li>
 </dd></dl>
 
 <dl class="py class">
-<dt id="records.monolith.KtOrderClaim">
-<em class="property"><span class="pre">class</span> </em><code class="sig-prename descclassname"><span class="pre">records.monolith.</span></code><code class="sig-name descname"><span class="pre">KtOrderClaim</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">record</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">{}</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">custom</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">{}</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#records.monolith.KtOrderClaim" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="records.monolith.KtOrderClaim">
+<em class="property"><span class="pre">class</span> </em><span class="sig-prename descclassname"><span class="pre">records.monolith.</span></span><span class="sig-name descname"><span class="pre">KtOrderClaim</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">record</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">{}</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">custom</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">{}</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#records.monolith.KtOrderClaim" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">RestOC.Record_MySQL.Record</span></code></p>
 <p>Represents a claim of a customer/order by a user</p>
 <p>This table started out as meant to be by order, but unfortunately at some
@@ -1159,8 +1205,8 @@ point we needed to be able to claim just a customer and not one specific
 order, so orderId is no longer unique and can be null. It’s a bit confusing,
 but such is life.</p>
 <dl class="py method">
-<dt id="records.monolith.KtOrderClaim.byUser">
-<em class="property"><span class="pre">classmethod</span> </em><code class="sig-name descname"><span class="pre">byUser</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">user</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">custom</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">{}</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#records.monolith.KtOrderClaim.byUser" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="records.monolith.KtOrderClaim.byUser">
+<em class="property"><span class="pre">classmethod</span> </em><span class="sig-name descname"><span class="pre">byUser</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">user</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">custom</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">{}</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#records.monolith.KtOrderClaim.byUser" title="Permalink to this definition">¶</a></dt>
 <dd><p>By User</p>
 <p>Returns all the customers the user has claimed</p>
 <dl class="field-list simple">
@@ -1179,8 +1225,8 @@ but such is life.</p>
 </dd></dl>
 
 <dl class="py method">
-<dt id="records.monolith.KtOrderClaim.config">
-<em class="property"><span class="pre">classmethod</span> </em><code class="sig-name descname"><span class="pre">config</span></code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#records.monolith.KtOrderClaim.config" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="records.monolith.KtOrderClaim.config">
+<em class="property"><span class="pre">classmethod</span> </em><span class="sig-name descname"><span class="pre">config</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#records.monolith.KtOrderClaim.config" title="Permalink to this definition">¶</a></dt>
 <dd><p>Config</p>
 <p>Returns the configuration data associated with the record type</p>
 <dl class="field-list simple">
@@ -1193,14 +1239,14 @@ but such is life.</p>
 </dd></dl>
 
 <dl class="py class">
-<dt id="records.monolith.KtOrderClaimLast">
-<em class="property"><span class="pre">class</span> </em><code class="sig-prename descclassname"><span class="pre">records.monolith.</span></code><code class="sig-name descname"><span class="pre">KtOrderClaimLast</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">record</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">{}</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">custom</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">{}</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#records.monolith.KtOrderClaimLast" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="records.monolith.KtOrderClaimLast">
+<em class="property"><span class="pre">class</span> </em><span class="sig-prename descclassname"><span class="pre">records.monolith.</span></span><span class="sig-name descname"><span class="pre">KtOrderClaimLast</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">record</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">{}</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">custom</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">{}</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#records.monolith.KtOrderClaimLast" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">RestOC.Record_MySQL.Record</span></code></p>
 <p>Represents the last time a user looked up new notes on claimed
 customers</p>
 <dl class="py method">
-<dt id="records.monolith.KtOrderClaimLast.config">
-<em class="property"><span class="pre">classmethod</span> </em><code class="sig-name descname"><span class="pre">config</span></code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#records.monolith.KtOrderClaimLast.config" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="records.monolith.KtOrderClaimLast.config">
+<em class="property"><span class="pre">classmethod</span> </em><span class="sig-name descname"><span class="pre">config</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#records.monolith.KtOrderClaimLast.config" title="Permalink to this definition">¶</a></dt>
 <dd><p>Config</p>
 <p>Returns the configuration data associated with the record type</p>
 <dl class="field-list simple">
@@ -1211,8 +1257,8 @@ customers</p>
 </dd></dl>
 
 <dl class="py method">
-<dt id="records.monolith.KtOrderClaimLast.get">
-<em class="property"><span class="pre">classmethod</span> </em><code class="sig-name descname"><span class="pre">get</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">user</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">custom</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">{}</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#records.monolith.KtOrderClaimLast.get" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="records.monolith.KtOrderClaimLast.get">
+<em class="property"><span class="pre">classmethod</span> </em><span class="sig-name descname"><span class="pre">get</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">user</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">custom</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">{}</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#records.monolith.KtOrderClaimLast.get" title="Permalink to this definition">¶</a></dt>
 <dd><p>Get</p>
 <p>Get’s the last timestamp for the given user</p>
 <dl class="field-list simple">
@@ -1231,8 +1277,8 @@ customers</p>
 </dd></dl>
 
 <dl class="py method">
-<dt id="records.monolith.KtOrderClaimLast.set">
-<em class="property"><span class="pre">classmethod</span> </em><code class="sig-name descname"><span class="pre">set</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">user</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ts</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">custom</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">{}</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#records.monolith.KtOrderClaimLast.set" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="records.monolith.KtOrderClaimLast.set">
+<em class="property"><span class="pre">classmethod</span> </em><span class="sig-name descname"><span class="pre">set</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">user</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ts</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">custom</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">{}</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#records.monolith.KtOrderClaimLast.set" title="Permalink to this definition">¶</a></dt>
 <dd><p>Set</p>
 <p>Updates the current value for the user or else creates it</p>
 <dl class="field-list simple">
@@ -1255,13 +1301,13 @@ associated with</p></li>
 </dd></dl>
 
 <dl class="py class">
-<dt id="records.monolith.KtOrderContinuous">
-<em class="property"><span class="pre">class</span> </em><code class="sig-prename descclassname"><span class="pre">records.monolith.</span></code><code class="sig-name descname"><span class="pre">KtOrderContinuous</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">record</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">{}</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">custom</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">{}</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#records.monolith.KtOrderContinuous" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="records.monolith.KtOrderContinuous">
+<em class="property"><span class="pre">class</span> </em><span class="sig-prename descclassname"><span class="pre">records.monolith.</span></span><span class="sig-name descname"><span class="pre">KtOrderContinuous</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">record</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">{}</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">custom</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">{}</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#records.monolith.KtOrderContinuous" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">RestOC.Record_MySQL.Record</span></code></p>
 <p>Represents an order that needs to be extended with a new MIP/Prescription(s)</p>
 <dl class="py method">
-<dt id="records.monolith.KtOrderContinuous.config">
-<em class="property"><span class="pre">classmethod</span> </em><code class="sig-name descname"><span class="pre">config</span></code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#records.monolith.KtOrderContinuous.config" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="records.monolith.KtOrderContinuous.config">
+<em class="property"><span class="pre">classmethod</span> </em><span class="sig-name descname"><span class="pre">config</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#records.monolith.KtOrderContinuous.config" title="Permalink to this definition">¶</a></dt>
 <dd><p>Config</p>
 <p>Returns the configuration data associated with the record type</p>
 <dl class="field-list simple">
@@ -1272,8 +1318,8 @@ associated with</p></li>
 </dd></dl>
 
 <dl class="py method">
-<dt id="records.monolith.KtOrderContinuous.pendingByCustomers">
-<em class="property"><span class="pre">classmethod</span> </em><code class="sig-name descname"><span class="pre">pendingByCustomers</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">customer_ids</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">custom</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">{}</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#records.monolith.KtOrderContinuous.pendingByCustomers" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="records.monolith.KtOrderContinuous.pendingByCustomers">
+<em class="property"><span class="pre">classmethod</span> </em><span class="sig-name descname"><span class="pre">pendingByCustomers</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">customer_ids</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">custom</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">{}</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#records.monolith.KtOrderContinuous.pendingByCustomers" title="Permalink to this definition">¶</a></dt>
 <dd><p>Pending By Customers</p>
 <p>Returns all the PENDING orders by a set of customers</p>
 <dl class="field-list simple">
@@ -1292,8 +1338,8 @@ associated with</p></li>
 </dd></dl>
 
 <dl class="py method">
-<dt id="records.monolith.KtOrderContinuous.queue">
-<em class="property"><span class="pre">classmethod</span> </em><code class="sig-name descname"><span class="pre">queue</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">group</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">states</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">custom</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">{}</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#records.monolith.KtOrderContinuous.queue" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="records.monolith.KtOrderContinuous.queue">
+<em class="property"><span class="pre">classmethod</span> </em><span class="sig-name descname"><span class="pre">queue</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">group</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">states</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">custom</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">{}</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#records.monolith.KtOrderContinuous.queue" title="Permalink to this definition">¶</a></dt>
 <dd><p>Queue</p>
 <p>Returns all pending, unclaimed, continuous async orders in the given
 states</p>
@@ -1314,8 +1360,8 @@ states</p>
 </dd></dl>
 
 <dl class="py method">
-<dt id="records.monolith.KtOrderContinuous.queueCount">
-<em class="property"><span class="pre">classmethod</span> </em><code class="sig-name descname"><span class="pre">queueCount</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">group</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">encounter</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">states</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">hide_claimed</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">group_by</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">custom</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">{}</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#records.monolith.KtOrderContinuous.queueCount" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="records.monolith.KtOrderContinuous.queueCount">
+<em class="property"><span class="pre">classmethod</span> </em><span class="sig-name descname"><span class="pre">queueCount</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">group</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">encounter</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">states</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">hide_claimed</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">group_by</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">custom</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">{}</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#records.monolith.KtOrderContinuous.queueCount" title="Permalink to this definition">¶</a></dt>
 <dd><p>Queue Count</p>
 <p>Returns the count of pending orders</p>
 <dl class="field-list simple">
@@ -1338,8 +1384,8 @@ states</p>
 </dd></dl>
 
 <dl class="py method">
-<dt id="records.monolith.KtOrderContinuous.queueCsr">
-<em class="property"><span class="pre">classmethod</span> </em><code class="sig-name descname"><span class="pre">queueCsr</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">custom</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">{}</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#records.monolith.KtOrderContinuous.queueCsr" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="records.monolith.KtOrderContinuous.queueCsr">
+<em class="property"><span class="pre">classmethod</span> </em><span class="sig-name descname"><span class="pre">queueCsr</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">custom</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">{}</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#records.monolith.KtOrderContinuous.queueCsr" title="Permalink to this definition">¶</a></dt>
 <dd><p>Queue CSR</p>
 <p>Returns all pending, unclaimed, meds not working orders</p>
 <dl class="field-list simple">
@@ -1355,8 +1401,8 @@ states</p>
 </dd></dl>
 
 <dl class="py method">
-<dt id="records.monolith.KtOrderContinuous.queueCsrCount">
-<em class="property"><span class="pre">classmethod</span> </em><code class="sig-name descname"><span class="pre">queueCsrCount</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">custom</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">{}</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#records.monolith.KtOrderContinuous.queueCsrCount" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="records.monolith.KtOrderContinuous.queueCsrCount">
+<em class="property"><span class="pre">classmethod</span> </em><span class="sig-name descname"><span class="pre">queueCsrCount</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">custom</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">{}</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#records.monolith.KtOrderContinuous.queueCsrCount" title="Permalink to this definition">¶</a></dt>
 <dd><p>Queue CSR Count</p>
 <p>Returns the count of all pending, unclaimed, meds not working orders</p>
 <dl class="field-list simple">
@@ -1374,14 +1420,14 @@ states</p>
 </dd></dl>
 
 <dl class="py class">
-<dt id="records.monolith.SMSPatientWorkflow">
-<em class="property"><span class="pre">class</span> </em><code class="sig-prename descclassname"><span class="pre">records.monolith.</span></code><code class="sig-name descname"><span class="pre">SMSPatientWorkflow</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">record</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">{}</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">custom</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">{}</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#records.monolith.SMSPatientWorkflow" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="records.monolith.SMSPatientWorkflow">
+<em class="property"><span class="pre">class</span> </em><span class="sig-prename descclassname"><span class="pre">records.monolith.</span></span><span class="sig-name descname"><span class="pre">SMSPatientWorkflow</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">record</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">{}</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">custom</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">{}</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#records.monolith.SMSPatientWorkflow" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">RestOC.Record_MySQL.Record</span></code></p>
 <p>SMS Patient Workflow</p>
 <p>Represents the current state of a new customer in the sms workflow</p>
 <dl class="py method">
-<dt id="records.monolith.SMSPatientWorkflow.config">
-<em class="property"><span class="pre">classmethod</span> </em><code class="sig-name descname"><span class="pre">config</span></code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#records.monolith.SMSPatientWorkflow.config" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="records.monolith.SMSPatientWorkflow.config">
+<em class="property"><span class="pre">classmethod</span> </em><span class="sig-name descname"><span class="pre">config</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#records.monolith.SMSPatientWorkflow.config" title="Permalink to this definition">¶</a></dt>
 <dd><p>Config</p>
 <p>Returns the configuration data associated with the record type</p>
 <dl class="field-list simple">
@@ -1394,13 +1440,13 @@ states</p>
 </dd></dl>
 
 <dl class="py class">
-<dt id="records.monolith.SMSStop">
-<em class="property"><span class="pre">class</span> </em><code class="sig-prename descclassname"><span class="pre">records.monolith.</span></code><code class="sig-name descname"><span class="pre">SMSStop</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">record</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">{}</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">custom</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">{}</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#records.monolith.SMSStop" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="records.monolith.SMSStop">
+<em class="property"><span class="pre">class</span> </em><span class="sig-prename descclassname"><span class="pre">records.monolith.</span></span><span class="sig-name descname"><span class="pre">SMSStop</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">record</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">{}</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">custom</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">{}</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#records.monolith.SMSStop" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">RestOC.Record_MySQL.Record</span></code></p>
 <p>Represents a customer phone number that should be blocked</p>
 <dl class="py method">
-<dt id="records.monolith.SMSStop.config">
-<em class="property"><span class="pre">classmethod</span> </em><code class="sig-name descname"><span class="pre">config</span></code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#records.monolith.SMSStop.config" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="records.monolith.SMSStop.config">
+<em class="property"><span class="pre">classmethod</span> </em><span class="sig-name descname"><span class="pre">config</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#records.monolith.SMSStop.config" title="Permalink to this definition">¶</a></dt>
 <dd><p>Config</p>
 <p>Returns the configuration data associated with the record type</p>
 <dl class="field-list simple">
@@ -1413,13 +1459,13 @@ states</p>
 </dd></dl>
 
 <dl class="py class">
-<dt id="records.monolith.SMSStopChange">
-<em class="property"><span class="pre">class</span> </em><code class="sig-prename descclassname"><span class="pre">records.monolith.</span></code><code class="sig-name descname"><span class="pre">SMSStopChange</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">record</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">{}</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">custom</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">{}</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#records.monolith.SMSStopChange" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="records.monolith.SMSStopChange">
+<em class="property"><span class="pre">class</span> </em><span class="sig-prename descclassname"><span class="pre">records.monolith.</span></span><span class="sig-name descname"><span class="pre">SMSStopChange</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">record</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">{}</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">custom</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">{}</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#records.monolith.SMSStopChange" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">RestOC.Record_MySQL.Record</span></code></p>
 <p>Represents a change in the STOP/START state of a customer phone number</p>
 <dl class="py method">
-<dt id="records.monolith.SMSStopChange.config">
-<em class="property"><span class="pre">classmethod</span> </em><code class="sig-name descname"><span class="pre">config</span></code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#records.monolith.SMSStopChange.config" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="records.monolith.SMSStopChange.config">
+<em class="property"><span class="pre">classmethod</span> </em><span class="sig-name descname"><span class="pre">config</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#records.monolith.SMSStopChange.config" title="Permalink to this definition">¶</a></dt>
 <dd><p>Config</p>
 <p>Returns the configuration data associated with the record type</p>
 <dl class="field-list simple">
@@ -1432,13 +1478,13 @@ states</p>
 </dd></dl>
 
 <dl class="py class">
-<dt id="records.monolith.SMSTemplate">
-<em class="property"><span class="pre">class</span> </em><code class="sig-prename descclassname"><span class="pre">records.monolith.</span></code><code class="sig-name descname"><span class="pre">SMSTemplate</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">record</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">{}</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">custom</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">{}</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#records.monolith.SMSTemplate" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="records.monolith.SMSTemplate">
+<em class="property"><span class="pre">class</span> </em><span class="sig-prename descclassname"><span class="pre">records.monolith.</span></span><span class="sig-name descname"><span class="pre">SMSTemplate</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">record</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">{}</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">custom</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">{}</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#records.monolith.SMSTemplate" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">RestOC.Record_MySQL.Record</span></code></p>
 <p>Represents an SMS template for the workflow</p>
 <dl class="py method">
-<dt id="records.monolith.SMSTemplate.config">
-<em class="property"><span class="pre">classmethod</span> </em><code class="sig-name descname"><span class="pre">config</span></code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#records.monolith.SMSTemplate.config" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="records.monolith.SMSTemplate.config">
+<em class="property"><span class="pre">classmethod</span> </em><span class="sig-name descname"><span class="pre">config</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#records.monolith.SMSTemplate.config" title="Permalink to this definition">¶</a></dt>
 <dd><p>Config</p>
 <p>Returns the configuration data associated with the record type</p>
 <dl class="field-list simple">
@@ -1451,13 +1497,13 @@ states</p>
 </dd></dl>
 
 <dl class="py class">
-<dt id="records.monolith.ShippingInfo">
-<em class="property"><span class="pre">class</span> </em><code class="sig-prename descclassname"><span class="pre">records.monolith.</span></code><code class="sig-name descname"><span class="pre">ShippingInfo</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">record</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">{}</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">custom</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">{}</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#records.monolith.ShippingInfo" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="records.monolith.ShippingInfo">
+<em class="property"><span class="pre">class</span> </em><span class="sig-prename descclassname"><span class="pre">records.monolith.</span></span><span class="sig-name descname"><span class="pre">ShippingInfo</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">record</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">{}</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">custom</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">{}</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#records.monolith.ShippingInfo" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">RestOC.Record_MySQL.Record</span></code></p>
 <p>Represents a tracking code associated with a customer</p>
 <dl class="py method">
-<dt id="records.monolith.ShippingInfo.config">
-<em class="property"><span class="pre">classmethod</span> </em><code class="sig-name descname"><span class="pre">config</span></code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#records.monolith.ShippingInfo.config" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="records.monolith.ShippingInfo.config">
+<em class="property"><span class="pre">classmethod</span> </em><span class="sig-name descname"><span class="pre">config</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#records.monolith.ShippingInfo.config" title="Permalink to this definition">¶</a></dt>
 <dd><p>Config</p>
 <p>Returns the configuration data associated with the record type</p>
 <dl class="field-list simple">
@@ -1470,14 +1516,14 @@ states</p>
 </dd></dl>
 
 <dl class="py class">
-<dt id="records.monolith.SmpCustomer">
-<em class="property"><span class="pre">class</span> </em><code class="sig-prename descclassname"><span class="pre">records.monolith.</span></code><code class="sig-name descname"><span class="pre">SmpCustomer</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">record</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">{}</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">custom</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">{}</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#records.monolith.SmpCustomer" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="records.monolith.SmpCustomer">
+<em class="property"><span class="pre">class</span> </em><span class="sig-prename descclassname"><span class="pre">records.monolith.</span></span><span class="sig-name descname"><span class="pre">SmpCustomer</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">record</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">{}</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">custom</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">{}</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#records.monolith.SmpCustomer" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">RestOC.Record_MySQL.Record</span></code></p>
 <p>Represents, as far as I can see, duplicate data that’s in the KtCustomer
 table. This entire DB looks like it was made by code monkeys.</p>
 <dl class="py method">
-<dt id="records.monolith.SmpCustomer.byCustomerDetails">
-<em class="property"><span class="pre">classmethod</span> </em><code class="sig-name descname"><span class="pre">byCustomerDetails</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">last_name</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">email</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">phone</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">custom</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">{}</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#records.monolith.SmpCustomer.byCustomerDetails" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="records.monolith.SmpCustomer.byCustomerDetails">
+<em class="property"><span class="pre">classmethod</span> </em><span class="sig-name descname"><span class="pre">byCustomerDetails</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">last_name</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">email</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">phone</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">custom</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">{}</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#records.monolith.SmpCustomer.byCustomerDetails" title="Permalink to this definition">¶</a></dt>
 <dd><p>By Customer ID</p>
 <p>Finds the record by joining with the kt_customer table</p>
 <dl class="field-list simple">
@@ -1498,8 +1544,8 @@ table. This entire DB looks like it was made by code monkeys.</p>
 </dd></dl>
 
 <dl class="py method">
-<dt id="records.monolith.SmpCustomer.byCustomerId">
-<em class="property"><span class="pre">classmethod</span> </em><code class="sig-name descname"><span class="pre">byCustomerId</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">customer_id</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">custom</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">{}</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#records.monolith.SmpCustomer.byCustomerId" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="records.monolith.SmpCustomer.byCustomerId">
+<em class="property"><span class="pre">classmethod</span> </em><span class="sig-name descname"><span class="pre">byCustomerId</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">customer_id</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">custom</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">{}</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#records.monolith.SmpCustomer.byCustomerId" title="Permalink to this definition">¶</a></dt>
 <dd><p>By Customer ID</p>
 <p>Finds the record by joining with the kt_customer table</p>
 <dl class="field-list simple">
@@ -1518,8 +1564,8 @@ table. This entire DB looks like it was made by code monkeys.</p>
 </dd></dl>
 
 <dl class="py method">
-<dt id="records.monolith.SmpCustomer.config">
-<em class="property"><span class="pre">classmethod</span> </em><code class="sig-name descname"><span class="pre">config</span></code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#records.monolith.SmpCustomer.config" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="records.monolith.SmpCustomer.config">
+<em class="property"><span class="pre">classmethod</span> </em><span class="sig-name descname"><span class="pre">config</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#records.monolith.SmpCustomer.config" title="Permalink to this definition">¶</a></dt>
 <dd><p>Config</p>
 <p>Returns the configuration data associated with the record type</p>
 <dl class="field-list simple">
@@ -1532,14 +1578,14 @@ table. This entire DB looks like it was made by code monkeys.</p>
 </dd></dl>
 
 <dl class="py class">
-<dt id="records.monolith.SmpImage">
-<em class="property"><span class="pre">class</span> </em><code class="sig-prename descclassname"><span class="pre">records.monolith.</span></code><code class="sig-name descname"><span class="pre">SmpImage</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">record</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">{}</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">custom</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">{}</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#records.monolith.SmpImage" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="records.monolith.SmpImage">
+<em class="property"><span class="pre">class</span> </em><span class="sig-prename descclassname"><span class="pre">records.monolith.</span></span><span class="sig-name descname"><span class="pre">SmpImage</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">record</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">{}</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">custom</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">{}</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#records.monolith.SmpImage" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">RestOC.Record_MySQL.Record</span></code></p>
 <p>Represents and stores images, which is just about the dumbest fucking thing
 imaginable. What kind of idiot stores images in a DB?</p>
 <dl class="py method">
-<dt id="records.monolith.SmpImage.config">
-<em class="property"><span class="pre">classmethod</span> </em><code class="sig-name descname"><span class="pre">config</span></code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#records.monolith.SmpImage.config" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="records.monolith.SmpImage.config">
+<em class="property"><span class="pre">classmethod</span> </em><span class="sig-name descname"><span class="pre">config</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#records.monolith.SmpImage.config" title="Permalink to this definition">¶</a></dt>
 <dd><p>Config</p>
 <p>Returns the configuration data associated with the record type</p>
 <dl class="field-list simple">
@@ -1552,13 +1598,13 @@ imaginable. What kind of idiot stores images in a DB?</p>
 </dd></dl>
 
 <dl class="py class">
-<dt id="records.monolith.SmpNote">
-<em class="property"><span class="pre">class</span> </em><code class="sig-prename descclassname"><span class="pre">records.monolith.</span></code><code class="sig-name descname"><span class="pre">SmpNote</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">record</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">{}</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">custom</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">{}</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#records.monolith.SmpNote" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="records.monolith.SmpNote">
+<em class="property"><span class="pre">class</span> </em><span class="sig-prename descclassname"><span class="pre">records.monolith.</span></span><span class="sig-name descname"><span class="pre">SmpNote</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">record</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">{}</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">custom</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">{}</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#records.monolith.SmpNote" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">RestOC.Record_MySQL.Record</span></code></p>
 <p>Represents an internal note associated with a customer</p>
 <dl class="py method">
-<dt id="records.monolith.SmpNote.byCustomer">
-<em class="property"><span class="pre">classmethod</span> </em><code class="sig-name descname"><span class="pre">byCustomer</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">customer_id</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">custom</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">{}</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#records.monolith.SmpNote.byCustomer" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="records.monolith.SmpNote.byCustomer">
+<em class="property"><span class="pre">classmethod</span> </em><span class="sig-name descname"><span class="pre">byCustomer</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">customer_id</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">custom</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">{}</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#records.monolith.SmpNote.byCustomer" title="Permalink to this definition">¶</a></dt>
 <dd><p>By Customer</p>
 <p>Fetches all notes associated with the customer’s orders</p>
 <dl class="field-list simple">
@@ -1577,8 +1623,28 @@ imaginable. What kind of idiot stores images in a DB?</p>
 </dd></dl>
 
 <dl class="py method">
-<dt id="records.monolith.SmpNote.config">
-<em class="property"><span class="pre">classmethod</span> </em><code class="sig-name descname"><span class="pre">config</span></code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#records.monolith.SmpNote.config" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="records.monolith.SmpNote.byIDs">
+<em class="property"><span class="pre">classmethod</span> </em><span class="sig-name descname"><span class="pre">byIDs</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">ids</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">custom</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">{}</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#records.monolith.SmpNote.byIDs" title="Permalink to this definition">¶</a></dt>
+<dd><p>By IDs</p>
+<p>Fetches all notes associated with the given IDs</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>ids</strong> (<em>int</em><em>[</em><em>]</em>) – The list of IDs to fetch</p></li>
+<li><p><strong>custom</strong> (<em>dict</em>) – Custom Host and DB info
+‘host’ the name of the host to get/set data on
+‘append’ optional postfix for dynamic DBs</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>list</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="records.monolith.SmpNote.config">
+<em class="property"><span class="pre">classmethod</span> </em><span class="sig-name descname"><span class="pre">config</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#records.monolith.SmpNote.config" title="Permalink to this definition">¶</a></dt>
 <dd><p>Config</p>
 <p>Returns the configuration data associated with the record type</p>
 <dl class="field-list simple">
@@ -1589,8 +1655,8 @@ imaginable. What kind of idiot stores images in a DB?</p>
 </dd></dl>
 
 <dl class="py method">
-<dt id="records.monolith.SmpNote.newNotes">
-<em class="property"><span class="pre">classmethod</span> </em><code class="sig-name descname"><span class="pre">newNotes</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">ids</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ts</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ignore</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">custom</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">{}</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#records.monolith.SmpNote.newNotes" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="records.monolith.SmpNote.newNotes">
+<em class="property"><span class="pre">classmethod</span> </em><span class="sig-name descname"><span class="pre">newNotes</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">ids</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ts</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ignore</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">custom</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">{}</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#records.monolith.SmpNote.newNotes" title="Permalink to this definition">¶</a></dt>
 <dd><p>New Notes</p>
 <p>Returns if there’s any new notes associated with the given customer
 IDs</p>
@@ -1614,13 +1680,13 @@ IDs</p>
 </dd></dl>
 
 <dl class="py class">
-<dt id="records.monolith.SmpOrderStatus">
-<em class="property"><span class="pre">class</span> </em><code class="sig-prename descclassname"><span class="pre">records.monolith.</span></code><code class="sig-name descname"><span class="pre">SmpOrderStatus</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">record</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">{}</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">custom</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">{}</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#records.monolith.SmpOrderStatus" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="records.monolith.SmpOrderStatus">
+<em class="property"><span class="pre">class</span> </em><span class="sig-prename descclassname"><span class="pre">records.monolith.</span></span><span class="sig-name descname"><span class="pre">SmpOrderStatus</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">record</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">{}</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">custom</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">{}</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#records.monolith.SmpOrderStatus" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">RestOC.Record_MySQL.Record</span></code></p>
 <p>Represents status info on a specific order</p>
 <dl class="py method">
-<dt id="records.monolith.SmpOrderStatus.config">
-<em class="property"><span class="pre">classmethod</span> </em><code class="sig-name descname"><span class="pre">config</span></code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#records.monolith.SmpOrderStatus.config" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="records.monolith.SmpOrderStatus.config">
+<em class="property"><span class="pre">classmethod</span> </em><span class="sig-name descname"><span class="pre">config</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#records.monolith.SmpOrderStatus.config" title="Permalink to this definition">¶</a></dt>
 <dd><p>Config</p>
 <p>Returns the configuration data associated with the record type</p>
 <dl class="field-list simple">
@@ -1631,8 +1697,8 @@ IDs</p>
 </dd></dl>
 
 <dl class="py method">
-<dt id="records.monolith.SmpOrderStatus.latest">
-<em class="property"><span class="pre">classmethod</span> </em><code class="sig-name descname"><span class="pre">latest</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">customer_id</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">custom</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">{}</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#records.monolith.SmpOrderStatus.latest" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="records.monolith.SmpOrderStatus.latest">
+<em class="property"><span class="pre">classmethod</span> </em><span class="sig-name descname"><span class="pre">latest</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">customer_id</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">custom</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">{}</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#records.monolith.SmpOrderStatus.latest" title="Permalink to this definition">¶</a></dt>
 <dd><p>Latest</p>
 <p>Fetches the order status for the most recent order by customer</p>
 <dl class="field-list simple">
@@ -1653,13 +1719,13 @@ IDs</p>
 </dd></dl>
 
 <dl class="py class">
-<dt id="records.monolith.SmpState">
-<em class="property"><span class="pre">class</span> </em><code class="sig-prename descclassname"><span class="pre">records.monolith.</span></code><code class="sig-name descname"><span class="pre">SmpState</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">record</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">{}</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">custom</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">{}</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#records.monolith.SmpState" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="records.monolith.SmpState">
+<em class="property"><span class="pre">class</span> </em><span class="sig-prename descclassname"><span class="pre">records.monolith.</span></span><span class="sig-name descname"><span class="pre">SmpState</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">record</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">{}</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">custom</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">{}</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#records.monolith.SmpState" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">RestOC.Record_MySQL.Record</span></code></p>
 <p>Represents states and their encounter types</p>
 <dl class="py method">
-<dt id="records.monolith.SmpState.config">
-<em class="property"><span class="pre">classmethod</span> </em><code class="sig-name descname"><span class="pre">config</span></code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#records.monolith.SmpState.config" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="records.monolith.SmpState.config">
+<em class="property"><span class="pre">classmethod</span> </em><span class="sig-name descname"><span class="pre">config</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#records.monolith.SmpState.config" title="Permalink to this definition">¶</a></dt>
 <dd><p>Config</p>
 <p>Returns the configuration data associated with the record type</p>
 <dl class="field-list simple">
@@ -1672,13 +1738,13 @@ IDs</p>
 </dd></dl>
 
 <dl class="py class">
-<dt id="records.monolith.TfAnswer">
-<em class="property"><span class="pre">class</span> </em><code class="sig-prename descclassname"><span class="pre">records.monolith.</span></code><code class="sig-name descname"><span class="pre">TfAnswer</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">record</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">{}</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">custom</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">{}</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#records.monolith.TfAnswer" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="records.monolith.TfAnswer">
+<em class="property"><span class="pre">class</span> </em><span class="sig-prename descclassname"><span class="pre">records.monolith.</span></span><span class="sig-name descname"><span class="pre">TfAnswer</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">record</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">{}</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">custom</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">{}</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#records.monolith.TfAnswer" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">RestOC.Record_MySQL.Record</span></code></p>
 <p>Represents a customer phone number that should be blocked</p>
 <dl class="py method">
-<dt id="records.monolith.TfAnswer.allergies">
-<em class="property"><span class="pre">classmethod</span> </em><code class="sig-name descname"><span class="pre">allergies</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">landing_id</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">custom</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">{}</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#records.monolith.TfAnswer.allergies" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="records.monolith.TfAnswer.allergies">
+<em class="property"><span class="pre">classmethod</span> </em><span class="sig-name descname"><span class="pre">allergies</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">landing_id</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">custom</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">{}</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#records.monolith.TfAnswer.allergies" title="Permalink to this definition">¶</a></dt>
 <dd><p>Allergies</p>
 <p>Finds and returns the allergies answer</p>
 <dl class="field-list simple">
@@ -1697,8 +1763,8 @@ IDs</p>
 </dd></dl>
 
 <dl class="py method">
-<dt id="records.monolith.TfAnswer.config">
-<em class="property"><span class="pre">classmethod</span> </em><code class="sig-name descname"><span class="pre">config</span></code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#records.monolith.TfAnswer.config" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="records.monolith.TfAnswer.config">
+<em class="property"><span class="pre">classmethod</span> </em><span class="sig-name descname"><span class="pre">config</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#records.monolith.TfAnswer.config" title="Permalink to this definition">¶</a></dt>
 <dd><p>Config</p>
 <p>Returns the configuration data associated with the record type</p>
 <dl class="field-list simple">
@@ -1709,8 +1775,8 @@ IDs</p>
 </dd></dl>
 
 <dl class="py method">
-<dt id="records.monolith.TfAnswer.dob">
-<em class="property"><span class="pre">classmethod</span> </em><code class="sig-name descname"><span class="pre">dob</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">landing_id</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">custom</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">{}</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#records.monolith.TfAnswer.dob" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="records.monolith.TfAnswer.dob">
+<em class="property"><span class="pre">classmethod</span> </em><span class="sig-name descname"><span class="pre">dob</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">landing_id</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">custom</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">{}</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#records.monolith.TfAnswer.dob" title="Permalink to this definition">¶</a></dt>
 <dd><p>DOB</p>
 <p>Finds and returns the date of birth answer</p>
 <dl class="field-list simple">
@@ -1731,13 +1797,13 @@ IDs</p>
 </dd></dl>
 
 <dl class="py class">
-<dt id="records.monolith.TfLanding">
-<em class="property"><span class="pre">class</span> </em><code class="sig-prename descclassname"><span class="pre">records.monolith.</span></code><code class="sig-name descname"><span class="pre">TfLanding</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">record</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">{}</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">custom</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">{}</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#records.monolith.TfLanding" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="records.monolith.TfLanding">
+<em class="property"><span class="pre">class</span> </em><span class="sig-prename descclassname"><span class="pre">records.monolith.</span></span><span class="sig-name descname"><span class="pre">TfLanding</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">record</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">{}</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">custom</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">{}</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#records.monolith.TfLanding" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">RestOC.Record_MySQL.Record</span></code></p>
 <p>Represents a customer phone number that should be blocked</p>
 <dl class="py method">
-<dt id="records.monolith.TfLanding.config">
-<em class="property"><span class="pre">classmethod</span> </em><code class="sig-name descname"><span class="pre">config</span></code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#records.monolith.TfLanding.config" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="records.monolith.TfLanding.config">
+<em class="property"><span class="pre">classmethod</span> </em><span class="sig-name descname"><span class="pre">config</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#records.monolith.TfLanding.config" title="Permalink to this definition">¶</a></dt>
 <dd><p>Config</p>
 <p>Returns the configuration data associated with the record type</p>
 <dl class="field-list simple">
@@ -1748,8 +1814,8 @@ IDs</p>
 </dd></dl>
 
 <dl class="py method">
-<dt id="records.monolith.TfLanding.find">
-<em class="property"><span class="pre">classmethod</span> </em><code class="sig-name descname"><span class="pre">find</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">last_name</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">email</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">phone</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">form</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">custom</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">{}</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#records.monolith.TfLanding.find" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="records.monolith.TfLanding.find">
+<em class="property"><span class="pre">classmethod</span> </em><span class="sig-name descname"><span class="pre">find</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">last_name</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">email</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">phone</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">form</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">custom</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">{}</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#records.monolith.TfLanding.find" title="Permalink to this definition">¶</a></dt>
 <dd><p>Find</p>
 <p>Attempts to find landings using customer info</p>
 <dl class="field-list simple">
@@ -1773,13 +1839,13 @@ IDs</p>
 </dd></dl>
 
 <dl class="py class">
-<dt id="records.monolith.TfQuestion">
-<em class="property"><span class="pre">class</span> </em><code class="sig-prename descclassname"><span class="pre">records.monolith.</span></code><code class="sig-name descname"><span class="pre">TfQuestion</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">record</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">{}</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">custom</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">{}</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#records.monolith.TfQuestion" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="records.monolith.TfQuestion">
+<em class="property"><span class="pre">class</span> </em><span class="sig-prename descclassname"><span class="pre">records.monolith.</span></span><span class="sig-name descname"><span class="pre">TfQuestion</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">record</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">{}</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">custom</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">{}</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#records.monolith.TfQuestion" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">RestOC.Record_MySQL.Record</span></code></p>
 <p>Represents a customer phone number that should be blocked</p>
 <dl class="py method">
-<dt id="records.monolith.TfQuestion.config">
-<em class="property"><span class="pre">classmethod</span> </em><code class="sig-name descname"><span class="pre">config</span></code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#records.monolith.TfQuestion.config" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="records.monolith.TfQuestion.config">
+<em class="property"><span class="pre">classmethod</span> </em><span class="sig-name descname"><span class="pre">config</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#records.monolith.TfQuestion.config" title="Permalink to this definition">¶</a></dt>
 <dd><p>Config</p>
 <p>Returns the configuration data associated with the record type</p>
 <dl class="field-list simple">
@@ -1792,13 +1858,13 @@ IDs</p>
 </dd></dl>
 
 <dl class="py class">
-<dt id="records.monolith.TfQuestionOption">
-<em class="property"><span class="pre">class</span> </em><code class="sig-prename descclassname"><span class="pre">records.monolith.</span></code><code class="sig-name descname"><span class="pre">TfQuestionOption</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">record</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">{}</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">custom</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">{}</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#records.monolith.TfQuestionOption" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="records.monolith.TfQuestionOption">
+<em class="property"><span class="pre">class</span> </em><span class="sig-prename descclassname"><span class="pre">records.monolith.</span></span><span class="sig-name descname"><span class="pre">TfQuestionOption</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">record</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">{}</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">custom</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">{}</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#records.monolith.TfQuestionOption" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">RestOC.Record_MySQL.Record</span></code></p>
 <p>Represents a customer phone number that should be blocked</p>
 <dl class="py method">
-<dt id="records.monolith.TfQuestionOption.config">
-<em class="property"><span class="pre">classmethod</span> </em><code class="sig-name descname"><span class="pre">config</span></code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#records.monolith.TfQuestionOption.config" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="records.monolith.TfQuestionOption.config">
+<em class="property"><span class="pre">classmethod</span> </em><span class="sig-name descname"><span class="pre">config</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#records.monolith.TfQuestionOption.config" title="Permalink to this definition">¶</a></dt>
 <dd><p>Config</p>
 <p>Returns the configuration data associated with the record type</p>
 <dl class="field-list simple">
@@ -1811,13 +1877,13 @@ IDs</p>
 </dd></dl>
 
 <dl class="py class">
-<dt id="records.monolith.User">
-<em class="property"><span class="pre">class</span> </em><code class="sig-prename descclassname"><span class="pre">records.monolith.</span></code><code class="sig-name descname"><span class="pre">User</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">record</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">{}</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">custom</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">{}</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#records.monolith.User" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="records.monolith.User">
+<em class="property"><span class="pre">class</span> </em><span class="sig-prename descclassname"><span class="pre">records.monolith.</span></span><span class="sig-name descname"><span class="pre">User</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">record</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">{}</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">custom</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">{}</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#records.monolith.User" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">RestOC.Record_MySQL.Record</span></code></p>
 <p>Represents a Memo user</p>
 <dl class="py method">
-<dt id="records.monolith.User.config">
-<em class="property"><span class="pre">classmethod</span> </em><code class="sig-name descname"><span class="pre">config</span></code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#records.monolith.User.config" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="records.monolith.User.config">
+<em class="property"><span class="pre">classmethod</span> </em><span class="sig-name descname"><span class="pre">config</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#records.monolith.User.config" title="Permalink to this definition">¶</a></dt>
 <dd><p>Config</p>
 <p>Returns the configuration data associated with the record type</p>
 <dl class="field-list simple">
@@ -1828,8 +1894,8 @@ IDs</p>
 </dd></dl>
 
 <dl class="py method">
-<dt id="records.monolith.User.passwordStrength">
-<em class="property"><span class="pre">classmethod</span> </em><code class="sig-name descname"><span class="pre">passwordStrength</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">passwd</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#records.monolith.User.passwordStrength" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="records.monolith.User.passwordStrength">
+<em class="property"><span class="pre">classmethod</span> </em><span class="sig-name descname"><span class="pre">passwordStrength</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">passwd</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#records.monolith.User.passwordStrength" title="Permalink to this definition">¶</a></dt>
 <dd><p>Password Strength</p>
 <p>Returns true if a password is secure enough</p>
 <dl class="field-list simple">
@@ -1845,8 +1911,8 @@ IDs</p>
 </dd></dl>
 
 <dl class="py function">
-<dt id="records.monolith.init">
-<code class="sig-prename descclassname"><span class="pre">records.monolith.</span></code><code class="sig-name descname"><span class="pre">init</span></code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#records.monolith.init" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="records.monolith.init">
+<span class="sig-prename descclassname"><span class="pre">records.monolith.</span></span><span class="sig-name descname"><span class="pre">init</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#records.monolith.init" title="Permalink to this definition">¶</a></dt>
 <dd><p>Ugly Hack</p>
 <p>Need to find a better way to do this</p>
 </dd></dl>
