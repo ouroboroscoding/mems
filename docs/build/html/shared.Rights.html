@@ -13,6 +13,8 @@
   
   <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
   <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+  <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+  <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
 
   
   
@@ -29,6 +31,7 @@
   
     
       <script type="text/javascript" id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
+        <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
         <script src="_static/jquery.js"></script>
         <script src="_static/underscore.js"></script>
         <script src="_static/doctools.js"></script>
@@ -157,44 +160,44 @@
 <p>Permission Rights</p>
 <p>Defines for Rights types</p>
 <dl class="py data">
-<dt id="shared.Rights.ALL">
-<code class="sig-prename descclassname"><span class="pre">shared.Rights.</span></code><code class="sig-name descname"><span class="pre">ALL</span></code><em class="property"> <span class="pre">=</span> <span class="pre">15</span></em><a class="headerlink" href="#shared.Rights.ALL" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="shared.Rights.ALL">
+<span class="sig-prename descclassname"><span class="pre">shared.Rights.</span></span><span class="sig-name descname"><span class="pre">ALL</span></span><em class="property"> <span class="pre">=</span> <span class="pre">15</span></em><a class="headerlink" href="#shared.Rights.ALL" title="Permalink to this definition">¶</a></dt>
 <dd><p>Allowed to CRUD</p>
 </dd></dl>
 
 <dl class="py data">
-<dt id="shared.Rights.CREATE">
-<code class="sig-prename descclassname"><span class="pre">shared.Rights.</span></code><code class="sig-name descname"><span class="pre">CREATE</span></code><em class="property"> <span class="pre">=</span> <span class="pre">4</span></em><a class="headerlink" href="#shared.Rights.CREATE" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="shared.Rights.CREATE">
+<span class="sig-prename descclassname"><span class="pre">shared.Rights.</span></span><span class="sig-name descname"><span class="pre">CREATE</span></span><em class="property"> <span class="pre">=</span> <span class="pre">4</span></em><a class="headerlink" href="#shared.Rights.CREATE" title="Permalink to this definition">¶</a></dt>
 <dd><p>Allowed to create records</p>
 </dd></dl>
 
 <dl class="py data">
-<dt id="shared.Rights.DELETE">
-<code class="sig-prename descclassname"><span class="pre">shared.Rights.</span></code><code class="sig-name descname"><span class="pre">DELETE</span></code><em class="property"> <span class="pre">=</span> <span class="pre">8</span></em><a class="headerlink" href="#shared.Rights.DELETE" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="shared.Rights.DELETE">
+<span class="sig-prename descclassname"><span class="pre">shared.Rights.</span></span><span class="sig-name descname"><span class="pre">DELETE</span></span><em class="property"> <span class="pre">=</span> <span class="pre">8</span></em><a class="headerlink" href="#shared.Rights.DELETE" title="Permalink to this definition">¶</a></dt>
 <dd><p>Allowed to delete records</p>
 </dd></dl>
 
 <dl class="py data">
-<dt id="shared.Rights.INVALID">
-<code class="sig-prename descclassname"><span class="pre">shared.Rights.</span></code><code class="sig-name descname"><span class="pre">INVALID</span></code><em class="property"> <span class="pre">=</span> <span class="pre">1000</span></em><a class="headerlink" href="#shared.Rights.INVALID" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="shared.Rights.INVALID">
+<span class="sig-prename descclassname"><span class="pre">shared.Rights.</span></span><span class="sig-name descname"><span class="pre">INVALID</span></span><em class="property"> <span class="pre">=</span> <span class="pre">1000</span></em><a class="headerlink" href="#shared.Rights.INVALID" title="Permalink to this definition">¶</a></dt>
 <dd><p>REST invalid rights error code</p>
 </dd></dl>
 
 <dl class="py data">
-<dt id="shared.Rights.READ">
-<code class="sig-prename descclassname"><span class="pre">shared.Rights.</span></code><code class="sig-name descname"><span class="pre">READ</span></code><em class="property"> <span class="pre">=</span> <span class="pre">1</span></em><a class="headerlink" href="#shared.Rights.READ" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="shared.Rights.READ">
+<span class="sig-prename descclassname"><span class="pre">shared.Rights.</span></span><span class="sig-name descname"><span class="pre">READ</span></span><em class="property"> <span class="pre">=</span> <span class="pre">1</span></em><a class="headerlink" href="#shared.Rights.READ" title="Permalink to this definition">¶</a></dt>
 <dd><p>Allowed to read records</p>
 </dd></dl>
 
 <dl class="py data">
-<dt id="shared.Rights.UPDATE">
-<code class="sig-prename descclassname"><span class="pre">shared.Rights.</span></code><code class="sig-name descname"><span class="pre">UPDATE</span></code><em class="property"> <span class="pre">=</span> <span class="pre">2</span></em><a class="headerlink" href="#shared.Rights.UPDATE" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="shared.Rights.UPDATE">
+<span class="sig-prename descclassname"><span class="pre">shared.Rights.</span></span><span class="sig-name descname"><span class="pre">UPDATE</span></span><em class="property"> <span class="pre">=</span> <span class="pre">2</span></em><a class="headerlink" href="#shared.Rights.UPDATE" title="Permalink to this definition">¶</a></dt>
 <dd><p>Allowed to update records</p>
 </dd></dl>
 
 <dl class="py function">
-<dt id="shared.Rights.check">
-<code class="sig-prename descclassname"><span class="pre">shared.Rights.</span></code><code class="sig-name descname"><span class="pre">check</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">sesh</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">name</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">right</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ident</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">return_failure</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#shared.Rights.check" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="shared.Rights.check">
+<span class="sig-prename descclassname"><span class="pre">shared.Rights.</span></span><span class="sig-name descname"><span class="pre">check</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">sesh</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">name</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">right</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ident</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#shared.Rights.check" title="Permalink to this definition">¶</a></dt>
 <dd><p>Check</p>
 <p>Checks’s if the currently signed in user has the requested right on the
 given permission. If the user has rights, nothing happens, else an
@@ -206,8 +209,6 @@ exception of ResponseException is raised</p>
 <li><p><strong>name</strong> (<em>str</em>) – The name of the permission to check</p></li>
 <li><p><strong>right</strong> (<em>uint</em>) – The right to check for</p></li>
 <li><p><strong>ident</strong> (<em>str</em>) – Optional identifier to check against</p></li>
-<li><p><strong>return_failure</strong> (<em>bool</em>) – If true, return failure instead of raising an
-exception</p></li>
 </ul>
 </dd>
 <dt class="field-even">Raises</dt>
@@ -220,8 +221,8 @@ exception</p></li>
 </dd></dl>
 
 <dl class="py function">
-<dt id="shared.Rights.checkReturn">
-<code class="sig-prename descclassname"><span class="pre">shared.Rights.</span></code><code class="sig-name descname"><span class="pre">checkReturn</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">sesh</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">name</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">right</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ident</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#shared.Rights.checkReturn" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="shared.Rights.checkReturn">
+<span class="sig-prename descclassname"><span class="pre">shared.Rights.</span></span><span class="sig-name descname"><span class="pre">checkReturn</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">sesh</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">name</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">right</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ident</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#shared.Rights.checkReturn" title="Permalink to this definition">¶</a></dt>
 <dd><p>Check Return</p>
 <p>Same as check, but returns the result instead of raising an exception</p>
 <dl class="field-list simple">
@@ -235,6 +236,49 @@ exception</p></li>
 </dd>
 <dt class="field-even">Returns</dt>
 <dd class="field-even"><p>bool</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="shared.Rights.internal">
+<span class="sig-prename descclassname"><span class="pre">shared.Rights.</span></span><span class="sig-name descname"><span class="pre">internal</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#shared.Rights.internal" title="Permalink to this definition">¶</a></dt>
+<dd><p>Internal</p>
+<p>Checks for an internal key and throws an exception if it’s missing or
+invalid</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>data</strong> (<em>dict</em>) – Data to check for internal key</p>
+</dd>
+<dt class="field-even">Raises</dt>
+<dd class="field-even"><p><strong>ResponseException</strong> – </p>
+</dd>
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>None</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="shared.Rights.internalOrCheck">
+<span class="sig-prename descclassname"><span class="pre">shared.Rights.</span></span><span class="sig-name descname"><span class="pre">internalOrCheck</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sesh</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">name</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">right</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ident</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#shared.Rights.internalOrCheck" title="Permalink to this definition">¶</a></dt>
+<dd><p>Internal or Check</p>
+<p>Checks for an internal key, if it wasn’t sent, does a rights check</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>data</strong> (<em>dict</em>) – Data to check for internal key</p></li>
+<li><p><strong>sesh</strong> (<em>RestOC.Sesh._Session</em>) – The current session</p></li>
+<li><p><strong>name</strong> (<em>str</em>) – The name of the permission to check</p></li>
+<li><p><strong>right</strong> (<em>uint</em>) – The right to check for</p></li>
+<li><p><strong>ident</strong> (<em>str</em>) – Optional identifier to check against</p></li>
+</ul>
+</dd>
+<dt class="field-even">Raises</dt>
+<dd class="field-even"><p><strong>ResponseException</strong> – </p>
+</dd>
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>None</p>
 </dd>
 </dl>
 </dd></dl>

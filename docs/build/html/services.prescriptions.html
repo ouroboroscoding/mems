@@ -13,6 +13,8 @@
   
   <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
   <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+  <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+  <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
 
   
   
@@ -29,6 +31,7 @@
   
     
       <script type="text/javascript" id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
+        <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
         <script src="_static/jquery.js"></script>
         <script src="_static/underscore.js"></script>
         <script src="_static/doctools.js"></script>
@@ -157,14 +160,14 @@
 <p>Prescriptions Service</p>
 <p>Handles all Prescriptions requests</p>
 <dl class="py class">
-<dt id="services.prescriptions.Prescriptions">
-<em class="property"><span class="pre">class</span> </em><code class="sig-prename descclassname"><span class="pre">services.prescriptions.</span></code><code class="sig-name descname"><span class="pre">Prescriptions</span></code><a class="headerlink" href="#services.prescriptions.Prescriptions" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="services.prescriptions.Prescriptions">
+<em class="property"><span class="pre">class</span> </em><span class="sig-prename descclassname"><span class="pre">services.prescriptions.</span></span><span class="sig-name descname"><span class="pre">Prescriptions</span></span><a class="headerlink" href="#services.prescriptions.Prescriptions" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">RestOC.Services.Service</span></code></p>
 <p>Prescriptions Service class</p>
 <p>Service for Prescriptions access</p>
 <dl class="py method">
-<dt id="services.prescriptions.Prescriptions.initialise">
-<code class="sig-name descname"><span class="pre">initialise</span></code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#services.prescriptions.Prescriptions.initialise" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="services.prescriptions.Prescriptions.initialise">
+<span class="sig-name descname"><span class="pre">initialise</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#services.prescriptions.Prescriptions.initialise" title="Permalink to this definition">¶</a></dt>
 <dd><p>Initialise</p>
 <p>Initialises the instance and returns itself for chaining</p>
 <dl class="field-list simple">
@@ -175,8 +178,8 @@
 </dd></dl>
 
 <dl class="py method">
-<dt id="services.prescriptions.Prescriptions.install">
-<em class="property"><span class="pre">classmethod</span> </em><code class="sig-name descname"><span class="pre">install</span></code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#services.prescriptions.Prescriptions.install" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="services.prescriptions.Prescriptions.install">
+<em class="property"><span class="pre">classmethod</span> </em><span class="sig-name descname"><span class="pre">install</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#services.prescriptions.Prescriptions.install" title="Permalink to this definition">¶</a></dt>
 <dd><p>Install</p>
 <p>The service’s install method, used to setup storage or other one time
 install configurations</p>
@@ -188,8 +191,8 @@ install configurations</p>
 </dd></dl>
 
 <dl class="py method">
-<dt id="services.prescriptions.Prescriptions.patientMedications_read">
-<code class="sig-name descname"><span class="pre">patientMedications_read</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sesh</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#services.prescriptions.Prescriptions.patientMedications_read" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="services.prescriptions.Prescriptions.patientMedications_read">
+<span class="sig-name descname"><span class="pre">patientMedications_read</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sesh</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#services.prescriptions.Prescriptions.patientMedications_read" title="Permalink to this definition">¶</a></dt>
 <dd><p>Patient Medications</p>
 <p>Returns the list of medication associated with the given patient</p>
 <dl class="field-list simple">
@@ -206,8 +209,8 @@ install configurations</p>
 </dd></dl>
 
 <dl class="py method">
-<dt id="services.prescriptions.Prescriptions.patientPharmacies_read">
-<code class="sig-name descname"><span class="pre">patientPharmacies_read</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sesh</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#services.prescriptions.Prescriptions.patientPharmacies_read" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="services.prescriptions.Prescriptions.patientPharmacies_read">
+<span class="sig-name descname"><span class="pre">patientPharmacies_read</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sesh</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#services.prescriptions.Prescriptions.patientPharmacies_read" title="Permalink to this definition">¶</a></dt>
 <dd><p>Patient Pharmacies</p>
 <p>Returns the pharmacies set for the patient</p>
 <dl class="field-list simple">
@@ -224,8 +227,8 @@ install configurations</p>
 </dd></dl>
 
 <dl class="py method">
-<dt id="services.prescriptions.Prescriptions.patientPharmacy_create">
-<code class="sig-name descname"><span class="pre">patientPharmacy_create</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sesh</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#services.prescriptions.Prescriptions.patientPharmacy_create" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="services.prescriptions.Prescriptions.patientPharmacy_create">
+<span class="sig-name descname"><span class="pre">patientPharmacy_create</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sesh</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#services.prescriptions.Prescriptions.patientPharmacy_create" title="Permalink to this definition">¶</a></dt>
 <dd><p>Patient Pharmacy Create</p>
 <p>Adds a pharmacy to the patient’s favourites</p>
 <dl class="field-list simple">
@@ -242,8 +245,8 @@ install configurations</p>
 </dd></dl>
 
 <dl class="py method">
-<dt id="services.prescriptions.Prescriptions.patientPharmacy_delete">
-<code class="sig-name descname"><span class="pre">patientPharmacy_delete</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sesh</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#services.prescriptions.Prescriptions.patientPharmacy_delete" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="services.prescriptions.Prescriptions.patientPharmacy_delete">
+<span class="sig-name descname"><span class="pre">patientPharmacy_delete</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sesh</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#services.prescriptions.Prescriptions.patientPharmacy_delete" title="Permalink to this definition">¶</a></dt>
 <dd><p>Patient Pharmacy Delete</p>
 <p>Deletes a pharmacy from the patient’s favourites</p>
 <dl class="field-list simple">
@@ -260,8 +263,8 @@ install configurations</p>
 </dd></dl>
 
 <dl class="py method">
-<dt id="services.prescriptions.Prescriptions.patientPrescription_create">
-<code class="sig-name descname"><span class="pre">patientPrescription_create</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sesh</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#services.prescriptions.Prescriptions.patientPrescription_create" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="services.prescriptions.Prescriptions.patientPrescription_create">
+<span class="sig-name descname"><span class="pre">patientPrescription_create</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sesh</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#services.prescriptions.Prescriptions.patientPrescription_create" title="Permalink to this definition">¶</a></dt>
 <dd><p>Patient Prescription Create</p>
 <p>Creates a new prescription for the patient</p>
 <dl class="field-list simple">
@@ -278,8 +281,8 @@ install configurations</p>
 </dd></dl>
 
 <dl class="py method">
-<dt id="services.prescriptions.Prescriptions.patientPrescriptions_read">
-<code class="sig-name descname"><span class="pre">patientPrescriptions_read</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sesh</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#services.prescriptions.Prescriptions.patientPrescriptions_read" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="services.prescriptions.Prescriptions.patientPrescriptions_read">
+<span class="sig-name descname"><span class="pre">patientPrescriptions_read</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sesh</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#services.prescriptions.Prescriptions.patientPrescriptions_read" title="Permalink to this definition">¶</a></dt>
 <dd><p>Patient Prescriptions</p>
 <p>Fetches all prescriptions associated with a patient. Requires internal
 key</p>
@@ -297,8 +300,8 @@ key</p>
 </dd></dl>
 
 <dl class="py method">
-<dt id="services.prescriptions.Prescriptions.patientSso_read">
-<code class="sig-name descname"><span class="pre">patientSso_read</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sesh</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#services.prescriptions.Prescriptions.patientSso_read" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="services.prescriptions.Prescriptions.patientSso_read">
+<span class="sig-name descname"><span class="pre">patientSso_read</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sesh</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#services.prescriptions.Prescriptions.patientSso_read" title="Permalink to this definition">¶</a></dt>
 <dd><p>Patient SSO</p>
 <p>Fetches all a single sign on URL to DoseSpots system</p>
 <dl class="field-list simple">
@@ -315,8 +318,8 @@ key</p>
 </dd></dl>
 
 <dl class="py method">
-<dt id="services.prescriptions.Prescriptions.patient_create">
-<code class="sig-name descname"><span class="pre">patient_create</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sesh</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#services.prescriptions.Prescriptions.patient_create" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="services.prescriptions.Prescriptions.patient_create">
+<span class="sig-name descname"><span class="pre">patient_create</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sesh</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#services.prescriptions.Prescriptions.patient_create" title="Permalink to this definition">¶</a></dt>
 <dd><p>Patient Create</p>
 <p>Creates a new patient and returns the ID</p>
 <dl class="field-list simple">
@@ -333,8 +336,8 @@ key</p>
 </dd></dl>
 
 <dl class="py method">
-<dt id="services.prescriptions.Prescriptions.patient_read">
-<code class="sig-name descname"><span class="pre">patient_read</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sesh</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#services.prescriptions.Prescriptions.patient_read" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="services.prescriptions.Prescriptions.patient_read">
+<span class="sig-name descname"><span class="pre">patient_read</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sesh</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#services.prescriptions.Prescriptions.patient_read" title="Permalink to this definition">¶</a></dt>
 <dd><p>Patient Read</p>
 <p>Fetches patient info</p>
 <dl class="field-list simple">
@@ -351,8 +354,8 @@ key</p>
 </dd></dl>
 
 <dl class="py method">
-<dt id="services.prescriptions.Prescriptions.patient_update">
-<code class="sig-name descname"><span class="pre">patient_update</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sesh</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#services.prescriptions.Prescriptions.patient_update" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="services.prescriptions.Prescriptions.patient_update">
+<span class="sig-name descname"><span class="pre">patient_update</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sesh</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#services.prescriptions.Prescriptions.patient_update" title="Permalink to this definition">¶</a></dt>
 <dd><p>Patient Update</p>
 <p>Updates patient demographic data in DoseSpot</p>
 <dl class="field-list simple">
@@ -369,8 +372,8 @@ key</p>
 </dd></dl>
 
 <dl class="py method">
-<dt id="services.prescriptions.Prescriptions.pharmacies_read">
-<code class="sig-name descname"><span class="pre">pharmacies_read</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sesh</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#services.prescriptions.Prescriptions.pharmacies_read" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="services.prescriptions.Prescriptions.pharmacies_read">
+<span class="sig-name descname"><span class="pre">pharmacies_read</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sesh</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#services.prescriptions.Prescriptions.pharmacies_read" title="Permalink to this definition">¶</a></dt>
 <dd><p>Pharmacies</p>
 <p>Returns the list of valid pharmacies to use</p>
 <dl class="field-list simple">
@@ -387,8 +390,8 @@ key</p>
 </dd></dl>
 
 <dl class="py method">
-<dt id="services.prescriptions.Prescriptions.pharmacyFillByCustomer_read">
-<code class="sig-name descname"><span class="pre">pharmacyFillByCustomer_read</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sesh</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#services.prescriptions.Prescriptions.pharmacyFillByCustomer_read" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="services.prescriptions.Prescriptions.pharmacyFillByCustomer_read">
+<span class="sig-name descname"><span class="pre">pharmacyFillByCustomer_read</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sesh</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#services.prescriptions.Prescriptions.pharmacyFillByCustomer_read" title="Permalink to this definition">¶</a></dt>
 <dd><p>Pharmacy Fill By Customer</p>
 <p>Fetch all pharmacy fills and errors for a specific customer</p>
 <dl class="field-list simple">
@@ -405,8 +408,8 @@ key</p>
 </dd></dl>
 
 <dl class="py method">
-<dt id="services.prescriptions.Prescriptions.pharmacyFillError_create">
-<code class="sig-name descname"><span class="pre">pharmacyFillError_create</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sesh</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#services.prescriptions.Prescriptions.pharmacyFillError_create" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="services.prescriptions.Prescriptions.pharmacyFillError_create">
+<span class="sig-name descname"><span class="pre">pharmacyFillError_create</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sesh</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#services.prescriptions.Prescriptions.pharmacyFillError_create" title="Permalink to this definition">¶</a></dt>
 <dd><p>Pharmacy Fill Error Create</p>
 <p>Creates a new record in the PharmacyFillError report</p>
 <dl class="field-list simple">
@@ -423,8 +426,8 @@ key</p>
 </dd></dl>
 
 <dl class="py method">
-<dt id="services.prescriptions.Prescriptions.pharmacyFillError_delete">
-<code class="sig-name descname"><span class="pre">pharmacyFillError_delete</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sesh</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#services.prescriptions.Prescriptions.pharmacyFillError_delete" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="services.prescriptions.Prescriptions.pharmacyFillError_delete">
+<span class="sig-name descname"><span class="pre">pharmacyFillError_delete</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sesh</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#services.prescriptions.Prescriptions.pharmacyFillError_delete" title="Permalink to this definition">¶</a></dt>
 <dd><p>Pharmacy Fill Error Delete</p>
 <p>Deletes an existing record from the PharmacyFillError report</p>
 <dl class="field-list simple">
@@ -441,8 +444,8 @@ key</p>
 </dd></dl>
 
 <dl class="py method">
-<dt id="services.prescriptions.Prescriptions.pharmacyFillError_update">
-<code class="sig-name descname"><span class="pre">pharmacyFillError_update</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sesh</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#services.prescriptions.Prescriptions.pharmacyFillError_update" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="services.prescriptions.Prescriptions.pharmacyFillError_update">
+<span class="sig-name descname"><span class="pre">pharmacyFillError_update</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sesh</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#services.prescriptions.Prescriptions.pharmacyFillError_update" title="Permalink to this definition">¶</a></dt>
 <dd><p>Pharmacy Fill Error Update</p>
 <p>Updates the ready or orderId values of an existing pharmacyFillError record</p>
 <dl class="field-list simple">
@@ -459,8 +462,8 @@ key</p>
 </dd></dl>
 
 <dl class="py method">
-<dt id="services.prescriptions.Prescriptions.pharmacyFillErrors_read">
-<code class="sig-name descname"><span class="pre">pharmacyFillErrors_read</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sesh</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#services.prescriptions.Prescriptions.pharmacyFillErrors_read" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="services.prescriptions.Prescriptions.pharmacyFillErrors_read">
+<span class="sig-name descname"><span class="pre">pharmacyFillErrors_read</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sesh</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#services.prescriptions.Prescriptions.pharmacyFillErrors_read" title="Permalink to this definition">¶</a></dt>
 <dd><p>Pharmacy Fill Errors</p>
 <p>Returns all pharmacy fill error records with a count of at least one</p>
 <dl class="field-list simple">
@@ -477,8 +480,8 @@ key</p>
 </dd></dl>
 
 <dl class="py method">
-<dt id="services.prescriptions.Prescriptions.pharmacyFill_create">
-<code class="sig-name descname"><span class="pre">pharmacyFill_create</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sesh</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#services.prescriptions.Prescriptions.pharmacyFill_create" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="services.prescriptions.Prescriptions.pharmacyFill_create">
+<span class="sig-name descname"><span class="pre">pharmacyFill_create</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sesh</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#services.prescriptions.Prescriptions.pharmacyFill_create" title="Permalink to this definition">¶</a></dt>
 <dd><p>Pharmacy Fill Create</p>
 <p>Create a new manual pharmacy fill</p>
 <dl class="field-list simple">
@@ -495,8 +498,8 @@ key</p>
 </dd></dl>
 
 <dl class="py method">
-<dt id="services.prescriptions.Prescriptions.pharmacyFill_delete">
-<code class="sig-name descname"><span class="pre">pharmacyFill_delete</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sesh</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#services.prescriptions.Prescriptions.pharmacyFill_delete" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="services.prescriptions.Prescriptions.pharmacyFill_delete">
+<span class="sig-name descname"><span class="pre">pharmacyFill_delete</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sesh</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#services.prescriptions.Prescriptions.pharmacyFill_delete" title="Permalink to this definition">¶</a></dt>
 <dd><p>Pharmacy Fill Delete</p>
 <p>Delete an existing pharmacy fill record</p>
 <dl class="field-list simple">
@@ -513,8 +516,8 @@ key</p>
 </dd></dl>
 
 <dl class="py method">
-<dt id="services.prescriptions.Prescriptions.product_create">
-<code class="sig-name descname"><span class="pre">product_create</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sesh</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#services.prescriptions.Prescriptions.product_create" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="services.prescriptions.Prescriptions.product_create">
+<span class="sig-name descname"><span class="pre">product_create</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sesh</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#services.prescriptions.Prescriptions.product_create" title="Permalink to this definition">¶</a></dt>
 <dd><p>Product Create</p>
 <p>Creates a new product associated with a specific pharmacy</p>
 <dl class="field-list simple">
@@ -531,8 +534,8 @@ key</p>
 </dd></dl>
 
 <dl class="py method">
-<dt id="services.prescriptions.Prescriptions.product_delete">
-<code class="sig-name descname"><span class="pre">product_delete</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sesh</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#services.prescriptions.Prescriptions.product_delete" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="services.prescriptions.Prescriptions.product_delete">
+<span class="sig-name descname"><span class="pre">product_delete</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sesh</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#services.prescriptions.Prescriptions.product_delete" title="Permalink to this definition">¶</a></dt>
 <dd><p>Product Delete</p>
 <p>Deletes an existing product associated with a specific pharmacy</p>
 <dl class="field-list simple">
@@ -549,8 +552,8 @@ key</p>
 </dd></dl>
 
 <dl class="py method">
-<dt id="services.prescriptions.Prescriptions.product_read">
-<code class="sig-name descname"><span class="pre">product_read</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sesh</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#services.prescriptions.Prescriptions.product_read" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="services.prescriptions.Prescriptions.product_read">
+<span class="sig-name descname"><span class="pre">product_read</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sesh</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#services.prescriptions.Prescriptions.product_read" title="Permalink to this definition">¶</a></dt>
 <dd><p>Product Read</p>
 <p>Fetches an existing product associated with a specific pharmacy</p>
 <dl class="field-list simple">
@@ -567,8 +570,8 @@ key</p>
 </dd></dl>
 
 <dl class="py method">
-<dt id="services.prescriptions.Prescriptions.product_update">
-<code class="sig-name descname"><span class="pre">product_update</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sesh</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#services.prescriptions.Prescriptions.product_update" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="services.prescriptions.Prescriptions.product_update">
+<span class="sig-name descname"><span class="pre">product_update</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sesh</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#services.prescriptions.Prescriptions.product_update" title="Permalink to this definition">¶</a></dt>
 <dd><p>Product Updates</p>
 <p>Updates an existing product associated with a specific pharmacy</p>
 <dl class="field-list simple">
@@ -585,8 +588,8 @@ key</p>
 </dd></dl>
 
 <dl class="py method">
-<dt id="services.prescriptions.Prescriptions.products_read">
-<code class="sig-name descname"><span class="pre">products_read</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sesh</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#services.prescriptions.Prescriptions.products_read" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="services.prescriptions.Prescriptions.products_read">
+<span class="sig-name descname"><span class="pre">products_read</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sesh</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#services.prescriptions.Prescriptions.products_read" title="Permalink to this definition">¶</a></dt>
 <dd><p>Products Read</p>
 <p>Returns all products the user has access to view based on pharmacy</p>
 <dl class="field-list simple">
@@ -603,8 +606,8 @@ key</p>
 </dd></dl>
 
 <dl class="py method">
-<dt id="services.prescriptions.Prescriptions.providerNotifications_read">
-<code class="sig-name descname"><span class="pre">providerNotifications_read</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sesh</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#services.prescriptions.Prescriptions.providerNotifications_read" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="services.prescriptions.Prescriptions.providerNotifications_read">
+<span class="sig-name descname"><span class="pre">providerNotifications_read</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sesh</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#services.prescriptions.Prescriptions.providerNotifications_read" title="Permalink to this definition">¶</a></dt>
 <dd><p>Provider Notifications</p>
 <p>Returns the current list of provider notifications</p>
 <dl class="field-list simple">
@@ -621,8 +624,8 @@ key</p>
 </dd></dl>
 
 <dl class="py method">
-<dt id="services.prescriptions.Prescriptions.providerSso_read">
-<code class="sig-name descname"><span class="pre">providerSso_read</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sesh</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#services.prescriptions.Prescriptions.providerSso_read" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="services.prescriptions.Prescriptions.providerSso_read">
+<span class="sig-name descname"><span class="pre">providerSso_read</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sesh</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#services.prescriptions.Prescriptions.providerSso_read" title="Permalink to this definition">¶</a></dt>
 <dd><p>Provider SSO</p>
 <p>Returns the SSO url for a provider (clinician) page</p>
 <dl class="field-list simple">

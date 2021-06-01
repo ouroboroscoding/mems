@@ -13,6 +13,8 @@
   
   <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
   <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+  <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+  <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
 
   
   
@@ -29,6 +31,7 @@
   
     
       <script type="text/javascript" id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
+        <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
         <script src="_static/jquery.js"></script>
         <script src="_static/underscore.js"></script>
         <script src="_static/doctools.js"></script>
@@ -158,8 +161,8 @@
 <p>Handles finding the correct customer, generating the template, and sending
 off the SMS</p>
 <dl class="py function">
-<dt id="shared.SMSWorkflow.fetchState">
-<code class="sig-prename descclassname"><span class="pre">shared.SMSWorkflow.</span></code><code class="sig-name descname"><span class="pre">fetchState</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">abbr</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#shared.SMSWorkflow.fetchState" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="shared.SMSWorkflow.fetchState">
+<span class="sig-prename descclassname"><span class="pre">shared.SMSWorkflow.</span></span><span class="sig-name descname"><span class="pre">fetchState</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">abbr</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#shared.SMSWorkflow.fetchState" title="Permalink to this definition">¶</a></dt>
 <dd><p>Fetch State</p>
 <p>Returns the full name of the state based on the abbreviation</p>
 <dl class="field-list simple">
@@ -173,8 +176,8 @@ off the SMS</p>
 </dd></dl>
 
 <dl class="py function">
-<dt id="shared.SMSWorkflow.fetchTemplate">
-<code class="sig-prename descclassname"><span class="pre">shared.SMSWorkflow.</span></code><code class="sig-name descname"><span class="pre">fetchTemplate</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">group</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">type_</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">step</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#shared.SMSWorkflow.fetchTemplate" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="shared.SMSWorkflow.fetchTemplate">
+<span class="sig-prename descclassname"><span class="pre">shared.SMSWorkflow.</span></span><span class="sig-name descname"><span class="pre">fetchTemplate</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">group</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">type_</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">step</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#shared.SMSWorkflow.fetchTemplate" title="Permalink to this definition">¶</a></dt>
 <dd><p>Fetch Template</p>
 <p>Fetches a template from the local cache or from the DB and returns it</p>
 <dl class="field-list simple">
@@ -192,8 +195,8 @@ off the SMS</p>
 </dd></dl>
 
 <dl class="py function">
-<dt id="shared.SMSWorkflow.processTemplate">
-<code class="sig-prename descclassname"><span class="pre">shared.SMSWorkflow.</span></code><code class="sig-name descname"><span class="pre">processTemplate</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">content</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">order</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">misc</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">{}</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#shared.SMSWorkflow.processTemplate" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="shared.SMSWorkflow.processTemplate">
+<span class="sig-prename descclassname"><span class="pre">shared.SMSWorkflow.</span></span><span class="sig-name descname"><span class="pre">processTemplate</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">content</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">order</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">misc</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">{}</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#shared.SMSWorkflow.processTemplate" title="Permalink to this definition">¶</a></dt>
 <dd><p>Process Template</p>
 <p>Converts variables within the templates into the data provided</p>
 <dl class="field-list simple">
@@ -211,8 +214,8 @@ off the SMS</p>
 </dd></dl>
 
 <dl class="py function">
-<dt id="shared.SMSWorkflow.providerApproves">
-<code class="sig-prename descclassname"><span class="pre">shared.SMSWorkflow.</span></code><code class="sig-name descname"><span class="pre">providerApproves</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">order_id</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">user_id</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">monolith</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#shared.SMSWorkflow.providerApproves" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="shared.SMSWorkflow.providerApproves">
+<span class="sig-prename descclassname"><span class="pre">shared.SMSWorkflow.</span></span><span class="sig-name descname"><span class="pre">providerApproves</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">order_id</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">user_id</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">monolith</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#shared.SMSWorkflow.providerApproves" title="Permalink to this definition">¶</a></dt>
 <dd><p>Provider Approves</p>
 <p>Called when the provider who claimed the order approves that order</p>
 <dl class="field-list simple">
@@ -231,8 +234,8 @@ to send SMS messages</p></li>
 </dd></dl>
 
 <dl class="py function">
-<dt id="shared.SMSWorkflow.providerApprovesContinuous">
-<code class="sig-prename descclassname"><span class="pre">shared.SMSWorkflow.</span></code><code class="sig-name descname"><span class="pre">providerApprovesContinuous</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">order_id</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">user_id</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">monolith</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#shared.SMSWorkflow.providerApprovesContinuous" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="shared.SMSWorkflow.providerApprovesContinuous">
+<span class="sig-prename descclassname"><span class="pre">shared.SMSWorkflow.</span></span><span class="sig-name descname"><span class="pre">providerApprovesContinuous</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">order_id</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">user_id</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">monolith</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#shared.SMSWorkflow.providerApprovesContinuous" title="Permalink to this definition">¶</a></dt>
 <dd><p>Provider Approves Continuous</p>
 <p>Called when the provider who claimed the continuous order approves it</p>
 <dl class="field-list simple">
@@ -251,8 +254,8 @@ to send SMS messages</p></li>
 </dd></dl>
 
 <dl class="py function">
-<dt id="shared.SMSWorkflow.providerDeclines">
-<code class="sig-prename descclassname"><span class="pre">shared.SMSWorkflow.</span></code><code class="sig-name descname"><span class="pre">providerDeclines</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">order_id</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">user_id</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">monolith</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#shared.SMSWorkflow.providerDeclines" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="shared.SMSWorkflow.providerDeclines">
+<span class="sig-prename descclassname"><span class="pre">shared.SMSWorkflow.</span></span><span class="sig-name descname"><span class="pre">providerDeclines</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">order_id</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">user_id</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">monolith</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#shared.SMSWorkflow.providerDeclines" title="Permalink to this definition">¶</a></dt>
 <dd><p>Provider Declines</p>
 <p>Called when the provider who claimed the order declines that order</p>
 <dl class="field-list simple">
@@ -271,8 +274,8 @@ to send SMS messages</p></li>
 </dd></dl>
 
 <dl class="py function">
-<dt id="shared.SMSWorkflow.providerDeclinesContinuous">
-<code class="sig-prename descclassname"><span class="pre">shared.SMSWorkflow.</span></code><code class="sig-name descname"><span class="pre">providerDeclinesContinuous</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">order_id</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">user_id</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">monolith</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#shared.SMSWorkflow.providerDeclinesContinuous" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="shared.SMSWorkflow.providerDeclinesContinuous">
+<span class="sig-prename descclassname"><span class="pre">shared.SMSWorkflow.</span></span><span class="sig-name descname"><span class="pre">providerDeclinesContinuous</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">order_id</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">user_id</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">monolith</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#shared.SMSWorkflow.providerDeclinesContinuous" title="Permalink to this definition">¶</a></dt>
 <dd><p>Provider Declines Continuous</p>
 <p>Called when the provider who claimed the continuous order declines it</p>
 <dl class="field-list simple">
@@ -291,8 +294,8 @@ to send SMS messages</p></li>
 </dd></dl>
 
 <dl class="py function">
-<dt id="shared.SMSWorkflow.providerMessaged">
-<code class="sig-prename descclassname"><span class="pre">shared.SMSWorkflow.</span></code><code class="sig-name descname"><span class="pre">providerMessaged</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">order_id</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">note_id</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#shared.SMSWorkflow.providerMessaged" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="shared.SMSWorkflow.providerMessaged">
+<span class="sig-prename descclassname"><span class="pre">shared.SMSWorkflow.</span></span><span class="sig-name descname"><span class="pre">providerMessaged</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">order_id</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">note_id</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#shared.SMSWorkflow.providerMessaged" title="Permalink to this definition">¶</a></dt>
 <dd><p>Provider Messages</p>
 <p>Called when the provider sends a message to the patient, usually for further
 information</p>
@@ -310,8 +313,8 @@ information</p>
 </dd></dl>
 
 <dl class="py function">
-<dt id="shared.SMSWorkflow.providerOpens">
-<code class="sig-prename descclassname"><span class="pre">shared.SMSWorkflow.</span></code><code class="sig-name descname"><span class="pre">providerOpens</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">order_id</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">user_id</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">monolith</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#shared.SMSWorkflow.providerOpens" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="shared.SMSWorkflow.providerOpens">
+<span class="sig-prename descclassname"><span class="pre">shared.SMSWorkflow.</span></span><span class="sig-name descname"><span class="pre">providerOpens</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">order_id</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">user_id</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">monolith</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#shared.SMSWorkflow.providerOpens" title="Permalink to this definition">¶</a></dt>
 <dd><p>Provider Opens</p>
 <p>Called when the provider opens the order record</p>
 <dl class="field-list simple">
@@ -330,8 +333,8 @@ to send SMS messages</p></li>
 </dd></dl>
 
 <dl class="py function">
-<dt id="shared.SMSWorkflow.shipping">
-<code class="sig-prename descclassname"><span class="pre">shared.SMSWorkflow.</span></code><code class="sig-name descname"><span class="pre">shipping</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">info</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#shared.SMSWorkflow.shipping" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="shared.SMSWorkflow.shipping">
+<span class="sig-prename descclassname"><span class="pre">shared.SMSWorkflow.</span></span><span class="sig-name descname"><span class="pre">shipping</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">info</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#shared.SMSWorkflow.shipping" title="Permalink to this definition">¶</a></dt>
 <dd><p>Shipping</p>
 <p>Handles sending out a shipped order SMS</p>
 <dl class="field-list simple">

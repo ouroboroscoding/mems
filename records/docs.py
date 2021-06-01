@@ -1,7 +1,7 @@
 # coding=utf8
 """ Docs Records
 
-Handles the record structures for the docs service
+Handles the record structures for the Docs service
 """
 
 __author__		= "Chris Nasr"

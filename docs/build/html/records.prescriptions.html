@@ -13,6 +13,8 @@
   
   <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
   <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+  <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+  <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
 
   
   
@@ -29,6 +31,7 @@
   
     
       <script type="text/javascript" id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
+        <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
         <script src="_static/jquery.js"></script>
         <script src="_static/underscore.js"></script>
         <script src="_static/doctools.js"></script>
@@ -155,15 +158,15 @@
   <div class="section" id="module-records.prescriptions">
 <span id="records-prescriptions-module"></span><h1>records.prescriptions module<a class="headerlink" href="#module-records.prescriptions" title="Permalink to this headline">¶</a></h1>
 <p>Prescriptions Records</p>
-<p>Handles the record structures for the prescriptions service</p>
+<p>Handles the record structures for the Prescriptions service</p>
 <dl class="py class">
-<dt id="records.prescriptions.Expiring">
-<em class="property"><span class="pre">class</span> </em><code class="sig-prename descclassname"><span class="pre">records.prescriptions.</span></code><code class="sig-name descname"><span class="pre">Expiring</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">record</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">{}</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">custom</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">{}</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#records.prescriptions.Expiring" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="records.prescriptions.Expiring">
+<em class="property"><span class="pre">class</span> </em><span class="sig-prename descclassname"><span class="pre">records.prescriptions.</span></span><span class="sig-name descname"><span class="pre">Expiring</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">record</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">{}</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">custom</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">{}</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#records.prescriptions.Expiring" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">RestOC.Record_MySQL.Record</span></code></p>
 <p>Represents a customer with an expiring prescription</p>
 <dl class="py method">
-<dt id="records.prescriptions.Expiring.config">
-<em class="property"><span class="pre">classmethod</span> </em><code class="sig-name descname"><span class="pre">config</span></code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#records.prescriptions.Expiring.config" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="records.prescriptions.Expiring.config">
+<em class="property"><span class="pre">classmethod</span> </em><span class="sig-name descname"><span class="pre">config</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#records.prescriptions.Expiring.config" title="Permalink to this definition">¶</a></dt>
 <dd><p>Config</p>
 <p>Returns the configuration data associated with the record type</p>
 <dl class="field-list simple">
@@ -176,13 +179,13 @@
 </dd></dl>
 
 <dl class="py class">
-<dt id="records.prescriptions.Medication">
-<em class="property"><span class="pre">class</span> </em><code class="sig-prename descclassname"><span class="pre">records.prescriptions.</span></code><code class="sig-name descname"><span class="pre">Medication</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">record</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">{}</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">custom</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">{}</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#records.prescriptions.Medication" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="records.prescriptions.Medication">
+<em class="property"><span class="pre">class</span> </em><span class="sig-prename descclassname"><span class="pre">records.prescriptions.</span></span><span class="sig-name descname"><span class="pre">Medication</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">record</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">{}</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">custom</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">{}</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#records.prescriptions.Medication" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">RestOC.Record_MySQL.Record</span></code></p>
 <p>Represents a valid medication in DoseSpot</p>
 <dl class="py method">
-<dt id="records.prescriptions.Medication.config">
-<em class="property"><span class="pre">classmethod</span> </em><code class="sig-name descname"><span class="pre">config</span></code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#records.prescriptions.Medication.config" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="records.prescriptions.Medication.config">
+<em class="property"><span class="pre">classmethod</span> </em><span class="sig-name descname"><span class="pre">config</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#records.prescriptions.Medication.config" title="Permalink to this definition">¶</a></dt>
 <dd><p>Config</p>
 <p>Returns the configuration data associated with the record type</p>
 <dl class="field-list simple">
@@ -195,13 +198,13 @@
 </dd></dl>
 
 <dl class="py class">
-<dt id="records.prescriptions.Pharmacy">
-<em class="property"><span class="pre">class</span> </em><code class="sig-prename descclassname"><span class="pre">records.prescriptions.</span></code><code class="sig-name descname"><span class="pre">Pharmacy</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">record</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">{}</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">custom</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">{}</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#records.prescriptions.Pharmacy" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="records.prescriptions.Pharmacy">
+<em class="property"><span class="pre">class</span> </em><span class="sig-prename descclassname"><span class="pre">records.prescriptions.</span></span><span class="sig-name descname"><span class="pre">Pharmacy</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">record</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">{}</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">custom</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">{}</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#records.prescriptions.Pharmacy" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">RestOC.Record_MySQL.Record</span></code></p>
 <p>Represents a valid pharmacy in DoseSpot</p>
 <dl class="py method">
-<dt id="records.prescriptions.Pharmacy.config">
-<em class="property"><span class="pre">classmethod</span> </em><code class="sig-name descname"><span class="pre">config</span></code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#records.prescriptions.Pharmacy.config" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="records.prescriptions.Pharmacy.config">
+<em class="property"><span class="pre">classmethod</span> </em><span class="sig-name descname"><span class="pre">config</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#records.prescriptions.Pharmacy.config" title="Permalink to this definition">¶</a></dt>
 <dd><p>Config</p>
 <p>Returns the configuration data associated with the record type</p>
 <dl class="field-list simple">
@@ -214,13 +217,13 @@
 </dd></dl>
 
 <dl class="py class">
-<dt id="records.prescriptions.PharmacyFill">
-<em class="property"><span class="pre">class</span> </em><code class="sig-prename descclassname"><span class="pre">records.prescriptions.</span></code><code class="sig-name descname"><span class="pre">PharmacyFill</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">record</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">{}</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">custom</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">{}</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#records.prescriptions.PharmacyFill" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="records.prescriptions.PharmacyFill">
+<em class="property"><span class="pre">class</span> </em><span class="sig-prename descclassname"><span class="pre">records.prescriptions.</span></span><span class="sig-name descname"><span class="pre">PharmacyFill</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">record</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">{}</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">custom</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">{}</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#records.prescriptions.PharmacyFill" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">RestOC.Record_MySQL.Record</span></code></p>
 <p>Represents an manual fill order with a pharmacy</p>
 <dl class="py method">
-<dt id="records.prescriptions.PharmacyFill.config">
-<em class="property"><span class="pre">classmethod</span> </em><code class="sig-name descname"><span class="pre">config</span></code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#records.prescriptions.PharmacyFill.config" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="records.prescriptions.PharmacyFill.config">
+<em class="property"><span class="pre">classmethod</span> </em><span class="sig-name descname"><span class="pre">config</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#records.prescriptions.PharmacyFill.config" title="Permalink to this definition">¶</a></dt>
 <dd><p>Config</p>
 <p>Returns the configuration data associated with the record type</p>
 <dl class="field-list simple">
@@ -233,13 +236,13 @@
 </dd></dl>
 
 <dl class="py class">
-<dt id="records.prescriptions.PharmacyFillError">
-<em class="property"><span class="pre">class</span> </em><code class="sig-prename descclassname"><span class="pre">records.prescriptions.</span></code><code class="sig-name descname"><span class="pre">PharmacyFillError</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">record</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">{}</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">custom</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">{}</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#records.prescriptions.PharmacyFillError" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="records.prescriptions.PharmacyFillError">
+<em class="property"><span class="pre">class</span> </em><span class="sig-prename descclassname"><span class="pre">records.prescriptions.</span></span><span class="sig-name descname"><span class="pre">PharmacyFillError</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">record</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">{}</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">custom</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">{}</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#records.prescriptions.PharmacyFillError" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">RestOC.Record_MySQL.Record</span></code></p>
 <p>Represents an error while attempting to fill an order with a pharmacy</p>
 <dl class="py method">
-<dt id="records.prescriptions.PharmacyFillError.config">
-<em class="property"><span class="pre">classmethod</span> </em><code class="sig-name descname"><span class="pre">config</span></code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#records.prescriptions.PharmacyFillError.config" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="records.prescriptions.PharmacyFillError.config">
+<em class="property"><span class="pre">classmethod</span> </em><span class="sig-name descname"><span class="pre">config</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#records.prescriptions.PharmacyFillError.config" title="Permalink to this definition">¶</a></dt>
 <dd><p>Config</p>
 <p>Returns the configuration data associated with the record type</p>
 <dl class="field-list simple">
@@ -252,13 +255,13 @@
 </dd></dl>
 
 <dl class="py class">
-<dt id="records.prescriptions.Product">
-<em class="property"><span class="pre">class</span> </em><code class="sig-prename descclassname"><span class="pre">records.prescriptions.</span></code><code class="sig-name descname"><span class="pre">Product</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">record</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">{}</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">custom</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">{}</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#records.prescriptions.Product" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="records.prescriptions.Product">
+<em class="property"><span class="pre">class</span> </em><span class="sig-prename descclassname"><span class="pre">records.prescriptions.</span></span><span class="sig-name descname"><span class="pre">Product</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">record</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">{}</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">custom</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">{}</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#records.prescriptions.Product" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">RestOC.Record_MySQL.Record</span></code></p>
 <p>Represents a product which can be prescribed</p>
 <dl class="py method">
-<dt id="records.prescriptions.Product.config">
-<em class="property"><span class="pre">classmethod</span> </em><code class="sig-name descname"><span class="pre">config</span></code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#records.prescriptions.Product.config" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="records.prescriptions.Product.config">
+<em class="property"><span class="pre">classmethod</span> </em><span class="sig-name descname"><span class="pre">config</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#records.prescriptions.Product.config" title="Permalink to this definition">¶</a></dt>
 <dd><p>Config</p>
 <p>Returns the configuration data associated with the record type</p>
 <dl class="field-list simple">

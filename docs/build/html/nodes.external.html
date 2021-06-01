@@ -13,6 +13,8 @@
   
   <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
   <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+  <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+  <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
 
   
   
@@ -29,6 +31,7 @@
   
     
       <script type="text/javascript" id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
+        <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
         <script src="_static/jquery.js"></script>
         <script src="_static/underscore.js"></script>
         <script src="_static/doctools.js"></script>
@@ -155,10 +158,10 @@
   <div class="section" id="module-nodes.external">
 <span id="nodes-external-module"></span><h1>nodes.external module<a class="headerlink" href="#module-nodes.external" title="Permalink to this headline">¶</a></h1>
 <p>External Node</p>
-<p>Handles logins and letting them sign in/out</p>
+<p>Handles requests by third parties who can’t or won’t login to the system</p>
 <dl class="py function">
-<dt id="nodes.external.calendlyCancelled">
-<code class="sig-prename descclassname"><span class="pre">nodes.external.</span></code><code class="sig-name descname"><span class="pre">calendlyCancelled</span></code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#nodes.external.calendlyCancelled" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="nodes.external.calendlyCancelled">
+<span class="sig-prename descclassname"><span class="pre">nodes.external.</span></span><span class="sig-name descname"><span class="pre">calendlyCancelled</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#nodes.external.calendlyCancelled" title="Permalink to this definition">¶</a></dt>
 <dd><p>Calendly Cancelled</p>
 <p>Webhook called by Calendly to notify of new “canceled” events</p>
 <dl class="field-list simple">
@@ -169,8 +172,8 @@
 </dd></dl>
 
 <dl class="py function">
-<dt id="nodes.external.calendlyCreate">
-<code class="sig-prename descclassname"><span class="pre">nodes.external.</span></code><code class="sig-name descname"><span class="pre">calendlyCreate</span></code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#nodes.external.calendlyCreate" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="nodes.external.calendlyCreate">
+<span class="sig-prename descclassname"><span class="pre">nodes.external.</span></span><span class="sig-name descname"><span class="pre">calendlyCreate</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#nodes.external.calendlyCreate" title="Permalink to this definition">¶</a></dt>
 <dd><p>Calendly Create</p>
 <p>Webhook called by Calendly to notify of new created events</p>
 <dl class="field-list simple">
@@ -181,8 +184,8 @@
 </dd></dl>
 
 <dl class="py function">
-<dt id="nodes.external.contactForm">
-<code class="sig-prename descclassname"><span class="pre">nodes.external.</span></code><code class="sig-name descname"><span class="pre">contactForm</span></code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#nodes.external.contactForm" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="nodes.external.contactForm">
+<span class="sig-prename descclassname"><span class="pre">nodes.external.</span></span><span class="sig-name descname"><span class="pre">contactForm</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#nodes.external.contactForm" title="Permalink to this definition">¶</a></dt>
 <dd><p>Contact Form</p>
 <p>Recieves data from MaleExcel.com contact form</p>
 <dl class="field-list simple">
@@ -193,8 +196,8 @@
 </dd></dl>
 
 <dl class="py function">
-<dt id="nodes.external.customerIds">
-<code class="sig-prename descclassname"><span class="pre">nodes.external.</span></code><code class="sig-name descname"><span class="pre">customerIds</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">phone</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">email</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#nodes.external.customerIds" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="nodes.external.customerIds">
+<span class="sig-prename descclassname"><span class="pre">nodes.external.</span></span><span class="sig-name descname"><span class="pre">customerIds</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">phone</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">email</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#nodes.external.customerIds" title="Permalink to this definition">¶</a></dt>
 <dd><p>Customer IDs</p>
 <p>Returns the list of customer IDs associated with either the phone or
 email address listed</p>
@@ -212,8 +215,8 @@ email address listed</p>
 </dd></dl>
 
 <dl class="py function">
-<dt id="nodes.external.justCallWebhook">
-<code class="sig-prename descclassname"><span class="pre">nodes.external.</span></code><code class="sig-name descname"><span class="pre">justCallWebhook</span></code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#nodes.external.justCallWebhook" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="nodes.external.justCallWebhook">
+<span class="sig-prename descclassname"><span class="pre">nodes.external.</span></span><span class="sig-name descname"><span class="pre">justCallWebhook</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#nodes.external.justCallWebhook" title="Permalink to this definition">¶</a></dt>
 <dd><p>JustCall Webhook</p>
 <p>Webhook called by JustCall when new calls occur</p>
 <dl class="field-list simple">

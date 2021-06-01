@@ -13,6 +13,8 @@
   
   <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
   <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+  <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+  <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
 
   
   
@@ -29,6 +31,7 @@
   
     
       <script type="text/javascript" id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
+        <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
         <script src="_static/jquery.js"></script>
         <script src="_static/underscore.js"></script>
         <script src="_static/doctools.js"></script>
@@ -157,14 +160,14 @@
 <p>WellDyne Service</p>
 <p>Handles all WellDyneRx requests</p>
 <dl class="py class">
-<dt id="services.welldyne.WellDyne">
-<em class="property"><span class="pre">class</span> </em><code class="sig-prename descclassname"><span class="pre">services.welldyne.</span></code><code class="sig-name descname"><span class="pre">WellDyne</span></code><a class="headerlink" href="#services.welldyne.WellDyne" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="services.welldyne.WellDyne">
+<em class="property"><span class="pre">class</span> </em><span class="sig-prename descclassname"><span class="pre">services.welldyne.</span></span><span class="sig-name descname"><span class="pre">WellDyne</span></span><a class="headerlink" href="#services.welldyne.WellDyne" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">RestOC.Services.Service</span></code></p>
 <p>WellDyne Service class</p>
 <p>Service for WellDyne info and communication</p>
 <dl class="py method">
-<dt id="services.welldyne.WellDyne.adhocManual_delete">
-<code class="sig-name descname"><span class="pre">adhocManual_delete</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sesh</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#services.welldyne.WellDyne.adhocManual_delete" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="services.welldyne.WellDyne.adhocManual_delete">
+<span class="sig-name descname"><span class="pre">adhocManual_delete</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sesh</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#services.welldyne.WellDyne.adhocManual_delete" title="Permalink to this definition">¶</a></dt>
 <dd><p>AdHoc Manual Delete</p>
 <p>Transfers the manual adhoc to the primary adhoc table</p>
 <dl class="field-list simple">
@@ -181,8 +184,8 @@
 </dd></dl>
 
 <dl class="py method">
-<dt id="services.welldyne.WellDyne.adhocManual_read">
-<code class="sig-name descname"><span class="pre">adhocManual_read</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sesh</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#services.welldyne.WellDyne.adhocManual_read" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="services.welldyne.WellDyne.adhocManual_read">
+<span class="sig-name descname"><span class="pre">adhocManual_read</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sesh</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#services.welldyne.WellDyne.adhocManual_read" title="Permalink to this definition">¶</a></dt>
 <dd><p>AdHoc Manual Read</p>
 <p>Returns the list of all AdHoc manual requests</p>
 <dl class="field-list simple">
@@ -199,8 +202,8 @@
 </dd></dl>
 
 <dl class="py method">
-<dt id="services.welldyne.WellDyne.adhoc_create">
-<code class="sig-name descname"><span class="pre">adhoc_create</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sesh</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#services.welldyne.WellDyne.adhoc_create" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="services.welldyne.WellDyne.adhoc_create">
+<span class="sig-name descname"><span class="pre">adhoc_create</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sesh</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#services.welldyne.WellDyne.adhoc_create" title="Permalink to this definition">¶</a></dt>
 <dd><p>OldAdHoc Create</p>
 <p>Adds a new record to the OldAdHoc report</p>
 <dl class="field-list simple">
@@ -217,8 +220,8 @@
 </dd></dl>
 
 <dl class="py method">
-<dt id="services.welldyne.WellDyne.adhoc_delete">
-<code class="sig-name descname"><span class="pre">adhoc_delete</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sesh</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#services.welldyne.WellDyne.adhoc_delete" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="services.welldyne.WellDyne.adhoc_delete">
+<span class="sig-name descname"><span class="pre">adhoc_delete</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sesh</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#services.welldyne.WellDyne.adhoc_delete" title="Permalink to this definition">¶</a></dt>
 <dd><p>AdHoc Delete</p>
 <p>Deletes an existing record from the AdHoc report</p>
 <dl class="field-list simple">
@@ -235,8 +238,8 @@
 </dd></dl>
 
 <dl class="py method">
-<dt id="services.welldyne.WellDyne.adhocs_read">
-<code class="sig-name descname"><span class="pre">adhocs_read</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sesh</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#services.welldyne.WellDyne.adhocs_read" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="services.welldyne.WellDyne.adhocs_read">
+<span class="sig-name descname"><span class="pre">adhocs_read</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sesh</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#services.welldyne.WellDyne.adhocs_read" title="Permalink to this definition">¶</a></dt>
 <dd><p>Adhocs</p>
 <p>Returns all adhoc records</p>
 <dl class="field-list simple">
@@ -253,8 +256,8 @@
 </dd></dl>
 
 <dl class="py method">
-<dt id="services.welldyne.WellDyne.initialise">
-<code class="sig-name descname"><span class="pre">initialise</span></code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#services.welldyne.WellDyne.initialise" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="services.welldyne.WellDyne.initialise">
+<span class="sig-name descname"><span class="pre">initialise</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#services.welldyne.WellDyne.initialise" title="Permalink to this definition">¶</a></dt>
 <dd><p>Initialise</p>
 <p>Initialises the instance and returns itself for chaining</p>
 <dl class="field-list simple">
@@ -265,8 +268,8 @@
 </dd></dl>
 
 <dl class="py method">
-<dt id="services.welldyne.WellDyne.install">
-<em class="property"><span class="pre">classmethod</span> </em><code class="sig-name descname"><span class="pre">install</span></code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#services.welldyne.WellDyne.install" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="services.welldyne.WellDyne.install">
+<em class="property"><span class="pre">classmethod</span> </em><span class="sig-name descname"><span class="pre">install</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#services.welldyne.WellDyne.install" title="Permalink to this definition">¶</a></dt>
 <dd><p>Install</p>
 <p>The service’s install method, used to setup storage or other one time
 install configurations</p>
@@ -278,8 +281,8 @@ install configurations</p>
 </dd></dl>
 
 <dl class="py method">
-<dt id="services.welldyne.WellDyne.neverStartedPoll_update">
-<code class="sig-name descname"><span class="pre">neverStartedPoll_update</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sesh</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#services.welldyne.WellDyne.neverStartedPoll_update" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="services.welldyne.WellDyne.neverStartedPoll_update">
+<span class="sig-name descname"><span class="pre">neverStartedPoll_update</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sesh</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#services.welldyne.WellDyne.neverStartedPoll_update" title="Permalink to this definition">¶</a></dt>
 <dd><p>Neve Started Poll</p>
 <p>Attempts to get the latest data from the FTP and add it to the table</p>
 <dl class="field-list simple">
@@ -296,8 +299,8 @@ install configurations</p>
 </dd></dl>
 
 <dl class="py method">
-<dt id="services.welldyne.WellDyne.neverStartedReady_update">
-<code class="sig-name descname"><span class="pre">neverStartedReady_update</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sesh</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#services.welldyne.WellDyne.neverStartedReady_update" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="services.welldyne.WellDyne.neverStartedReady_update">
+<span class="sig-name descname"><span class="pre">neverStartedReady_update</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sesh</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#services.welldyne.WellDyne.neverStartedReady_update" title="Permalink to this definition">¶</a></dt>
 <dd><p>Never Started Ready</p>
 <p>Updates the ready state of an existing never started record</p>
 <dl class="field-list simple">
@@ -314,8 +317,8 @@ install configurations</p>
 </dd></dl>
 
 <dl class="py method">
-<dt id="services.welldyne.WellDyne.neverStarted_delete">
-<code class="sig-name descname"><span class="pre">neverStarted_delete</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sesh</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#services.welldyne.WellDyne.neverStarted_delete" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="services.welldyne.WellDyne.neverStarted_delete">
+<span class="sig-name descname"><span class="pre">neverStarted_delete</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sesh</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#services.welldyne.WellDyne.neverStarted_delete" title="Permalink to this definition">¶</a></dt>
 <dd><p>Neve Started Delete</p>
 <p>Deletes an existing never started record</p>
 <dl class="field-list simple">
@@ -332,8 +335,8 @@ install configurations</p>
 </dd></dl>
 
 <dl class="py method">
-<dt id="services.welldyne.WellDyne.neverStarteds_read">
-<code class="sig-name descname"><span class="pre">neverStarteds_read</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sesh</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#services.welldyne.WellDyne.neverStarteds_read" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="services.welldyne.WellDyne.neverStarteds_read">
+<span class="sig-name descname"><span class="pre">neverStarteds_read</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sesh</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#services.welldyne.WellDyne.neverStarteds_read" title="Permalink to this definition">¶</a></dt>
 <dd><p>Never Starteds</p>
 <p>Returns all never started records</p>
 <dl class="field-list simple">
@@ -350,8 +353,8 @@ install configurations</p>
 </dd></dl>
 
 <dl class="py method">
-<dt id="services.welldyne.WellDyne.outboundAdhoc_update">
-<code class="sig-name descname"><span class="pre">outboundAdhoc_update</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sesh</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#services.welldyne.WellDyne.outboundAdhoc_update" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="services.welldyne.WellDyne.outboundAdhoc_update">
+<span class="sig-name descname"><span class="pre">outboundAdhoc_update</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sesh</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#services.welldyne.WellDyne.outboundAdhoc_update" title="Permalink to this definition">¶</a></dt>
 <dd><p>Outbound OldAdHoc</p>
 <p>Removes a customer from the outbound and puts them as an adhoc / remove
 error record</p>
@@ -369,8 +372,8 @@ error record</p>
 </dd></dl>
 
 <dl class="py method">
-<dt id="services.welldyne.WellDyne.outboundReady_update">
-<code class="sig-name descname"><span class="pre">outboundReady_update</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sesh</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#services.welldyne.WellDyne.outboundReady_update" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="services.welldyne.WellDyne.outboundReady_update">
+<span class="sig-name descname"><span class="pre">outboundReady_update</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sesh</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#services.welldyne.WellDyne.outboundReady_update" title="Permalink to this definition">¶</a></dt>
 <dd><p>Outbound Ready</p>
 <p>Updates the ready state of an existing outbound record</p>
 <dl class="field-list simple">
@@ -387,8 +390,8 @@ error record</p>
 </dd></dl>
 
 <dl class="py method">
-<dt id="services.welldyne.WellDyne.outbounds_read">
-<code class="sig-name descname"><span class="pre">outbounds_read</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sesh</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#services.welldyne.WellDyne.outbounds_read" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="services.welldyne.WellDyne.outbounds_read">
+<span class="sig-name descname"><span class="pre">outbounds_read</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sesh</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#services.welldyne.WellDyne.outbounds_read" title="Permalink to this definition">¶</a></dt>
 <dd><p>Outbounds</p>
 <p>Returns all outbound records</p>
 <dl class="field-list simple">
@@ -405,8 +408,8 @@ error record</p>
 </dd></dl>
 
 <dl class="py method">
-<dt id="services.welldyne.WellDyne.postback_create">
-<code class="sig-name descname"><span class="pre">postback_create</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">environ</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#services.welldyne.WellDyne.postback_create" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="services.welldyne.WellDyne.postback_create">
+<span class="sig-name descname"><span class="pre">postback_create</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">environ</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#services.welldyne.WellDyne.postback_create" title="Permalink to this definition">¶</a></dt>
 <dd><p>Postback</p>
 <p>Used by WellDyneRX to post information to MaleExcel</p>
 <dl class="field-list simple">
@@ -423,8 +426,8 @@ error record</p>
 </dd></dl>
 
 <dl class="py method">
-<dt id="services.welldyne.WellDyne.stats_read">
-<code class="sig-name descname"><span class="pre">stats_read</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sesh</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#services.welldyne.WellDyne.stats_read" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="services.welldyne.WellDyne.stats_read">
+<span class="sig-name descname"><span class="pre">stats_read</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sesh</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#services.welldyne.WellDyne.stats_read" title="Permalink to this definition">¶</a></dt>
 <dd><p>Stats</p>
 <p>Returns stats about WellDyne</p>
 <dl class="field-list simple">
@@ -441,8 +444,8 @@ error record</p>
 </dd></dl>
 
 <dl class="py method">
-<dt id="services.welldyne.WellDyne.triggerInfo_read">
-<code class="sig-name descname"><span class="pre">triggerInfo_read</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sesh</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#services.welldyne.WellDyne.triggerInfo_read" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="services.welldyne.WellDyne.triggerInfo_read">
+<span class="sig-name descname"><span class="pre">triggerInfo_read</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sesh</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#services.welldyne.WellDyne.triggerInfo_read" title="Permalink to this definition">¶</a></dt>
 <dd><p>Trigger Info</p>
 <p>Returns the last trigger associated with the customer, including any
 possible outbound and eligibility</p>

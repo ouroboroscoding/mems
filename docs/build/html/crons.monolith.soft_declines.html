@@ -13,6 +13,8 @@
   
   <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
   <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+  <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+  <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
 
   
   
@@ -29,6 +31,7 @@
   
     
       <script type="text/javascript" id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
+        <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
         <script src="_static/jquery.js"></script>
         <script src="_static/underscore.js"></script>
         <script src="_static/doctools.js"></script>
@@ -155,11 +158,11 @@
   <div class="section" id="module-crons.monolith.soft_declines">
 <span id="crons-monolith-soft-declines-module"></span><h1>crons.monolith.soft_declines module<a class="headerlink" href="#module-crons.monolith.soft_declines" title="Permalink to this headline">¶</a></h1>
 <p>Hard Declines</p>
-<p>Fetches hard declines and adds a fake SMS message to the associated account
-so agents are aware of the issue.</p>
+<p>Fetches soft declines and sends an SMS message to the associated account so the
+user is aware of the issue.</p>
 <dl class="py function">
-<dt id="crons.monolith.soft_declines.run">
-<code class="sig-prename descclassname"><span class="pre">crons.monolith.soft_declines.</span></code><code class="sig-name descname"><span class="pre">run</span></code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#crons.monolith.soft_declines.run" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="crons.monolith.soft_declines.run">
+<span class="sig-prename descclassname"><span class="pre">crons.monolith.soft_declines.</span></span><span class="sig-name descname"><span class="pre">run</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#crons.monolith.soft_declines.run" title="Permalink to this definition">¶</a></dt>
 <dd><p>Run</p>
 <p>Fetches all the hard declines since the last run and notifies agents of
 the failure</p>

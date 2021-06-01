@@ -13,6 +13,8 @@
   
   <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
   <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+  <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+  <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
 
   
   
@@ -29,6 +31,7 @@
   
     
       <script type="text/javascript" id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
+        <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
         <script src="_static/jquery.js"></script>
         <script src="_static/underscore.js"></script>
         <script src="_static/doctools.js"></script>
@@ -157,14 +160,14 @@
 <p>Monolith Service</p>
 <p>Handles all Monolith requests</p>
 <dl class="py class">
-<dt id="services.monolith.Monolith">
-<em class="property"><span class="pre">class</span> </em><code class="sig-prename descclassname"><span class="pre">services.monolith.</span></code><code class="sig-name descname"><span class="pre">Monolith</span></code><a class="headerlink" href="#services.monolith.Monolith" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="services.monolith.Monolith">
+<em class="property"><span class="pre">class</span> </em><span class="sig-prename descclassname"><span class="pre">services.monolith.</span></span><span class="sig-name descname"><span class="pre">Monolith</span></span><a class="headerlink" href="#services.monolith.Monolith" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">RestOC.Services.Service</span></code></p>
 <p>Monolith Service class</p>
 <p>Service for Monolith, sign in, sign up, etc.</p>
 <dl class="py method">
-<dt id="services.monolith.Monolith.agentClaim_delete">
-<code class="sig-name descname"><span class="pre">agentClaim_delete</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sesh</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#services.monolith.Monolith.agentClaim_delete" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="services.monolith.Monolith.agentClaim_delete">
+<span class="sig-name descname"><span class="pre">agentClaim_delete</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sesh</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#services.monolith.Monolith.agentClaim_delete" title="Permalink to this definition">¶</a></dt>
 <dd><p>Agent Claim Delete</p>
 <p>Deletes an existing claim</p>
 <dl class="field-list simple">
@@ -181,8 +184,8 @@
 </dd></dl>
 
 <dl class="py method">
-<dt id="services.monolith.Monolith.agentClaims_read">
-<code class="sig-name descname"><span class="pre">agentClaims_read</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sesh</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#services.monolith.Monolith.agentClaims_read" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="services.monolith.Monolith.agentClaims_read">
+<span class="sig-name descname"><span class="pre">agentClaims_read</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sesh</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#services.monolith.Monolith.agentClaims_read" title="Permalink to this definition">¶</a></dt>
 <dd><p>Agent Claims</p>
 <p>Returns all claims by all agents currently in the system</p>
 <dl class="field-list simple">
@@ -199,8 +202,8 @@
 </dd></dl>
 
 <dl class="py method">
-<dt id="services.monolith.Monolith.calendlyEvent_create">
-<code class="sig-name descname"><span class="pre">calendlyEvent_create</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sesh</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#services.monolith.Monolith.calendlyEvent_create" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="services.monolith.Monolith.calendlyEvent_create">
+<span class="sig-name descname"><span class="pre">calendlyEvent_create</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sesh</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#services.monolith.Monolith.calendlyEvent_create" title="Permalink to this definition">¶</a></dt>
 <dd><p>Calendly Event Create</p>
 <p>Creates a new calendly event associated with a record in calendly</p>
 <dl class="field-list simple">
@@ -217,8 +220,8 @@
 </dd></dl>
 
 <dl class="py method">
-<dt id="services.monolith.Monolith.calendlyEvent_delete">
-<code class="sig-name descname"><span class="pre">calendlyEvent_delete</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sesh</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#services.monolith.Monolith.calendlyEvent_delete" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="services.monolith.Monolith.calendlyEvent_delete">
+<span class="sig-name descname"><span class="pre">calendlyEvent_delete</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sesh</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#services.monolith.Monolith.calendlyEvent_delete" title="Permalink to this definition">¶</a></dt>
 <dd><p>Calendly Event Delete</p>
 <p>Deletes an existing calendly event associated with a record in calendly,
 does not delete the event in Calendly itself</p>
@@ -236,8 +239,8 @@ does not delete the event in Calendly itself</p>
 </dd></dl>
 
 <dl class="py method">
-<dt id="services.monolith.Monolith.calendlyEvent_read">
-<code class="sig-name descname"><span class="pre">calendlyEvent_read</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sesh</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#services.monolith.Monolith.calendlyEvent_read" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="services.monolith.Monolith.calendlyEvent_read">
+<span class="sig-name descname"><span class="pre">calendlyEvent_read</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sesh</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#services.monolith.Monolith.calendlyEvent_read" title="Permalink to this definition">¶</a></dt>
 <dd><p>Calendly Event Read</p>
 <p>Fetches an existing calendly event associated with a record in calendly</p>
 <dl class="field-list simple">
@@ -254,8 +257,8 @@ does not delete the event in Calendly itself</p>
 </dd></dl>
 
 <dl class="py method">
-<dt id="services.monolith.Monolith.calendlyEvent_update">
-<code class="sig-name descname"><span class="pre">calendlyEvent_update</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sesh</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#services.monolith.Monolith.calendlyEvent_update" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="services.monolith.Monolith.calendlyEvent_update">
+<span class="sig-name descname"><span class="pre">calendlyEvent_update</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sesh</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#services.monolith.Monolith.calendlyEvent_update" title="Permalink to this definition">¶</a></dt>
 <dd><p>Calendly Event Update</p>
 <p>Updates an existing calendly event associated with a record in calendly,
 does not update the record in Calendly itself</p>
@@ -273,8 +276,8 @@ does not update the record in Calendly itself</p>
 </dd></dl>
 
 <dl class="py method">
-<dt id="services.monolith.Monolith.calendlyEvents_read">
-<code class="sig-name descname"><span class="pre">calendlyEvents_read</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sesh</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#services.monolith.Monolith.calendlyEvents_read" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="services.monolith.Monolith.calendlyEvents_read">
+<span class="sig-name descname"><span class="pre">calendlyEvents_read</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sesh</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#services.monolith.Monolith.calendlyEvents_read" title="Permalink to this definition">¶</a></dt>
 <dd><p>Calendly Events Read</p>
 <p>Fetches all existing calendly events associated with records in calendly</p>
 <dl class="field-list simple">
@@ -291,8 +294,8 @@ does not update the record in Calendly itself</p>
 </dd></dl>
 
 <dl class="py method">
-<dt id="services.monolith.Monolith.customerCalendly_read">
-<code class="sig-name descname"><span class="pre">customerCalendly_read</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sesh</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#services.monolith.Monolith.customerCalendly_read" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="services.monolith.Monolith.customerCalendly_read">
+<span class="sig-name descname"><span class="pre">customerCalendly_read</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sesh</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#services.monolith.Monolith.customerCalendly_read" title="Permalink to this definition">¶</a></dt>
 <dd><p>Customer Calendly</p>
 <p>Fetches all Calendly appointments that can be found associated with
 either the customer’s email or phone number</p>
@@ -310,8 +313,8 @@ either the customer’s email or phone number</p>
 </dd></dl>
 
 <dl class="py method">
-<dt id="services.monolith.Monolith.customerClaimView_update">
-<code class="sig-name descname"><span class="pre">customerClaimView_update</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sesh</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#services.monolith.Monolith.customerClaimView_update" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="services.monolith.Monolith.customerClaimView_update">
+<span class="sig-name descname"><span class="pre">customerClaimView_update</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sesh</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#services.monolith.Monolith.customerClaimView_update" title="Permalink to this definition">¶</a></dt>
 <dd><p>Customer Claim View</p>
 <p>Marks the claim as viewed for the first time</p>
 <dl class="field-list simple">
@@ -328,8 +331,8 @@ either the customer’s email or phone number</p>
 </dd></dl>
 
 <dl class="py method">
-<dt id="services.monolith.Monolith.customerClaim_create">
-<code class="sig-name descname"><span class="pre">customerClaim_create</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sesh</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#services.monolith.Monolith.customerClaim_create" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="services.monolith.Monolith.customerClaim_create">
+<span class="sig-name descname"><span class="pre">customerClaim_create</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sesh</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#services.monolith.Monolith.customerClaim_create" title="Permalink to this definition">¶</a></dt>
 <dd><p>Customer Claim Create</p>
 <p>Stores a record to claim a customer conversation for a user</p>
 <dl class="field-list simple">
@@ -346,8 +349,8 @@ either the customer’s email or phone number</p>
 </dd></dl>
 
 <dl class="py method">
-<dt id="services.monolith.Monolith.customerClaim_delete">
-<code class="sig-name descname"><span class="pre">customerClaim_delete</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sesh</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#services.monolith.Monolith.customerClaim_delete" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="services.monolith.Monolith.customerClaim_delete">
+<span class="sig-name descname"><span class="pre">customerClaim_delete</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sesh</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#services.monolith.Monolith.customerClaim_delete" title="Permalink to this definition">¶</a></dt>
 <dd><p>Customer Claim Delete</p>
 <p>Deletes a record to claim a customer conversation by a user</p>
 <dl class="field-list simple">
@@ -364,8 +367,8 @@ either the customer’s email or phone number</p>
 </dd></dl>
 
 <dl class="py method">
-<dt id="services.monolith.Monolith.customerClaim_update">
-<code class="sig-name descname"><span class="pre">customerClaim_update</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sesh</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#services.monolith.Monolith.customerClaim_update" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="services.monolith.Monolith.customerClaim_update">
+<span class="sig-name descname"><span class="pre">customerClaim_update</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sesh</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#services.monolith.Monolith.customerClaim_update" title="Permalink to this definition">¶</a></dt>
 <dd><p>Customer Claim Update</p>
 <p>Switches a claim to another agent</p>
 <dl class="field-list simple">
@@ -382,8 +385,8 @@ either the customer’s email or phone number</p>
 </dd></dl>
 
 <dl class="py method">
-<dt id="services.monolith.Monolith.customerDob_read">
-<code class="sig-name descname"><span class="pre">customerDob_read</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sesh</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#services.monolith.Monolith.customerDob_read" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="services.monolith.Monolith.customerDob_read">
+<span class="sig-name descname"><span class="pre">customerDob_read</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sesh</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#services.monolith.Monolith.customerDob_read" title="Permalink to this definition">¶</a></dt>
 <dd><p>Customer DoseSpot ID</p>
 <p>Returns the ID of the DoseSpote patient based on their customer ID</p>
 <dl class="field-list simple">
@@ -400,8 +403,8 @@ either the customer’s email or phone number</p>
 </dd></dl>
 
 <dl class="py method">
-<dt id="services.monolith.Monolith.customerDsid_create">
-<code class="sig-name descname"><span class="pre">customerDsid_create</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sesh</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#services.monolith.Monolith.customerDsid_create" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="services.monolith.Monolith.customerDsid_create">
+<span class="sig-name descname"><span class="pre">customerDsid_create</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sesh</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#services.monolith.Monolith.customerDsid_create" title="Permalink to this definition">¶</a></dt>
 <dd><p>Customer DoseSpot ID Create</p>
 <p>Creates a new patient in DoseSpot and returns the ID generated</p>
 <dl class="field-list simple">
@@ -418,8 +421,8 @@ either the customer’s email or phone number</p>
 </dd></dl>
 
 <dl class="py method">
-<dt id="services.monolith.Monolith.customerDsid_read">
-<code class="sig-name descname"><span class="pre">customerDsid_read</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sesh</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#services.monolith.Monolith.customerDsid_read" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="services.monolith.Monolith.customerDsid_read">
+<span class="sig-name descname"><span class="pre">customerDsid_read</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sesh</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#services.monolith.Monolith.customerDsid_read" title="Permalink to this definition">¶</a></dt>
 <dd><p>Customer DoseSpot ID</p>
 <p>Returns the ID of the DoseSpote patient based on their customer ID</p>
 <dl class="field-list simple">
@@ -436,8 +439,8 @@ either the customer’s email or phone number</p>
 </dd></dl>
 
 <dl class="py method">
-<dt id="services.monolith.Monolith.customerDsid_update">
-<code class="sig-name descname"><span class="pre">customerDsid_update</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sesh</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#services.monolith.Monolith.customerDsid_update" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="services.monolith.Monolith.customerDsid_update">
+<span class="sig-name descname"><span class="pre">customerDsid_update</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sesh</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#services.monolith.Monolith.customerDsid_update" title="Permalink to this definition">¶</a></dt>
 <dd><p>Customer DoseSpot ID Update</p>
 <p>Updates an existing patient in DoseSpot</p>
 <dl class="field-list simple">
@@ -454,8 +457,8 @@ either the customer’s email or phone number</p>
 </dd></dl>
 
 <dl class="py method">
-<dt id="services.monolith.Monolith.customerEverify_read">
-<code class="sig-name descname"><span class="pre">customerEverify_read</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sesh</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#services.monolith.Monolith.customerEverify_read" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="services.monolith.Monolith.customerEverify_read">
+<span class="sig-name descname"><span class="pre">customerEverify_read</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sesh</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#services.monolith.Monolith.customerEverify_read" title="Permalink to this definition">¶</a></dt>
 <dd><p>Customer E-Verify Read</p>
 <p>Returns the e-verify data and images associated with the customer</p>
 <dl class="field-list simple">
@@ -472,8 +475,8 @@ either the customer’s email or phone number</p>
 </dd></dl>
 
 <dl class="py method">
-<dt id="services.monolith.Monolith.customerEverify_update">
-<code class="sig-name descname"><span class="pre">customerEverify_update</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sesh</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#services.monolith.Monolith.customerEverify_update" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="services.monolith.Monolith.customerEverify_update">
+<span class="sig-name descname"><span class="pre">customerEverify_update</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sesh</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#services.monolith.Monolith.customerEverify_update" title="Permalink to this definition">¶</a></dt>
 <dd><p>Customer E-Verify update</p>
 <p>Re-submits the customer information and stores the updated result</p>
 <dl class="field-list simple">
@@ -490,8 +493,8 @@ either the customer’s email or phone number</p>
 </dd></dl>
 
 <dl class="py method">
-<dt id="services.monolith.Monolith.customerExists_read">
-<code class="sig-name descname"><span class="pre">customerExists_read</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sesh</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#services.monolith.Monolith.customerExists_read" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="services.monolith.Monolith.customerExists_read">
+<span class="sig-name descname"><span class="pre">customerExists_read</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sesh</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#services.monolith.Monolith.customerExists_read" title="Permalink to this definition">¶</a></dt>
 <dd><p>Customer Exists</p>
 <p>Returns bool based on existing of customer</p>
 <dl class="field-list simple">
@@ -508,8 +511,8 @@ either the customer’s email or phone number</p>
 </dd></dl>
 
 <dl class="py method">
-<dt id="services.monolith.Monolith.customerHide_update">
-<code class="sig-name descname"><span class="pre">customerHide_update</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sesh</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#services.monolith.Monolith.customerHide_update" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="services.monolith.Monolith.customerHide_update">
+<span class="sig-name descname"><span class="pre">customerHide_update</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sesh</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#services.monolith.Monolith.customerHide_update" title="Permalink to this definition">¶</a></dt>
 <dd><p>Customer Hide</p>
 <p>Marks a customer conversation as hidden</p>
 <dl class="field-list simple">
@@ -526,8 +529,8 @@ either the customer’s email or phone number</p>
 </dd></dl>
 
 <dl class="py method">
-<dt id="services.monolith.Monolith.customerHrtLab_create">
-<code class="sig-name descname"><span class="pre">customerHrtLab_create</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sesh</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#services.monolith.Monolith.customerHrtLab_create" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="services.monolith.Monolith.customerHrtLab_create">
+<span class="sig-name descname"><span class="pre">customerHrtLab_create</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sesh</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#services.monolith.Monolith.customerHrtLab_create" title="Permalink to this definition">¶</a></dt>
 <dd><p>Customer HRT Lab Create</p>
 <p>Creates a new set of records for lab results</p>
 <dl class="field-list simple">
@@ -544,8 +547,8 @@ either the customer’s email or phone number</p>
 </dd></dl>
 
 <dl class="py method">
-<dt id="services.monolith.Monolith.customerHrtLabs_read">
-<code class="sig-name descname"><span class="pre">customerHrtLabs_read</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sesh</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#services.monolith.Monolith.customerHrtLabs_read" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="services.monolith.Monolith.customerHrtLabs_read">
+<span class="sig-name descname"><span class="pre">customerHrtLabs_read</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sesh</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#services.monolith.Monolith.customerHrtLabs_read" title="Permalink to this definition">¶</a></dt>
 <dd><p>Customer HRT Lab Results</p>
 <p>Fetches a customer’s HRT lab test results</p>
 <dl class="field-list simple">
@@ -562,8 +565,8 @@ either the customer’s email or phone number</p>
 </dd></dl>
 
 <dl class="py method">
-<dt id="services.monolith.Monolith.customerHrtSymptoms_read">
-<code class="sig-name descname"><span class="pre">customerHrtSymptoms_read</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sesh</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#services.monolith.Monolith.customerHrtSymptoms_read" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="services.monolith.Monolith.customerHrtSymptoms_read">
+<span class="sig-name descname"><span class="pre">customerHrtSymptoms_read</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sesh</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#services.monolith.Monolith.customerHrtSymptoms_read" title="Permalink to this definition">¶</a></dt>
 <dd><p>Customer HRT Symptoms</p>
 <p>Returns the HRT symptoms data formatted by category and date</p>
 <dl class="field-list simple">
@@ -580,8 +583,8 @@ either the customer’s email or phone number</p>
 </dd></dl>
 
 <dl class="py method">
-<dt id="services.monolith.Monolith.customerHrt_read">
-<code class="sig-name descname"><span class="pre">customerHrt_read</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sesh</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#services.monolith.Monolith.customerHrt_read" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="services.monolith.Monolith.customerHrt_read">
+<span class="sig-name descname"><span class="pre">customerHrt_read</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sesh</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#services.monolith.Monolith.customerHrt_read" title="Permalink to this definition">¶</a></dt>
 <dd><p>Customer HRT Read</p>
 <p>Returns current HRT status of the customer if there is one</p>
 <dl class="field-list simple">
@@ -598,8 +601,8 @@ either the customer’s email or phone number</p>
 </dd></dl>
 
 <dl class="py method">
-<dt id="services.monolith.Monolith.customerHrt_update">
-<code class="sig-name descname"><span class="pre">customerHrt_update</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sesh</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#services.monolith.Monolith.customerHrt_update" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="services.monolith.Monolith.customerHrt_update">
+<span class="sig-name descname"><span class="pre">customerHrt_update</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sesh</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#services.monolith.Monolith.customerHrt_update" title="Permalink to this definition">¶</a></dt>
 <dd><p>Customer HRT Updates</p>
 <p>Updates fields in HrtPatient if there is one</p>
 <dl class="field-list simple">
@@ -616,8 +619,8 @@ either the customer’s email or phone number</p>
 </dd></dl>
 
 <dl class="py method">
-<dt id="services.monolith.Monolith.customerIdByPhone_read">
-<code class="sig-name descname"><span class="pre">customerIdByPhone_read</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sesh</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#services.monolith.Monolith.customerIdByPhone_read" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="services.monolith.Monolith.customerIdByPhone_read">
+<span class="sig-name descname"><span class="pre">customerIdByPhone_read</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sesh</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#services.monolith.Monolith.customerIdByPhone_read" title="Permalink to this definition">¶</a></dt>
 <dd><p>Customer ID By Phone</p>
 <p>Fetches a customer’s ID by their phone number</p>
 <dl class="field-list simple">
@@ -634,8 +637,27 @@ either the customer’s email or phone number</p>
 </dd></dl>
 
 <dl class="py method">
-<dt id="services.monolith.Monolith.customerMessages_read">
-<code class="sig-name descname"><span class="pre">customerMessages_read</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sesh</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#services.monolith.Monolith.customerMessages_read" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="services.monolith.Monolith.customerMessagesIncoming_read">
+<span class="sig-name descname"><span class="pre">customerMessagesIncoming_read</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sesh</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#services.monolith.Monolith.customerMessagesIncoming_read" title="Permalink to this definition">¶</a></dt>
+<dd><p>Customer Messages Incoming Read</p>
+<p>Returns the number of messages requested from what has been sent by
+the customer</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>data</strong> (<em>dict</em>) – Data sent with the request</p></li>
+<li><p><strong>sesh</strong> (<em>Sesh._Session</em>) – The session associated with the request</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>Services.Response</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="services.monolith.Monolith.customerMessages_read">
+<span class="sig-name descname"><span class="pre">customerMessages_read</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sesh</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#services.monolith.Monolith.customerMessages_read" title="Permalink to this definition">¶</a></dt>
 <dd><p>Customer Messages</p>
 <p>Fetches all messages associated with a customer (phone number)</p>
 <dl class="field-list simple">
@@ -652,8 +674,8 @@ either the customer’s email or phone number</p>
 </dd></dl>
 
 <dl class="py method">
-<dt id="services.monolith.Monolith.customerMipAnswer_update">
-<code class="sig-name descname"><span class="pre">customerMipAnswer_update</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sesh</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#services.monolith.Monolith.customerMipAnswer_update" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="services.monolith.Monolith.customerMipAnswer_update">
+<span class="sig-name descname"><span class="pre">customerMipAnswer_update</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sesh</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#services.monolith.Monolith.customerMipAnswer_update" title="Permalink to this definition">¶</a></dt>
 <dd><p>Customer MIP Answer Update</p>
 <p>Updates the answer to a single MIP question</p>
 <dl class="field-list simple">
@@ -670,8 +692,8 @@ either the customer’s email or phone number</p>
 </dd></dl>
 
 <dl class="py method">
-<dt id="services.monolith.Monolith.customerMips_read">
-<code class="sig-name descname"><span class="pre">customerMips_read</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sesh</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#services.monolith.Monolith.customerMips_read" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="services.monolith.Monolith.customerMips_read">
+<span class="sig-name descname"><span class="pre">customerMips_read</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sesh</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#services.monolith.Monolith.customerMips_read" title="Permalink to this definition">¶</a></dt>
 <dd><p>Customer MIPs</p>
 <p>Fetches the medical intake path questions/answers associated with a
 customer</p>
@@ -689,8 +711,8 @@ customer</p>
 </dd></dl>
 
 <dl class="py method">
-<dt id="services.monolith.Monolith.customerName_read">
-<code class="sig-name descname"><span class="pre">customerName_read</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sesh</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#services.monolith.Monolith.customerName_read" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="services.monolith.Monolith.customerName_read">
+<span class="sig-name descname"><span class="pre">customerName_read</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sesh</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#services.monolith.Monolith.customerName_read" title="Permalink to this definition">¶</a></dt>
 <dd><p>Customer Name</p>
 <p>Fetchs one or more names based on IDs, returns as a dictionary (one ID)
 or of ID to name (multiple IDs)</p>
@@ -708,8 +730,8 @@ or of ID to name (multiple IDs)</p>
 </dd></dl>
 
 <dl class="py method">
-<dt id="services.monolith.Monolith.customerNote_create">
-<code class="sig-name descname"><span class="pre">customerNote_create</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sesh</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#services.monolith.Monolith.customerNote_create" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="services.monolith.Monolith.customerNote_create">
+<span class="sig-name descname"><span class="pre">customerNote_create</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sesh</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#services.monolith.Monolith.customerNote_create" title="Permalink to this definition">¶</a></dt>
 <dd><p>Customer Note Create</p>
 <p>Creates a new note associated with the customer</p>
 <dl class="field-list simple">
@@ -726,8 +748,8 @@ or of ID to name (multiple IDs)</p>
 </dd></dl>
 
 <dl class="py method">
-<dt id="services.monolith.Monolith.customerNotes_read">
-<code class="sig-name descname"><span class="pre">customerNotes_read</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sesh</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#services.monolith.Monolith.customerNotes_read" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="services.monolith.Monolith.customerNotes_read">
+<span class="sig-name descname"><span class="pre">customerNotes_read</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sesh</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#services.monolith.Monolith.customerNotes_read" title="Permalink to this definition">¶</a></dt>
 <dd><p>Customer Notes</p>
 <p>Fetches all notes associated with the customer</p>
 <dl class="field-list simple">
@@ -744,8 +766,8 @@ or of ID to name (multiple IDs)</p>
 </dd></dl>
 
 <dl class="py method">
-<dt id="services.monolith.Monolith.customerProviderReturn_update">
-<code class="sig-name descname"><span class="pre">customerProviderReturn_update</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sesh</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#services.monolith.Monolith.customerProviderReturn_update" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="services.monolith.Monolith.customerProviderReturn_update">
+<span class="sig-name descname"><span class="pre">customerProviderReturn_update</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sesh</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#services.monolith.Monolith.customerProviderReturn_update" title="Permalink to this definition">¶</a></dt>
 <dd><p>Customer Provider Return</p>
 <p>Transfers a customer from an agent back to a specific provider or
 to the provider queue</p>
@@ -763,8 +785,8 @@ to the provider queue</p>
 </dd></dl>
 
 <dl class="py method">
-<dt id="services.monolith.Monolith.customerProviderTransfer_update">
-<code class="sig-name descname"><span class="pre">customerProviderTransfer_update</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sesh</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#services.monolith.Monolith.customerProviderTransfer_update" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="services.monolith.Monolith.customerProviderTransfer_update">
+<span class="sig-name descname"><span class="pre">customerProviderTransfer_update</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sesh</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#services.monolith.Monolith.customerProviderTransfer_update" title="Permalink to this definition">¶</a></dt>
 <dd><p>Customer Provider Transfer</p>
 <p>Handles transfering a view only claim from an agent to a provider</p>
 <dl class="field-list simple">
@@ -781,8 +803,8 @@ to the provider queue</p>
 </dd></dl>
 
 <dl class="py method">
-<dt id="services.monolith.Monolith.customerProviders_read">
-<code class="sig-name descname"><span class="pre">customerProviders_read</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sesh</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#services.monolith.Monolith.customerProviders_read" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="services.monolith.Monolith.customerProviders_read">
+<span class="sig-name descname"><span class="pre">customerProviders_read</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sesh</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#services.monolith.Monolith.customerProviders_read" title="Permalink to this definition">¶</a></dt>
 <dd><p>Customer Providers</p>
 <p>Returns the list of memo IDs and names for providers who work in the
 state the customer is in, in the given medication type</p>
@@ -800,8 +822,8 @@ state the customer is in, in the given medication type</p>
 </dd></dl>
 
 <dl class="py method">
-<dt id="services.monolith.Monolith.customerSearch_read">
-<code class="sig-name descname"><span class="pre">customerSearch_read</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sesh</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#services.monolith.Monolith.customerSearch_read" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="services.monolith.Monolith.customerSearch_read">
+<span class="sig-name descname"><span class="pre">customerSearch_read</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sesh</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#services.monolith.Monolith.customerSearch_read" title="Permalink to this definition">¶</a></dt>
 <dd><p>Customer Search</p>
 <p>Fetch and return a list of customers based on search data</p>
 <dl class="field-list simple">
@@ -818,8 +840,8 @@ state the customer is in, in the given medication type</p>
 </dd></dl>
 
 <dl class="py method">
-<dt id="services.monolith.Monolith.customerShipping_read">
-<code class="sig-name descname"><span class="pre">customerShipping_read</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sesh</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#services.monolith.Monolith.customerShipping_read" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="services.monolith.Monolith.customerShipping_read">
+<span class="sig-name descname"><span class="pre">customerShipping_read</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sesh</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#services.monolith.Monolith.customerShipping_read" title="Permalink to this definition">¶</a></dt>
 <dd><p>Customer Shipping</p>
 <p>Fetches all shipping (tracking code) associated with the customer</p>
 <dl class="field-list simple">
@@ -836,8 +858,8 @@ state the customer is in, in the given medication type</p>
 </dd></dl>
 
 <dl class="py method">
-<dt id="services.monolith.Monolith.customerStop_create">
-<code class="sig-name descname"><span class="pre">customerStop_create</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sesh</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#services.monolith.Monolith.customerStop_create" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="services.monolith.Monolith.customerStop_create">
+<span class="sig-name descname"><span class="pre">customerStop_create</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sesh</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#services.monolith.Monolith.customerStop_create" title="Permalink to this definition">¶</a></dt>
 <dd><p>Customer Stop Create</p>
 <p>Adds a STOP flag on the specific phone number and service</p>
 <dl class="field-list simple">
@@ -854,8 +876,8 @@ state the customer is in, in the given medication type</p>
 </dd></dl>
 
 <dl class="py method">
-<dt id="services.monolith.Monolith.customerStop_delete">
-<code class="sig-name descname"><span class="pre">customerStop_delete</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sesh</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#services.monolith.Monolith.customerStop_delete" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="services.monolith.Monolith.customerStop_delete">
+<span class="sig-name descname"><span class="pre">customerStop_delete</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sesh</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#services.monolith.Monolith.customerStop_delete" title="Permalink to this definition">¶</a></dt>
 <dd><p>Customer Stop Create</p>
 <p>Removes a STOP flag on the specific phone number and service</p>
 <dl class="field-list simple">
@@ -872,8 +894,8 @@ state the customer is in, in the given medication type</p>
 </dd></dl>
 
 <dl class="py method">
-<dt id="services.monolith.Monolith.customerStops_read">
-<code class="sig-name descname"><span class="pre">customerStops_read</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sesh</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#services.monolith.Monolith.customerStops_read" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="services.monolith.Monolith.customerStops_read">
+<span class="sig-name descname"><span class="pre">customerStops_read</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sesh</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#services.monolith.Monolith.customerStops_read" title="Permalink to this definition">¶</a></dt>
 <dd><p>Customer Stops</p>
 <p>Returns the list of STOP flags for all services associated with the
 phone number</p>
@@ -891,8 +913,8 @@ phone number</p>
 </dd></dl>
 
 <dl class="py method">
-<dt id="services.monolith.Monolith.encounter_read">
-<code class="sig-name descname"><span class="pre">encounter_read</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#services.monolith.Monolith.encounter_read" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="services.monolith.Monolith.encounter_read">
+<span class="sig-name descname"><span class="pre">encounter_read</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#services.monolith.Monolith.encounter_read" title="Permalink to this definition">¶</a></dt>
 <dd><p>Encounter</p>
 <p>Returns encounter type based on state</p>
 <dl class="field-list simple">
@@ -906,8 +928,8 @@ phone number</p>
 </dd></dl>
 
 <dl class="py method">
-<dt id="services.monolith.Monolith.hrtDroppedReasons_read">
-<code class="sig-name descname"><span class="pre">hrtDroppedReasons_read</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sesh</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#services.monolith.Monolith.hrtDroppedReasons_read" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="services.monolith.Monolith.hrtDroppedReasons_read">
+<span class="sig-name descname"><span class="pre">hrtDroppedReasons_read</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sesh</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#services.monolith.Monolith.hrtDroppedReasons_read" title="Permalink to this definition">¶</a></dt>
 <dd><p>HRT Dropped Reasons</p>
 <p>Returns all the available reasons for dropping an HRT patient</p>
 <dl class="field-list simple">
@@ -924,8 +946,8 @@ phone number</p>
 </dd></dl>
 
 <dl class="py method">
-<dt id="services.monolith.Monolith.hrtPatients_read">
-<code class="sig-name descname"><span class="pre">hrtPatients_read</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sesh</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#services.monolith.Monolith.hrtPatients_read" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="services.monolith.Monolith.hrtPatients_read">
+<span class="sig-name descname"><span class="pre">hrtPatients_read</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sesh</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#services.monolith.Monolith.hrtPatients_read" title="Permalink to this definition">¶</a></dt>
 <dd><p>HRT Stats</p>
 <p>Returns the breakdown of buckets to patients</p>
 <dl class="field-list simple">
@@ -942,8 +964,8 @@ phone number</p>
 </dd></dl>
 
 <dl class="py method">
-<dt id="services.monolith.Monolith.hrtStats_read">
-<code class="sig-name descname"><span class="pre">hrtStats_read</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sesh</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#services.monolith.Monolith.hrtStats_read" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="services.monolith.Monolith.hrtStats_read">
+<span class="sig-name descname"><span class="pre">hrtStats_read</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sesh</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#services.monolith.Monolith.hrtStats_read" title="Permalink to this definition">¶</a></dt>
 <dd><p>HRT Stats</p>
 <p>Returns the breakdown of buckets to patients</p>
 <dl class="field-list simple">
@@ -960,8 +982,8 @@ phone number</p>
 </dd></dl>
 
 <dl class="py method">
-<dt id="services.monolith.Monolith.initialise">
-<code class="sig-name descname"><span class="pre">initialise</span></code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#services.monolith.Monolith.initialise" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="services.monolith.Monolith.initialise">
+<span class="sig-name descname"><span class="pre">initialise</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#services.monolith.Monolith.initialise" title="Permalink to this definition">¶</a></dt>
 <dd><p>Initialise</p>
 <p>Initialises the instance and returns itself for chaining</p>
 <dl class="field-list simple">
@@ -972,8 +994,8 @@ phone number</p>
 </dd></dl>
 
 <dl class="py method">
-<dt id="services.monolith.Monolith.install">
-<em class="property"><span class="pre">classmethod</span> </em><code class="sig-name descname"><span class="pre">install</span></code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#services.monolith.Monolith.install" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="services.monolith.Monolith.install">
+<em class="property"><span class="pre">classmethod</span> </em><span class="sig-name descname"><span class="pre">install</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#services.monolith.Monolith.install" title="Permalink to this definition">¶</a></dt>
 <dd><p>Install</p>
 <p>The service’s install method, used to setup storage or other one time
 install configurations</p>
@@ -985,8 +1007,8 @@ install configurations</p>
 </dd></dl>
 
 <dl class="py method">
-<dt id="services.monolith.Monolith.internalCustomersWithClaimed_read">
-<code class="sig-name descname"><span class="pre">internalCustomersWithClaimed_read</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sesh</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#services.monolith.Monolith.internalCustomersWithClaimed_read" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="services.monolith.Monolith.internalCustomersWithClaimed_read">
+<span class="sig-name descname"><span class="pre">internalCustomersWithClaimed_read</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sesh</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#services.monolith.Monolith.internalCustomersWithClaimed_read" title="Permalink to this definition">¶</a></dt>
 <dd><p>Internal: Customers with Claimed</p>
 <p>Returns data on the list of customer IDs passed including whether
 they’re claimed by an agent or not</p>
@@ -1004,8 +1026,40 @@ they’re claimed by an agent or not</p>
 </dd></dl>
 
 <dl class="py method">
-<dt id="services.monolith.Monolith.messageIncoming_create">
-<code class="sig-name descname"><span class="pre">messageIncoming_create</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#services.monolith.Monolith.messageIncoming_create" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="services.monolith.Monolith.internalIncomingSms_read">
+<span class="sig-name descname"><span class="pre">internalIncomingSms_read</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#services.monolith.Monolith.internalIncomingSms_read" title="Permalink to this definition">¶</a></dt>
+<dd><p>Internal: Incoming SMS</p>
+<p>Used by the CSR service to get the list of incoming SMS message IDs in
+a range so they can be associated to tickets</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>data</strong> (<em>dict</em>) – Data sent with the request</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>Services.Response</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="services.monolith.Monolith.internalTicketInfo_read">
+<span class="sig-name descname"><span class="pre">internalTicketInfo_read</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#services.monolith.Monolith.internalTicketInfo_read" title="Permalink to this definition">¶</a></dt>
+<dd><p>Internal: Ticket Info</p>
+<p>Gets a list of IDs for notes, SMSs, emails, etc and returns the data
+associated with each</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>data</strong> (<em>dict</em>) – Data sent with the request</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>Services.Response</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="services.monolith.Monolith.messageIncoming_create">
+<span class="sig-name descname"><span class="pre">messageIncoming_create</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#services.monolith.Monolith.messageIncoming_create" title="Permalink to this definition">¶</a></dt>
 <dd><p>Message Incoming</p>
 <p>Adds a new message from a customer</p>
 <dl class="field-list simple">
@@ -1019,8 +1073,8 @@ they’re claimed by an agent or not</p>
 </dd></dl>
 
 <dl class="py method">
-<dt id="services.monolith.Monolith.messageOutgoing_create">
-<code class="sig-name descname"><span class="pre">messageOutgoing_create</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sesh</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#services.monolith.Monolith.messageOutgoing_create" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="services.monolith.Monolith.messageOutgoing_create">
+<span class="sig-name descname"><span class="pre">messageOutgoing_create</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sesh</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#services.monolith.Monolith.messageOutgoing_create" title="Permalink to this definition">¶</a></dt>
 <dd><p>Message Outgoing</p>
 <p>Sends a message to the customer</p>
 <dl class="field-list simple">
@@ -1037,8 +1091,8 @@ they’re claimed by an agent or not</p>
 </dd></dl>
 
 <dl class="py method">
-<dt id="services.monolith.Monolith.msgsClaimedNew_read">
-<code class="sig-name descname"><span class="pre">msgsClaimedNew_read</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sesh</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#services.monolith.Monolith.msgsClaimedNew_read" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="services.monolith.Monolith.msgsClaimedNew_read">
+<span class="sig-name descname"><span class="pre">msgsClaimedNew_read</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sesh</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#services.monolith.Monolith.msgsClaimedNew_read" title="Permalink to this definition">¶</a></dt>
 <dd><p>Messages Claimed New</p>
 <p>Checks if there’s any new messages in the given conversations</p>
 <dl class="field-list simple">
@@ -1055,8 +1109,8 @@ they’re claimed by an agent or not</p>
 </dd></dl>
 
 <dl class="py method">
-<dt id="services.monolith.Monolith.msgsClaimed_read">
-<code class="sig-name descname"><span class="pre">msgsClaimed_read</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sesh</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#services.monolith.Monolith.msgsClaimed_read" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="services.monolith.Monolith.msgsClaimed_read">
+<span class="sig-name descname"><span class="pre">msgsClaimed_read</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sesh</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#services.monolith.Monolith.msgsClaimed_read" title="Permalink to this definition">¶</a></dt>
 <dd><p>Messages: Claimed</p>
 <p>Fetches the list of phone numbers and name associated that the
 user has claimed</p>
@@ -1074,8 +1128,8 @@ user has claimed</p>
 </dd></dl>
 
 <dl class="py method">
-<dt id="services.monolith.Monolith.msgsSearchCustomer_read">
-<code class="sig-name descname"><span class="pre">msgsSearchCustomer_read</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sesh</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#services.monolith.Monolith.msgsSearchCustomer_read" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="services.monolith.Monolith.msgsSearchCustomer_read">
+<span class="sig-name descname"><span class="pre">msgsSearchCustomer_read</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sesh</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#services.monolith.Monolith.msgsSearchCustomer_read" title="Permalink to this definition">¶</a></dt>
 <dd><p>Messages: Search Customer</p>
 <p>Searchs for a customer matching the values, then finds the associated
 conversation</p>
@@ -1093,8 +1147,8 @@ conversation</p>
 </dd></dl>
 
 <dl class="py method">
-<dt id="services.monolith.Monolith.msgsSearch_read">
-<code class="sig-name descname"><span class="pre">msgsSearch_read</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sesh</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#services.monolith.Monolith.msgsSearch_read" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="services.monolith.Monolith.msgsSearch_read">
+<span class="sig-name descname"><span class="pre">msgsSearch_read</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sesh</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#services.monolith.Monolith.msgsSearch_read" title="Permalink to this definition">¶</a></dt>
 <dd><p>Messages: Search</p>
 <p>Searchs the message summaries and returns whatever’s found</p>
 <dl class="field-list simple">
@@ -1111,8 +1165,8 @@ conversation</p>
 </dd></dl>
 
 <dl class="py method">
-<dt id="services.monolith.Monolith.msgsStatus_read">
-<code class="sig-name descname"><span class="pre">msgsStatus_read</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sesh</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#services.monolith.Monolith.msgsStatus_read" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="services.monolith.Monolith.msgsStatus_read">
+<span class="sig-name descname"><span class="pre">msgsStatus_read</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sesh</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#services.monolith.Monolith.msgsStatus_read" title="Permalink to this definition">¶</a></dt>
 <dd><p>Messages: Status</p>
 <p>Get the status of a sent messages</p>
 <dl class="field-list simple">
@@ -1129,8 +1183,8 @@ conversation</p>
 </dd></dl>
 
 <dl class="py method">
-<dt id="services.monolith.Monolith.msgsUnclaimedCount_read">
-<code class="sig-name descname"><span class="pre">msgsUnclaimedCount_read</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sesh</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#services.monolith.Monolith.msgsUnclaimedCount_read" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="services.monolith.Monolith.msgsUnclaimedCount_read">
+<span class="sig-name descname"><span class="pre">msgsUnclaimedCount_read</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sesh</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#services.monolith.Monolith.msgsUnclaimedCount_read" title="Permalink to this definition">¶</a></dt>
 <dd><p>Messages: Unclaimed Count</p>
 <p>Fetches the count of all summaries with incoming messages that have not
 been hidden or already claimed by a rep</p>
@@ -1148,8 +1202,8 @@ been hidden or already claimed by a rep</p>
 </dd></dl>
 
 <dl class="py method">
-<dt id="services.monolith.Monolith.msgsUnclaimed_read">
-<code class="sig-name descname"><span class="pre">msgsUnclaimed_read</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sesh</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#services.monolith.Monolith.msgsUnclaimed_read" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="services.monolith.Monolith.msgsUnclaimed_read">
+<span class="sig-name descname"><span class="pre">msgsUnclaimed_read</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sesh</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#services.monolith.Monolith.msgsUnclaimed_read" title="Permalink to this definition">¶</a></dt>
 <dd><p>Messages: Unclaimed</p>
 <p>Fetches all summaries with incoming messages that have not been hidden
 or already claimed by a rep</p>
@@ -1167,8 +1221,8 @@ or already claimed by a rep</p>
 </dd></dl>
 
 <dl class="py method">
-<dt id="services.monolith.Monolith.notesNew_read">
-<code class="sig-name descname"><span class="pre">notesNew_read</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sesh</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#services.monolith.Monolith.notesNew_read" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="services.monolith.Monolith.notesNew_read">
+<span class="sig-name descname"><span class="pre">notesNew_read</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sesh</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#services.monolith.Monolith.notesNew_read" title="Permalink to this definition">¶</a></dt>
 <dd><p>Notes New</p>
 <p>Checks if there’s any new notes for the given customers</p>
 <dl class="field-list simple">
@@ -1185,8 +1239,8 @@ or already claimed by a rep</p>
 </dd></dl>
 
 <dl class="py method">
-<dt id="services.monolith.Monolith.orderApprove_update">
-<code class="sig-name descname"><span class="pre">orderApprove_update</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sesh</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#services.monolith.Monolith.orderApprove_update" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="services.monolith.Monolith.orderApprove_update">
+<span class="sig-name descname"><span class="pre">orderApprove_update</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sesh</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#services.monolith.Monolith.orderApprove_update" title="Permalink to this definition">¶</a></dt>
 <dd><p>Order Approve</p>
 <p>Handles requests related to approving an order</p>
 <dl class="field-list simple">
@@ -1203,8 +1257,8 @@ or already claimed by a rep</p>
 </dd></dl>
 
 <dl class="py method">
-<dt id="services.monolith.Monolith.orderClaimView_update">
-<code class="sig-name descname"><span class="pre">orderClaimView_update</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sesh</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#services.monolith.Monolith.orderClaimView_update" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="services.monolith.Monolith.orderClaimView_update">
+<span class="sig-name descname"><span class="pre">orderClaimView_update</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sesh</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#services.monolith.Monolith.orderClaimView_update" title="Permalink to this definition">¶</a></dt>
 <dd><p>Order Claim View</p>
 <p>Marks the claim as viewed for the first time</p>
 <dl class="field-list simple">
@@ -1221,8 +1275,8 @@ or already claimed by a rep</p>
 </dd></dl>
 
 <dl class="py method">
-<dt id="services.monolith.Monolith.orderClaim_create">
-<code class="sig-name descname"><span class="pre">orderClaim_create</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sesh</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#services.monolith.Monolith.orderClaim_create" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="services.monolith.Monolith.orderClaim_create">
+<span class="sig-name descname"><span class="pre">orderClaim_create</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sesh</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#services.monolith.Monolith.orderClaim_create" title="Permalink to this definition">¶</a></dt>
 <dd><p>Order Claim Create</p>
 <p>Stores a record to claim a PENDING order</p>
 <dl class="field-list simple">
@@ -1239,8 +1293,8 @@ or already claimed by a rep</p>
 </dd></dl>
 
 <dl class="py method">
-<dt id="services.monolith.Monolith.orderClaim_delete">
-<code class="sig-name descname"><span class="pre">orderClaim_delete</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sesh</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#services.monolith.Monolith.orderClaim_delete" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="services.monolith.Monolith.orderClaim_delete">
+<span class="sig-name descname"><span class="pre">orderClaim_delete</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sesh</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#services.monolith.Monolith.orderClaim_delete" title="Permalink to this definition">¶</a></dt>
 <dd><p>Order Claim Delete</p>
 <p>Deletes a record to claim a customer conversation by a order</p>
 <dl class="field-list simple">
@@ -1257,8 +1311,8 @@ or already claimed by a rep</p>
 </dd></dl>
 
 <dl class="py method">
-<dt id="services.monolith.Monolith.orderClaimed_read">
-<code class="sig-name descname"><span class="pre">orderClaimed_read</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sesh</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#services.monolith.Monolith.orderClaimed_read" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="services.monolith.Monolith.orderClaimed_read">
+<span class="sig-name descname"><span class="pre">orderClaimed_read</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sesh</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#services.monolith.Monolith.orderClaimed_read" title="Permalink to this definition">¶</a></dt>
 <dd><p>Order Claimed</p>
 <p>Fetches the list of customers and name associated that the user has
 claimed</p>
@@ -1276,8 +1330,8 @@ claimed</p>
 </dd></dl>
 
 <dl class="py method">
-<dt id="services.monolith.Monolith.orderContinuousApprove_update">
-<code class="sig-name descname"><span class="pre">orderContinuousApprove_update</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sesh</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#services.monolith.Monolith.orderContinuousApprove_update" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="services.monolith.Monolith.orderContinuousApprove_update">
+<span class="sig-name descname"><span class="pre">orderContinuousApprove_update</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sesh</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#services.monolith.Monolith.orderContinuousApprove_update" title="Permalink to this definition">¶</a></dt>
 <dd><p>Order Continuous Approve</p>
 <p>Updates the status of a continuous order to Approved</p>
 <dl class="field-list simple">
@@ -1294,8 +1348,8 @@ claimed</p>
 </dd></dl>
 
 <dl class="py method">
-<dt id="services.monolith.Monolith.orderContinuousCancel_update">
-<code class="sig-name descname"><span class="pre">orderContinuousCancel_update</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sesh</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#services.monolith.Monolith.orderContinuousCancel_update" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="services.monolith.Monolith.orderContinuousCancel_update">
+<span class="sig-name descname"><span class="pre">orderContinuousCancel_update</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sesh</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#services.monolith.Monolith.orderContinuousCancel_update" title="Permalink to this definition">¶</a></dt>
 <dd><p>Order Continuous Cancel</p>
 <p>Remove a continuous order completely, most likely because the patient
 doesn’t actually want more medication, or because their prescription
@@ -1314,8 +1368,8 @@ has changed</p>
 </dd></dl>
 
 <dl class="py method">
-<dt id="services.monolith.Monolith.orderContinuousDecline_update">
-<code class="sig-name descname"><span class="pre">orderContinuousDecline_update</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sesh</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#services.monolith.Monolith.orderContinuousDecline_update" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="services.monolith.Monolith.orderContinuousDecline_update">
+<span class="sig-name descname"><span class="pre">orderContinuousDecline_update</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sesh</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#services.monolith.Monolith.orderContinuousDecline_update" title="Permalink to this definition">¶</a></dt>
 <dd><p>Order Continuous Decline</p>
 <p>Updates the status of a continuous order to Declined</p>
 <dl class="field-list simple">
@@ -1332,8 +1386,8 @@ has changed</p>
 </dd></dl>
 
 <dl class="py method">
-<dt id="services.monolith.Monolith.orderContinuous_create">
-<code class="sig-name descname"><span class="pre">orderContinuous_create</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sesh</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#services.monolith.Monolith.orderContinuous_create" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="services.monolith.Monolith.orderContinuous_create">
+<span class="sig-name descname"><span class="pre">orderContinuous_create</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sesh</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#services.monolith.Monolith.orderContinuous_create" title="Permalink to this definition">¶</a></dt>
 <dd><p>Order Continuous Create</p>
 <p>Creates a new continuous order using an existing KNK order ID</p>
 <dl class="field-list simple">
@@ -1350,8 +1404,8 @@ has changed</p>
 </dd></dl>
 
 <dl class="py method">
-<dt id="services.monolith.Monolith.orderContinuous_read">
-<code class="sig-name descname"><span class="pre">orderContinuous_read</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sesh</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#services.monolith.Monolith.orderContinuous_read" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="services.monolith.Monolith.orderContinuous_read">
+<span class="sig-name descname"><span class="pre">orderContinuous_read</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sesh</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#services.monolith.Monolith.orderContinuous_read" title="Permalink to this definition">¶</a></dt>
 <dd><p>Order Continuous Read</p>
 <p>Returns the details of the continuous order using the base KNK order
 as a starting point</p>
@@ -1369,8 +1423,8 @@ as a starting point</p>
 </dd></dl>
 
 <dl class="py method">
-<dt id="services.monolith.Monolith.orderDecline_update">
-<code class="sig-name descname"><span class="pre">orderDecline_update</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sesh</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#services.monolith.Monolith.orderDecline_update" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="services.monolith.Monolith.orderDecline_update">
+<span class="sig-name descname"><span class="pre">orderDecline_update</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sesh</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#services.monolith.Monolith.orderDecline_update" title="Permalink to this definition">¶</a></dt>
 <dd><p>Order Decline</p>
 <p>Handles requests related to declining an order</p>
 <dl class="field-list simple">
@@ -1387,8 +1441,8 @@ as a starting point</p>
 </dd></dl>
 
 <dl class="py method">
-<dt id="services.monolith.Monolith.orderLabel_update">
-<code class="sig-name descname"><span class="pre">orderLabel_update</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sesh</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#services.monolith.Monolith.orderLabel_update" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="services.monolith.Monolith.orderLabel_update">
+<span class="sig-name descname"><span class="pre">orderLabel_update</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sesh</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#services.monolith.Monolith.orderLabel_update" title="Permalink to this definition">¶</a></dt>
 <dd><p>Order Label</p>
 <p>Creates or updates the label associated with an order</p>
 <dl class="field-list simple">
@@ -1405,8 +1459,8 @@ as a starting point</p>
 </dd></dl>
 
 <dl class="py method">
-<dt id="services.monolith.Monolith.orderRefresh_update">
-<code class="sig-name descname"><span class="pre">orderRefresh_update</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sesh</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#services.monolith.Monolith.orderRefresh_update" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="services.monolith.Monolith.orderRefresh_update">
+<span class="sig-name descname"><span class="pre">orderRefresh_update</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sesh</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#services.monolith.Monolith.orderRefresh_update" title="Permalink to this definition">¶</a></dt>
 <dd><p>Order Refresh</p>
 <p>Welcome to the stupidity that is Memo</p>
 <dl class="field-list simple">
@@ -1423,8 +1477,8 @@ as a starting point</p>
 </dd></dl>
 
 <dl class="py method">
-<dt id="services.monolith.Monolith.orderTransfer_update">
-<code class="sig-name descname"><span class="pre">orderTransfer_update</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sesh</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#services.monolith.Monolith.orderTransfer_update" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="services.monolith.Monolith.orderTransfer_update">
+<span class="sig-name descname"><span class="pre">orderTransfer_update</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sesh</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#services.monolith.Monolith.orderTransfer_update" title="Permalink to this definition">¶</a></dt>
 <dd><p>Order Transfer</p>
 <p>Sends an order to an agent</p>
 <dl class="field-list simple">
@@ -1441,8 +1495,8 @@ as a starting point</p>
 </dd></dl>
 
 <dl class="py method">
-<dt id="services.monolith.Monolith.ordersPendingCounts_read">
-<code class="sig-name descname"><span class="pre">ordersPendingCounts_read</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sesh</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#services.monolith.Monolith.ordersPendingCounts_read" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="services.monolith.Monolith.ordersPendingCounts_read">
+<span class="sig-name descname"><span class="pre">ordersPendingCounts_read</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sesh</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#services.monolith.Monolith.ordersPendingCounts_read" title="Permalink to this definition">¶</a></dt>
 <dd><p>Orders Pending Counts</p>
 <p>Returns the pending order counts by state</p>
 <dl class="field-list simple">
@@ -1459,8 +1513,8 @@ as a starting point</p>
 </dd></dl>
 
 <dl class="py method">
-<dt id="services.monolith.Monolith.ordersPendingCsrCount_read">
-<code class="sig-name descname"><span class="pre">ordersPendingCsrCount_read</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sesh</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#services.monolith.Monolith.ordersPendingCsrCount_read" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="services.monolith.Monolith.ordersPendingCsrCount_read">
+<span class="sig-name descname"><span class="pre">ordersPendingCsrCount_read</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sesh</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#services.monolith.Monolith.ordersPendingCsrCount_read" title="Permalink to this definition">¶</a></dt>
 <dd><p>Orders Pending CSR Count</p>
 <p>Returns the count of unclaimed orders to to the CSR role</p>
 <dl class="field-list simple">
@@ -1477,8 +1531,8 @@ as a starting point</p>
 </dd></dl>
 
 <dl class="py method">
-<dt id="services.monolith.Monolith.ordersPendingCsr_read">
-<code class="sig-name descname"><span class="pre">ordersPendingCsr_read</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sesh</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#services.monolith.Monolith.ordersPendingCsr_read" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="services.monolith.Monolith.ordersPendingCsr_read">
+<span class="sig-name descname"><span class="pre">ordersPendingCsr_read</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sesh</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#services.monolith.Monolith.ordersPendingCsr_read" title="Permalink to this definition">¶</a></dt>
 <dd><p>Order Pending CSR</p>
 <p>Returns the unclaimed orders set to the CSR role</p>
 <dl class="field-list simple">
@@ -1495,8 +1549,8 @@ as a starting point</p>
 </dd></dl>
 
 <dl class="py method">
-<dt id="services.monolith.Monolith.ordersPendingProviderEdCont_read">
-<code class="sig-name descname"><span class="pre">ordersPendingProviderEdCont_read</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sesh</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#services.monolith.Monolith.ordersPendingProviderEdCont_read" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="services.monolith.Monolith.ordersPendingProviderEdCont_read">
+<span class="sig-name descname"><span class="pre">ordersPendingProviderEdCont_read</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sesh</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#services.monolith.Monolith.ordersPendingProviderEdCont_read" title="Permalink to this definition">¶</a></dt>
 <dd><p>Order Pending Provider ED</p>
 <p>Returns the unclaimed pending ED orders</p>
 <dl class="field-list simple">
@@ -1513,8 +1567,8 @@ as a starting point</p>
 </dd></dl>
 
 <dl class="py method">
-<dt id="services.monolith.Monolith.ordersPendingProviderEd_read">
-<code class="sig-name descname"><span class="pre">ordersPendingProviderEd_read</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sesh</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#services.monolith.Monolith.ordersPendingProviderEd_read" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="services.monolith.Monolith.ordersPendingProviderEd_read">
+<span class="sig-name descname"><span class="pre">ordersPendingProviderEd_read</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sesh</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#services.monolith.Monolith.ordersPendingProviderEd_read" title="Permalink to this definition">¶</a></dt>
 <dd><p>Order Pending Provider ED</p>
 <p>Returns the unclaimed pending ED orders</p>
 <dl class="field-list simple">
@@ -1531,8 +1585,8 @@ as a starting point</p>
 </dd></dl>
 
 <dl class="py method">
-<dt id="services.monolith.Monolith.ordersPendingProviderHrtCont_read">
-<code class="sig-name descname"><span class="pre">ordersPendingProviderHrtCont_read</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sesh</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#services.monolith.Monolith.ordersPendingProviderHrtCont_read" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="services.monolith.Monolith.ordersPendingProviderHrtCont_read">
+<span class="sig-name descname"><span class="pre">ordersPendingProviderHrtCont_read</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sesh</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#services.monolith.Monolith.ordersPendingProviderHrtCont_read" title="Permalink to this definition">¶</a></dt>
 <dd><p>Order Pending Provider HRT</p>
 <p>Returns the unclaimed pending HRT orders</p>
 <dl class="field-list simple">
@@ -1549,8 +1603,8 @@ as a starting point</p>
 </dd></dl>
 
 <dl class="py method">
-<dt id="services.monolith.Monolith.ordersPendingProviderHrt_read">
-<code class="sig-name descname"><span class="pre">ordersPendingProviderHrt_read</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sesh</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#services.monolith.Monolith.ordersPendingProviderHrt_read" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="services.monolith.Monolith.ordersPendingProviderHrt_read">
+<span class="sig-name descname"><span class="pre">ordersPendingProviderHrt_read</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sesh</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#services.monolith.Monolith.ordersPendingProviderHrt_read" title="Permalink to this definition">¶</a></dt>
 <dd><p>Order Pending Provider HRT</p>
 <p>Returns the unclaimed pending HRT orders</p>
 <dl class="field-list simple">
@@ -1567,8 +1621,8 @@ as a starting point</p>
 </dd></dl>
 
 <dl class="py method">
-<dt id="services.monolith.Monolith.passwdForgot_create">
-<code class="sig-name descname"><span class="pre">passwdForgot_create</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#services.monolith.Monolith.passwdForgot_create" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="services.monolith.Monolith.passwdForgot_create">
+<span class="sig-name descname"><span class="pre">passwdForgot_create</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#services.monolith.Monolith.passwdForgot_create" title="Permalink to this definition">¶</a></dt>
 <dd><p>Password Forgot (Generate)</p>
 <p>Creates the key that will be used to allow a user to change their
 password if they forgot it</p>
@@ -1583,8 +1637,8 @@ password if they forgot it</p>
 </dd></dl>
 
 <dl class="py method">
-<dt id="services.monolith.Monolith.passwdForgot_update">
-<code class="sig-name descname"><span class="pre">passwdForgot_update</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#services.monolith.Monolith.passwdForgot_update" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="services.monolith.Monolith.passwdForgot_update">
+<span class="sig-name descname"><span class="pre">passwdForgot_update</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#services.monolith.Monolith.passwdForgot_update" title="Permalink to this definition">¶</a></dt>
 <dd><p>Password Forgot (Change Password)</p>
 <p>Validates the key and changes the password to the given value</p>
 <dl class="field-list simple">
@@ -1598,8 +1652,8 @@ password if they forgot it</p>
 </dd></dl>
 
 <dl class="py method">
-<dt id="services.monolith.Monolith.phoneChange_update">
-<code class="sig-name descname"><span class="pre">phoneChange_update</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sesh</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#services.monolith.Monolith.phoneChange_update" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="services.monolith.Monolith.phoneChange_update">
+<span class="sig-name descname"><span class="pre">phoneChange_update</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sesh</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#services.monolith.Monolith.phoneChange_update" title="Permalink to this definition">¶</a></dt>
 <dd><p>Phone Change</p>
 <p>Changes the phone number associated with a customer and all records
 associated with that number</p>
@@ -1617,8 +1671,8 @@ associated with that number</p>
 </dd></dl>
 
 <dl class="py method">
-<dt id="services.monolith.Monolith.providerCalendly_read">
-<code class="sig-name descname"><span class="pre">providerCalendly_read</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sesh</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#services.monolith.Monolith.providerCalendly_read" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="services.monolith.Monolith.providerCalendly_read">
+<span class="sig-name descname"><span class="pre">providerCalendly_read</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sesh</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#services.monolith.Monolith.providerCalendly_read" title="Permalink to this definition">¶</a></dt>
 <dd><p>Provider Calendly</p>
 <p>Returns all upcoming appointments associated with the provider</p>
 <dl class="field-list simple">
@@ -1635,8 +1689,8 @@ associated with that number</p>
 </dd></dl>
 
 <dl class="py method">
-<dt id="services.monolith.Monolith.providerClaim_delete">
-<code class="sig-name descname"><span class="pre">providerClaim_delete</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sesh</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#services.monolith.Monolith.providerClaim_delete" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="services.monolith.Monolith.providerClaim_delete">
+<span class="sig-name descname"><span class="pre">providerClaim_delete</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sesh</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#services.monolith.Monolith.providerClaim_delete" title="Permalink to this definition">¶</a></dt>
 <dd><p>Provider Claim Delete</p>
 <p>Deletes an existing claim</p>
 <dl class="field-list simple">
@@ -1653,8 +1707,8 @@ associated with that number</p>
 </dd></dl>
 
 <dl class="py method">
-<dt id="services.monolith.Monolith.providerClaims_read">
-<code class="sig-name descname"><span class="pre">providerClaims_read</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sesh</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#services.monolith.Monolith.providerClaims_read" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="services.monolith.Monolith.providerClaims_read">
+<span class="sig-name descname"><span class="pre">providerClaims_read</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sesh</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#services.monolith.Monolith.providerClaims_read" title="Permalink to this definition">¶</a></dt>
 <dd><p>Provider Claims</p>
 <p>Returns all claims by all providers currently in the system</p>
 <dl class="field-list simple">
@@ -1671,8 +1725,8 @@ associated with that number</p>
 </dd></dl>
 
 <dl class="py method">
-<dt id="services.monolith.Monolith.providerSms_create">
-<code class="sig-name descname"><span class="pre">providerSms_create</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sesh</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#services.monolith.Monolith.providerSms_create" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="services.monolith.Monolith.providerSms_create">
+<span class="sig-name descname"><span class="pre">providerSms_create</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sesh</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#services.monolith.Monolith.providerSms_create" title="Permalink to this definition">¶</a></dt>
 <dd><p>Provider SMS</p>
 <p>Sends an SMS from a provider to a customer and stores it in the notes</p>
 <dl class="field-list simple">
@@ -1689,8 +1743,8 @@ associated with that number</p>
 </dd></dl>
 
 <dl class="py method">
-<dt id="services.monolith.Monolith.providers_read">
-<code class="sig-name descname"><span class="pre">providers_read</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sesh</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#services.monolith.Monolith.providers_read" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="services.monolith.Monolith.providers_read">
+<span class="sig-name descname"><span class="pre">providers_read</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sesh</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#services.monolith.Monolith.providers_read" title="Permalink to this definition">¶</a></dt>
 <dd><p>Providers</p>
 <p>Returns a map of user ID to name of only Doctor users</p>
 <dl class="field-list simple">
@@ -1707,8 +1761,8 @@ associated with that number</p>
 </dd></dl>
 
 <dl class="py method">
-<dt id="services.monolith.Monolith.signin_create">
-<code class="sig-name descname"><span class="pre">signin_create</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#services.monolith.Monolith.signin_create" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="services.monolith.Monolith.signin_create">
+<span class="sig-name descname"><span class="pre">signin_create</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#services.monolith.Monolith.signin_create" title="Permalink to this definition">¶</a></dt>
 <dd><p>Signin</p>
 <p>Used to verify a user sign in, but doesn’t actually create the session.
 Can only be called by other services</p>
@@ -1723,8 +1777,8 @@ Can only be called by other services</p>
 </dd></dl>
 
 <dl class="py method">
-<dt id="services.monolith.Monolith.statsClaimed_read">
-<code class="sig-name descname"><span class="pre">statsClaimed_read</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sesh</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#services.monolith.Monolith.statsClaimed_read" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="services.monolith.Monolith.statsClaimed_read">
+<span class="sig-name descname"><span class="pre">statsClaimed_read</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sesh</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#services.monolith.Monolith.statsClaimed_read" title="Permalink to this definition">¶</a></dt>
 <dd><p>Stats: Claimed</p>
 <p>Fetchs the number of claims made by users</p>
 <dl class="field-list simple">
@@ -1741,8 +1795,8 @@ Can only be called by other services</p>
 </dd></dl>
 
 <dl class="py method">
-<dt id="services.monolith.Monolith.userActive_update">
-<code class="sig-name descname"><span class="pre">userActive_update</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sesh</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#services.monolith.Monolith.userActive_update" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="services.monolith.Monolith.userActive_update">
+<span class="sig-name descname"><span class="pre">userActive_update</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sesh</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#services.monolith.Monolith.userActive_update" title="Permalink to this definition">¶</a></dt>
 <dd><p>User Active</p>
 <p>Updates the active flag on a user to true (Y) or false (N)</p>
 <dl class="field-list simple">
@@ -1759,8 +1813,8 @@ Can only be called by other services</p>
 </dd></dl>
 
 <dl class="py method">
-<dt id="services.monolith.Monolith.userId_read">
-<code class="sig-name descname"><span class="pre">userId_read</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#services.monolith.Monolith.userId_read" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="services.monolith.Monolith.userId_read">
+<span class="sig-name descname"><span class="pre">userId_read</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#services.monolith.Monolith.userId_read" title="Permalink to this definition">¶</a></dt>
 <dd><p>User ID</p>
 <p>Fetches the ID of a user based on one or multiple fields in the User
 table</p>
@@ -1775,8 +1829,8 @@ table</p>
 </dd></dl>
 
 <dl class="py method">
-<dt id="services.monolith.Monolith.userName_read">
-<code class="sig-name descname"><span class="pre">userName_read</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sesh</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#services.monolith.Monolith.userName_read" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="services.monolith.Monolith.userName_read">
+<span class="sig-name descname"><span class="pre">userName_read</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sesh</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#services.monolith.Monolith.userName_read" title="Permalink to this definition">¶</a></dt>
 <dd><p>User Name</p>
 <p>Fetchs one or more names based on IDs, returns as a dictionary (one ID)
 or of ID to name (multiple IDs)</p>
@@ -1794,8 +1848,8 @@ or of ID to name (multiple IDs)</p>
 </dd></dl>
 
 <dl class="py method">
-<dt id="services.monolith.Monolith.userPasswd_update">
-<code class="sig-name descname"><span class="pre">userPasswd_update</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sesh</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#services.monolith.Monolith.userPasswd_update" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="services.monolith.Monolith.userPasswd_update">
+<span class="sig-name descname"><span class="pre">userPasswd_update</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sesh</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#services.monolith.Monolith.userPasswd_update" title="Permalink to this definition">¶</a></dt>
 <dd><p>User Password</p>
 <p>Changes the password for the current signed in user</p>
 <dl class="field-list simple">
@@ -1812,8 +1866,8 @@ or of ID to name (multiple IDs)</p>
 </dd></dl>
 
 <dl class="py method">
-<dt id="services.monolith.Monolith.user_create">
-<code class="sig-name descname"><span class="pre">user_create</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sesh</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#services.monolith.Monolith.user_create" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="services.monolith.Monolith.user_create">
+<span class="sig-name descname"><span class="pre">user_create</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sesh</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#services.monolith.Monolith.user_create" title="Permalink to this definition">¶</a></dt>
 <dd><p>User Create</p>
 <p>Creates a new user</p>
 <dl class="field-list simple">
@@ -1830,8 +1884,8 @@ or of ID to name (multiple IDs)</p>
 </dd></dl>
 
 <dl class="py method">
-<dt id="services.monolith.Monolith.user_read">
-<code class="sig-name descname"><span class="pre">user_read</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sesh</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#services.monolith.Monolith.user_read" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="services.monolith.Monolith.user_read">
+<span class="sig-name descname"><span class="pre">user_read</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sesh</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#services.monolith.Monolith.user_read" title="Permalink to this definition">¶</a></dt>
 <dd><p>User Read</p>
 <p>Fetches the logged in user and returns their data</p>
 <dl class="field-list simple">
@@ -1848,8 +1902,8 @@ or of ID to name (multiple IDs)</p>
 </dd></dl>
 
 <dl class="py method">
-<dt id="services.monolith.Monolith.user_update">
-<code class="sig-name descname"><span class="pre">user_update</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sesh</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#services.monolith.Monolith.user_update" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="services.monolith.Monolith.user_update">
+<span class="sig-name descname"><span class="pre">user_update</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sesh</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#services.monolith.Monolith.user_update" title="Permalink to this definition">¶</a></dt>
 <dd><p>User Update</p>
 <p>Updates the logged in user</p>
 <dl class="field-list simple">
@@ -1866,8 +1920,8 @@ or of ID to name (multiple IDs)</p>
 </dd></dl>
 
 <dl class="py method">
-<dt id="services.monolith.Monolith.users_read">
-<code class="sig-name descname"><span class="pre">users_read</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sesh</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#services.monolith.Monolith.users_read" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="services.monolith.Monolith.users_read">
+<span class="sig-name descname"><span class="pre">users_read</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sesh</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#services.monolith.Monolith.users_read" title="Permalink to this definition">¶</a></dt>
 <dd><p>Users</p>
 <p>Returns users by ID</p>
 <dl class="field-list simple">
@@ -1884,8 +1938,8 @@ or of ID to name (multiple IDs)</p>
 </dd></dl>
 
 <dl class="py method">
-<dt id="services.monolith.Monolith.workflow_create">
-<code class="sig-name descname"><span class="pre">workflow_create</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#services.monolith.Monolith.workflow_create" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="services.monolith.Monolith.workflow_create">
+<span class="sig-name descname"><span class="pre">workflow_create</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#services.monolith.Monolith.workflow_create" title="Permalink to this definition">¶</a></dt>
 <dd><p>Workflow</p>
 <p>Works as a passthrough for SMS Workflow requests</p>
 <dl class="field-list simple">

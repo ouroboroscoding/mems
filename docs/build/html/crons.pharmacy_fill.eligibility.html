@@ -13,6 +13,8 @@
   
   <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
   <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+  <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+  <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
 
   
   
@@ -29,6 +31,7 @@
   
     
       <script type="text/javascript" id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
+        <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
         <script src="_static/jquery.js"></script>
         <script src="_static/underscore.js"></script>
         <script src="_static/doctools.js"></script>
@@ -155,10 +158,10 @@
   <div class="section" id="module-crons.pharmacy_fill.eligibility">
 <span id="crons-pharmacy-fill-eligibility-module"></span><h1>crons.pharmacy_fill.eligibility module<a class="headerlink" href="#module-crons.pharmacy_fill.eligibility" title="Permalink to this headline">¶</a></h1>
 <p>Pharmacy Fill</p>
-<p>Generates the proper reports for pharmacies to fill new and recurring orders</p>
+<p>Generates the eligibility report for WellDyne</p>
 <dl class="py function">
-<dt id="crons.pharmacy_fill.eligibility.run">
-<code class="sig-prename descclassname"><span class="pre">crons.pharmacy_fill.eligibility.</span></code><code class="sig-name descname"><span class="pre">run</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">period</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#crons.pharmacy_fill.eligibility.run" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="crons.pharmacy_fill.eligibility.run">
+<span class="sig-prename descclassname"><span class="pre">crons.pharmacy_fill.eligibility.</span></span><span class="sig-name descname"><span class="pre">run</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">period</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#crons.pharmacy_fill.eligibility.run" title="Permalink to this definition">¶</a></dt>
 <dd><p>Run</p>
 <p>Fetches all transactions, outbound, and fill errors for the given time
 period and generates the appropriate pharmacy files for records</p>

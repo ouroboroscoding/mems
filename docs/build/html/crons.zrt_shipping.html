@@ -13,6 +13,8 @@
   
   <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
   <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+  <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+  <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
 
   
   
@@ -29,6 +31,7 @@
   
     
       <script type="text/javascript" id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
+        <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
         <script src="_static/jquery.js"></script>
         <script src="_static/underscore.js"></script>
         <script src="_static/doctools.js"></script>
@@ -157,8 +160,8 @@
 <p>ZRT Shipping</p>
 <p>Parses emails from UPS for ZRT shipping and adds them to the DB</p>
 <dl class="py function">
-<dt id="crons.zrt_shipping.UPS">
-<code class="sig-prename descclassname"><span class="pre">crons.zrt_shipping.</span></code><code class="sig-name descname"><span class="pre">UPS</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">conf</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#crons.zrt_shipping.UPS" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="crons.zrt_shipping.UPS">
+<span class="sig-prename descclassname"><span class="pre">crons.zrt_shipping.</span></span><span class="sig-name descname"><span class="pre">UPS</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">conf</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#crons.zrt_shipping.UPS" title="Permalink to this definition">¶</a></dt>
 <dd><p>Fetch and parse the UPS emails</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -171,8 +174,8 @@
 </dd></dl>
 
 <dl class="py function">
-<dt id="crons.zrt_shipping.USPS">
-<code class="sig-prename descclassname"><span class="pre">crons.zrt_shipping.</span></code><code class="sig-name descname"><span class="pre">USPS</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">conf</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#crons.zrt_shipping.USPS" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="crons.zrt_shipping.USPS">
+<span class="sig-prename descclassname"><span class="pre">crons.zrt_shipping.</span></span><span class="sig-name descname"><span class="pre">USPS</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">conf</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#crons.zrt_shipping.USPS" title="Permalink to this definition">¶</a></dt>
 <dd><p>Fetch and parse the UPS emails</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -185,26 +188,26 @@
 </dd></dl>
 
 <dl class="py data">
-<dt id="crons.zrt_shipping.ZRT_KIT_DELIVERED">
-<code class="sig-prename descclassname"><span class="pre">crons.zrt_shipping.</span></code><code class="sig-name descname"><span class="pre">ZRT_KIT_DELIVERED</span></code><em class="property"> <span class="pre">=</span> <span class="pre">28</span></em><a class="headerlink" href="#crons.zrt_shipping.ZRT_KIT_DELIVERED" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="crons.zrt_shipping.ZRT_KIT_DELIVERED">
+<span class="sig-prename descclassname"><span class="pre">crons.zrt_shipping.</span></span><span class="sig-name descname"><span class="pre">ZRT_KIT_DELIVERED</span></span><em class="property"> <span class="pre">=</span> <span class="pre">28</span></em><a class="headerlink" href="#crons.zrt_shipping.ZRT_KIT_DELIVERED" title="Permalink to this definition">¶</a></dt>
 <dd><p>HRT/SMS ids</p>
 </dd></dl>
 
 <dl class="py data">
-<dt id="crons.zrt_shipping.reUPS">
-<code class="sig-prename descclassname"><span class="pre">crons.zrt_shipping.</span></code><code class="sig-name descname"><span class="pre">reUPS</span></code><em class="property"> <span class="pre">=</span> <span class="pre">re.compile('Tracking</span> <span class="pre">Number:\\s+([A-Z0-9]+)\\s+(https?:\\/\\/.*?datesent=([0-9]{8}).*)\\s+Ship</span> <span class="pre">To:\\s+([^\\n]+)\\s+([^\\n]+)\\s+([^,]+),\\s+([A-Z]{2})\\s+([0-9]{5}(?:-[0-9]{4})?)\\s+US',</span> <span class="pre">re.MULTILINE)</span></em><a class="headerlink" href="#crons.zrt_shipping.reUPS" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="crons.zrt_shipping.reUPS">
+<span class="sig-prename descclassname"><span class="pre">crons.zrt_shipping.</span></span><span class="sig-name descname"><span class="pre">reUPS</span></span><em class="property"> <span class="pre">=</span> <span class="pre">re.compile('Tracking</span> <span class="pre">Number:\\s+([A-Z0-9]+)\\s+(https?:\\/\\/.*?datesent=([0-9]{8}).*)\\s+Ship</span> <span class="pre">To:\\s+([^\\n]+)\\s+([^\\n]+)\\s+([^,]+),\\s+([A-Z]{2})\\s+([0-9]{5}(?:-[0-9]{4})?)\\s+US',</span> <span class="pre">re.MULTILINE)</span></em><a class="headerlink" href="#crons.zrt_shipping.reUPS" title="Permalink to this definition">¶</a></dt>
 <dd><p>UPS RegEx</p>
 </dd></dl>
 
 <dl class="py data">
-<dt id="crons.zrt_shipping.reUSPS">
-<code class="sig-prename descclassname"><span class="pre">crons.zrt_shipping.</span></code><code class="sig-name descname"><span class="pre">reUSPS</span></code><em class="property"> <span class="pre">=</span> <span class="pre">re.compile(&quot;A</span> <span class="pre">package</span> <span class="pre">was</span> <span class="pre">shipped</span> <span class="pre">to</span> <span class="pre">you</span> <span class="pre">on</span> <span class="pre">([0-9]{2}\\/[0-9]{2}\\/[0-9]{4})</span> <span class="pre">via</span> <span class="pre">U\\.S\\.</span> <span class="pre">Postal</span> <span class="pre">Service</span> <span class="pre">Priority</span> <span class="pre">Mail,</span> <span class="pre">Small</span> <span class="pre">Flat</span> <span class="pre">Rate</span> <span class="pre">Box</span> <span class="pre">to</span> <span class="pre">the</span> <span class="pre">following</span> <span class="pre">address:\\s+([^\\n]+)\\s+([^\\n]+)\\s+(.+?)\\s+([A-Z]{,</span> <span class="pre">re.MULTILINE)</span></em><a class="headerlink" href="#crons.zrt_shipping.reUSPS" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="crons.zrt_shipping.reUSPS">
+<span class="sig-prename descclassname"><span class="pre">crons.zrt_shipping.</span></span><span class="sig-name descname"><span class="pre">reUSPS</span></span><em class="property"> <span class="pre">=</span> <span class="pre">re.compile(&quot;A</span> <span class="pre">package</span> <span class="pre">was</span> <span class="pre">shipped</span> <span class="pre">to</span> <span class="pre">you</span> <span class="pre">on</span> <span class="pre">([0-9]{2}\\/[0-9]{2}\\/[0-9]{4})</span> <span class="pre">via</span> <span class="pre">U\\.S\\.</span> <span class="pre">Postal</span> <span class="pre">Service</span> <span class="pre">Priority</span> <span class="pre">Mail,</span> <span class="pre">Small</span> <span class="pre">Flat</span> <span class="pre">Rate</span> <span class="pre">Box</span> <span class="pre">to</span> <span class="pre">the</span> <span class="pre">following</span> <span class="pre">address:\\s+([^\\n]+)\\s+([^\\n]+)\\s+(.+?)\\s+([A-Z]{,</span> <span class="pre">re.MULTILINE)</span></em><a class="headerlink" href="#crons.zrt_shipping.reUSPS" title="Permalink to this definition">¶</a></dt>
 <dd><p>USPS RegEx</p>
 </dd></dl>
 
 <dl class="py function">
-<dt id="crons.zrt_shipping.run">
-<code class="sig-prename descclassname"><span class="pre">crons.zrt_shipping.</span></code><code class="sig-name descname"><span class="pre">run</span></code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#crons.zrt_shipping.run" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="crons.zrt_shipping.run">
+<span class="sig-prename descclassname"><span class="pre">crons.zrt_shipping.</span></span><span class="sig-name descname"><span class="pre">run</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#crons.zrt_shipping.run" title="Permalink to this definition">¶</a></dt>
 <dd><p>Run</p>
 <p>Entry point into the script</p>
 <dl class="field-list simple">

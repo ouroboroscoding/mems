@@ -1,7 +1,7 @@
 # coding=utf8
 """ Auth Records
 
-Handles the record structures for the auth service
+Handles the record structures for the Auth service
 """
 
 __author__		= "Chris Nasr"

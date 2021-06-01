@@ -13,6 +13,8 @@
   
   <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
   <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+  <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+  <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
 
   
   
@@ -29,6 +31,7 @@
   
     
       <script type="text/javascript" id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
+        <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
         <script src="_static/jquery.js"></script>
         <script src="_static/underscore.js"></script>
         <script src="_static/doctools.js"></script>
@@ -155,15 +158,15 @@
   <div class="section" id="module-records.patient">
 <span id="records-patient-module"></span><h1>records.patient module<a class="headerlink" href="#module-records.patient" title="Permalink to this headline">¶</a></h1>
 <p>Patient Records</p>
-<p>Handles the record structures for the patient service</p>
+<p>Handles the record structures for the Patient service</p>
 <dl class="py class">
-<dt id="records.patient.Account">
-<em class="property"><span class="pre">class</span> </em><code class="sig-prename descclassname"><span class="pre">records.patient.</span></code><code class="sig-name descname"><span class="pre">Account</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">record</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">{}</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">custom</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">{}</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#records.patient.Account" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="records.patient.Account">
+<em class="property"><span class="pre">class</span> </em><span class="sig-prename descclassname"><span class="pre">records.patient.</span></span><span class="sig-name descname"><span class="pre">Account</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">record</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">{}</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">custom</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">{}</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#records.patient.Account" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">RestOC.Record_MySQL.Record</span></code></p>
 <p>Represents a single patient in the system</p>
 <dl class="py method">
-<dt id="records.patient.Account.cache">
-<em class="property"><span class="pre">classmethod</span> </em><code class="sig-name descname"><span class="pre">cache</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">_id</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">raw</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#records.patient.Account.cache" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="records.patient.Account.cache">
+<em class="property"><span class="pre">classmethod</span> </em><span class="sig-name descname"><span class="pre">cache</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">_id</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">raw</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#records.patient.Account.cache" title="Permalink to this definition">¶</a></dt>
 <dd><p>Cache</p>
 <p>Fetches the Users from the cache and returns them</p>
 <dl class="field-list simple">
@@ -180,8 +183,8 @@
 </dd></dl>
 
 <dl class="py method">
-<dt id="records.patient.Account.cacheClear">
-<em class="property"><span class="pre">classmethod</span> </em><code class="sig-name descname"><span class="pre">cacheClear</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">_id</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#records.patient.Account.cacheClear" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="records.patient.Account.cacheClear">
+<em class="property"><span class="pre">classmethod</span> </em><span class="sig-name descname"><span class="pre">cacheClear</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">_id</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#records.patient.Account.cacheClear" title="Permalink to this definition">¶</a></dt>
 <dd><p>Cache Clear</p>
 <p>Removes a user from the cache</p>
 <dl class="field-list simple">
@@ -195,8 +198,8 @@
 </dd></dl>
 
 <dl class="py method">
-<dt id="records.patient.Account.config">
-<em class="property"><span class="pre">classmethod</span> </em><code class="sig-name descname"><span class="pre">config</span></code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#records.patient.Account.config" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="records.patient.Account.config">
+<em class="property"><span class="pre">classmethod</span> </em><span class="sig-name descname"><span class="pre">config</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#records.patient.Account.config" title="Permalink to this definition">¶</a></dt>
 <dd><p>Config</p>
 <p>Returns the configuration data associated with the record type</p>
 <dl class="field-list simple">
@@ -207,8 +210,8 @@
 </dd></dl>
 
 <dl class="py method">
-<dt id="records.patient.Account.passwordHash">
-<em class="property"><span class="pre">static</span> </em><code class="sig-name descname"><span class="pre">passwordHash</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">passwd</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#records.patient.Account.passwordHash" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="records.patient.Account.passwordHash">
+<em class="property"><span class="pre">static</span> </em><span class="sig-name descname"><span class="pre">passwordHash</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">passwd</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#records.patient.Account.passwordHash" title="Permalink to this definition">¶</a></dt>
 <dd><p>Password Hash</p>
 <p>Returns a hashed password with a unique salt</p>
 <dl class="field-list simple">
@@ -222,8 +225,8 @@
 </dd></dl>
 
 <dl class="py method">
-<dt id="records.patient.Account.passwordStrength">
-<em class="property"><span class="pre">classmethod</span> </em><code class="sig-name descname"><span class="pre">passwordStrength</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">passwd</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#records.patient.Account.passwordStrength" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="records.patient.Account.passwordStrength">
+<em class="property"><span class="pre">classmethod</span> </em><span class="sig-name descname"><span class="pre">passwordStrength</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">passwd</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#records.patient.Account.passwordStrength" title="Permalink to this definition">¶</a></dt>
 <dd><p>Password Strength</p>
 <p>Returns true if a password is secure enough</p>
 <dl class="field-list simple">
@@ -237,8 +240,8 @@
 </dd></dl>
 
 <dl class="py method">
-<dt id="records.patient.Account.passwordValidate">
-<code class="sig-name descname"><span class="pre">passwordValidate</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">passwd</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#records.patient.Account.passwordValidate" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="records.patient.Account.passwordValidate">
+<span class="sig-name descname"><span class="pre">passwordValidate</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">passwd</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#records.patient.Account.passwordValidate" title="Permalink to this definition">¶</a></dt>
 <dd><p>Password Validate</p>
 <p>Validates the given password against the current instance</p>
 <dl class="field-list simple">
@@ -252,8 +255,8 @@
 </dd></dl>
 
 <dl class="py method">
-<dt id="records.patient.Account.redis">
-<em class="property"><span class="pre">classmethod</span> </em><code class="sig-name descname"><span class="pre">redis</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">redis</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#records.patient.Account.redis" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="records.patient.Account.redis">
+<em class="property"><span class="pre">classmethod</span> </em><span class="sig-name descname"><span class="pre">redis</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">redis</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#records.patient.Account.redis" title="Permalink to this definition">¶</a></dt>
 <dd><p>Redis</p>
 <p>Stores the Redis connection to be used to fetch and store Users</p>
 <dl class="field-list simple">
@@ -269,13 +272,13 @@
 </dd></dl>
 
 <dl class="py class">
-<dt id="records.patient.AccountSetup">
-<em class="property"><span class="pre">class</span> </em><code class="sig-prename descclassname"><span class="pre">records.patient.</span></code><code class="sig-name descname"><span class="pre">AccountSetup</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">record</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">{}</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">custom</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">{}</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#records.patient.AccountSetup" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="records.patient.AccountSetup">
+<em class="property"><span class="pre">class</span> </em><span class="sig-prename descclassname"><span class="pre">records.patient.</span></span><span class="sig-name descname"><span class="pre">AccountSetup</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">record</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">{}</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">custom</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">{}</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#records.patient.AccountSetup" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">RestOC.Record_MySQL.Record</span></code></p>
 <p>Represents the initial starting of a patient user record</p>
 <dl class="py method">
-<dt id="records.patient.AccountSetup.config">
-<em class="property"><span class="pre">classmethod</span> </em><code class="sig-name descname"><span class="pre">config</span></code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#records.patient.AccountSetup.config" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="records.patient.AccountSetup.config">
+<em class="property"><span class="pre">classmethod</span> </em><span class="sig-name descname"><span class="pre">config</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#records.patient.AccountSetup.config" title="Permalink to this definition">¶</a></dt>
 <dd><p>Config</p>
 <p>Returns the configuration data associated with the record type</p>
 <dl class="field-list simple">
@@ -288,13 +291,13 @@
 </dd></dl>
 
 <dl class="py class">
-<dt id="records.patient.AccountSetupAttempt">
-<em class="property"><span class="pre">class</span> </em><code class="sig-prename descclassname"><span class="pre">records.patient.</span></code><code class="sig-name descname"><span class="pre">AccountSetupAttempt</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">record</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">{}</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">custom</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">{}</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#records.patient.AccountSetupAttempt" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="records.patient.AccountSetupAttempt">
+<em class="property"><span class="pre">class</span> </em><span class="sig-prename descclassname"><span class="pre">records.patient.</span></span><span class="sig-name descname"><span class="pre">AccountSetupAttempt</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">record</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">{}</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">custom</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">{}</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#records.patient.AccountSetupAttempt" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">RestOC.Record_MySQL.Record</span></code></p>
 <p>Represents a failed attempt to setup a patient account</p>
 <dl class="py method">
-<dt id="records.patient.AccountSetupAttempt.config">
-<em class="property"><span class="pre">classmethod</span> </em><code class="sig-name descname"><span class="pre">config</span></code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#records.patient.AccountSetupAttempt.config" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="records.patient.AccountSetupAttempt.config">
+<em class="property"><span class="pre">classmethod</span> </em><span class="sig-name descname"><span class="pre">config</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#records.patient.AccountSetupAttempt.config" title="Permalink to this definition">¶</a></dt>
 <dd><p>Config</p>
 <p>Returns the configuration data associated with the record type</p>
 <dl class="field-list simple">
@@ -307,13 +310,13 @@
 </dd></dl>
 
 <dl class="py class">
-<dt id="records.patient.Activity">
-<em class="property"><span class="pre">class</span> </em><code class="sig-prename descclassname"><span class="pre">records.patient.</span></code><code class="sig-name descname"><span class="pre">Activity</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">record</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">{}</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">custom</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">{}</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#records.patient.Activity" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="records.patient.Activity">
+<em class="property"><span class="pre">class</span> </em><span class="sig-prename descclassname"><span class="pre">records.patient.</span></span><span class="sig-name descname"><span class="pre">Activity</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">record</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">{}</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">custom</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">{}</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#records.patient.Activity" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">RestOC.Record_MySQL.Record</span></code></p>
 <p>Represents an action by a patient</p>
 <dl class="py method">
-<dt id="records.patient.Activity.config">
-<em class="property"><span class="pre">classmethod</span> </em><code class="sig-name descname"><span class="pre">config</span></code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#records.patient.Activity.config" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="records.patient.Activity.config">
+<em class="property"><span class="pre">classmethod</span> </em><span class="sig-name descname"><span class="pre">config</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#records.patient.Activity.config" title="Permalink to this definition">¶</a></dt>
 <dd><p>Config</p>
 <p>Returns the configuration data associated with the record type</p>
 <dl class="field-list simple">
@@ -326,13 +329,13 @@
 </dd></dl>
 
 <dl class="py class">
-<dt id="records.patient.Verify">
-<em class="property"><span class="pre">class</span> </em><code class="sig-prename descclassname"><span class="pre">records.patient.</span></code><code class="sig-name descname"><span class="pre">Verify</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">record</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">{}</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">custom</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">{}</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#records.patient.Verify" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="records.patient.Verify">
+<em class="property"><span class="pre">class</span> </em><span class="sig-prename descclassname"><span class="pre">records.patient.</span></span><span class="sig-name descname"><span class="pre">Verify</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">record</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">{}</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">custom</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">{}</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#records.patient.Verify" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">RestOC.Record_MySQL.Record</span></code></p>
 <p>Represents an attempt to reset a forgotten password</p>
 <dl class="py method">
-<dt id="records.patient.Verify.config">
-<em class="property"><span class="pre">classmethod</span> </em><code class="sig-name descname"><span class="pre">config</span></code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#records.patient.Verify.config" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="records.patient.Verify.config">
+<em class="property"><span class="pre">classmethod</span> </em><span class="sig-name descname"><span class="pre">config</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#records.patient.Verify.config" title="Permalink to this definition">¶</a></dt>
 <dd><p>Config</p>
 <p>Returns the configuration data associated with the record type</p>
 <dl class="field-list simple">
@@ -343,8 +346,8 @@
 </dd></dl>
 
 <dl class="py method">
-<dt id="records.patient.Verify.delete">
-<code class="sig-name descname"><span class="pre">delete</span></code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#records.patient.Verify.delete" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="records.patient.Verify.delete">
+<span class="sig-name descname"><span class="pre">delete</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#records.patient.Verify.delete" title="Permalink to this definition">¶</a></dt>
 <dd><p>Delete</p>
 <p>Overrides base delete since there’s no primary key</p>
 <dl class="field-list simple">

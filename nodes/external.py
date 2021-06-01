@@ -1,7 +1,7 @@
 # coding=utf8
 """ External Node
 
-Handles logins and letting them sign in/out
+Handles requests by third parties who can't or won't login to the system
 """
 
 __author__		= "Chris Nasr"
