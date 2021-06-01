@@ -18,7 +18,7 @@ from RestOC import Conf, REST
 from services.monolith import Monolith
 
 # Local imports
-from . import init
+from . import init, serviceError
 
 # Only run if called directly
 if __name__ == "__main__":
@@ -135,7 +135,11 @@ if __name__ == "__main__":
 
 		"/workflow": {"methods": REST.POST}
 
-	}, 'monolith', "https?://(.*\\.)?%s" % Conf.get(("rest","allowed")).replace('.', '\\.')).run(
+		},
+		'monolith',
+		"https?://(.*\\.)?%s" % Conf.get(("rest","allowed")).replace('.', '\\.'),
+		error_callback=serviceError
+	).run(
 		host=oRestConf['monolith']['host'],
 		port=oRestConf['monolith']['port'],
 		workers=oRestConf['monolith']['workers'],

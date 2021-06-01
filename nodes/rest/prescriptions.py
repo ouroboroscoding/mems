@@ -18,7 +18,7 @@ from RestOC import Conf, REST
 from services.prescriptions import Prescriptions
 
 # Local imports
-from . import init
+from . import init, serviceError
 
 # Only run if called directly
 if __name__ == "__main__":
@@ -53,7 +53,11 @@ if __name__ == "__main__":
 		"/provider/notifications": {"methods": REST.READ, "session": True},
 		"/provider/sso": {"methods": REST.READ, "session": True}
 
-	}, 'prescriptions', "https?://(.*\\.)?%s" % Conf.get(("rest","allowed")).replace('.', '\\.')).run(
+		},
+		'prescriptions',
+		"https?://(.*\\.)?%s" % Conf.get(("rest","allowed")).replace('.', '\\.'),
+		error_callback=serviceError
+	).run(
 		host=oRestConf['prescriptions']['host'],
 		port=oRestConf['prescriptions']['port'],
 		workers=oRestConf['prescriptions']['workers'],

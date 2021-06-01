@@ -14,6 +14,7 @@ __created__		= "2020-08-18"
 # Python imports
 import os
 import platform
+from pprint import pformat
 
 # Pip imports
 from RestOC import Conf, Record_Base, Record_MySQL, REST, \
@@ -72,3 +73,42 @@ def init(dbs=[], services={}, templates=False):
 
 	# Return the REST config
 	return oRestConf
+
+def serviceError(error):
+	"""Service Error
+
+	Passed to REST instances so we can email errors to developers as soon as
+	they happen
+
+	Arguments:
+		error (dict): An object with service, path, data, session, environ and
+						error message
+
+	Returns:
+		bool
+	"""
+
+	# Generate a list of the individual parts of the error
+	lErrors = [
+		'ERROR MESSAGE\n\n%s\n' % error['traceback'],
+		'REQUEST\n\n%s:%s\n' % (error['service'], error['path']),
+		'DATA\n\n%s\n' % pformat(error['data']),
+	]
+	if 'session' in error:
+		lErrors.append('SESSION\n\n%s\n' % pformat(error['session']))
+	if 'environ' in error:
+		lErrors.append('ENVIRONMENT\n\n%s\n' % pformat(error['environ']))
+
+	# Send the email
+	oResponse = Services.create('communications', 'email', {
+		"_internal_": Services.internalKey(),
+		"text_body": '\n'.join(lErrors),
+		"subject": 'REST Exception',
+		"to": Conf.get(('developer', 'emails'))
+	})
+	if oResponse.errorExists():
+		print(oResponse.error)
+		return False
+
+	# Return OK
+	return True

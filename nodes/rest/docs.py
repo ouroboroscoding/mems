@@ -18,7 +18,7 @@ from RestOC import Conf, REST
 from services.docs import Docs
 
 # Local imports
-from . import init
+from . import init, serviceError
 
 # Only run if called directly
 if __name__ == "__main__":
@@ -47,7 +47,11 @@ if __name__ == "__main__":
 
 		{"uri": "/service", "methods": REST.CREATE | REST.DELETE | REST.UPDATE, "session": True}
 
-	], 'docs', "https?://(.*\\.)?%s" % Conf.get(("rest","allowed")).replace('.', '\\.')).run(
+		],
+		'docs',
+		"https?://(.*\\.)?%s" % Conf.get(("rest","allowed")).replace('.', '\\.'),
+		error_callback=serviceError
+	).run(
 		host=oRestConf['docs']['host'],
 		port=oRestConf['docs']['port'],
 		workers=oRestConf['docs']['workers'],
