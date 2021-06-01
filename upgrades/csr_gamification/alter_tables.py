@@ -25,7 +25,7 @@ def run():
 		'primary',
 		"ALTER TABLE `mems`.`csr_agent` " \
 		"DROP COLUMN `claims_timeout`, " \
-		"ADD COLUMN `type` ENUM('agent', 'pa') NOT NULL DEFAULT 'agent' AFTER `memo_id`, " \
+		"ADD COLUMN `type` VARCHAR(255) NOT NULL DEFAULT 'agent', " \
 		"ADD COLUMN `escalate` TINYINT(1) UNSIGNED NOT NULL DEFAULT 0 AFTER `type`"
 	)
 
