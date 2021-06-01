@@ -18,7 +18,7 @@ from RestOC import Conf, REST
 from services.patient import Patient
 
 # Local imports
-from . import init
+from . import init, serviceError
 
 # Only run if called directly
 if __name__ == "__main__":
@@ -55,7 +55,11 @@ if __name__ == "__main__":
 
 		"/support_request": {"methods": REST.CREATE, "session": True}
 
-	}, 'patient', "https?://(.*\\.)?%s" % Conf.get(("rest","allowed")).replace('.', '\\.')).run(
+		},
+		'patient',
+		"https?://(.*\\.)?%s" % Conf.get(("rest","allowed")).replace('.', '\\.'),
+		error_callback=serviceError
+	).run(
 		host=oRestConf['patient']['host'],
 		port=oRestConf['patient']['port'],
 		workers=oRestConf['patient']['workers'],

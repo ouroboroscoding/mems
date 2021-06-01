@@ -49,7 +49,10 @@ if __name__ == "__main__":
 	REST.Server({
 		"/email": {"methods": REST.POST},
 		"/sms": {"methods": REST.POST}
-	}, 'communications').run(
+		},
+		'communications',
+		error_callback=serviceError
+	).run(
 		host=oRestConf['communications']['host'],
 		port=oRestConf['communications']['port'],
 		workers=oRestConf['communications']['workers'],

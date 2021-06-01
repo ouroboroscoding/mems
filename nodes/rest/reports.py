@@ -18,7 +18,7 @@ from RestOC import Conf, REST
 from services.reports import Reports
 
 # Local imports
-from . import init
+from . import init, serviceError
 
 # Only run if called directly
 if __name__ == "__main__":
@@ -35,7 +35,11 @@ if __name__ == "__main__":
 		"/recipients": {"methods": REST.ALL, "session": True},
 		"/recipients/internal": {"methods": REST.READ}
 
-	}, 'reports', "https?://(.*\\.)?%s" % Conf.get(("rest","allowed")).replace('.', '\\.')).run(
+		},
+		'reports',
+		"https?://(.*\\.)?%s" % Conf.get(("rest","allowed")).replace('.', '\\.'),
+		error_callback=serviceError
+	).run(
 		host=oRestConf['reports']['host'],
 		port=oRestConf['reports']['port'],
 		workers=oRestConf['reports']['workers'],

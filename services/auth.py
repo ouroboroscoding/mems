@@ -263,23 +263,50 @@ class Auth(Services.Service):
 		# Find the permissions
 		dPermissions = Permission.cache(sesh['user_id'])
 
-		# If the permission doesn't exist at all
-		if not dPermissions or data['name'] not in dPermissions:
+		# If the user has no permissions at all
+		if not dPermissions:
 			return Services.Response(False)
 
+		# If one permission was requested
+		if isinstance(data['name'], str):
+
+			# If we don't have it
+			if data['name'] not in dPermissions:
+				return Services.Response(False)
+
+			# Set the name to use
+			sName = data['name']
+
+		# Else, if it's a list
+		elif isinstance(data['name'], list):
+
+			# Go through each one, if one matches, store it
+			for s in data['name']:
+				if s in dPermissions:
+					sName = s
+					break
+
+			# Else, return failure
+			else:
+				return Services.Response(False)
+
+		# Else, invalid name data
+		else:
+			return Services.Error(1001, [('name', 'invalid, must be string or string[]')])
+
 		# If the permission exists but doesn't contain the proper right
-		if not dPermissions[data['name']]['rights'] & data['right']:
+		if not dPermissions[sName]['rights'] & data['right']:
 			return Services.Response(False)
 
 		# If the permission has idents
-		if dPermissions[data['name']]['idents'] is not None:
+		if dPermissions[sName]['idents'] is not None:
 
 			# If no ident was passed
 			if 'ident' not in data:
 				return Services.Response(False)
 
 			# If the ident isn't in the list
-			if str(data['ident']) not in dPermissions[data['name']]['idents']:
+			if str(data['ident']) not in dPermissions[sName]['idents']:
 				return Services.Response(False)
 
 		# Seems ok

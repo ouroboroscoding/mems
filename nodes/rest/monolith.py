@@ -18,7 +18,7 @@ from RestOC import Conf, REST
 from services.monolith import Monolith
 
 # Local imports
-from . import init
+from . import init, serviceError
 
 # Only run if called directly
 if __name__ == "__main__":
@@ -53,6 +53,7 @@ if __name__ == "__main__":
 		"/customer/hrt/symptoms": {"methods": REST.READ, "session": True},
 		"/customer/id/byPhone": {"methods": REST.READ, "session": True},
 		"/customer/messages": {"methods": REST.READ, "session": True},
+		"/customer/messages/incoming": {"methods": REST.READ, "session": True},
 		"/customer/mip": {"methods": REST.READ, "session": True},
 		"/customer/mips": {"methods": REST.READ, "session": True},
 		"/customer/mip/answer": {"methods": REST.UPDATE, "session": True},
@@ -74,6 +75,8 @@ if __name__ == "__main__":
 		"/hrt/patients": {"methods": REST.READ, "session": True},
 
 		"/internal/customersWithClaimed": {"methods": REST.READ, "session": True},
+		"/internal/ticketInfo": {"methods": REST.READ},
+		"/internal/incoming_sms": {"methods": REST.READ},
 
 		"/message/incoming": {"methods": REST.CREATE},
 		"/message/outgoing": {"methods": REST.CREATE},
@@ -132,7 +135,11 @@ if __name__ == "__main__":
 
 		"/workflow": {"methods": REST.POST}
 
-	}, 'monolith', "https?://(.*\\.)?%s" % Conf.get(("rest","allowed")).replace('.', '\\.')).run(
+		},
+		'monolith',
+		"https?://(.*\\.)?%s" % Conf.get(("rest","allowed")).replace('.', '\\.'),
+		error_callback=serviceError
+	).run(
 		host=oRestConf['monolith']['host'],
 		port=oRestConf['monolith']['port'],
 		workers=oRestConf['monolith']['workers'],

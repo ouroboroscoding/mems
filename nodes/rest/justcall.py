@@ -18,7 +18,7 @@ from RestOC import Conf, REST
 from services.justcall import JustCall
 
 # Local imports
-from . import init
+from . import init, serviceError
 
 # Only run if called directly
 if __name__ == "__main__":
@@ -30,9 +30,14 @@ if __name__ == "__main__":
 
 	# Create the HTTP server and map requests to service
 	REST.Server({
+		"/log": {"methods": REST.READ},
 		"/logs": {"methods": REST.READ, "session": True}
 
-	}, 'justcall', "https?://(.*\\.)?%s" % Conf.get(("rest","allowed")).replace('.', '\\.')).run(
+		},
+		'justcall',
+		"https?://(.*\\.)?%s" % Conf.get(("rest","allowed")).replace('.', '\\.'),
+		error_callback=serviceError
+	).run(
 		host=oRestConf['justcall']['host'],
 		port=oRestConf['justcall']['port'],
 		workers=oRestConf['justcall']['workers'],

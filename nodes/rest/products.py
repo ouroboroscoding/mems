@@ -18,7 +18,7 @@ from RestOC import Conf, REST
 from services.products import Products
 
 # Local imports
-from . import init
+from . import init, serviceError
 
 # Only run if called directly
 if __name__ == "__main__":
@@ -39,7 +39,11 @@ if __name__ == "__main__":
 		"/product": {"methods": REST.CREATE | REST.READ | REST.UPDATE, "session": True},
 		"/products": {"methods": REST.READ, "session": True}
 
-	}, 'products', "https?://(.*\\.)?%s" % Conf.get(("rest","allowed")).replace('.', '\\.')).run(
+		},
+		'products',
+		"https?://(.*\\.)?%s" % Conf.get(("rest","allowed")).replace('.', '\\.'),
+		error_callback=serviceError
+	).run(
 		host=oRestConf['products']['host'],
 		port=oRestConf['products']['port'],
 		workers=oRestConf['products']['workers'],

@@ -18,7 +18,7 @@ from RestOC import Conf, REST
 from services.csr import CSR
 
 # Local imports
-from . import init
+from . import init, serviceError
 
 # Only run if called directly
 if __name__ == "__main__":
@@ -43,6 +43,8 @@ if __name__ == "__main__":
 		"/list/item": {"methods": REST.CREATE | REST.DELETE, "session": True},
 		"/lists": {"methods": REST.READ, "session": True},
 
+		"/patient/account": {"methods": REST.CREATE, "session": True},
+
 		"/reminder": {"methods": REST.CREATE | REST.UPDATE | REST.DELETE, "session": True},
 		"/reminder/resolve": {"methods": REST.UPDATE, "session": True},
 		"/reminders": {"methods": REST.READ, "session": True},
@@ -52,14 +54,28 @@ if __name__ == "__main__":
 		"/signin": {"methods": REST.CREATE},
 		"/signout": {"methods": REST.CREATE},
 
-		"/patient/account": {"methods": REST.CREATE, "session": True},
-
 		"/template/email": {"methods": REST.ALL, "session": True},
 		"/template/emails": {"methods": REST.READ, "session": True},
 		"/template/sms": {"methods": REST.ALL, "session": True},
-		"/template/smss": {"methods": REST.READ, "session": True}
+		"/template/smss": {"methods": REST.READ, "session": True},
 
-	}, 'csr', "https?://(.*\\.)?%s" % Conf.get(("rest","allowed")).replace('.', '\\.')).run(
+		"/ticket": {"methods": REST.ALL, "session": True},
+		"/ticket/action": {"methods": REST.CREATE, "session": True},
+		"/ticket/details": {"methods": REST.READ, "session": True},
+		"/ticket/exists": {"methods": REST.READ},
+		"/ticket/item": {"methods": REST.CREATE, "session": True},
+		"/ticket/item/ids": {"methods": REST.READ, "session": True},
+		"/ticket/open/user": {"methods": REST.READ, "session": True},
+		"/ticket/resolve": {"methods": REST.UPDATE, "session": True},
+		"/ticket/stats": {"methods": REST.READ, "session": True},
+		"/tickets": {"methods": REST.READ, "session": True},
+		"/tickets/customer": {"methods": REST.READ, "session": True}
+
+		},
+		'csr',
+		"https?://(.*\\.)?%s" % Conf.get(("rest","allowed")).replace('.', '\\.'),
+		error_callback=serviceError
+	).run(
 		host=oRestConf['csr']['host'],
 		port=oRestConf['csr']['port'],
 		workers=oRestConf['csr']['workers'],

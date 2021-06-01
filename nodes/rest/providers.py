@@ -18,7 +18,7 @@ from RestOC import Conf, REST
 from services.providers import Providers
 
 # Local imports
-from . import init
+from . import init, serviceError
 
 # Only run if called directly
 if __name__ == "__main__":
@@ -64,8 +64,11 @@ if __name__ == "__main__":
 
 		{"uri": "/tracking", "methods": REST.CREATE, "session": True}
 
-
-	], 'providers', "https?://(.*\\.)?%s" % Conf.get(("rest","allowed")).replace('.', '\\.')).run(
+		],
+		'providers',
+		"https?://(.*\\.)?%s" % Conf.get(("rest","allowed")).replace('.', '\\.'),
+		error_callback=serviceError
+	).run(
 		host=oRestConf['providers']['host'],
 		port=oRestConf['providers']['port'],
 		workers=oRestConf['providers']['workers'],

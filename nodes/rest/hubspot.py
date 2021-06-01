@@ -18,7 +18,7 @@ from RestOC import Conf, REST
 from services.hubspot import HubSpot
 
 # Local imports
-from . import init
+from . import init, serviceError
 
 # Only run if called directly
 if __name__ == "__main__":
@@ -34,7 +34,11 @@ if __name__ == "__main__":
 		"/customer/emails": {"methods": REST.READ, "session": True},
 		"/customer/label": {"methods": REST.UPDATE}
 
-	}, 'hubspot', "https?://(.*\\.)?%s" % Conf.get(("rest","allowed")).replace('.', '\\.')).run(
+		},
+		'hubspot',
+		"https?://(.*\\.)?%s" % Conf.get(("rest","allowed")).replace('.', '\\.'),
+		error_callback=serviceError
+	).run(
 		host=oRestConf['hubspot']['host'],
 		port=oRestConf['hubspot']['port'],
 		workers=oRestConf['hubspot']['workers'],

@@ -114,6 +114,57 @@ class JustCall(Services.Service):
 		"""
 		return True
 
+	def log_read(self, data, sesh=None):
+		"""Log
+
+		Returns a single log by ID
+
+		Arguments:
+			data (dict): Data sent with the request
+			sesh (Sesh._Session): The session associated with the user
+
+		Returns:
+			Services.Response
+		"""
+
+		# Make sure the user has the proper permission to do this
+		Rights.internalOrCheck(data, sesh, 'justcall', Rights.READ)
+
+		# If the ID is missing
+		if 'id' not in data:
+			return Services.Error(1001, [('id', 'missing')])
+
+		# Are we in multiple mode?
+		if isinstance(data['id'], list):
+			bMultiple = True
+		else:
+			bMultiple = False
+			data['id'] = [data['id']]
+
+		# Init the results
+		lResults = []
+
+		# For each ID
+		for iID in data['id']:
+
+			# Make the request
+			dRes = self._post('calls/get', {
+				"id": iID
+			})
+
+			# If the request failed
+			if dRes == False:
+				return Services.Error(2100, '404')
+
+			# Add the text version of the call type
+			dRes['data']['typeText'] = _CALL_TYPES[dRes['data']['type']]
+
+			# Store it
+			lResults.append(dRes['data'])
+
+		# Return the data received
+		return Services.Response(bMultiple and lResults or lResults[0])
+
 	def logs_read(self, data, sesh):
 		"""Logs
 
@@ -146,12 +197,24 @@ class JustCall(Services.Service):
 		dRes = self._post('calls/query', {
 			"contact_number": data['phone'],
 			"order": "ASC",
-			"per_page": 100
+			"per_page": 100,
+			"type": '1'
 		})
 
 		# If the request failed
 		if dRes == False:
 			return Services.Error(2100, '404')
+
+		# If we don't have a type
+		if 'types' not in data:
+			data['types'] = []
+
+		# Else, make sure we have a list
+		elif not isinstance(data['types'], list):
+			data['types'] = [data['types']]
+
+		# Init the return list
+		lRet = []
 
 		# Go through each call
 		for d in dRes['data']:
@@ -159,5 +222,9 @@ class JustCall(Services.Service):
 			# Add the text version of the call type
 			d['typeText'] = _CALL_TYPES[d['type']]
 
+			# If we want all or the type is in the list
+			if not data['types'] or d['type'] in data['types']:
+				lRet.append(d)
+
 		# Return the data received
-		return Services.Response(dRes['data'])
+		return Services.Response(lRet)

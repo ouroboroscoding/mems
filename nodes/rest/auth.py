@@ -18,7 +18,7 @@ from RestOC import Conf, REST
 from services.auth import Auth
 
 # Local imports
-from . import init
+from . import init, serviceError, serviceError
 
 # Only run if called directly
 if __name__ == "__main__":
@@ -51,7 +51,11 @@ if __name__ == "__main__":
 		"/user/passwd": {"methods": REST.UPDATE, "session": True},
 		"/user/passwd/forgot": {"methods": REST.CREATE | REST.UPDATE}
 
-	}, 'auth', "https?://(.*\\.)?%s" % Conf.get(("rest","allowed")).replace('.', '\\.')).run(
+		},
+		'auth',
+		"https?://(.*\\.)?%s" % Conf.get(("rest","allowed")).replace('.', '\\.'),
+		error_callback=serviceError
+	).run(
 		host=oRestConf['auth']['host'],
 		port=oRestConf['auth']['port'],
 		workers=oRestConf['auth']['workers'],

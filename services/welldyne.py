@@ -87,12 +87,7 @@ class WellDyne(Services.Service):
 		"""
 
 		# Make sure the user has the proper rights
-		oResponse = Services.read('auth', 'rights/verify', {
-			"name": "welldyne_adhoc",
-			"right": Rights.CREATE
-		}, sesh)
-		if not oResponse.data:
-			return Services.Response(error=Rights.INVALID)
+		Rights.check(sesh, 'welldyne_adhoc', Rights.CREATE)
 
 		# Verify minimum fields
 		try: DictHelper.eval(data, ['trigger_id', 'type'])
@@ -201,12 +196,7 @@ class WellDyne(Services.Service):
 		"""
 
 		# Make sure the user has the proper rights
-		oResponse = Services.read('auth', 'rights/verify', {
-			"name": "welldyne_adhoc",
-			"right": Rights.DELETE
-		}, sesh)
-		if not oResponse.data:
-			return Services.Response(error=Rights.INVALID)
+		Rights.check(sesh, 'welldyne_adhoc', Rights.DELETE)
 
 		# Verify minimum fields
 		try: DictHelper.eval(data, ['_id'])
@@ -236,12 +226,7 @@ class WellDyne(Services.Service):
 		"""
 
 		# Make sure the user has the proper rights
-		oResponse = Services.read('auth', 'rights/verify', {
-			"name": "manual_adhoc",
-			"right": Rights.DELETE
-		}, sesh)
-		if not oResponse.data:
-			return Services.Response(error=Rights.INVALID)
+		Rights.check(sesh, 'manual_adhoc', Rights.DELETE)
 
 		# Verify minimum fields
 		try: DictHelper.eval(data, ['_id', 'raw'])
@@ -304,12 +289,7 @@ class WellDyne(Services.Service):
 		"""
 
 		# Make sure the user has the proper rights
-		oResponse = Services.read('auth', 'rights/verify', {
-			"name": "manual_adhoc",
-			"right": Rights.READ
-		}, sesh)
-		if not oResponse.data:
-			return Services.Response(error=Rights.INVALID)
+		Rights.check(sesh, 'manual_adhoc', Rights.READ)
 
 		# Fetch and return all records
 		return Services.Response(AdHocManual.display())
@@ -328,12 +308,7 @@ class WellDyne(Services.Service):
 		"""
 
 		# Make sure the user has the proper rights
-		oResponse = Services.read('auth', 'rights/verify', {
-			"name": "welldyne_adhoc",
-			"right": Rights.READ
-		}, sesh)
-		if not oResponse.data:
-			return Services.Response(error=Rights.INVALID)
+		Rights.check(sesh, 'welldyne_adhoc', Rights.READ)
 
 		# Fetch all the records
 		lRecords = AdHoc.display()
@@ -380,12 +355,7 @@ class WellDyne(Services.Service):
 		"""
 
 		# Make sure the user has the proper rights
-		oResponse = Services.read('auth', 'rights/verify', {
-			"name": "welldyne_never_started",
-			"right": Rights.DELETE
-		}, sesh)
-		if not oResponse.data:
-			return Services.Response(error=Rights.INVALID)
+		Rights.check(sesh, 'welldyne_never_started', Rights.DELETE)
 
 		# Verify minimum fields
 		try: DictHelper.eval(data, ['_id'])
@@ -424,12 +394,7 @@ class WellDyne(Services.Service):
 		"""
 
 		# Make sure the user has the proper rights
-		oResponse = Services.read('auth', 'rights/verify', {
-			"name": "welldyne_never_started",
-			"right": Rights.UPDATE
-		}, sesh)
-		if not oResponse.data:
-			return Services.Response(error=Rights.INVALID)
+		Rights.check(sesh, 'welldyne_never_started', Rights.UPDATE)
 
 		# Verify minimum fields
 		try: DictHelper.eval(data, ['date'])
@@ -556,12 +521,7 @@ class WellDyne(Services.Service):
 		"""
 
 		# Make sure the user has the proper rights
-		oResponse = Services.read('auth', 'rights/verify', {
-			"name": "welldyne_never_started",
-			"right": Rights.UPDATE
-		}, sesh)
-		if not oResponse.data:
-			return Services.Response(error=Rights.INVALID)
+		Rights.check(sesh, 'welldyne_never_started', Rights.UPDATE)
 
 		# Verify minimum fields
 		try: DictHelper.eval(data, ['_id', 'ready'])
@@ -594,12 +554,7 @@ class WellDyne(Services.Service):
 		"""
 
 		# Make sure the user has the proper rights
-		oResponse = Services.read('auth', 'rights/verify', {
-			"name": "welldyne_never_started",
-			"right": Rights.READ
-		}, sesh)
-		if not oResponse.data:
-			return Services.Response(error=Rights.INVALID)
+		Rights.check(sesh, 'welldyne_never_started', Rights.READ)
 
 		# Fetch all the records joined with the trigger table
 		lRecords = NeverStarted.withTrigger()
@@ -641,12 +596,7 @@ class WellDyne(Services.Service):
 		"""
 
 		# Make sure the user has the proper adhoc rights
-		oResponse = Services.read('auth', 'rights/verify', {
-			"name": "welldyne_adhoc",
-			"right": Rights.CREATE
-		}, sesh)
-		if not oResponse.data:
-			return Services.Response(error=Rights.INVALID)
+		Rights.check(sesh, 'welldyne_adhoc', Rights.CREATE)
 
 		# Verify minimum fields
 		try: DictHelper.eval(data, ['_id'])
@@ -782,12 +732,7 @@ class WellDyne(Services.Service):
 		"""
 
 		# Make sure the user has the proper rights
-		oResponse = Services.read('auth', 'rights/verify', {
-			"name": "welldyne_outbound",
-			"right": Rights.UPDATE
-		}, sesh)
-		if not oResponse.data:
-			return Services.Response(error=Rights.INVALID)
+		Rights.check(sesh, 'welldyne_outbound', Rights.UPDATE)
 
 		# Verify minimum fields
 		try: DictHelper.eval(data, ['_id', 'ready'])
@@ -824,12 +769,7 @@ class WellDyne(Services.Service):
 		"""
 
 		# Make sure the user has the proper rights
-		oResponse = Services.read('auth', 'rights/verify', {
-			"name": "welldyne_outbound",
-			"right": Rights.READ
-		}, sesh)
-		if not oResponse.data:
-			return Services.Response(error=Rights.INVALID)
+		Rights.check(sesh, 'welldyne_outbound', Rights.READ)
 
 		# Fetch all the records joined with the trigger table
 		lRecords = Outbound.withTrigger()

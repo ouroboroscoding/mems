@@ -18,7 +18,7 @@ from RestOC import Conf, REST
 from services.payment import Payment
 
 # Local imports
-from . import init
+from . import init, serviceError
 
 # Only run if called directly
 if __name__ == "__main__":
@@ -39,7 +39,11 @@ if __name__ == "__main__":
 		"/sale": {"methods": REST.CREATE},
 		"/void": {"methods": REST.CREATE}
 
-	}, 'payment', "https?://(.*\\.)?%s" % Conf.get(("rest","allowed")).replace('.', '\\.')).run(
+		},
+		'payment',
+		"https?://(.*\\.)?%s" % Conf.get(("rest","allowed")).replace('.', '\\.'),
+		error_callback=serviceError
+	).run(
 		host=oRestConf['payment']['host'],
 		port=oRestConf['payment']['port'],
 		workers=oRestConf['payment']['workers'],
