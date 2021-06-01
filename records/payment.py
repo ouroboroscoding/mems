@@ -1,7 +1,7 @@
 # coding=utf8
 """ Payment Records
 
-Handles the record structures for the payments service
+Handles the record structures for the Payments service
 """
 
 __author__		= "Chris Nasr"

@@ -1,7 +1,7 @@
 # coding=utf8
 """ Link Records
 
-Handles the record structures for the link service
+Handles the record structures for the Link service
 """
 
 __author__		= "Chris Nasr"

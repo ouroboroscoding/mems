@@ -13,6 +13,8 @@
   
   <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
   <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+  <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+  <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
 
   
   
@@ -29,6 +31,7 @@
   
     
       <script type="text/javascript" id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
+        <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
         <script src="_static/jquery.js"></script>
         <script src="_static/underscore.js"></script>
         <script src="_static/doctools.js"></script>
@@ -155,15 +158,15 @@
   <div class="section" id="module-records.auth">
 <span id="records-auth-module"></span><h1>records.auth module<a class="headerlink" href="#module-records.auth" title="Permalink to this headline">¶</a></h1>
 <p>Auth Records</p>
-<p>Handles the record structures for the auth service</p>
+<p>Handles the record structures for the Auth service</p>
 <dl class="py class">
-<dt id="records.auth.Forgot">
-<em class="property"><span class="pre">class</span> </em><code class="sig-prename descclassname"><span class="pre">records.auth.</span></code><code class="sig-name descname"><span class="pre">Forgot</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">record</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">{}</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">custom</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">{}</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#records.auth.Forgot" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="records.auth.Forgot">
+<em class="property"><span class="pre">class</span> </em><span class="sig-prename descclassname"><span class="pre">records.auth.</span></span><span class="sig-name descname"><span class="pre">Forgot</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">record</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">{}</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">custom</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">{}</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#records.auth.Forgot" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">RestOC.Record_MySQL.Record</span></code></p>
 <p>Represents an attempt to reset a forgotten password</p>
 <dl class="py method">
-<dt id="records.auth.Forgot.config">
-<em class="property"><span class="pre">classmethod</span> </em><code class="sig-name descname"><span class="pre">config</span></code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#records.auth.Forgot.config" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="records.auth.Forgot.config">
+<em class="property"><span class="pre">classmethod</span> </em><span class="sig-name descname"><span class="pre">config</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#records.auth.Forgot.config" title="Permalink to this definition">¶</a></dt>
 <dd><p>Config</p>
 <p>Returns the configuration data associated with the record type</p>
 <dl class="field-list simple">
@@ -176,13 +179,13 @@
 </dd></dl>
 
 <dl class="py class">
-<dt id="records.auth.Permission">
-<em class="property"><span class="pre">class</span> </em><code class="sig-prename descclassname"><span class="pre">records.auth.</span></code><code class="sig-name descname"><span class="pre">Permission</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">record</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">{}</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">custom</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">{}</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#records.auth.Permission" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="records.auth.Permission">
+<em class="property"><span class="pre">class</span> </em><span class="sig-prename descclassname"><span class="pre">records.auth.</span></span><span class="sig-name descname"><span class="pre">Permission</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">record</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">{}</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">custom</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">{}</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#records.auth.Permission" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">RestOC.Record_MySQL.Record</span></code></p>
 <p>Represents a single permission record associated with a user</p>
 <dl class="py method">
-<dt id="records.auth.Permission.byUser">
-<em class="property"><span class="pre">classmethod</span> </em><code class="sig-name descname"><span class="pre">byUser</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">_id</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#records.auth.Permission.byUser" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="records.auth.Permission.byUser">
+<em class="property"><span class="pre">classmethod</span> </em><span class="sig-name descname"><span class="pre">byUser</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">_id</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#records.auth.Permission.byUser" title="Permalink to this definition">¶</a></dt>
 <dd><p>By User</p>
 <p>Fetches the permissions as a name =&gt; rights/idents dict by user._id</p>
 <dl class="field-list simple">
@@ -196,8 +199,8 @@
 </dd></dl>
 
 <dl class="py method">
-<dt id="records.auth.Permission.cache">
-<em class="property"><span class="pre">classmethod</span> </em><code class="sig-name descname"><span class="pre">cache</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">_id</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#records.auth.Permission.cache" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="records.auth.Permission.cache">
+<em class="property"><span class="pre">classmethod</span> </em><span class="sig-name descname"><span class="pre">cache</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">_id</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#records.auth.Permission.cache" title="Permalink to this definition">¶</a></dt>
 <dd><p>Cache</p>
 <p>Fetches the Permissions for one user from the cache and returns them</p>
 <dl class="field-list simple">
@@ -211,8 +214,8 @@
 </dd></dl>
 
 <dl class="py method">
-<dt id="records.auth.Permission.cacheClear">
-<em class="property"><span class="pre">classmethod</span> </em><code class="sig-name descname"><span class="pre">cacheClear</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">_id</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#records.auth.Permission.cacheClear" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="records.auth.Permission.cacheClear">
+<em class="property"><span class="pre">classmethod</span> </em><span class="sig-name descname"><span class="pre">cacheClear</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">_id</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#records.auth.Permission.cacheClear" title="Permalink to this definition">¶</a></dt>
 <dd><p>Cache Clear</p>
 <p>Removes permissions for a user from the cache</p>
 <dl class="field-list simple">
@@ -226,8 +229,8 @@
 </dd></dl>
 
 <dl class="py method">
-<dt id="records.auth.Permission.config">
-<em class="property"><span class="pre">classmethod</span> </em><code class="sig-name descname"><span class="pre">config</span></code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#records.auth.Permission.config" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="records.auth.Permission.config">
+<em class="property"><span class="pre">classmethod</span> </em><span class="sig-name descname"><span class="pre">config</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#records.auth.Permission.config" title="Permalink to this definition">¶</a></dt>
 <dd><p>Config</p>
 <p>Returns the configuration data associated with the record type</p>
 <dl class="field-list simple">
@@ -238,8 +241,8 @@
 </dd></dl>
 
 <dl class="py method">
-<dt id="records.auth.Permission.redis">
-<em class="property"><span class="pre">classmethod</span> </em><code class="sig-name descname"><span class="pre">redis</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">redis</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#records.auth.Permission.redis" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="records.auth.Permission.redis">
+<em class="property"><span class="pre">classmethod</span> </em><span class="sig-name descname"><span class="pre">redis</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">redis</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#records.auth.Permission.redis" title="Permalink to this definition">¶</a></dt>
 <dd><p>Redis</p>
 <p>Stores the Redis connection to be used to fetch and store Users</p>
 <dl class="field-list simple">
@@ -255,13 +258,13 @@
 </dd></dl>
 
 <dl class="py class">
-<dt id="records.auth.User">
-<em class="property"><span class="pre">class</span> </em><code class="sig-prename descclassname"><span class="pre">records.auth.</span></code><code class="sig-name descname"><span class="pre">User</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">record</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">{}</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">custom</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">{}</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#records.auth.User" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="records.auth.User">
+<em class="property"><span class="pre">class</span> </em><span class="sig-prename descclassname"><span class="pre">records.auth.</span></span><span class="sig-name descname"><span class="pre">User</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">record</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">{}</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">custom</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">{}</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#records.auth.User" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <a class="reference internal" href="shared.Record_MySQLSearch.html#shared.Record_MySQLSearch.Record" title="shared.Record_MySQLSearch.Record"><code class="xref py py-class docutils literal notranslate"><span class="pre">shared.Record_MySQLSearch.Record</span></code></a></p>
 <p>Represents a single user in the micro services system</p>
 <dl class="py method">
-<dt id="records.auth.User.cache">
-<em class="property"><span class="pre">classmethod</span> </em><code class="sig-name descname"><span class="pre">cache</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">_id</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">raw</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#records.auth.User.cache" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="records.auth.User.cache">
+<em class="property"><span class="pre">classmethod</span> </em><span class="sig-name descname"><span class="pre">cache</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">_id</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">raw</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#records.auth.User.cache" title="Permalink to this definition">¶</a></dt>
 <dd><p>Cache</p>
 <p>Fetches the Users from the cache and returns them</p>
 <dl class="field-list simple">
@@ -278,8 +281,8 @@
 </dd></dl>
 
 <dl class="py method">
-<dt id="records.auth.User.cacheClear">
-<em class="property"><span class="pre">classmethod</span> </em><code class="sig-name descname"><span class="pre">cacheClear</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">_id</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#records.auth.User.cacheClear" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="records.auth.User.cacheClear">
+<em class="property"><span class="pre">classmethod</span> </em><span class="sig-name descname"><span class="pre">cacheClear</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">_id</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#records.auth.User.cacheClear" title="Permalink to this definition">¶</a></dt>
 <dd><p>Cache Clear</p>
 <p>Removes a user from the cache</p>
 <dl class="field-list simple">
@@ -293,8 +296,8 @@
 </dd></dl>
 
 <dl class="py method">
-<dt id="records.auth.User.config">
-<em class="property"><span class="pre">classmethod</span> </em><code class="sig-name descname"><span class="pre">config</span></code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#records.auth.User.config" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="records.auth.User.config">
+<em class="property"><span class="pre">classmethod</span> </em><span class="sig-name descname"><span class="pre">config</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#records.auth.User.config" title="Permalink to this definition">¶</a></dt>
 <dd><p>Config</p>
 <p>Returns the configuration data associated with the record type</p>
 <dl class="field-list simple">
@@ -305,8 +308,8 @@
 </dd></dl>
 
 <dl class="py method">
-<dt id="records.auth.User.passwordHash">
-<em class="property"><span class="pre">static</span> </em><code class="sig-name descname"><span class="pre">passwordHash</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">passwd</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#records.auth.User.passwordHash" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="records.auth.User.passwordHash">
+<em class="property"><span class="pre">static</span> </em><span class="sig-name descname"><span class="pre">passwordHash</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">passwd</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#records.auth.User.passwordHash" title="Permalink to this definition">¶</a></dt>
 <dd><p>Password Hash</p>
 <p>Returns a hashed password with a unique salt</p>
 <dl class="field-list simple">
@@ -320,8 +323,8 @@
 </dd></dl>
 
 <dl class="py method">
-<dt id="records.auth.User.passwordStrength">
-<em class="property"><span class="pre">classmethod</span> </em><code class="sig-name descname"><span class="pre">passwordStrength</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">passwd</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#records.auth.User.passwordStrength" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="records.auth.User.passwordStrength">
+<em class="property"><span class="pre">classmethod</span> </em><span class="sig-name descname"><span class="pre">passwordStrength</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">passwd</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#records.auth.User.passwordStrength" title="Permalink to this definition">¶</a></dt>
 <dd><p>Password Strength</p>
 <p>Returns true if a password is secure enough</p>
 <dl class="field-list simple">
@@ -335,8 +338,8 @@
 </dd></dl>
 
 <dl class="py method">
-<dt id="records.auth.User.passwordValidate">
-<code class="sig-name descname"><span class="pre">passwordValidate</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">passwd</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#records.auth.User.passwordValidate" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="records.auth.User.passwordValidate">
+<span class="sig-name descname"><span class="pre">passwordValidate</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">passwd</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#records.auth.User.passwordValidate" title="Permalink to this definition">¶</a></dt>
 <dd><p>Password Validate</p>
 <p>Validates the given password against the current instance</p>
 <dl class="field-list simple">
@@ -350,8 +353,8 @@
 </dd></dl>
 
 <dl class="py method">
-<dt id="records.auth.User.redis">
-<em class="property"><span class="pre">classmethod</span> </em><code class="sig-name descname"><span class="pre">redis</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">redis</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#records.auth.User.redis" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="records.auth.User.redis">
+<em class="property"><span class="pre">classmethod</span> </em><span class="sig-name descname"><span class="pre">redis</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">redis</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#records.auth.User.redis" title="Permalink to this definition">¶</a></dt>
 <dd><p>Redis</p>
 <p>Stores the Redis connection to be used to fetch and store Users</p>
 <dl class="field-list simple">

@@ -1,7 +1,7 @@
 # coding=utf8
 """ Patient Records
 
-Handles the record structures for the patient service
+Handles the record structures for the Patient service
 """
 
 __author__		= "Chris Nasr"

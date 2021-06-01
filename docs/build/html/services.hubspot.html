@@ -13,6 +13,8 @@
   
   <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
   <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+  <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+  <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
 
   
   
@@ -29,6 +31,7 @@
   
     
       <script type="text/javascript" id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
+        <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
         <script src="_static/jquery.js"></script>
         <script src="_static/underscore.js"></script>
         <script src="_static/doctools.js"></script>
@@ -157,14 +160,14 @@
 <p>HubSpot Service</p>
 <p>Handles all HubSpot requests</p>
 <dl class="py class">
-<dt id="services.hubspot.HubSpot">
-<em class="property"><span class="pre">class</span> </em><code class="sig-prename descclassname"><span class="pre">services.hubspot.</span></code><code class="sig-name descname"><span class="pre">HubSpot</span></code><a class="headerlink" href="#services.hubspot.HubSpot" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="services.hubspot.HubSpot">
+<em class="property"><span class="pre">class</span> </em><span class="sig-prename descclassname"><span class="pre">services.hubspot.</span></span><span class="sig-name descname"><span class="pre">HubSpot</span></span><a class="headerlink" href="#services.hubspot.HubSpot" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">RestOC.Services.Service</span></code></p>
 <p>HubSpot Service class</p>
 <p>Service for HubSpot CRM access</p>
 <dl class="py method">
-<dt id="services.hubspot.HubSpot.customerDecline_update">
-<code class="sig-name descname"><span class="pre">customerDecline_update</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#services.hubspot.HubSpot.customerDecline_update" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="services.hubspot.HubSpot.customerDecline_update">
+<span class="sig-name descname"><span class="pre">customerDecline_update</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#services.hubspot.HubSpot.customerDecline_update" title="Permalink to this definition">¶</a></dt>
 <dd><p>Customer Decline</p>
 <p>Adds a customer to a decline list and adds the decline_reason property</p>
 <dl class="field-list simple">
@@ -178,8 +181,8 @@
 </dd></dl>
 
 <dl class="py method">
-<dt id="services.hubspot.HubSpot.customerEmails_read">
-<code class="sig-name descname"><span class="pre">customerEmails_read</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sesh</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#services.hubspot.HubSpot.customerEmails_read" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="services.hubspot.HubSpot.customerEmails_read">
+<span class="sig-name descname"><span class="pre">customerEmails_read</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sesh</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#services.hubspot.HubSpot.customerEmails_read" title="Permalink to this definition">¶</a></dt>
 <dd><p>Customer Emails</p>
 <p>Returns the log of email event sent to a specific customer by email
 address</p>
@@ -197,8 +200,8 @@ address</p>
 </dd></dl>
 
 <dl class="py method">
-<dt id="services.hubspot.HubSpot.customerLabel_update">
-<code class="sig-name descname"><span class="pre">customerLabel_update</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#services.hubspot.HubSpot.customerLabel_update" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="services.hubspot.HubSpot.customerLabel_update">
+<span class="sig-name descname"><span class="pre">customerLabel_update</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#services.hubspot.HubSpot.customerLabel_update" title="Permalink to this definition">¶</a></dt>
 <dd><p>Customer Label</p>
 <p>Sets the label for a customer</p>
 <dl class="field-list simple">
@@ -212,8 +215,8 @@ address</p>
 </dd></dl>
 
 <dl class="py method">
-<dt id="services.hubspot.HubSpot.initialise">
-<code class="sig-name descname"><span class="pre">initialise</span></code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#services.hubspot.HubSpot.initialise" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="services.hubspot.HubSpot.initialise">
+<span class="sig-name descname"><span class="pre">initialise</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#services.hubspot.HubSpot.initialise" title="Permalink to this definition">¶</a></dt>
 <dd><p>Initialise</p>
 <p>Initialises the instance and returns itself for chaining</p>
 <dl class="field-list simple">
@@ -224,8 +227,8 @@ address</p>
 </dd></dl>
 
 <dl class="py method">
-<dt id="services.hubspot.HubSpot.install">
-<em class="property"><span class="pre">classmethod</span> </em><code class="sig-name descname"><span class="pre">install</span></code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#services.hubspot.HubSpot.install" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="services.hubspot.HubSpot.install">
+<em class="property"><span class="pre">classmethod</span> </em><span class="sig-name descname"><span class="pre">install</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#services.hubspot.HubSpot.install" title="Permalink to this definition">¶</a></dt>
 <dd><p>Install</p>
 <p>The service’s install method, used to setup storage or other one time
 install configurations</p>

@@ -13,6 +13,8 @@
   
   <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
   <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+  <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+  <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
 
   
   
@@ -29,6 +31,7 @@
   
     
       <script type="text/javascript" id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
+        <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
         <script src="_static/jquery.js"></script>
         <script src="_static/underscore.js"></script>
         <script src="_static/doctools.js"></script>
@@ -157,14 +160,14 @@
 <p>JustCall Service</p>
 <p>Handles all JustCall requests</p>
 <dl class="py class">
-<dt id="services.justcall.JustCall">
-<em class="property"><span class="pre">class</span> </em><code class="sig-prename descclassname"><span class="pre">services.justcall.</span></code><code class="sig-name descname"><span class="pre">JustCall</span></code><a class="headerlink" href="#services.justcall.JustCall" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="services.justcall.JustCall">
+<em class="property"><span class="pre">class</span> </em><span class="sig-prename descclassname"><span class="pre">services.justcall.</span></span><span class="sig-name descname"><span class="pre">JustCall</span></span><a class="headerlink" href="#services.justcall.JustCall" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">RestOC.Services.Service</span></code></p>
 <p>JustCall Service class</p>
 <p>Service for JustCall CRM access</p>
 <dl class="py method">
-<dt id="services.justcall.JustCall.initialise">
-<code class="sig-name descname"><span class="pre">initialise</span></code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#services.justcall.JustCall.initialise" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="services.justcall.JustCall.initialise">
+<span class="sig-name descname"><span class="pre">initialise</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#services.justcall.JustCall.initialise" title="Permalink to this definition">¶</a></dt>
 <dd><p>Initialise</p>
 <p>Initialises the instance and returns itself for chaining</p>
 <dl class="field-list simple">
@@ -175,8 +178,8 @@
 </dd></dl>
 
 <dl class="py method">
-<dt id="services.justcall.JustCall.install">
-<em class="property"><span class="pre">classmethod</span> </em><code class="sig-name descname"><span class="pre">install</span></code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#services.justcall.JustCall.install" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="services.justcall.JustCall.install">
+<em class="property"><span class="pre">classmethod</span> </em><span class="sig-name descname"><span class="pre">install</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#services.justcall.JustCall.install" title="Permalink to this definition">¶</a></dt>
 <dd><p>Install</p>
 <p>The service’s install method, used to setup storage or other one time
 install configurations</p>
@@ -188,8 +191,26 @@ install configurations</p>
 </dd></dl>
 
 <dl class="py method">
-<dt id="services.justcall.JustCall.logs_read">
-<code class="sig-name descname"><span class="pre">logs_read</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sesh</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#services.justcall.JustCall.logs_read" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="services.justcall.JustCall.log_read">
+<span class="sig-name descname"><span class="pre">log_read</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sesh</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#services.justcall.JustCall.log_read" title="Permalink to this definition">¶</a></dt>
+<dd><p>Log</p>
+<p>Returns a single log by ID</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>data</strong> (<em>dict</em>) – Data sent with the request</p></li>
+<li><p><strong>sesh</strong> (<em>Sesh._Session</em>) – The session associated with the user</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>Services.Response</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="services.justcall.JustCall.logs_read">
+<span class="sig-name descname"><span class="pre">logs_read</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sesh</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#services.justcall.JustCall.logs_read" title="Permalink to this definition">¶</a></dt>
 <dd><p>Logs</p>
 <p>Returns all logs by phone number</p>
 <dl class="field-list simple">

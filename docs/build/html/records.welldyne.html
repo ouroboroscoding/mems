@@ -13,6 +13,8 @@
   
   <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
   <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+  <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+  <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
 
   
   
@@ -29,6 +31,7 @@
   
     
       <script type="text/javascript" id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
+        <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
         <script src="_static/jquery.js"></script>
         <script src="_static/underscore.js"></script>
         <script src="_static/doctools.js"></script>
@@ -155,15 +158,15 @@
   <div class="section" id="module-records.welldyne">
 <span id="records-welldyne-module"></span><h1>records.welldyne module<a class="headerlink" href="#module-records.welldyne" title="Permalink to this headline">¶</a></h1>
 <p>WellDyne Records</p>
-<p>Handles the record structures for the monolith service</p>
+<p>Handles the record structures for the Welldyne service</p>
 <dl class="py class">
-<dt id="records.welldyne.AdHoc">
-<em class="property"><span class="pre">class</span> </em><code class="sig-prename descclassname"><span class="pre">records.welldyne.</span></code><code class="sig-name descname"><span class="pre">AdHoc</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">record</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">{}</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">custom</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">{}</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#records.welldyne.AdHoc" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="records.welldyne.AdHoc">
+<em class="property"><span class="pre">class</span> </em><span class="sig-prename descclassname"><span class="pre">records.welldyne.</span></span><span class="sig-name descname"><span class="pre">AdHoc</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">record</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">{}</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">custom</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">{}</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#records.welldyne.AdHoc" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">RestOC.Record_MySQL.Record</span></code></p>
 <p>Represents an adhoc entry that needs to be sent to WellDyne</p>
 <dl class="py method">
-<dt id="records.welldyne.AdHoc.config">
-<em class="property"><span class="pre">classmethod</span> </em><code class="sig-name descname"><span class="pre">config</span></code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#records.welldyne.AdHoc.config" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="records.welldyne.AdHoc.config">
+<em class="property"><span class="pre">classmethod</span> </em><span class="sig-name descname"><span class="pre">config</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#records.welldyne.AdHoc.config" title="Permalink to this definition">¶</a></dt>
 <dd><p>Config</p>
 <p>Returns the configuration data associated with the record type</p>
 <dl class="field-list simple">
@@ -174,8 +177,8 @@
 </dd></dl>
 
 <dl class="py method">
-<dt id="records.welldyne.AdHoc.display">
-<em class="property"><span class="pre">classmethod</span> </em><code class="sig-name descname"><span class="pre">display</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">custom</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">{}</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#records.welldyne.AdHoc.display" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="records.welldyne.AdHoc.display">
+<em class="property"><span class="pre">classmethod</span> </em><span class="sig-name descname"><span class="pre">display</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">custom</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">{}</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#records.welldyne.AdHoc.display" title="Permalink to this definition">¶</a></dt>
 <dd><p>Display</p>
 <p>Returns all adhoc records with the data in triggers suitable for
 displaying</p>
@@ -192,8 +195,8 @@ displaying</p>
 </dd></dl>
 
 <dl class="py method">
-<dt id="records.welldyne.AdHoc.report">
-<em class="property"><span class="pre">classmethod</span> </em><code class="sig-name descname"><span class="pre">report</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">custom</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">{}</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#records.welldyne.AdHoc.report" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="records.welldyne.AdHoc.report">
+<em class="property"><span class="pre">classmethod</span> </em><span class="sig-name descname"><span class="pre">report</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">custom</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">{}</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#records.welldyne.AdHoc.report" title="Permalink to this definition">¶</a></dt>
 <dd><p>Report</p>
 <p>Returns the raw data from the triggers associated to the records in the
 table</p>
@@ -212,13 +215,13 @@ table</p>
 </dd></dl>
 
 <dl class="py class">
-<dt id="records.welldyne.AdHocManual">
-<em class="property"><span class="pre">class</span> </em><code class="sig-prename descclassname"><span class="pre">records.welldyne.</span></code><code class="sig-name descname"><span class="pre">AdHocManual</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">record</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">{}</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">custom</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">{}</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#records.welldyne.AdHocManual" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="records.welldyne.AdHocManual">
+<em class="property"><span class="pre">class</span> </em><span class="sig-prename descclassname"><span class="pre">records.welldyne.</span></span><span class="sig-name descname"><span class="pre">AdHocManual</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">record</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">{}</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">custom</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">{}</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#records.welldyne.AdHocManual" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">RestOC.Record_MySQL.Record</span></code></p>
 <p>Represents an adhoc entry that needs to be sent to WellDyne</p>
 <dl class="py method">
-<dt id="records.welldyne.AdHocManual.config">
-<em class="property"><span class="pre">classmethod</span> </em><code class="sig-name descname"><span class="pre">config</span></code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#records.welldyne.AdHocManual.config" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="records.welldyne.AdHocManual.config">
+<em class="property"><span class="pre">classmethod</span> </em><span class="sig-name descname"><span class="pre">config</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#records.welldyne.AdHocManual.config" title="Permalink to this definition">¶</a></dt>
 <dd><p>Config</p>
 <p>Returns the configuration data associated with the record type</p>
 <dl class="field-list simple">
@@ -229,8 +232,8 @@ table</p>
 </dd></dl>
 
 <dl class="py method">
-<dt id="records.welldyne.AdHocManual.display">
-<em class="property"><span class="pre">classmethod</span> </em><code class="sig-name descname"><span class="pre">display</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">custom</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">{}</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#records.welldyne.AdHocManual.display" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="records.welldyne.AdHocManual.display">
+<em class="property"><span class="pre">classmethod</span> </em><span class="sig-name descname"><span class="pre">display</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">custom</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">{}</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#records.welldyne.AdHocManual.display" title="Permalink to this definition">¶</a></dt>
 <dd><p>Display</p>
 <p>Returns all adhoc records with the data in triggers suitable for
 displaying</p>
@@ -247,8 +250,8 @@ displaying</p>
 </dd></dl>
 
 <dl class="py method">
-<dt id="records.welldyne.AdHocManual.move">
-<code class="sig-name descname"><span class="pre">move</span></code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#records.welldyne.AdHocManual.move" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="records.welldyne.AdHocManual.move">
+<span class="sig-name descname"><span class="pre">move</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#records.welldyne.AdHocManual.move" title="Permalink to this definition">¶</a></dt>
 <dd><p>Move</p>
 <p>Moves the record from Manual to the actual table</p>
 <dl class="field-list simple">
@@ -261,13 +264,13 @@ displaying</p>
 </dd></dl>
 
 <dl class="py class">
-<dt id="records.welldyne.Eligibility">
-<em class="property"><span class="pre">class</span> </em><code class="sig-prename descclassname"><span class="pre">records.welldyne.</span></code><code class="sig-name descname"><span class="pre">Eligibility</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">record</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">{}</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">custom</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">{}</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#records.welldyne.Eligibility" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="records.welldyne.Eligibility">
+<em class="property"><span class="pre">class</span> </em><span class="sig-prename descclassname"><span class="pre">records.welldyne.</span></span><span class="sig-name descname"><span class="pre">Eligibility</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">record</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">{}</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">custom</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">{}</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#records.welldyne.Eligibility" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">RestOC.Record_MySQL.Record</span></code></p>
 <p>Represents an customers eligibility with Welldyne</p>
 <dl class="py method">
-<dt id="records.welldyne.Eligibility.config">
-<em class="property"><span class="pre">classmethod</span> </em><code class="sig-name descname"><span class="pre">config</span></code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#records.welldyne.Eligibility.config" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="records.welldyne.Eligibility.config">
+<em class="property"><span class="pre">classmethod</span> </em><span class="sig-name descname"><span class="pre">config</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#records.welldyne.Eligibility.config" title="Permalink to this definition">¶</a></dt>
 <dd><p>Config</p>
 <p>Returns the configuration data associated with the record type</p>
 <dl class="field-list simple">
@@ -278,8 +281,8 @@ displaying</p>
 </dd></dl>
 
 <dl class="py method">
-<dt id="records.welldyne.Eligibility.withCustomerData">
-<em class="property"><span class="pre">classmethod</span> </em><code class="sig-name descname"><span class="pre">withCustomerData</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">custom</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">{}</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#records.welldyne.Eligibility.withCustomerData" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="records.welldyne.Eligibility.withCustomerData">
+<em class="property"><span class="pre">classmethod</span> </em><span class="sig-name descname"><span class="pre">withCustomerData</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">custom</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">{}</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#records.welldyne.Eligibility.withCustomerData" title="Permalink to this definition">¶</a></dt>
 <dd><p>With Customer Data</p>
 <p>Fetches data for generating the actually eligibility report</p>
 <dl class="field-list simple">
@@ -297,14 +300,14 @@ displaying</p>
 </dd></dl>
 
 <dl class="py class">
-<dt id="records.welldyne.NeverStarted">
-<em class="property"><span class="pre">class</span> </em><code class="sig-prename descclassname"><span class="pre">records.welldyne.</span></code><code class="sig-name descname"><span class="pre">NeverStarted</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">record</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">{}</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">custom</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">{}</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#records.welldyne.NeverStarted" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="records.welldyne.NeverStarted">
+<em class="property"><span class="pre">class</span> </em><span class="sig-prename descclassname"><span class="pre">records.welldyne.</span></span><span class="sig-name descname"><span class="pre">NeverStarted</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">record</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">{}</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">custom</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">{}</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#records.welldyne.NeverStarted" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">RestOC.Record_MySQL.Record</span></code></p>
 <p>Never Started</p>
 <p>Handles never started errors from WellDyne</p>
 <dl class="py method">
-<dt id="records.welldyne.NeverStarted.config">
-<em class="property"><span class="pre">classmethod</span> </em><code class="sig-name descname"><span class="pre">config</span></code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#records.welldyne.NeverStarted.config" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="records.welldyne.NeverStarted.config">
+<em class="property"><span class="pre">classmethod</span> </em><span class="sig-name descname"><span class="pre">config</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#records.welldyne.NeverStarted.config" title="Permalink to this definition">¶</a></dt>
 <dd><p>Config</p>
 <p>Returns the configuration data associated with the record type</p>
 <dl class="field-list simple">
@@ -315,8 +318,8 @@ displaying</p>
 </dd></dl>
 
 <dl class="py method">
-<dt id="records.welldyne.NeverStarted.withTrigger">
-<em class="property"><span class="pre">classmethod</span> </em><code class="sig-name descname"><span class="pre">withTrigger</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">filter</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">custom</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">{}</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#records.welldyne.NeverStarted.withTrigger" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="records.welldyne.NeverStarted.withTrigger">
+<em class="property"><span class="pre">classmethod</span> </em><span class="sig-name descname"><span class="pre">withTrigger</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">filter</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">custom</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">{}</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#records.welldyne.NeverStarted.withTrigger" title="Permalink to this definition">¶</a></dt>
 <dd><p>With Trigger</p>
 <p>Fetches outreach joined with trigger so it can be sorted by date</p>
 <dl class="field-list simple">
@@ -337,13 +340,13 @@ displaying</p>
 </dd></dl>
 
 <dl class="py class">
-<dt id="records.welldyne.Outbound">
-<em class="property"><span class="pre">class</span> </em><code class="sig-prename descclassname"><span class="pre">records.welldyne.</span></code><code class="sig-name descname"><span class="pre">Outbound</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">record</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">{}</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">custom</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">{}</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#records.welldyne.Outbound" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="records.welldyne.Outbound">
+<em class="property"><span class="pre">class</span> </em><span class="sig-prename descclassname"><span class="pre">records.welldyne.</span></span><span class="sig-name descname"><span class="pre">Outbound</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">record</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">{}</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">custom</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">{}</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#records.welldyne.Outbound" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">RestOC.Record_MySQL.Record</span></code></p>
 <p>Represents an outbound failure entry sent by WellDyne</p>
 <dl class="py method">
-<dt id="records.welldyne.Outbound.config">
-<em class="property"><span class="pre">classmethod</span> </em><code class="sig-name descname"><span class="pre">config</span></code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#records.welldyne.Outbound.config" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="records.welldyne.Outbound.config">
+<em class="property"><span class="pre">classmethod</span> </em><span class="sig-name descname"><span class="pre">config</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#records.welldyne.Outbound.config" title="Permalink to this definition">¶</a></dt>
 <dd><p>Config</p>
 <p>Returns the configuration data associated with the record type</p>
 <dl class="field-list simple">
@@ -354,8 +357,8 @@ displaying</p>
 </dd></dl>
 
 <dl class="py method">
-<dt id="records.welldyne.Outbound.deleteNotReady">
-<em class="property"><span class="pre">classmethod</span> </em><code class="sig-name descname"><span class="pre">deleteNotReady</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">custom</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">{}</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#records.welldyne.Outbound.deleteNotReady" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="records.welldyne.Outbound.deleteNotReady">
+<em class="property"><span class="pre">classmethod</span> </em><span class="sig-name descname"><span class="pre">deleteNotReady</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">custom</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">{}</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#records.welldyne.Outbound.deleteNotReady" title="Permalink to this definition">¶</a></dt>
 <dd><p>Delete Not Ready</p>
 <p>Deletes all records in the table that aren’t marked as ready</p>
 <dl class="field-list simple">
@@ -371,8 +374,8 @@ displaying</p>
 </dd></dl>
 
 <dl class="py method">
-<dt id="records.welldyne.Outbound.sent">
-<code class="sig-name descname"><span class="pre">sent</span></code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#records.welldyne.Outbound.sent" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="records.welldyne.Outbound.sent">
+<span class="sig-name descname"><span class="pre">sent</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#records.welldyne.Outbound.sent" title="Permalink to this definition">¶</a></dt>
 <dd><p>Sent</p>
 <p>Moves the record to the sent table</p>
 <dl class="field-list simple">
@@ -383,8 +386,8 @@ displaying</p>
 </dd></dl>
 
 <dl class="py method">
-<dt id="records.welldyne.Outbound.withTrigger">
-<em class="property"><span class="pre">classmethod</span> </em><code class="sig-name descname"><span class="pre">withTrigger</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">custom</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">{}</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#records.welldyne.Outbound.withTrigger" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="records.welldyne.Outbound.withTrigger">
+<em class="property"><span class="pre">classmethod</span> </em><span class="sig-name descname"><span class="pre">withTrigger</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">custom</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">{}</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#records.welldyne.Outbound.withTrigger" title="Permalink to this definition">¶</a></dt>
 <dd><p>With Trigger</p>
 <p>Fetches outreach joined with trigger so it can be sorted by date</p>
 <dl class="field-list simple">
@@ -402,13 +405,13 @@ displaying</p>
 </dd></dl>
 
 <dl class="py class">
-<dt id="records.welldyne.OutboundSent">
-<em class="property"><span class="pre">class</span> </em><code class="sig-prename descclassname"><span class="pre">records.welldyne.</span></code><code class="sig-name descname"><span class="pre">OutboundSent</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">record</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">{}</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">custom</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">{}</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#records.welldyne.OutboundSent" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="records.welldyne.OutboundSent">
+<em class="property"><span class="pre">class</span> </em><span class="sig-prename descclassname"><span class="pre">records.welldyne.</span></span><span class="sig-name descname"><span class="pre">OutboundSent</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">record</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">{}</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">custom</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">{}</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#records.welldyne.OutboundSent" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">RestOC.Record_MySQL.Record</span></code></p>
 <p>Represents an outbound failure from Welldyne that we’ve reprocessed</p>
 <dl class="py method">
-<dt id="records.welldyne.OutboundSent.config">
-<em class="property"><span class="pre">classmethod</span> </em><code class="sig-name descname"><span class="pre">config</span></code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#records.welldyne.OutboundSent.config" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="records.welldyne.OutboundSent.config">
+<em class="property"><span class="pre">classmethod</span> </em><span class="sig-name descname"><span class="pre">config</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#records.welldyne.OutboundSent.config" title="Permalink to this definition">¶</a></dt>
 <dd><p>Config</p>
 <p>Returns the configuration data associated with the record type</p>
 <dl class="field-list simple">
@@ -419,8 +422,8 @@ displaying</p>
 </dd></dl>
 
 <dl class="py method">
-<dt id="records.welldyne.OutboundSent.fromFillError">
-<em class="property"><span class="pre">classmethod</span> </em><code class="sig-name descname"><span class="pre">fromFillError</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">error</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">custom</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">{}</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#records.welldyne.OutboundSent.fromFillError" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="records.welldyne.OutboundSent.fromFillError">
+<em class="property"><span class="pre">classmethod</span> </em><span class="sig-name descname"><span class="pre">fromFillError</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">error</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">custom</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">{}</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#records.welldyne.OutboundSent.fromFillError" title="Permalink to this definition">¶</a></dt>
 <dd><p>From Fill Error</p>
 <p>Creates a sent record from something that previously failed</p>
 <dl class="field-list simple">
@@ -441,13 +444,13 @@ displaying</p>
 </dd></dl>
 
 <dl class="py class">
-<dt id="records.welldyne.RxNumber">
-<em class="property"><span class="pre">class</span> </em><code class="sig-prename descclassname"><span class="pre">records.welldyne.</span></code><code class="sig-name descname"><span class="pre">RxNumber</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">record</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">{}</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">custom</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">{}</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#records.welldyne.RxNumber" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="records.welldyne.RxNumber">
+<em class="property"><span class="pre">class</span> </em><span class="sig-prename descclassname"><span class="pre">records.welldyne.</span></span><span class="sig-name descname"><span class="pre">RxNumber</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">record</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">{}</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">custom</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">{}</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#records.welldyne.RxNumber" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">RestOC.Record_MySQL.Record</span></code></p>
 <p>Represents a prescription number on WellDyne’s side</p>
 <dl class="py method">
-<dt id="records.welldyne.RxNumber.config">
-<em class="property"><span class="pre">classmethod</span> </em><code class="sig-name descname"><span class="pre">config</span></code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#records.welldyne.RxNumber.config" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="records.welldyne.RxNumber.config">
+<em class="property"><span class="pre">classmethod</span> </em><span class="sig-name descname"><span class="pre">config</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#records.welldyne.RxNumber.config" title="Permalink to this definition">¶</a></dt>
 <dd><p>Config</p>
 <p>Returns the configuration data associated with the record type</p>
 <dl class="field-list simple">
@@ -460,13 +463,13 @@ displaying</p>
 </dd></dl>
 
 <dl class="py class">
-<dt id="records.welldyne.Trigger">
-<em class="property"><span class="pre">class</span> </em><code class="sig-prename descclassname"><span class="pre">records.welldyne.</span></code><code class="sig-name descname"><span class="pre">Trigger</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">record</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">{}</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">custom</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">{}</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#records.welldyne.Trigger" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="records.welldyne.Trigger">
+<em class="property"><span class="pre">class</span> </em><span class="sig-prename descclassname"><span class="pre">records.welldyne.</span></span><span class="sig-name descname"><span class="pre">Trigger</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">record</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">{}</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">custom</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">{}</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#records.welldyne.Trigger" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">RestOC.Record_MySQL.Record</span></code></p>
 <p>Represents an order with a customer that’s been triggered to WellDyne</p>
 <dl class="py method">
-<dt id="records.welldyne.Trigger.config">
-<em class="property"><span class="pre">classmethod</span> </em><code class="sig-name descname"><span class="pre">config</span></code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#records.welldyne.Trigger.config" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="records.welldyne.Trigger.config">
+<em class="property"><span class="pre">classmethod</span> </em><span class="sig-name descname"><span class="pre">config</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#records.welldyne.Trigger.config" title="Permalink to this definition">¶</a></dt>
 <dd><p>Config</p>
 <p>Returns the configuration data associated with the record type</p>
 <dl class="field-list simple">
@@ -477,8 +480,8 @@ displaying</p>
 </dd></dl>
 
 <dl class="py method">
-<dt id="records.welldyne.Trigger.noFeedback">
-<em class="property"><span class="pre">classmethod</span> </em><code class="sig-name descname"><span class="pre">noFeedback</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">older_than</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">custom</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">{}</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#records.welldyne.Trigger.noFeedback" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="records.welldyne.Trigger.noFeedback">
+<em class="property"><span class="pre">classmethod</span> </em><span class="sig-name descname"><span class="pre">noFeedback</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">older_than</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">custom</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">{}</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#records.welldyne.Trigger.noFeedback" title="Permalink to this definition">¶</a></dt>
 <dd><p>No Feedback</p>
 <p>Looks for triggers of a certain age that have not been opened, shipped,
 cancelled, and have no outbound error or record in the never started</p>
@@ -498,8 +501,8 @@ cancelled, and have no outbound error or record in the never started</p>
 </dd></dl>
 
 <dl class="py method">
-<dt id="records.welldyne.Trigger.vsShipped">
-<em class="property"><span class="pre">classmethod</span> </em><code class="sig-name descname"><span class="pre">vsShipped</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">custom</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">{}</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#records.welldyne.Trigger.vsShipped" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="records.welldyne.Trigger.vsShipped">
+<em class="property"><span class="pre">classmethod</span> </em><span class="sig-name descname"><span class="pre">vsShipped</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">custom</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">{}</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#records.welldyne.Trigger.vsShipped" title="Permalink to this definition">¶</a></dt>
 <dd><p>Vs Shipped</p>
 <p>Fetches the latest triggers and gives the count vs how many have been
 shipped</p>
@@ -516,8 +519,8 @@ shipped</p>
 </dd></dl>
 
 <dl class="py method">
-<dt id="records.welldyne.Trigger.withErrorsEligibility">
-<em class="property"><span class="pre">classmethod</span> </em><code class="sig-name descname"><span class="pre">withErrorsEligibility</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">crm_type</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">crm_id</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">custom</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">{}</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#records.welldyne.Trigger.withErrorsEligibility" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="records.welldyne.Trigger.withErrorsEligibility">
+<em class="property"><span class="pre">classmethod</span> </em><span class="sig-name descname"><span class="pre">withErrorsEligibility</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">crm_type</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">crm_id</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">custom</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">{}</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#records.welldyne.Trigger.withErrorsEligibility" title="Permalink to this definition">¶</a></dt>
 <dd><p>With Errors &amp; Eligibility</p>
 <p>Fetches the latest trigger associated with the customer, including any
 possible never started, outbound, and eligibility data</p>

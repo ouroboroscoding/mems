@@ -13,6 +13,8 @@
   
   <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
   <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+  <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+  <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
 
   
   
@@ -29,6 +31,7 @@
   
     
       <script type="text/javascript" id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
+        <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
         <script src="_static/jquery.js"></script>
         <script src="_static/underscore.js"></script>
         <script src="_static/doctools.js"></script>
@@ -181,7 +184,6 @@
 </li>
 <li class="toctree-l1"><a class="reference internal" href="crons.monolith.html">crons.monolith package</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="crons.monolith.html#submodules">Submodules</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="crons.monolith.claims_timeout.html">crons.monolith.claims_timeout module</a></li>
 <li class="toctree-l3"><a class="reference internal" href="crons.monolith.hard_declines.html">crons.monolith.hard_declines module</a></li>
 <li class="toctree-l3"><a class="reference internal" href="crons.monolith.hrt_join_date.html">crons.monolith.hrt_join_date module</a></li>
 <li class="toctree-l3"><a class="reference internal" href="crons.monolith.invalid_campaigns.html">crons.monolith.invalid_campaigns module</a></li>
@@ -231,8 +233,8 @@
 <p>Crons code</p>
 <p>Available classes/functions for running crons</p>
 <dl class="py function">
-<dt id="crons.emailError">
-<code class="sig-prename descclassname"><span class="pre">crons.</span></code><code class="sig-name descname"><span class="pre">emailError</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">subject</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">error</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">recipient</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#crons.emailError" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="crons.emailError">
+<span class="sig-prename descclassname"><span class="pre">crons.</span></span><span class="sig-name descname"><span class="pre">emailError</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">subject</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">error</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">recipient</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#crons.emailError" title="Permalink to this definition">¶</a></dt>
 <dd><p>Email Error</p>
 <p>Send out an email with an error message</p>
 <dl class="field-list simple">
@@ -250,8 +252,8 @@
 </dd></dl>
 
 <dl class="py function">
-<dt id="crons.isRunning">
-<code class="sig-prename descclassname"><span class="pre">crons.</span></code><code class="sig-name descname"><span class="pre">isRunning</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#crons.isRunning" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="crons.isRunning">
+<span class="sig-prename descclassname"><span class="pre">crons.</span></span><span class="sig-name descname"><span class="pre">isRunning</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#crons.isRunning" title="Permalink to this definition">¶</a></dt>
 <dd><p>Is Running</p>
 <p>Checks if the cron job is already running, if not, creates pidfile so
 future calls return true</p>

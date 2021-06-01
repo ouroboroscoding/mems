@@ -1,7 +1,7 @@
 # coding=utf8
 """Pharmacy Fill
 
-Generates the proper reports for pharmacies to fill new and recurring orders
+Generates the eligibility report for WellDyne
 """
 
 __author__		= "Chris Nasr"

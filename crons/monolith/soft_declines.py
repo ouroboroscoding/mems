@@ -1,8 +1,8 @@
 # coding=utf8
 """Hard Declines
 
-Fetches hard declines and adds a fake SMS message to the associated account
-so agents are aware of the issue.
+Fetches soft declines and sends an SMS message to the associated account so the
+user is aware of the issue.
 """
 
 __author__		= "Chris Nasr"

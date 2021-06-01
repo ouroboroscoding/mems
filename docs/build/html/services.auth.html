@@ -13,6 +13,8 @@
   
   <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
   <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+  <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+  <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
 
   
   
@@ -29,6 +31,7 @@
   
     
       <script type="text/javascript" id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
+        <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
         <script src="_static/jquery.js"></script>
         <script src="_static/underscore.js"></script>
         <script src="_static/doctools.js"></script>
@@ -157,14 +160,14 @@
 <p>Auth Service</p>
 <p>Handles all Authorization / Login requests</p>
 <dl class="py class">
-<dt id="services.auth.Auth">
-<em class="property"><span class="pre">class</span> </em><code class="sig-prename descclassname"><span class="pre">services.auth.</span></code><code class="sig-name descname"><span class="pre">Auth</span></code><a class="headerlink" href="#services.auth.Auth" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="services.auth.Auth">
+<em class="property"><span class="pre">class</span> </em><span class="sig-prename descclassname"><span class="pre">services.auth.</span></span><span class="sig-name descname"><span class="pre">Auth</span></span><a class="headerlink" href="#services.auth.Auth" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">RestOC.Services.Service</span></code></p>
 <p>Auth Service class</p>
 <p>Service for Authorization, sign in, sign up, etc.</p>
 <dl class="py method">
-<dt id="services.auth.Auth.initialise">
-<code class="sig-name descname"><span class="pre">initialise</span></code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#services.auth.Auth.initialise" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="services.auth.Auth.initialise">
+<span class="sig-name descname"><span class="pre">initialise</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#services.auth.Auth.initialise" title="Permalink to this definition">¶</a></dt>
 <dd><p>Initialise</p>
 <p>Initialises the instance and returns itself for chaining</p>
 <dl class="field-list simple">
@@ -175,8 +178,8 @@
 </dd></dl>
 
 <dl class="py method">
-<dt id="services.auth.Auth.install">
-<em class="property"><span class="pre">classmethod</span> </em><code class="sig-name descname"><span class="pre">install</span></code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#services.auth.Auth.install" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="services.auth.Auth.install">
+<em class="property"><span class="pre">classmethod</span> </em><span class="sig-name descname"><span class="pre">install</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#services.auth.Auth.install" title="Permalink to this definition">¶</a></dt>
 <dd><p>Install</p>
 <p>The service’s install method, used to setup storage or other one time
 install configurations</p>
@@ -188,8 +191,8 @@ install configurations</p>
 </dd></dl>
 
 <dl class="py method">
-<dt id="services.auth.Auth.permissionsSelf_read">
-<code class="sig-name descname"><span class="pre">permissionsSelf_read</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sesh</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#services.auth.Auth.permissionsSelf_read" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="services.auth.Auth.permissionsSelf_read">
+<span class="sig-name descname"><span class="pre">permissionsSelf_read</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sesh</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#services.auth.Auth.permissionsSelf_read" title="Permalink to this definition">¶</a></dt>
 <dd><p>Permissions Self</p>
 <p>Returns the permissions for the signed in user only</p>
 <dl class="field-list simple">
@@ -206,8 +209,8 @@ install configurations</p>
 </dd></dl>
 
 <dl class="py method">
-<dt id="services.auth.Auth.permissions_read">
-<code class="sig-name descname"><span class="pre">permissions_read</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sesh</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#services.auth.Auth.permissions_read" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="services.auth.Auth.permissions_read">
+<span class="sig-name descname"><span class="pre">permissions_read</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sesh</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#services.auth.Auth.permissions_read" title="Permalink to this definition">¶</a></dt>
 <dd><p>Permissions</p>
 <p>Returns all permissions associated with a user</p>
 <dl class="field-list simple">
@@ -224,8 +227,8 @@ install configurations</p>
 </dd></dl>
 
 <dl class="py method">
-<dt id="services.auth.Auth.permissions_update">
-<code class="sig-name descname"><span class="pre">permissions_update</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sesh</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#services.auth.Auth.permissions_update" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="services.auth.Auth.permissions_update">
+<span class="sig-name descname"><span class="pre">permissions_update</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sesh</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#services.auth.Auth.permissions_update" title="Permalink to this definition">¶</a></dt>
 <dd><p>Permissions Update</p>
 <p>Updates all permissions associated with a specific user</p>
 <dl class="field-list simple">
@@ -242,8 +245,8 @@ install configurations</p>
 </dd></dl>
 
 <dl class="py method">
-<dt id="services.auth.Auth.rightsVerify_read">
-<code class="sig-name descname"><span class="pre">rightsVerify_read</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sesh</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#services.auth.Auth.rightsVerify_read" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="services.auth.Auth.rightsVerify_read">
+<span class="sig-name descname"><span class="pre">rightsVerify_read</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sesh</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#services.auth.Auth.rightsVerify_read" title="Permalink to this definition">¶</a></dt>
 <dd><p>Rights Verify</p>
 <p>Checks the user currently in the session has access to the requested
 permission</p>
@@ -261,8 +264,8 @@ permission</p>
 </dd></dl>
 
 <dl class="py method">
-<dt id="services.auth.Auth.search_read">
-<code class="sig-name descname"><span class="pre">search_read</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sesh</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#services.auth.Auth.search_read" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="services.auth.Auth.search_read">
+<span class="sig-name descname"><span class="pre">search_read</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sesh</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#services.auth.Auth.search_read" title="Permalink to this definition">¶</a></dt>
 <dd><p>Search</p>
 <p>Looks up users by alias</p>
 <dl class="field-list simple">
@@ -279,8 +282,8 @@ permission</p>
 </dd></dl>
 
 <dl class="py method">
-<dt id="services.auth.Auth.session_read">
-<code class="sig-name descname"><span class="pre">session_read</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sesh</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#services.auth.Auth.session_read" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="services.auth.Auth.session_read">
+<span class="sig-name descname"><span class="pre">session_read</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sesh</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#services.auth.Auth.session_read" title="Permalink to this definition">¶</a></dt>
 <dd><p>Session</p>
 <p>Returns the ID of the user logged into the current session</p>
 <dl class="field-list simple">
@@ -297,8 +300,8 @@ permission</p>
 </dd></dl>
 
 <dl class="py method">
-<dt id="services.auth.Auth.signin_create">
-<code class="sig-name descname"><span class="pre">signin_create</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#services.auth.Auth.signin_create" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="services.auth.Auth.signin_create">
+<span class="sig-name descname"><span class="pre">signin_create</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#services.auth.Auth.signin_create" title="Permalink to this definition">¶</a></dt>
 <dd><p>Signin</p>
 <p>Signs a user into the system</p>
 <dl class="field-list simple">
@@ -312,8 +315,8 @@ permission</p>
 </dd></dl>
 
 <dl class="py method">
-<dt id="services.auth.Auth.signout_create">
-<code class="sig-name descname"><span class="pre">signout_create</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sesh</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#services.auth.Auth.signout_create" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="services.auth.Auth.signout_create">
+<span class="sig-name descname"><span class="pre">signout_create</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sesh</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#services.auth.Auth.signout_create" title="Permalink to this definition">¶</a></dt>
 <dd><p>Signout</p>
 <p>Called to sign out a user and destroy their session</p>
 <dl class="field-list simple">
@@ -330,8 +333,8 @@ permission</p>
 </dd></dl>
 
 <dl class="py method">
-<dt id="services.auth.Auth.userEmail_update">
-<code class="sig-name descname"><span class="pre">userEmail_update</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sesh</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#services.auth.Auth.userEmail_update" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="services.auth.Auth.userEmail_update">
+<span class="sig-name descname"><span class="pre">userEmail_update</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sesh</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#services.auth.Auth.userEmail_update" title="Permalink to this definition">¶</a></dt>
 <dd><p>User Email</p>
 <p>Changes the email for the current signed in user</p>
 <dl class="field-list simple">
@@ -348,8 +351,8 @@ permission</p>
 </dd></dl>
 
 <dl class="py method">
-<dt id="services.auth.Auth.userNames_read">
-<code class="sig-name descname"><span class="pre">userNames_read</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sesh</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#services.auth.Auth.userNames_read" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="services.auth.Auth.userNames_read">
+<span class="sig-name descname"><span class="pre">userNames_read</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sesh</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#services.auth.Auth.userNames_read" title="Permalink to this definition">¶</a></dt>
 <dd><p>User Names</p>
 <p>Returns a dict of IDs to names of users</p>
 <dl class="field-list simple">
@@ -366,8 +369,8 @@ permission</p>
 </dd></dl>
 
 <dl class="py method">
-<dt id="services.auth.Auth.userPasswdForgot_create">
-<code class="sig-name descname"><span class="pre">userPasswdForgot_create</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#services.auth.Auth.userPasswdForgot_create" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="services.auth.Auth.userPasswdForgot_create">
+<span class="sig-name descname"><span class="pre">userPasswdForgot_create</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#services.auth.Auth.userPasswdForgot_create" title="Permalink to this definition">¶</a></dt>
 <dd><p>User Password Forgot (Generate)</p>
 <p>Creates the key that will be used to allow a user to change their
 password if they forgot it</p>
@@ -382,8 +385,8 @@ password if they forgot it</p>
 </dd></dl>
 
 <dl class="py method">
-<dt id="services.auth.Auth.userPasswdForgot_update">
-<code class="sig-name descname"><span class="pre">userPasswdForgot_update</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#services.auth.Auth.userPasswdForgot_update" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="services.auth.Auth.userPasswdForgot_update">
+<span class="sig-name descname"><span class="pre">userPasswdForgot_update</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#services.auth.Auth.userPasswdForgot_update" title="Permalink to this definition">¶</a></dt>
 <dd><p>User Password Forgot (Change Password)</p>
 <p>Validates the key and changes the password to the given value</p>
 <dl class="field-list simple">
@@ -397,8 +400,8 @@ password if they forgot it</p>
 </dd></dl>
 
 <dl class="py method">
-<dt id="services.auth.Auth.userPasswd_update">
-<code class="sig-name descname"><span class="pre">userPasswd_update</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sesh</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#services.auth.Auth.userPasswd_update" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="services.auth.Auth.userPasswd_update">
+<span class="sig-name descname"><span class="pre">userPasswd_update</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sesh</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#services.auth.Auth.userPasswd_update" title="Permalink to this definition">¶</a></dt>
 <dd><p>User Password</p>
 <p>Changes the password for the current signed in user</p>
 <dl class="field-list simple">
@@ -415,8 +418,8 @@ password if they forgot it</p>
 </dd></dl>
 
 <dl class="py method">
-<dt id="services.auth.Auth.user_create">
-<code class="sig-name descname"><span class="pre">user_create</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sesh</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#services.auth.Auth.user_create" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="services.auth.Auth.user_create">
+<span class="sig-name descname"><span class="pre">user_create</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sesh</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#services.auth.Auth.user_create" title="Permalink to this definition">¶</a></dt>
 <dd><p>User Create</p>
 <p>Creates a new user</p>
 <dl class="field-list simple">
@@ -433,8 +436,8 @@ password if they forgot it</p>
 </dd></dl>
 
 <dl class="py method">
-<dt id="services.auth.Auth.user_read">
-<code class="sig-name descname"><span class="pre">user_read</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sesh</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#services.auth.Auth.user_read" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="services.auth.Auth.user_read">
+<span class="sig-name descname"><span class="pre">user_read</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sesh</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#services.auth.Auth.user_read" title="Permalink to this definition">¶</a></dt>
 <dd><p>User Read</p>
 <p>Fetches an existing user and returns their data</p>
 <dl class="field-list simple">
@@ -451,8 +454,8 @@ password if they forgot it</p>
 </dd></dl>
 
 <dl class="py method">
-<dt id="services.auth.Auth.user_update">
-<code class="sig-name descname"><span class="pre">user_update</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sesh</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#services.auth.Auth.user_update" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="services.auth.Auth.user_update">
+<span class="sig-name descname"><span class="pre">user_update</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sesh</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#services.auth.Auth.user_update" title="Permalink to this definition">¶</a></dt>
 <dd><p>User Update</p>
 <p>Updates an existing user</p>
 <dl class="field-list simple">

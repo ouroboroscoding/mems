@@ -1,7 +1,7 @@
 # coding=utf8
 """ WellDyne Records
 
-Handles the record structures for the monolith service
+Handles the record structures for the Welldyne service
 """
 
 __author__		= "Chris Nasr"
