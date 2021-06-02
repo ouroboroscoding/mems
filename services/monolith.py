@@ -4649,6 +4649,30 @@ class Monolith(Services.Service):
 		# Get the pending orders
 		lPending = KtOrder.queueCsr() + KtOrderContinuous.queueCsr()
 
+		# Go through each record to gather unique user IDs
+		lUserIDs = set()
+		for d in lPending:
+			if d['lastProviderId']:
+				lUserIDs.add(d['lastProviderId'])
+
+		# If we have any IDs
+		if lUserIDs:
+
+			# Get the names of all the users
+			dUsers = {
+				d['id']: '%s %s' % (d['firstName'], d['lastName'])
+				for d in User.get(list(lUserIDs), raw=['id', 'firstName', 'lastName'])
+			}
+
+		# Else, no last providers found
+		else:
+			dUsers = {}
+
+		# Go through each order and update the name accordingly
+		for d in lPending:
+			if d['lastProviderId']:
+				d['lastProviderName'] = d['lastProviderId'] in dUsers and dUsers[d['user']] or 'N/A'
+
 		# Sort them by date
 		lPending.sort(key=lambda d: d['updatedAt'])
 

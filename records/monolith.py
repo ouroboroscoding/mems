@@ -2035,6 +2035,7 @@ class KtOrder(Record_MySQL.Record):
 				"	`kto`.`shipCity`,\n" \
 				"	IFNULL(`ss`.`name`, '[state missing]') as `shipState`,\n" \
 				"	IFNULL(`ss`.`legalEncounterType`, '') as `encounter`,\n" \
+				"	`os`.`lastProviderId`,\n" \
 				"	CONVERT(`kto`.`customerId`, UNSIGNED) as `customerId`,\n" \
 				"	`kto`.`createdAt`,\n" \
 				"	`kto`.`updatedAt`,\n" \
@@ -2559,6 +2560,7 @@ class KtOrderContinuous(Record_MySQL.Record):
 				"	`kto`.`shipCity`,\n" \
 				"	IFNULL(`ss`.`name`, '[state missing]') as `shipState`,\n" \
 				"	IFNULL(`ss`.`legalEncounterType`, '') as `type`,\n" \
+				"	`os`.`lastProviderId`,\n" \
 				"	CONVERT(`kto`.`customerId`, UNSIGNED) as `customerId`,\n" \
 				"	`cont`.`createdAt`,\n" \
 				"	`cont`.`updatedAt`,\n" \
