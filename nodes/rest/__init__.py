@@ -91,11 +91,11 @@ def serviceError(error):
 	# Generate a list of the individual parts of the error
 	lErrors = [
 		'ERROR MESSAGE\n\n%s\n' % error['traceback'],
-		'REQUEST\n\n%s:%s\n' % (error['service'], error['path']),
+		'REQUEST\n\n%s %s:%s\n' % (error['method'], error['service'], error['path']),
 		'DATA\n\n%s\n' % pformat(error['data']),
 	]
 	if 'session' in error:
-		lErrors.append('SESSION\n\n%s\n' % pformat(error['session']))
+		lErrors.append('SESSION\n\n%s\n' % pformat({k:error['session'][k] for k in error['session']}))
 	if 'environ' in error:
 		lErrors.append('ENVIRONMENT\n\n%s\n' % pformat(error['environ']))
 
