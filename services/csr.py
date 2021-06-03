@@ -2110,6 +2110,10 @@ class CSR(Services.Service):
 		# Find all the record IDs
 		lTickets = Ticket.filter(dFilter, raw=['_id'], orderby='_created')
 
+		# If we have no tickets
+		if not lTickets:
+			return Services.Response([])
+
 		# Get the tickets with the state
 		lTickets = Ticket.withState([d['_id'] for d in lTickets])
 
@@ -2120,14 +2124,21 @@ class CSR(Services.Service):
 			if d['resolved_user']:
 				lUsersIDs.add(d['resolved_user'])
 
-		# Fetch their names
-		oResponse = Services.read('monolith', 'user/name', {
-			"_internal_": Services.internalKey(),
-			"id": list(lUsersIDs)
-		}, sesh)
+		# If there's IDs
+		if lUsersIDs:
 
-		# Convert the IDs
-		dMemoNames = DictHelper.keysToInts(oResponse.data)
+			# Fetch their names
+			oResponse = Services.read('monolith', 'user/name', {
+				"_internal_": Services.internalKey(),
+				"id": list(lUsersIDs)
+			}, sesh)
+
+			# Convert the IDs
+			dMemoNames = DictHelper.keysToInts(oResponse.data)
+
+		# Else,
+		else:
+			dMemoNames = {}
 
 		# Add the names to the agents
 		for d in lTickets:
