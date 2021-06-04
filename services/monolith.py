@@ -1822,6 +1822,10 @@ class Monolith(Services.Service):
 				limit=1
 			)
 
+			# If there's no customer
+			if not dCustomer:
+				return Services.Response(0)
+
 			# Try to find the landing
 			lLandings = TfLanding.find(
 				dCustomer['lastName'],
