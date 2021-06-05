@@ -1994,10 +1994,17 @@ class CSR(Services.Service):
 		if oResponse.data:
 			TicketItem.addSMS(data['_id'], oResponse.data)
 
-		# Store the data and return the result
-		return Services.Response(
-			oResolved.create()
-		)
+		# Try to create the ticket
+		try:
+
+			# Store the data and return the result
+			return Services.Response(
+				oResolved.create()
+			)
+
+		# If we get a duplicate exception
+		except Record_MySQL.DuplicateException:
+			return Services.Error(1101)
 
 	def tickets_read(self, data, sesh):
 		"""Tickets by User
