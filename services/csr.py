@@ -2025,6 +2025,16 @@ class CSR(Services.Service):
 			# Check rights
 			Rights.check(sesh, 'csr_overwrite', Rights.READ)
 
+			# If an agent type is passed
+			if 'agent_type' in data:
+
+				# Find the ids of all agents with the type
+				lIDs = Agent.memoIdsByType(data['agent_type'])
+				if lIDs:
+					data['memo_id'] = lIDs
+				else:
+					return Services.Response([])
+
 		# Else,
 		else:
 
