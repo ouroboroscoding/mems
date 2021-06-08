@@ -605,7 +605,7 @@ class Konnektive(Services.Service):
 			"customerId": dO['customerId'],
 			"date": dO['dateUpdated'],
 			"email": dO['emailAddress'],
-			"encounter": dO['state'] and self._encounters[dO['state']] or '',
+			"encounter": (dO['state'] and dO['state'] in self._encounters) and self._encounters[dO['state']] or '',
 			"items": 'items' in dO and [{
 				"campaign": dI['name'],
 				"description": dI['productDescription'],

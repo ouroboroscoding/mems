@@ -952,8 +952,11 @@ class Patient(Services.Service):
 			return Services.Response(error=(1001, e.args[0]))
 
 		# Create the record
-		if not oSetup.create():
-			return Services.Response(error=1100)
+		try:
+			if not oSetup.create():
+				return Services.Response(error=1100)
+		except Record_MySQL.DuplicateException:
+			return Services.Error(1101)
 
 		# Patient setup email template variables
 		dTpl = {"url": data['url'] + oSetup['_id']}
