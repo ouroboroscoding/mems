@@ -1504,7 +1504,7 @@ class Monolith(Services.Service):
 
 		# Generate a list of the dates
 		dDates = {
-			d['identifier']:d['dateReported']
+			d['identifier']:d['dateReported'] or 'NO DATE'
 			for d in lLabs
 		}
 
