@@ -45,6 +45,41 @@ class Agent(Record_MySQL.Record):
 		# Return the config
 		return cls._conf
 
+	@classmethod
+	def memoIdsByType(cls, type_, custom={}):
+		"""Memo IDs by Type
+
+		Returns the memo IDs of all agents with the given type set
+
+		Arguments:
+			type_ (str): The type to return IDs for
+			custom (dict): Custom Host and DB info
+				'host' the name of the host to get/set data on
+				'append' optional postfix for dynamic DBs
+
+		Returns:
+			uint[]
+		"""
+
+		# Fetch the record structure
+		dStruct = cls.struct(custom)
+
+		# Generate the SQL
+		sSQL = "SELECT `memo_id`\n" \
+				"FROM `%(db)s`.`%(table)s`\n" \
+				"WHERE `type` REGEXP '\\\\b%(type)s\\\\b'" % {
+			"db": dStruct['db'],
+			"table": dStruct['table'],
+			"type": type_
+		}
+
+		# Delete all the records
+		return Record_MySQL.Commands.select(
+			dStruct['host'],
+			sSQL,
+			Record_MySQL.ESelect.COLUMN
+		)
+
 # CustomList class
 class CustomList(Record_MySQL.Record):
 	"""CustomList
@@ -379,7 +414,10 @@ class Ticket(Record_MySQL.Record):
 			start, end
 		)
 		if memo_id:
-			sWhere += '\nAND `memo_id` = %d' % memo_id
+			if isinstance(memo_id, list):
+				sWhere += '\nAND `memo_id` IN (%s)' % ','.join([str(s) for s in memo_id])
+			else:
+				sWhere += '\nAND `memo_id` = %d' % memo_id
 
 		# Generate the SQL
 		sSQL = "SELECT `_ticket` as `ticket`\n" \
