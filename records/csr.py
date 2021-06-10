@@ -772,3 +772,33 @@ class TicketResolved(Record_MySQL.Record):
 
 		# Return the config
 		return cls._conf
+
+# TicketStat class
+class TicketStat(Record_MySQL.Record):
+	"""Ticket Stat
+
+	Represents a single state by day/week/month for a user or group of users
+	"""
+
+	_conf = None
+	"""Configuration"""
+
+	@classmethod
+	def config(cls):
+		"""Config
+
+		Returns the configuration data associated with the record type
+
+		Returns:
+			dict
+		"""
+
+		# If we haven loaded the config yet
+		if not cls._conf:
+			cls._conf = Record_MySQL.Record.generateConfig(
+				Tree.fromFile('definitions/csr/ticket_stat.json'),
+				'mysql'
+			)
+
+		# Return the config
+		return cls._conf
