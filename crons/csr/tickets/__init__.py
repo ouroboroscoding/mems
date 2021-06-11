@@ -48,22 +48,25 @@ def getAndStore(range_type, date, start, end):
 		# Go through each agent type
 		for s in AGENT_TYPES:
 
-			# Get the count of the action type in the given time frame with the
-			#	Memo IDs in the given agent type
-			iCount = l[1].count(filter={
-				"_created": {"between": [start, end]},
-				"memo_id": dTypes[s]
-			})
+			# If we have any memo IDs in the list
+			if dTypes[s]:
 
-			# Save it in the DB
-			oStat = TicketStat({
-				"range": range_type,
-				"date": date,
-				"list": s,
-				"action": l[0],
-				"count": iCount
-			})
-			oStat.create(conflict='replace')
+				# Get the count of the action type in the given time frame with the
+				#	Memo IDs in the given agent type
+				iCount = l[1].count(filter={
+					"_created": {"between": [start, end]},
+					"memo_id": dTypes[s]
+				})
+
+				# Save it in the DB
+				oStat = TicketStat({
+					"range": range_type,
+					"date": date,
+					"list": s,
+					"action": l[0],
+					"count": iCount
+				})
+				oStat.create(conflict='replace')
 
 		# Get the counts by user
 		lCounts = l[1].counts(start, end)
