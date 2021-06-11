@@ -632,7 +632,7 @@ class TicketOpened(Record_MySQL.Record):
 	"""Configuration"""
 
 	@classmethod
-	def countByUser(cls, memo_id, range=None, custom={}):
+	def countByUser(cls, memo_id, range_=None, custom={}):
 		"""Count By User
 
 		Returns the total count of opened tickets by a specific user, with or
@@ -640,7 +640,7 @@ class TicketOpened(Record_MySQL.Record):
 
 		Arguments:
 			memo_id (uint): The ID of the user
-			range (list): Optional range to filter by, 0 = start, 1 = end
+			range_ (list): Optional range to filter by, 0 = start, 1 = end
 			custom (dict): Custom Host and DB info
 				'host' the name of the host to get/set data on
 				'append' optional postfix for dynamic DBs
@@ -656,9 +656,9 @@ class TicketOpened(Record_MySQL.Record):
 		lWhere = ['`memo_id` = %d' % memo_id]
 
 		# If we have a range
-		if range:
+		if range_:
 			lWhere.append('`_created` BETWEEN FROM_UNIXTIME(%d) AND FROM_UNIXTIME(%d)' % (
-				range[0], range[1]
+				range_[0], range_[1]
 			))
 
 		# Generate the SQL
@@ -670,7 +670,7 @@ class TicketOpened(Record_MySQL.Record):
 			"where": '\nAND '.join(lWhere)
 		}
 
-		# Delete all the records
+		# Return the count
 		return Record_MySQL.Commands.select(
 			dStruct['host'],
 			sSQL,
@@ -697,6 +697,44 @@ class TicketOpened(Record_MySQL.Record):
 		# Return the config
 		return cls._conf
 
+	@classmethod
+	def counts(cls, start, end, custom={}):
+		"""Counts
+
+		Returns the counts group by the users
+
+		Arguments:
+			start (int): The starting timestamp
+			end (int): The ending timestamp
+			custom (dict): Custom Host and DB info
+				'host' the name of the host to get/set data on
+				'append' optional postfix for dynamic DBs
+
+		Returns:
+			uint
+		"""
+
+		# Fetch the record structure
+		dStruct = cls.struct(custom)
+
+		# Generate the SQL
+		sSQL = "SELECT `memo_id`, COUNT(*) as `count`\n" \
+				"FROM `%(db)s`.`%(table)s`\n" \
+				"WHERE `_created` BETWEEN FROM_UNIXTIME(%(start)d) AND FROM_UNIXTIME(%(end)d)\n" \
+				"GROUP BY `memo_id`" % {
+			"db": dStruct['db'],
+			"table": dStruct['table'],
+			"start": start,
+			"end": end
+		}
+
+		# Return all the records
+		return Record_MySQL.Commands.select(
+			dStruct['host'],
+			sSQL,
+			Record_MySQL.ESelect.ALL
+		)
+
 # TicketResolved class
 class TicketResolved(Record_MySQL.Record):
 	"""Ticket Resolved
@@ -708,7 +746,7 @@ class TicketResolved(Record_MySQL.Record):
 	"""Configuration"""
 
 	@classmethod
-	def countByUser(cls, memo_id, range=None, custom={}):
+	def countByUser(cls, memo_id, range_=None, custom={}):
 		"""Count By User
 
 		Returns the total count of opened tickets by a specific user, with or
@@ -716,7 +754,7 @@ class TicketResolved(Record_MySQL.Record):
 
 		Arguments:
 			memo_id (uint): The ID of the user
-			range (list): Optional range to filter by, 0 = start, 1 = end
+			range_ (list): Optional range to filter by, 0 = start, 1 = end
 			custom (dict): Custom Host and DB info
 				'host' the name of the host to get/set data on
 				'append' optional postfix for dynamic DBs
@@ -732,9 +770,9 @@ class TicketResolved(Record_MySQL.Record):
 		lWhere = ['`memo_id` = %d' % memo_id]
 
 		# If we have a range
-		if range:
+		if range_:
 			lWhere.append('`_created` BETWEEN FROM_UNIXTIME(%d) AND FROM_UNIXTIME(%d)' % (
-				range[0], range[1]
+				range_[0], range_[1]
 			))
 
 		# Generate the SQL
@@ -746,7 +784,7 @@ class TicketResolved(Record_MySQL.Record):
 			"where": '\nAND '.join(lWhere)
 		}
 
-		# Delete all the records
+		# Return the count
 		return Record_MySQL.Commands.select(
 			dStruct['host'],
 			sSQL,
@@ -767,6 +805,74 @@ class TicketResolved(Record_MySQL.Record):
 		if not cls._conf:
 			cls._conf = Record_MySQL.Record.generateConfig(
 				Tree.fromFile('definitions/csr/ticket_resolved.json'),
+				'mysql'
+			)
+
+		# Return the config
+		return cls._conf
+
+	@classmethod
+	def counts(cls, start, end, custom={}):
+		"""Counts
+
+		Returns the counts group by the users
+
+		Arguments:
+			start (int): The starting timestamp
+			end (int): The ending timestamp
+			custom (dict): Custom Host and DB info
+				'host' the name of the host to get/set data on
+				'append' optional postfix for dynamic DBs
+
+		Returns:
+			uint
+		"""
+
+		# Fetch the record structure
+		dStruct = cls.struct(custom)
+
+		# Generate the SQL
+		sSQL = "SELECT `memo_id`, COUNT(*) as `count`\n" \
+				"FROM `%(db)s`.`%(table)s`\n" \
+				"WHERE `_created` BETWEEN FROM_UNIXTIME(%(start)d) AND FROM_UNIXTIME(%(end)d)\n" \
+				"GROUP BY `memo_id`" % {
+			"db": dStruct['db'],
+			"table": dStruct['table'],
+			"start": start,
+			"end": end
+		}
+
+		# Return all the records
+		return Record_MySQL.Commands.select(
+			dStruct['host'],
+			sSQL,
+			Record_MySQL.ESelect.ALL
+		)
+
+# TicketStat class
+class TicketStat(Record_MySQL.Record):
+	"""Ticket Stat
+
+	Represents a single state by day/week/month for a user or group of users
+	"""
+
+	_conf = None
+	"""Configuration"""
+
+	@classmethod
+	def config(cls):
+		"""Config
+
+		Returns the configuration data associated with the record type
+
+		Returns:
+			dict
+		"""
+
+		# If we haven loaded the config yet
+		if not cls._conf:
+			cls._conf = Record_MySQL.Record.generateConfig(
+				Tree.fromFile('definitions/csr/ticket_stat.json'),
 				'mysql'
 			)
 

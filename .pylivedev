@@ -1,0 +1,67 @@
+{
+	"auth": {
+		"command": "services.auth",
+		"mode": "module",
+		"verbose": true
+	},
+
+	"communications": {
+		"command": "services.communications",
+		"mode": "module",
+		"verbose": true
+	},
+
+	"csr": {
+		"command": "services.csr",
+		"mode": "module",
+		"verbose": true
+	},
+
+	"justcall": {
+		"command": "services.justcall",
+		"mode": "module",
+		"verbose": true
+	},
+
+	"konnektive": {
+		"command": "services.konnektive",
+		"mode": "module",
+		"verbose": true
+	},
+
+	"monolith": {
+		"command": "services.monolith",
+		"mode": "module",
+		"verbose": true
+	},
+
+	"patient": {
+		"command": "services.patient",
+		"mode": "module",
+		"verbose": true
+	},
+
+	"prescriptions": {
+		"command": "services.prescriptions",
+		"mode": "module",
+		"verbose": true
+	},
+
+	"providers": {
+		"command": "services.providers",
+		"mode": "module",
+		"verbose": true
+	},
+
+	"webpoll": {
+		"command": "services.webpoll",
+		"mode": "module",
+		"verbose": true
+	},
+
+	"welldyne": {
+		"command": "services.welldyne",
+		"mode": "module",
+		"verbose": true
+	}
+}
