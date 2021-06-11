@@ -28,7 +28,7 @@ from shared import Rights
 from records.csr import Agent, CustomList, CustomListItem, Reminder, \
 						TemplateEmail, TemplateSMS, \
 						Ticket, TicketAction, TicketItem, \
-						TicketOpened, TicketResolved
+						TicketOpened, TicketResolved, TicketStat
 
 # Valid DOB
 _DOB = Node('date')
@@ -43,7 +43,8 @@ class CSR(Services.Service):
 	"""
 
 	_install = [Agent, CustomList, CustomListItem, TemplateEmail, TemplateSMS,
-				Ticket, TicketAction, TicketItem, TicketOpened, TicketResolved]
+				Ticket, TicketAction, TicketItem, TicketOpened, TicketResolved,
+				TicketStat]
 	"""Record types called in install"""
 
 	def initialise(self):
@@ -1803,7 +1804,7 @@ class CSR(Services.Service):
 			if oResponse.data:
 				for d in oResponse.data:
 					d['msgType'] = 'justcall'
-					d['_created'] = arrow.get('%s+00:00' % d['time_utc']).timestamp
+					d['_created'] = arrow.get('%s+00:00' % d['time_utc']).int_timestamp
 					lDetails.append(d)
 
 		# Sort the details by created timestamp
@@ -2235,4 +2236,94 @@ class CSR(Services.Service):
 			)
 
 		# Return the results
+		return Services.Response(dRet)
+
+	def ticketStatsGraph_read(self, data, sesh):
+		"""Ticket Stats Graph
+
+		Fetches the stats for the given group/user in the given range
+
+		Arguments:
+			data (mixed): Data sent with the request
+			sesh (Sesh._Session): The session associated with the request
+
+		Returns:
+			Services.Response
+		"""
+
+		# Verify minimum fields
+		try: DictHelper.eval(data, ['range_type', 'range'])
+		except ValueError as e: return Services.Response(error=(1001, [(f, 'missing') for f in e.args]))
+
+		# Init the filter
+		dFilter = {
+			"range": data['range_type'],
+			"date": {"between": data['range']}
+		}
+
+		# If there's no memo_id in the session
+		if 'memo_id' not in sesh:
+
+			# Check rights
+			Rights.check(sesh, 'csr_overwrite', Rights.READ)
+
+			# If an agent type is passed
+			if 'agent_type' in data:
+				dFilter['list'] = data['agent_type']
+
+			# If a memo user is passed
+			elif 'memo_id' in data:
+				dFilter['memo_id'] = data['memo_id']
+
+			# Else, bad data
+			else:
+				return Services.Error(1001, [('agent_type', 'missing')])
+
+		# Else,
+		else:
+
+			# If the user is not sent, or not the one signed in
+			if 'memo_id' not in data or data['memo_id'] != sesh['memo_id']:
+				return Services.Error(Rights.INVALID)
+
+			# Store the memo ID in the filter
+			dFilter['memo_id'] = data['memo_id']
+
+		# If we have an action type passed, add it to the filter
+		if 'action' in data:
+			dFilter['action'] = data['action']
+
+		# Fetch the stats
+		lStats = TicketStat.filter(dFilter, raw=['date', 'action', 'count'])
+
+		# Create a new dict for storing the action types
+		dRet = {}
+
+		# Create a set of dates
+		lDates = set()
+
+		# Go through each stat
+		for d in lStats:
+
+			# Store the date
+			lDates.add(d['date'])
+
+			# Add to the appropriate action
+			try: dRet[d['action']][d['date']] = d['count']
+			except KeyError: dRet[d['action']] = {d['date']: d['count']}
+
+		# Added the sorted list of dates
+		dRet['dates'] = sorted(list(lDates))
+
+		# Go through each action
+		for k in dRet:
+
+			# Go through each date
+			for s in lDates:
+
+				# If we're missing the count
+				if s not in dRet[k]:
+					dRet[k][s] = 0
+
+		# Return the stats by action
 		return Services.Response(dRet)

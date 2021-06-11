@@ -54,7 +54,7 @@ def run(hours):
 	lLines = []
 
 	# Convert the hours into a timestamp
-	iAge = arrow.get().shift(hours=-(int(hours))).timestamp
+	iAge = arrow.get().shift(hours=-(int(hours))).int_timestamp
 
 	# Get all triggers with no error that haven't been opened/shipped/cancelled
 	lTriggers = Trigger.noFeedback(iAge)
