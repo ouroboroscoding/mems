@@ -4675,7 +4675,7 @@ class Monolith(Services.Service):
 		# Go through each order and update the name accordingly
 		for d in lPending:
 			if d['lastProviderId']:
-				d['lastProviderName'] = d['lastProviderId'] in dUsers and dUsers[d['user']] or 'N/A'
+				d['lastProviderName'] = d['lastProviderId'] in dUsers and dUsers[d['lastProviderId']] or 'N/A'
 
 		# Sort them by date
 		lPending.sort(key=lambda d: d['updatedAt'])
