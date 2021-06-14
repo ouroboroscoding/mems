@@ -325,9 +325,8 @@ class CSR(Services.Service):
 
 		# Pull out CSR only values
 		dAgent = {}
-		if 'type' in data: dAgent['type'] = data.pop('type')
-		if 'escalate' in data: dAgent['escalate'] = data.pop('escalate')
-		if 'claims_max' in data: dAgent['claims_max'] = data.pop('claims_max')
+		for k in ['type', 'escalate', 'label', 'claims_max']:
+			if k in data: dAgent[k] = data.pop(k)
 
 		# Send the data to monolith to create the memo user
 		data['_internal_'] = Services.internalKey()
@@ -425,7 +424,7 @@ class CSR(Services.Service):
 
 		# Try to update the claims vars
 		lErrors = []
-		for s in ['type', 'escalate', 'claims_max']:
+		for s in ['type', 'escalate', 'label', 'claims_max']:
 			if s in data:
 				try: oAgent[s] = data.pop(s)
 				except ValueError as e: lErrors.append(e.args[0])
@@ -490,6 +489,7 @@ class CSR(Services.Service):
 			"memo_id": oResponse.data,
 			"type": 'agent',
 			"escalate": 0,
+			"label": '',
 			"claims_max": 20
 		}, sesh)
 
@@ -508,7 +508,7 @@ class CSR(Services.Service):
 		"""
 
 		# Fetch all the agents
-		lAgents = Agent.get(raw=['memo_id', 'type', 'escalate'])
+		lAgents = Agent.get(raw=['memo_id', 'type', 'escalate', 'label'])
 
 		# Fetch their names
 		oResponse = Services.read('monolith', 'user/name', {
