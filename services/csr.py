@@ -25,8 +25,8 @@ from RestOC import DictHelper, Errors, JSON, Record_MySQL, Services, Sesh
 from shared import Rights
 
 # Records imports
-from records.csr import Agent, CustomList, CustomListItem, Reminder, \
-						TemplateEmail, TemplateSMS, \
+from records.csr import Agent, AgentOfficeHours, CustomList, CustomListItem, \
+						Reminder, TemplateEmail, TemplateSMS, \
 						Ticket, TicketAction, TicketItem, \
 						TicketOpened, TicketResolved, TicketStat
 
@@ -42,9 +42,9 @@ class CSR(Services.Service):
 	Service for CSR access
 	"""
 
-	_install = [Agent, CustomList, CustomListItem, TemplateEmail, TemplateSMS,
-				Ticket, TicketAction, TicketItem, TicketOpened, TicketResolved,
-				TicketStat]
+	_install = [Agent, AgentOfficeHours, CustomList, CustomListItem, TemplateEmail,
+				TemplateSMS, Ticket, TicketAction, TicketItem, TicketOpened,
+				TicketResolved, TicketStat]
 	"""Record types called in install"""
 
 	def initialise(self):
@@ -424,7 +424,7 @@ class CSR(Services.Service):
 
 		# Try to update the claims vars
 		lErrors = []
-		for s in ['type', 'escalate', 'label', 'claims_max']:
+		for s in ['type', 'escalate', 'label', 'claims_max', 'oof', 'oof_replacement']:
 			if s in data:
 				try: oAgent[s] = data.pop(s)
 				except ValueError as e: lErrors.append(e.args[0])
@@ -454,6 +454,75 @@ class CSR(Services.Service):
 		# Else, return OK
 		else:
 			return Services.Response(True)
+
+	def agentHours_read(self, data, sesh):
+		"""Agent Hours read
+
+		Fetches the list of days and hours the agent works
+
+		Arguments:
+			data (mixed): Data sent with the request
+			sesh (Sesh._Session): The session associated with the request
+
+		Returns:
+			Services.Response
+		"""
+
+		# Make sure the user has the proper permission to do this
+		Rights.check(sesh, 'csr_agents', Rights.READ)
+
+		# Make sure we have the memo_id
+		if 'memo_id' not in data:
+			return Services.Error(1001, [('memo_id', 'missing')])
+
+		# Fetch and return the records found for the memo user
+		return Services.Response(
+			AgentOfficeHours.filter({
+				"memo_id": data['memo_id']
+			}, raw=['dow', 'start', 'end'])
+		)
+
+	def agentHours_update(self, data, sesh):
+		"""Agent Hours update
+
+		Overwrites the hours the agent works
+
+		Arguments:
+			data (mixed): Data sent with the request
+			sesh (Sesh._Session): The session associated with the request
+
+		Returns:
+			Services.Response
+		"""
+
+		# Make sure the user has the proper permission to do this
+		Rights.check(sesh, 'csr_agents', Rights.UPDATE)
+
+		# Verify minimum fields
+		try: DictHelper.eval(data, ['memo_id', 'hours'])
+		except ValueError as e: return Services.Error(1001, [(f, 'missing') for f in e.args])
+
+		# If hours is not a list
+		if not isinstance(data['hours'], list):
+			return Services.Error(1001, [('hours', 'not a list')])
+
+		# Go through each item and make sure all data is there
+		lHours = []
+		for i in range(len(data['hours'])):
+			try:
+				data['hours'][i]['memo_id'] = data['memo_id']
+				lHours.append(AgentOfficeHours(data['hours'][i]))
+			except ValueError as e:
+				return Services.Error(1001, [('hours.%d.%s' % (i, l[0]), l[1]) for l in e.args[0]])
+
+		# Delete any existing hours for the user
+		AgentOfficeHours.deleteGet(data['memo_id'], index='memo_id')
+
+		# Add the new ones
+		AgentOfficeHours.createMany(lHours)
+
+		# Return OK
+		return Services.Response(True)
 
 	def agentMemo_create(self, data, sesh):
 		"""Agent from Memo
@@ -508,7 +577,7 @@ class CSR(Services.Service):
 		"""
 
 		# Fetch all the agents
-		lAgents = Agent.get(raw=['memo_id', 'type', 'escalate', 'label'])
+		lAgents = Agent.get(raw=['memo_id', 'type', 'escalate', 'label', 'oof', 'oof_replacement'])
 
 		# Fetch their names
 		oResponse = Services.read('monolith', 'user/name', {
@@ -525,6 +594,11 @@ class CSR(Services.Service):
 			except KeyError: dName = {"firstName": 'NAME', "lastName": 'MISSING'}
 			d['firstName'] = dName['firstName']
 			d['lastName'] = dName['lastName']
+			if d['oof'] and d['oof_replacement']:
+				try: dName = dMemoNames[d['oof_replacement']]
+				except KeyError: dName = {"firstName": 'NAME', "lastName": 'MISSING'}
+				d['oof_replacement_firstName'] = dName['firstName']
+				d['oof_replacement_lastName'] = dName['lastName']
 
 		# Order by first then last name
 		lAgents = sorted(lAgents, key=itemgetter('firstName', 'lastName'))
