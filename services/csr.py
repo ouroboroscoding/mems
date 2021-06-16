@@ -700,7 +700,8 @@ class CSR(Services.Service):
 		for d in lAgents:
 
 			# Are they offline?
-			if sDOW not in dOfficeHours[d['memo_id']] or \
+			if d['memo_id'] not in dOfficeHours or \
+				sDOW not in dOfficeHours[d['memo_id']] or \
 				sTime < dOfficeHours[d['memo_id']][sDOW]['start'] or \
 				sTime > dOfficeHours[d['memo_id']][sDOW]['end']:
 
