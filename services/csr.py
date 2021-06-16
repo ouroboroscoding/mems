@@ -710,7 +710,7 @@ class CSR(Services.Service):
 					oDT,
 					sTime,
 					sDOW,
-					dOfficeHours[d['memo_id']]
+					d['memo_id'] in dOfficeHours and dOfficeHours[d['memo_id']] or {}
 				)
 
 			# Try to find the name for the agent
