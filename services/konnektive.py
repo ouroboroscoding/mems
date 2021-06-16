@@ -523,7 +523,7 @@ class Konnektive(Services.Service):
 									'0.00'),
 					"date": dT['chargebackDate'],
 					"code": dT['chargebackReasonCode'],
-					"note": dT['chargebackNote']
+					"note": 'chargebackNote' in dT and dT['chargebackNote'] or ''
 				} or None,
 				"date": dT['txnDate'],
 				"price": dT['totalAmount'],
