@@ -25,8 +25,8 @@ from RestOC import DictHelper, Errors, JSON, Record_MySQL, Services, Sesh
 from shared import Rights
 
 # Records imports
-from records.csr import Agent, CustomList, CustomListItem, Reminder, \
-						TemplateEmail, TemplateSMS, \
+from records.csr import Agent, AgentOfficeHours, CustomList, CustomListItem, \
+						Reminder, TemplateEmail, TemplateSMS, \
 						Ticket, TicketAction, TicketItem, \
 						TicketOpened, TicketResolved, TicketStat
 
@@ -36,15 +36,18 @@ _DOB = Node('date')
 # Placeholder UUID
 UUID_PLACEHOLDER = 'aaaaaaaa-aaaa-4aaa-aaaa-aaaaaaaaaaaa'
 
+# Python DOW to Office Hours DOW
+DAY_OF_WEEK = ['mon', 'tue', 'wed', 'thu', 'fri', 'sat', 'sun']
+
 class CSR(Services.Service):
 	"""CSR Service class
 
 	Service for CSR access
 	"""
 
-	_install = [Agent, CustomList, CustomListItem, TemplateEmail, TemplateSMS,
-				Ticket, TicketAction, TicketItem, TicketOpened, TicketResolved,
-				TicketStat]
+	_install = [Agent, AgentOfficeHours, CustomList, CustomListItem, TemplateEmail,
+				TemplateSMS, Ticket, TicketAction, TicketItem, TicketOpened,
+				TicketResolved, TicketStat]
 	"""Record types called in install"""
 
 	def initialise(self):
@@ -137,6 +140,96 @@ class CSR(Services.Service):
 
 		# Create the agent and return the ID
 		return Services.Response(sID)
+
+	@classmethod
+	def _calculateReturnToOffice(cls, dt, time, dow, hours):
+		"""Calculate Return To Office
+
+		Calculates the time before an agent is back online based on their
+		working office hours
+
+		Arguments:
+			dt (Arrow): The current date/time as an Arrow instance
+			time (str): The current time in HH:mm:ss,
+			dow (str): The 3 letter day of the week, e.g. mon, wed, sat
+			hours (dict): The current hours by day of the week for the agent
+
+		Returns:
+			str
+		"""
+
+		# If the agent has no office hours
+		if not hours:
+			return 'never'
+
+		# If we have today and it's before
+		elif dow in hours and \
+			time < hours[dow]['start']:
+
+			# Get the time they start
+			lTime = hours[dow]['start'].split(':')
+			oStart = dt.replace(hour=int(lTime[0], 10), minute=int(lTime[1], 10), second=0, microsecond=0)
+
+		# Else, it's on another day
+		else:
+
+			print('hours: %s' % str(hours))
+
+			# Get the current weekday and add 1
+			iCurrent = dt.weekday()
+
+			print('iCurrent: %d' % iCurrent)
+
+			# Go through each day until I find one with hours
+			iNext = 0
+			for i in range(7):
+
+				# Calculate the day to check
+				iNext = (i + (iCurrent < 6 and (iCurrent + 1) or 0)) % 7
+
+				# If we have hours
+				if DAY_OF_WEEK[iNext] in hours:
+					break
+
+			print('iNext: %d' % iNext)
+
+			# Figure out the days to add
+			iDaysToAdd = iNext > iCurrent and iNext - iCurrent or (7 + (iNext - iCurrent))
+
+			print('iDaysToAdd: %d' % iDaysToAdd)
+
+			# Get the time they start
+			lTime = hours[DAY_OF_WEEK[iNext]]['start'].split(':')
+			oStart = dt.shift(days=iDaysToAdd).replace(hour=int(lTime[0], 10), minute=int(lTime[1], 10), second=0, microsecond=0)
+
+		# Calculate the difference between when they start and now
+		oDiff = oStart - dt
+
+		# Calculate hours and minutes
+		iHours, iRemainder = divmod(oDiff.seconds, 3600)
+		iMinutes, iSeconds = divmod(iRemainder, 60)
+
+		# Init the string diff
+		lDiff = []
+
+		# If we have days
+		if oDiff.days:
+			lDiff.append('%d %s' % (oDiff.days, oDiff.days > 1 and 'days' or 'day'))
+
+		# If we have hours
+		if iHours:
+			lDiff.append('%d %s' % (iHours, iHours > 1 and 'hours' or 'hour'))
+
+		# If we have minutes
+		if iMinutes:
+			lDiff.append('%d %s' % (iMinutes, iMinutes > 1 and 'minutes' or 'minute'))
+
+		# If by some fluke it's right now
+		if not lDiff:
+			return 'right now'
+
+		# Join the parts and return
+		return 'in %s' % ', '.join(lDiff)
 
 	def _template_create(self, data, sesh, _class):
 		"""Template Create
@@ -424,7 +517,7 @@ class CSR(Services.Service):
 
 		# Try to update the claims vars
 		lErrors = []
-		for s in ['type', 'escalate', 'label', 'claims_max']:
+		for s in ['type', 'escalate', 'label', 'claims_max', 'oof', 'oof_replacement']:
 			if s in data:
 				try: oAgent[s] = data.pop(s)
 				except ValueError as e: lErrors.append(e.args[0])
@@ -454,6 +547,75 @@ class CSR(Services.Service):
 		# Else, return OK
 		else:
 			return Services.Response(True)
+
+	def agentHours_read(self, data, sesh):
+		"""Agent Hours read
+
+		Fetches the list of days and hours the agent works
+
+		Arguments:
+			data (mixed): Data sent with the request
+			sesh (Sesh._Session): The session associated with the request
+
+		Returns:
+			Services.Response
+		"""
+
+		# Make sure the user has the proper permission to do this
+		Rights.check(sesh, 'csr_agents', Rights.READ)
+
+		# Make sure we have the memo_id
+		if 'memo_id' not in data:
+			return Services.Error(1001, [('memo_id', 'missing')])
+
+		# Fetch and return the records found for the memo user
+		return Services.Response(
+			AgentOfficeHours.filter({
+				"memo_id": data['memo_id']
+			}, raw=['dow', 'start', 'end'])
+		)
+
+	def agentHours_update(self, data, sesh):
+		"""Agent Hours update
+
+		Overwrites the hours the agent works
+
+		Arguments:
+			data (mixed): Data sent with the request
+			sesh (Sesh._Session): The session associated with the request
+
+		Returns:
+			Services.Response
+		"""
+
+		# Make sure the user has the proper permission to do this
+		Rights.check(sesh, 'csr_agents', Rights.UPDATE)
+
+		# Verify minimum fields
+		try: DictHelper.eval(data, ['memo_id', 'hours'])
+		except ValueError as e: return Services.Error(1001, [(f, 'missing') for f in e.args])
+
+		# If hours is not a list
+		if not isinstance(data['hours'], list):
+			return Services.Error(1001, [('hours', 'not a list')])
+
+		# Go through each item and make sure all data is there
+		lHours = []
+		for i in range(len(data['hours'])):
+			try:
+				data['hours'][i]['memo_id'] = data['memo_id']
+				lHours.append(AgentOfficeHours(data['hours'][i]))
+			except ValueError as e:
+				return Services.Error(1001, [('hours.%d.%s' % (i, l[0]), l[1]) for l in e.args[0]])
+
+		# Delete any existing hours for the user
+		AgentOfficeHours.deleteGet(data['memo_id'], index='memo_id')
+
+		# Add the new ones
+		AgentOfficeHours.createMany(lHours)
+
+		# Return OK
+		return Services.Response(True)
 
 	def agentMemo_create(self, data, sesh):
 		"""Agent from Memo
@@ -507,8 +669,23 @@ class CSR(Services.Service):
 			Services.Response
 		"""
 
+		# Get the current date/time in EST
+		oDT = arrow.get().to('US/Eastern');
+
+		# Get the current time as a string
+		sTime = oDT.format('HH:mm:ss')
+
+		# Get the day of the week as a string
+		sDOW = DAY_OF_WEEK[oDT.weekday()]
+
 		# Fetch all the agents
-		lAgents = Agent.get(raw=['memo_id', 'type', 'escalate', 'label'])
+		lAgents = Agent.get(raw=['memo_id', 'type', 'escalate', 'label', 'oof', 'oof_replacement'])
+
+		# Fetch all office hours and store them by agent
+		dOfficeHours = {}
+		for d in AgentOfficeHours.get(raw=True):
+			try: dOfficeHours[d['memo_id']][d['dow']] = {"start": d['start'],"end": d['end']}
+			except KeyError: dOfficeHours[d['memo_id']] = {d['dow']:{"start": d['start'],"end": d['end']}}
 
 		# Fetch their names
 		oResponse = Services.read('monolith', 'user/name', {
@@ -519,12 +696,34 @@ class CSR(Services.Service):
 		# Convert the IDs
 		dMemoNames = DictHelper.keysToInts(oResponse.data)
 
-		# Add the names to the agents
+		# Go through each agent
 		for d in lAgents:
+
+			# Are they offline?
+			if sDOW not in dOfficeHours[d['memo_id']] or \
+				sTime < dOfficeHours[d['memo_id']][sDOW]['start'] or \
+				sTime > dOfficeHours[d['memo_id']][sDOW]['end']:
+
+				# Calculate the time before the agent returns
+				d['offline'] = self._calculateReturnToOffice(
+					oDT,
+					sTime,
+					sDOW,
+					dOfficeHours[d['memo_id']]
+				)
+
+			# Try to find the name for the agent
 			try: dName = dMemoNames[d['memo_id']]
 			except KeyError: dName = {"firstName": 'NAME', "lastName": 'MISSING'}
 			d['firstName'] = dName['firstName']
 			d['lastName'] = dName['lastName']
+
+			# If we have a replacement, look for that name as well
+			if d['oof'] and d['oof_replacement']:
+				try: dName = dMemoNames[d['oof_replacement']]
+				except KeyError: dName = {"firstName": 'NAME', "lastName": 'MISSING'}
+				d['oof_replacement_firstName'] = dName['firstName']
+				d['oof_replacement_lastName'] = dName['lastName']
 
 		# Order by first then last name
 		lAgents = sorted(lAgents, key=itemgetter('firstName', 'lastName'))

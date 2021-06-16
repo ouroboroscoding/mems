@@ -80,6 +80,38 @@ class Agent(Record_MySQL.Record):
 			Record_MySQL.ESelect.COLUMN
 		)
 
+# AgentOfficeHours class
+class AgentOfficeHours(Record_MySQL.Record):
+	"""Agent Office Hours
+
+	Represents the hours an agent is in the office during a specific day of the
+	week
+	"""
+
+	_conf = None
+	"""Configuration"""
+
+	@classmethod
+	def config(cls):
+		"""Config
+
+		Returns the configuration data associated with the record type
+
+		Returns:
+			dict
+		"""
+
+		# If we haven loaded the config yet
+		if not cls._conf:
+			cls._conf = Record_MySQL.Record.generateConfig(
+				Tree.fromFile('definitions/csr/agent_office_hours.json'),
+				'mysql'
+			)
+
+		# Return the config
+		return cls._conf
+
+
 # CustomList class
 class CustomList(Record_MySQL.Record):
 	"""CustomList
