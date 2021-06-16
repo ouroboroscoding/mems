@@ -516,7 +516,11 @@ class Konnektive(Services.Service):
 			"totalBilled": dP['totalBilled'],
 			"transactions": [{
 				"chargeback": dT['isChargedback'] != '0' and {
-					"amount": dT['chargebackAmount'],
+					"amount": 'chargebackAmount' in dT and \
+								dT['chargebackAmount'] or \
+								('amountRefunded' in dT and \
+									dT['amountRefunded'] or \
+									'0.00'),
 					"date": dT['chargebackDate'],
 					"code": dT['chargebackReasonCode'],
 					"note": dT['chargebackNote']
