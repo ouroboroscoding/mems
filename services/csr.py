@@ -612,7 +612,10 @@ class CSR(Services.Service):
 		AgentOfficeHours.deleteGet(data['memo_id'], index='memo_id')
 
 		# Add the new ones
-		AgentOfficeHours.createMany(lHours)
+		if len(lHours) > 1:
+			AgentOfficeHours.createMany(lHours)
+		else:
+			lHours[0].create()
 
 		# Return OK
 		return Services.Response(True)
