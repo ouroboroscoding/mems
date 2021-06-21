@@ -103,7 +103,7 @@ class CSR(Services.Service):
 		# Create a new agent instance using the memo ID
 		try:
 			oAgent = Agent(data)
-		except ValueError:
+		except ValueError as e:
 			return Services.Response(error=(1001, e.args[0]))
 
 		# Create the agent and store the ID
