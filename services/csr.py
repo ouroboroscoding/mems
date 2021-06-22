@@ -173,12 +173,8 @@ class CSR(Services.Service):
 		# Else, it's on another day
 		else:
 
-			print('hours: %s' % str(hours))
-
 			# Get the current weekday and add 1
 			iCurrent = dt.weekday()
-
-			print('iCurrent: %d' % iCurrent)
 
 			# Go through each day until I find one with hours
 			iNext = 0
@@ -191,12 +187,8 @@ class CSR(Services.Service):
 				if DAY_OF_WEEK[iNext] in hours:
 					break
 
-			print('iNext: %d' % iNext)
-
 			# Figure out the days to add
 			iDaysToAdd = iNext > iCurrent and iNext - iCurrent or (7 + (iNext - iCurrent))
-
-			print('iDaysToAdd: %d' % iDaysToAdd)
 
 			# Get the time they start
 			lTime = hours[DAY_OF_WEEK[iNext]]['start'].split(':')
@@ -2530,3 +2522,77 @@ class CSR(Services.Service):
 
 		# Return the stats by action
 		return Services.Response(dRet)
+
+	def ticketStatsTotals_read(self, data, sesh):
+		"""Ticket Stats Totals
+
+		Returns the totals of ticket info by agent
+
+		Arguments:
+			data (mixed): Data sent with the request
+			sesh (Sesh._Session): The session associated with the request
+
+		Returns:
+			Services.Response
+		"""
+
+		# Check rights
+		Rights.check(sesh, 'csr_overwrite', Rights.READ)
+
+		# If an agent type is passed
+		if 'agent_type' in data:
+
+			# Find the ids of all agents with the type
+			lIDs = Agent.memoIdsByType(data['agent_type'])
+			if not lIDs:
+				return Services.Response([])
+
+		else:
+			lIDs = None
+
+		# Verify minimum fields
+		try: DictHelper.eval(data, ['start', 'end', 'type'])
+		except ValueError as e: return Services.Response(error=(1001, [(f, 'missing') for f in e.args]))
+
+		# Get the counts of type by agent
+		if data['type'] == 'opened':
+			lCounts = TicketOpened.agentCounts([data['start'], data['end']], lIDs)
+		elif data['type'] == 'resolved':
+			lCounts = TicketResolved.agentCounts([data['start'], data['end']], lIDs)
+		else:
+			return Services.Error(1001, [('types', 'invalid')])
+
+		# If we got nothing
+		if not lCounts:
+			return Services.Response([])
+
+		# Init the dict of agents to types
+		dAgents = {}
+
+		# Go through the counts and store them by agent
+		for d in lCounts:
+
+			# If we haven't seen this agent yet
+			if d['memo_id'] not in dAgents:
+				dAgents[d['memo_id']] = {"memo_id": d['memo_id']}
+
+			# Add the type
+			dAgents[d['memo_id']][d['type'].replace(' ', '_').replace('/', '_')] = d['count']
+
+		# Fetch their names
+		oResponse = Services.read('monolith', 'user/name', {
+			"_internal_": Services.internalKey(),
+			"id": list(dAgents.keys())
+		}, sesh)
+
+		# Convert the IDs
+		dMemoNames = DictHelper.keysToInts(oResponse.data)
+
+		# Add the names to the agents
+		for agent in dAgents:
+			try: dName = dMemoNames[agent]
+			except KeyError: dName = {"firstName": 'NAME', "lastName": 'MISSING'}
+			dAgents[agent]['name'] = '%s %s' % (dName['firstName'], dName['lastName'])
+
+		# Return the counts
+		return Services.Response(sorted(list(dAgents.values()), key=itemgetter('name')))
