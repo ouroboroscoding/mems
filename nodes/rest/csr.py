@@ -70,6 +70,7 @@ if __name__ == "__main__":
 		"/ticket/resolve": {"methods": REST.UPDATE, "session": True},
 		"/ticket/stats": {"methods": REST.READ, "session": True},
 		"/ticket/stats/graph": {"methods": REST.READ, "session": True},
+		"/ticket/stats/totals": {"methods": REST.READ, "session": True},
 		"/tickets": {"methods": REST.READ, "session": True},
 		"/tickets/customer": {"methods": REST.READ, "session": True}
 
