@@ -664,6 +664,50 @@ class TicketOpened(Record_MySQL.Record):
 	"""Configuration"""
 
 	@classmethod
+	def agentCounts(cls, range_, memo_ids=None, custom={}):
+		"""Agent Counts
+
+		Returns the count per type of opened ticket by agent
+
+		Arguments:
+			range_ (list): The timestamp start and end to look up
+			memo_ids (list): Optional, the list of agents to look for
+			custom (dict): Custom Host and DB info
+				'host' the name of the host to get/set data on
+				'append' optional postfix for dynamic DBs
+
+		Returns:
+			list
+		"""
+
+		# Fetch the record structure
+		dStruct = cls.struct(custom)
+
+		# Generate the WHERE
+		lWhere = ['`_created` BETWEEN FROM_UNIXTIME(%d) AND FROM_UNIXTIME(%d)' % (
+			range_[0], range_[1]
+		)]
+		if memo_ids:
+			lWhere.append('`memo_id` IN (%s)' % ','.join([str(s) for s in memo_ids]))
+
+		# Generate the SQL
+		sSQL = "SELECT `memo_id`, `type`, COUNT(*) as `count`\n" \
+				"FROM `%(db)s`.`%(table)s`\n" \
+				"WHERE %(where)s\n" \
+				"GROUP BY `memo_id`, `type`" % {
+			"db": dStruct['db'],
+			"table": dStruct['table'],
+			"where": '\nAND '.join(lWhere)
+		}
+
+		# Return the counts
+		return Record_MySQL.Commands.select(
+			dStruct['host'],
+			sSQL,
+			Record_MySQL.ESelect.ALL
+		)
+
+	@classmethod
 	def countByUser(cls, memo_id, range_=None, custom={}):
 		"""Count By User
 
@@ -776,6 +820,50 @@ class TicketResolved(Record_MySQL.Record):
 
 	_conf = None
 	"""Configuration"""
+
+	@classmethod
+	def agentCounts(cls, range_, memo_ids=None, custom={}):
+		"""Agent Counts
+
+		Returns the count per type of opened ticket by agent
+
+		Arguments:
+			range_ (list): The timestamp start and end to look up
+			memo_ids (list): Optional, the list of agents to look for
+			custom (dict): Custom Host and DB info
+				'host' the name of the host to get/set data on
+				'append' optional postfix for dynamic DBs
+
+		Returns:
+			list
+		"""
+
+		# Fetch the record structure
+		dStruct = cls.struct(custom)
+
+		# Generate the WHERE
+		lWhere = ['`_created` BETWEEN FROM_UNIXTIME(%d) AND FROM_UNIXTIME(%d)' % (
+			range_[0], range_[1]
+		)]
+		if memo_ids:
+			lWhere.append('`memo_id` IN (%s)' % ','.join([str(s) for s in memo_ids]))
+
+		# Generate the SQL
+		sSQL = "SELECT `memo_id`, `type`, COUNT(*) as `count`\n" \
+				"FROM `%(db)s`.`%(table)s`\n" \
+				"WHERE %(where)s\n" \
+				"GROUP BY `memo_id`, `type`" % {
+			"db": dStruct['db'],
+			"table": dStruct['table'],
+			"where": '\nAND '.join(lWhere)
+		}
+
+		# Return the counts
+		return Record_MySQL.Commands.select(
+			dStruct['host'],
+			sSQL,
+			Record_MySQL.ESelect.ALL
+		)
 
 	@classmethod
 	def countByUser(cls, memo_id, range_=None, custom={}):
