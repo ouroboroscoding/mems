@@ -14,6 +14,7 @@ __created__		= "2020-07-17"
 # Python imports
 import sys
 import urllib.parse
+from xml.sax.saxutils import escape
 
 # Pip imports
 import requests
@@ -43,9 +44,9 @@ def address_verify(data):
 						'<Zip5>%s</Zip5><Zip4></Zip4>' \
 					'</Address>' \
 				'</AddressValidateRequest>' % (
-			data['Address1'], data['Address2'],
-			data['City'], data['State'],
-			data['Zip5']
+			escape(data['Address1']), escape(data['Address2']),
+			escape(data['City']), escape(data['State']),
+			escape(data['Zip5'])
 		)
 	}
 
