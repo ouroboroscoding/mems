@@ -44,9 +44,11 @@ def address_verify(data):
 						'<Zip5>%s</Zip5><Zip4></Zip4>' \
 					'</Address>' \
 				'</AddressValidateRequest>' % (
-			escape(data['Address1']), escape(data['Address2']),
-			escape(data['City']), escape(data['State']),
-			escape(data['Zip5'])
+			data['Address1'] and escape(data['Address1']) or '',
+			data['Address2'] and escape(data['Address2']) or '',
+			data['City'] and escape(data['City']) or '',
+			data['State'] and escape(data['State']) or '',
+			data['Zip5'] and escape(data['Zip5']) or ''
 		)
 	}
 
