@@ -1576,7 +1576,7 @@ class Monolith(Services.Service):
 
 		# Generate a list of the dates
 		dDates = {
-			d['landing_id']:d['submitted_at'][0:10]
+			d['landing_id'].lower():d['submitted_at'][0:10]
 			for d in dLandings
 		}
 
@@ -1632,7 +1632,7 @@ class Monolith(Services.Service):
 		for d in lAnswers:
 
 			# Get the date associated with the landing
-			sDate = dDates[d['landing_id']]
+			sDate = dDates[d['landing_id'].lower()]
 
 			# Go through each category for the associated question
 			for s in dQuestions[d['ref']]:
