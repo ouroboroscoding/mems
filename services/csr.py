@@ -1914,6 +1914,7 @@ class CSR(Services.Service):
 		# Get the actions
 		lActions = TicketAction.filter({"ticket": data['_id']}, raw=['_id', '_created', 'name', 'type', 'memo_id'])
 		for d in lActions:
+			lUserIDs.add(d['memo_id'])
 			d['msgType'] = 'action'
 			d['type'] = TicketAction.typeText(d['name'], d['type'])
 			lDetails.append(d)
