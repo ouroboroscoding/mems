@@ -615,12 +615,12 @@ class TicketItem(Record_MySQL.Record):
 
 		# Generate the values
 		lValues = [
-			"(UUID(), '%s', 'sms', '%s')" % (ticket, s)
+			"(UUID(), '%s', 'sms', 'incoming', '%s', 0)" % (ticket, s)
 			for s in ids
 		]
 
 		# Generate the SQL
-		sSQL = 'INSERT IGNORE INTO `%(db)s`.`%(table)s` (`_id`, `ticket`, `type`, `identifier`) VALUES\n' \
+		sSQL = 'INSERT IGNORE INTO `%(db)s`.`%(table)s` (`_id`, `ticket`, `type`, `direction`, `identifier`, `memo_id`) VALUES\n' \
 				'%(inserts)s' % {
 			"db": dStruct['db'],
 			"table": dStruct['table'],
@@ -631,6 +631,50 @@ class TicketItem(Record_MySQL.Record):
 		Record_MySQL.Commands.execute(
 			dStruct['host'],
 			sSQL
+		)
+
+	@classmethod
+	def agentCounts(cls, range_, memo_ids=None, custom={}):
+		"""Agent Counts
+
+		Returns the count per type of outgoing item by agent
+
+		Arguments:
+			range_ (list): The timestamp start and end to look up
+			memo_ids (list): Optional, the list of agents to look for
+			custom (dict): Custom Host and DB info
+				'host' the name of the host to get/set data on
+				'append' optional postfix for dynamic DBs
+
+		Returns:
+			list
+		"""
+
+		# Fetch the record structure
+		dStruct = cls.struct(custom)
+
+		# Generate the WHERE
+		lWhere = ['`_created` BETWEEN FROM_UNIXTIME(%d) AND FROM_UNIXTIME(%d)' % (
+			range_[0], range_[1]
+		), "`direction` = 'outgoing'"]
+		if memo_ids:
+			lWhere.append('`memo_id` IN (%s)' % ','.join([str(s) for s in memo_ids]))
+
+		# Generate the SQL
+		sSQL = "SELECT `memo_id`, `type`, COUNT(*) as `count`\n" \
+				"FROM `%(db)s`.`%(table)s`\n" \
+				"WHERE %(where)s\n" \
+				"GROUP BY `memo_id`, `type`" % {
+			"db": dStruct['db'],
+			"table": dStruct['table'],
+			"where": '\nAND '.join(lWhere)
+		}
+
+		# Return the counts
+		return Record_MySQL.Commands.select(
+			dStruct['host'],
+			sSQL,
+			Record_MySQL.ESelect.ALL
 		)
 
 	@classmethod

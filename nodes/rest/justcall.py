@@ -25,13 +25,16 @@ if __name__ == "__main__":
 
 	# Init the REST info
 	oRestConf = init(
+		dbs=['primary'],
 		services={'justcall':JustCall()}
 	)
 
 	# Create the HTTP server and map requests to service
 	REST.Server({
 		"/log": {"methods": REST.READ},
-		"/logs": {"methods": REST.READ, "session": True}
+		"/logs": {"methods": REST.READ, "session": True},
+
+		"/users": {"methods": REST.READ, "session": True}
 
 		},
 		'justcall',
