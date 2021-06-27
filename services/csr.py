@@ -45,9 +45,9 @@ class CSR(Services.Service):
 	Service for CSR access
 	"""
 
-	_install = [Agent, AgentOfficeHours, CustomList, CustomListItem, TemplateEmail,
-				TemplateSMS, Ticket, TicketAction, TicketItem, TicketOpened,
-				TicketResolved, TicketStat]
+	_install = [Agent, AgentOfficeHours, CustomList, CustomListItem,
+				TemplateEmail, TemplateSMS, Ticket, TicketAction, TicketItem,
+				TicketOpened, TicketResolved, TicketStat]
 	"""Record types called in install"""
 
 	def initialise(self):
@@ -2560,8 +2560,10 @@ class CSR(Services.Service):
 			lCounts = TicketOpened.agentCounts([data['start'], data['end']], lIDs)
 		elif data['type'] == 'resolved':
 			lCounts = TicketResolved.agentCounts([data['start'], data['end']], lIDs)
+		elif data['type'] == 'items':
+			lCounts = TicketItem.agentCounts([data['start'], data['end']], lIDs)
 		else:
-			return Services.Error(1001, [('types', 'invalid')])
+			return Services.Error(1001, [('type', 'invalid')])
 
 		# If we got nothing
 		if not lCounts:
