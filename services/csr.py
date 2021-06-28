@@ -39,6 +39,13 @@ UUID_PLACEHOLDER = 'aaaaaaaa-aaaa-4aaa-aaaa-aaaaaaaaaaaa'
 # Python DOW to Office Hours DOW
 DAY_OF_WEEK = ['mon', 'tue', 'wed', 'thu', 'fri', 'sat', 'sun']
 
+# Total types
+TOTAL_TYPES = {
+	"items": ['jc_call', 'note', 'sms'],
+	"opened": ['Call', 'Follow_Up', 'Provider', 'Script_Entry', 'SMS___Voicemail'],
+	"resolved": ['Contact_Attempted', 'Follow_Up_Complete', 'Information_Provided', 'Issue_Resolved', 'Provider_Confirmed Prescription', 'QA_Order_Declined', 'Recurring_Purchase_Canceled', 'Script_Entered', 'Invalid_Transfer:_No_Purchase_Information']
+}
+
 class CSR(Services.Service):
 	"""CSR Service class
 
@@ -2591,11 +2598,18 @@ class CSR(Services.Service):
 		# Convert the IDs
 		dMemoNames = DictHelper.keysToInts(oResponse.data)
 
-		# Add the names to the agents
+		# Go through each agent
 		for agent in dAgents:
+
+			# Add the name
 			try: dName = dMemoNames[agent]
 			except KeyError: dName = {"firstName": 'NAME', "lastName": 'MISSING'}
 			dAgents[agent]['name'] = '%s %s' % (dName['firstName'], dName['lastName'])
+
+			# Make sure to add 0s (zeros) for missing types
+			for s in TOTAL_TYPES[data['type']]:
+				if s not in dAgents[agent]:
+					dAgents[agent][s] = 0
 
 		# Return the counts
 		return Services.Response(sorted(list(dAgents.values()), key=itemgetter('name')))
