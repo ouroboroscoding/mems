@@ -653,21 +653,21 @@ class TicketItem(Record_MySQL.Record):
 		# Fetch the record structure
 		dStruct = cls.struct(custom)
 
-		# Generate the WHERE
-		lWhere = ['`_created` BETWEEN FROM_UNIXTIME(%d) AND FROM_UNIXTIME(%d)' % (
-			range_[0], range_[1]
-		), "`direction` = 'outgoing'"]
-		if memo_ids:
-			lWhere.append('`memo_id` IN (%s)' % ','.join([str(s) for s in memo_ids]))
-
 		# Generate the SQL
 		sSQL = "SELECT `memo_id`, `type`, COUNT(*) as `count`\n" \
 				"FROM `%(db)s`.`%(table)s`\n" \
-				"WHERE %(where)s\n" \
+				"WHERE `_created` BETWEEN FROM_UNIXTIME(%(start)d) AND FROM_UNIXTIME(%(end)d)\n" \
+				"AND (\n" \
+				"	(`type` IN ('sms', 'note') AND `direction` = 'outgoing') OR\n" \
+				"	`type` = 'jc_call'\n" \
+				")\n" \
+				"%(memo_id)s" \
 				"GROUP BY `memo_id`, `type`" % {
 			"db": dStruct['db'],
 			"table": dStruct['table'],
-			"where": '\nAND '.join(lWhere)
+			"start": range_[0],
+			"end": range_[1],
+			"memo_id": memo_ids and ('`memo_id` IN (%s)' % ','.join([str(s) for s in memo_ids])) or ''
 		}
 
 		# Return the counts
