@@ -1,6 +1,9 @@
 # coding=utf8
 """ Update all the ticket item records to add the direction and memo ID"""
 
+# Python imports
+from time import sleep
+
 # Pip imports
 from RestOC import Record_MySQL
 
@@ -28,7 +31,8 @@ def run():
 			"primary",
 			"SELECT `_id`, `type`, `identifier` " \
 			"FROM `mems`.`csr_ticket_item` " \
-			"WHERE `direction` IS NULL",
+			"WHERE `direction` IS NULL " \
+			"OR (`type` = 'jc_call' AND `memo_id` = 0)",
 			Record_MySQL.ESelect.ROW
 		)
 
@@ -38,6 +42,9 @@ def run():
 
 		# If it's an JustCall log
 		if dItem['type'] == 'jc_call':
+
+			# Sleep to avoid JustCall cutting us off
+			sleep(5)
 
 			# Find the log
 			dCall = oJustCall._one('calls/get', {
@@ -50,28 +57,20 @@ def run():
 				print('No JustCall log found for %s' % dItem['identifier'])
 				return False
 
-			# If it's outbound
-			if dCall['type'] == '2':
+			# Get the direction
+			sDirection = dCall['type'] == '2' and 'outgoing' or 'incoming':
 
-				# Set the direction
-				sDirection = 'outgoing'
+			# Look for the memo user using the agent ID
+			dMemoId = MemoId.get(dCall['agent_id'], raw=['memo_id'])
 
-				# Look for the memo user using the agent ID
-				dMemoId = MemoId.get(dCall['agent_id'], raw=['memo_id'])
+			# If no ID is found
+			if not dMemoId:
+				print('!!! ERROR !!!')
+				print('No user found for agent_id %d' % dCall['agent_id'])
+				return False
 
-				# If no ID is found
-				if not dMemoId:
-					print('!!! ERROR !!!')
-					print('No user found for agent_id %d' % dCall['agent_id'])
-					return False
-
-				# Store the memo id
-				iMemoId = dMemoId['memo_id']
-
-			# Else, it's some sort of inbound
-			else:
-				sDirection = 'incoming'
-				iMemoId = 0
+			# Store the memo id
+			iMemoId = dMemoId['memo_id']
 
 		# If it's a note
 		elif dItem['type'] == 'note':
