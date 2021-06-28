@@ -667,7 +667,7 @@ class TicketItem(Record_MySQL.Record):
 			"table": dStruct['table'],
 			"start": range_[0],
 			"end": range_[1],
-			"memo_id": memo_ids and ('`memo_id` IN (%s) ' % ','.join([str(s) for s in memo_ids])) or ''
+			"memo_id": memo_ids and ('`memo_id` IN (%s)\n' % ','.join([str(s) for s in memo_ids])) or ''
 		}
 
 		# Return the counts
