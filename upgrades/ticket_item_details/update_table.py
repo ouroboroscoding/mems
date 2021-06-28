@@ -58,7 +58,7 @@ def run():
 				return False
 
 			# Get the direction
-			sDirection = dCall['type'] == '2' and 'outgoing' or 'incoming':
+			sDirection = dCall['type'] == '2' and 'outgoing' or 'incoming'
 
 			# Look for the memo user using the agent ID
 			dMemoId = MemoId.get(dCall['agent_id'], raw=['memo_id'])
