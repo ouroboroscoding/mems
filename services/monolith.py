@@ -42,7 +42,7 @@ from records.monolith import \
 	KtCustomer, KtOrder, KtOrderClaim, KtOrderClaimLast, KtOrderContinuous, \
 	ShippingInfo, \
 	SmpCustomer, SmpImage, SmpNote, SmpOrderStatus, SmpState, \
-	SMSStop, SMSStopChange, \
+	SMSStop, SMSStopChange, SMSTemplate, \
 	TfAnswer, TfLanding, TfQuestion, TfQuestionOption, \
 	User, \
 	init as recInit
@@ -5426,6 +5426,75 @@ class Monolith(Services.Service):
 		return Services.Response(
 			CustomerClaimed.stats()
 		)
+
+	def templateSms_read(self, data, sesh):
+		"""Template SMS read
+
+		Returns all the templates in the sms worklow separated by type
+
+		Arguments:
+			data (dict): Data sent with the request
+			sesh (Sesh._Session): The session associated with the user
+
+		Returns:
+			Services.Response
+		"""
+
+		# Make sure the user has the proper permission to do this
+		Rights.check(sesh, 'sms_workflow', Rights.READ)
+
+		# Get all the templates
+		lTemplates = SMSTemplate.get(raw=True, orderby=['type', 'step'])
+
+		# Init the return dict
+		dTypes = {}
+
+		# Go through each template found
+		for d in lTemplates:
+
+			# Generate the grouping by group and type
+			sType = '%s_%s' % (d['type'], d['groupId'])
+
+			# If we don't have it in the return yet
+			if sType not in dTypes:
+				dTypes[sType] = []
+
+			# Add the template to the appropriate type
+			dTypes[sType].append(d)
+
+		# Return all templates by type
+		return Services.Response(dTypes)
+
+	def templateSms_update(self, data, sesh):
+		"""Template SMS update
+
+		Updates a single template in the SMS workflow
+
+		Arguments:
+			data (dict): Data sent with the request
+			sesh (Sesh._Session): The session associated with the user
+
+		Returns:
+			Services.Response
+		"""
+
+		# Make sure the user has the proper permission to do this
+		Rights.check(sesh, 'sms_workflow', Rights.READ)
+
+		# Verify fields
+		try: DictHelper.eval(data, ['id', 'content'])
+		except ValueError as e: return Services.Response(error=(1001, [(f, 'missing') for f in e.args]))
+
+		# Find the record
+		oTemplate = SMSTemplate.get(data['id'])
+		if not oTemplate:
+			return Services.Error(1104)
+
+		# Update the content
+		oTemplate['content'] = data['content']
+
+		# Save and return the result
+		return Services.Response(oTemplate.save())
 
 	def user_create(self, data, sesh):
 		"""User Create
