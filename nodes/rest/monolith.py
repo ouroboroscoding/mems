@@ -126,6 +126,8 @@ if __name__ == "__main__":
 
 		"/stats/claimed": {"methods": REST.READ, "session": True},
 
+		"/template/sms": {"methods": REST.READ | REST.UPDATE, "session": True},
+
 		"/user": {"methods": REST.CREATE | REST.READ | REST.UPDATE, "session": True},
 		"/users": {"methods": REST.READ, "session": True},
 		"/user/active": {"methods": REST.UPDATE, "session": True},
