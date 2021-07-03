@@ -166,7 +166,7 @@ class Konnektive(Services.Service):
 		self._pass = Conf.get(('konnektive', 'pass'))
 		self._host = Conf.get(('konnektive', 'host'))
 		self._allowQaUpdate = Conf.get(('konnektive', 'allow_qa_update'))
-		self._allowPurchaseCancel = Conf.get(('konnektive', 'allow_purchase_cancel'))
+		self._allowPurchaseChange = Conf.get(('konnektive', 'allow_purchase_change'))
 
 		# Store encounter types
 		self._encounters = JSON.load('definitions/encounter_by_state.json');
@@ -1163,6 +1163,96 @@ class Konnektive(Services.Service):
 			"currency": d['currencySymbol']
 		} for d in lTransactions])
 
+	def purchase_read(self, data, sesh):
+		"""Purchase read
+
+		Returns data on one specific purchase
+
+		Arguments:
+			data (dict): Data sent with the request
+			sesh (Sesh._Session): The session associated with the request
+
+		Returns:
+			Services.Response
+		"""
+
+		# Make sure the user has the proper permission to do this
+		Rights.check(sesh, 'customers', Rights.READ)
+
+		# Verify fields
+		try: DictHelper.eval(data, ['purchaseId'])
+		except ValueError as e: return Services.Response(error=(1001, [(f, 'missing') for f in e.args]))
+
+		# Make the request to Konnektive
+		dPurchase = self._request('purchase/query', {
+			"purchaseId": data['purchaseId']
+		});
+
+		# If the request is empty
+		if not dPurchase:
+			return Services.Response(error=1104)
+
+		# Set the purchase to the first item
+		dPurchase = dPurchase[0]
+
+		# Return what ever's found after removing unnecessary data
+		return Services.Response({
+			"billing": {
+				"address1": dPurchase['address1'],
+				"address2": dPurchase['address2'],
+				"city": dPurchase['city'],
+				"country": dPurchase['country'],
+				"firstName": dPurchase['firstName'],
+				"lastName": dPurchase['lastName'],
+				"postalCode": dPurchase['postalCode'],
+				"state": dPurchase['state']
+			},
+			"cycleType": dPurchase['billingCycleType'],
+			"cycleNumber": dPurchase['billingCycleNumber'],
+			"customerId": dPurchase['customerId'],
+			"date": dPurchase['dateUpdated'],
+			"email": dPurchase['emailAddress'],
+			"interval": dPurchase['billingIntervalDays'],
+			"nextBillDate": dPurchase['nextBillDate'],
+			"phone": dPurchase['phoneNumber'],
+			"price": dPurchase['price'],
+			"product": {
+				"id": dPurchase['productId'],
+				"name": dPurchase['productName']
+			},
+			"purchaseId": dPurchase['purchaseId'],
+			"shipping": {
+				"address1": dPurchase['shipAddress1'],
+				"address2": dPurchase['shipAddress2'],
+				"city": dPurchase['shipCity'],
+				"country": dPurchase['shipCountry'],
+				"firstName": dPurchase['shipFirstName'],
+				"lastName": dPurchase['shipLastName'],
+				"postalCode": dPurchase['shipPostalCode'],
+				"state": dPurchase['shipState']
+			},
+			"shippingPrice": dPurchase['shippingPrice'],
+			"status": dPurchase['status'],
+			"totalBilled": dPurchase['totalBilled'],
+			"transactions": [{
+				"chargeback": dT['isChargedback'] != '0' and {
+					"amount": 'chargebackAmount' in dT and \
+								dT['chargebackAmount'] or \
+								('amountRefunded' in dT and \
+									dT['amountRefunded'] or \
+									'0.00'),
+					"date": dT['chargebackDate'],
+					"code": dT['chargebackReasonCode'],
+					"note": 'chargebackNote' in dT and dT['chargebackNote'] or ''
+				} or None,
+				"date": dT['txnDate'],
+				"price": dT['totalAmount'],
+				"refunded": dT['amountRefunded'],
+				"result": dT['responseType'],
+				"response": dT['responseText']
+			} for dT in dPurchase['transactions']]
+		})
+
 	def purchaseCancel_update(self, data, sesh):
 		"""Purchase Cancel
 
@@ -1172,7 +1262,6 @@ class Konnektive(Services.Service):
 		Arguments:
 			data (dict): Data sent with the request
 			sesh (Sesh._Session): The session associated with the request
-			verify (bool): Allow bypassing verification for internal calls
 
 		Returns:
 			Services.Response
@@ -1194,11 +1283,47 @@ class Konnektive(Services.Service):
 		if 'reason' in data:
 			dData['reason'] = data['reason']
 
-		# If Purchase cancellation's are allowed
-		if self._allowPurchaseCancel:
+		# If Purchase changes are allowed
+		if self._allowPurchaseChange:
 
 			# Cancel the purchase
 			dRes = self._post('purchase/cancel', dData)
+
+			# If we failed
+			if dRes['result'] != 'SUCCESS':
+				return Services.Error(1103, ('message' in dRes and dRes['message'] or None))
+
+		# Return OK
+		return Services.Response(True)
+
+	def purchaseCharge_update(self, data, sesh):
+		"""Purchase Charge
+
+		Charges the purchase immediately
+
+		Arguments:
+			data (dict): Data sent with the request
+			sesh (Sesh._Session): The session associated with the request
+
+		Returns:
+			Services.Response
+		"""
+
+		# Validate rights
+		Rights.check(sesh, 'orders', Rights.UPDATE)
+
+		# Verify fields
+		try: DictHelper.eval(data, ['purchaseId'])
+		except ValueError as e: return Services.Response(error=(1001, [(f, 'missing') for f in e.args]))
+
+		# If Purchase changes are allowed
+		if self._allowPurchaseChange:
+
+			# Cancel the purchase
+			dRes = self._post('purchase/cancel', {
+				"billNow": True,
+				"purchaseId": data['purchaseId']
+			})
 
 			# If we failed
 			if dRes['result'] != 'SUCCESS':
