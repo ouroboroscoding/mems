@@ -39,7 +39,9 @@ if __name__ == "__main__":
 		"/order/cancel": {"methods": REST.UPDATE, "session": True},
 		"/order/qa": {"methods": REST.UPDATE, "session": True},
 		"/order/transactions": {"methods": REST.READ, "session": True},
-		"/purchase/cancel": {"methods": REST.UPDATE, "session": True}
+		"/purchase": {"methods": REST.READ, "session": True},
+		"/purchase/cancel": {"methods": REST.UPDATE, "session": True},
+		"/purchase/charge": {"methods": REST.UPDATE, "session": True}
 
 		},
 		'konnektive',
