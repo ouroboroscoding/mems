@@ -4029,6 +4029,30 @@ class Monolith(Services.Service):
 		oOrder['user'] = sesh['memo_id']
 		oOrder.save()
 
+		# Check the purchase in KNK
+		oResponse = Services.read('konnektive', 'purchase', {
+			"purchaseId": oOrder['purchaseId']
+		}, sesh)
+
+		# If there's an error
+		if oResponse.errorExists():
+			return oResponse
+
+		# Get the delta between now and the next bill date
+		oDelta = arrow.get(oResponse.data['nextBillDate']) - arrow.get()
+
+		# If the next bill date is over 5 years in the future
+		if oDelta.days > 1780:
+
+			# Charge the purchase immediately
+			oResponse = Services.update('konnektive', 'purchase/charge', {
+				"purchaseId": oOrder['purchaseId']
+			})
+
+			# If there's an error
+			if oResponse.errorExists():
+				return oResponse
+
 		# Notify the patient
 		SMSWorkflow.providerApprovesContinuous(data['orderId'], sesh['memo_id'], self)
 

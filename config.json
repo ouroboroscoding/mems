@@ -75,7 +75,7 @@
 		"user": "",
 		"pass": "",
 		"allow_qa_update": false,
-		"allow_purchase_cancel": false
+		"allow_purchase_change": false
 	},
 
 	"memo": {
