@@ -1294,6 +1294,36 @@ class HormonalSympCategories(Record_MySQL.Record):
 			Record_MySQL.ESelect.ALL
 		)
 
+# HormoneSymptomToQuestion
+class HormoneSymptomToQuestion(Record_MySQL.Record):
+	"""Hormone Sympton To Question
+
+	Represents symptoms used in assessment and their corresponding category
+	"""
+
+	_conf = None
+	"""Configuration"""
+
+	@classmethod
+	def config(cls):
+		"""Config
+
+		Returns the configuration data associated with the record type
+
+		Returns:
+			dict
+		"""
+
+		# If we haven loaded the config yet
+		if not cls._conf:
+			cls._conf = Record_MySQL.Record.generateConfig(
+				Tree.fromFile('definitions/monolith/hormone_symptom_to_question.json'),
+				'mysql'
+			)
+
+		# Return the config
+		return cls._conf
+
 # HrtLabResult
 class HrtLabResult(Record_MySQL.Record):
 	""""HRT Lab Result Tests
