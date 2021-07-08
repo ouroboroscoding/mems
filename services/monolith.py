@@ -36,7 +36,7 @@ from records.monolith import \
 	CustomerCommunication, CustomerMsgPhone, \
 	DsApproved, DsPatient, \
 	Forgot, \
-	HormonalCategoryScore, HormonalSympCategories, \
+	HormonalCategoryScore, HormonalSympCategories, HormoneSymptomToQuestion, \
 	HrtLabResult, HrtLabResultTests, \
 	HrtPatient, HrtPatientDroppedReason, \
 	KtCustomer, KtOrder, KtOrderClaim, KtOrderClaimLast, KtOrderContinuous, \
@@ -1568,7 +1568,7 @@ class Monolith(Services.Service):
 		dLandings = TfLanding.filter({
 			"ktCustomerId": str(data['customerId']),
 			"formId": ['MIP-H1', 'MIP-H2']
-		}, raw=['landing_id', 'submitted_at'], orderby=[['submitted_at', 'DESC']])
+		}, raw=['landing_id', 'formId', 'submitted_at'], orderby=[['submitted_at', 'DESC']])
 
 		# If there's none, return nothing
 		if not dLandings:
@@ -1580,14 +1580,23 @@ class Monolith(Services.Service):
 			for d in dLandings
 		}
 
+		# Generate a list of the forms to the landing IDs
+		dForms = {
+			d['landing_id'].lower():d['formId']
+			for d in dLandings
+		}
+
 		# Fetch all the categories
-		lCats = HormonalSympCategories.withQuestions()
+		lCats = HormoneSymptomToQuestion.filter({
+			"formId": list(set(dForms.values()))
+		}, raw=['formId', 'questionRef', 'title', 'category'])
 
 		# Init the list of titles by question
 		dTitles = {}
 
-		# Init the list of unique questions and their categories
+		# Init the list of unique questions by form and their categories
 		dQuestions = {}
+		setQuestions = set()
 
 		# Init the list of unique categories, their questions, and the dates
 		#	associated
@@ -1596,36 +1605,40 @@ class Monolith(Services.Service):
 		# Go through all the question to categories we found to find the unique
 		#	titles
 		for d in lCats:
-			if d['questionRef'] not in dTitles:
-				dTitles[d['questionRef']] = d['title']
+			k = '%s|%s' % (d['formId'], d['questionRef'])
+			if k not in dTitles:
+				dTitles[k] = d['title']
 
 		# Go through all the questions again to generate the categories
 		for d in lCats:
 
+			setQuestions.add(d['questionRef'])
+
 			# If we don't have the question
-			if d['questionRef'] not in dQuestions:
-				dQuestions[d['questionRef']] = []
+			k = '%s|%s' % (d['formId'], d['questionRef'])
+			if k not in dQuestions:
+				dQuestions[k] = []
 
 			# Add the category to the question
-			dQuestions[d['questionRef']].append(d['category'])
+			dQuestions[k].append(d['category'])
 
 			# If we don't have the category
 			if d['category'] not in dCategories:
 				dCategories[d['category']] = {
 					"score": {s:0 for s in dDates.values()},
-					"questions": {}
+					"titles": {}
 				}
 
 			# Add the list of dates by category
-			dCategories[d['category']]['questions'][d['questionRef']] = {
-				"title": dTitles[d['questionRef']],
-				"dates": {s:None for s in dDates.values()}
+			dCategories[d['category']]['titles'][d['title']] = {
+				s:None
+				for s in dDates.values()
 			}
 
 		# Find all the answers by landing IDs and question refs
 		lAnswers = TfAnswer.filter({
 			"landing_id": [d['landing_id'] for d in dLandings],
-			"ref": list(dQuestions.keys())
+			"ref": list(setQuestions)
 		}, raw=['landing_id', 'ref', 'value'])
 
 		# Go through each answer
@@ -1634,8 +1647,11 @@ class Monolith(Services.Service):
 			# Get the date associated with the landing
 			sDate = dDates[d['landing_id'].lower()]
 
+			# Generate the unique key based on the form
+			k = '%s|%s' % (dForms[d['landing_id'].lower()], d['ref'])
+
 			# Go through each category for the associated question
-			for s in dQuestions[d['ref']]:
+			for s in dQuestions[k]:
 
 				# Make sure score is an int
 				iScore = d['value'].isnumeric() and int(d['value']) or 0
@@ -1645,7 +1661,7 @@ class Monolith(Services.Service):
 
 				# Set the score to in the associated question in the category /
 				#	date
-				dCategories[s]['questions'][d['ref']]['dates'][sDate] = iScore
+				dCategories[s]['titles'][dTitles[k]][sDate] = iScore
 
 		# Return the structure
 		return Services.Response({
