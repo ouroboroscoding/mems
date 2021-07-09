@@ -443,13 +443,13 @@ def _stepFour():
 		if o['crm_type'] == 'knk':
 
 			# Look for a continuous order record
-			dOC = KtOrderContinuous.filter({
+			oOC = KtOrderContinuous.filter({
 				"customerId": o['crm_id'],
 				"orderId": o['crm_order']
-			}, raw=['active'], limit=1)
+			}, limit=1)
 
 			# If there's none, or it's marked as active
-			if not dOC or dOC['active']:
+			if not oOC or oOC['active']:
 
 				# Delete the record and move on
 				o.delete()
@@ -477,6 +477,9 @@ def _stepFour():
 			if dRes['result'] != 'SUCCESS':
 				emailError('Expiring Error', 'Couldn\'t cancel purchase:\n\n%s\n\n%s' % (str(o.record(), str(dRes))))
 				continue
+
+			# Delete the continuous order
+			oOC.delete()
 
 			# Process the template
 			sContent = SMSWorkflow.processTemplate(sTemplate, lPurchases[0]);
