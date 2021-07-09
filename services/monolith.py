@@ -4054,6 +4054,10 @@ class Monolith(Services.Service):
 		if oResponse.errorExists():
 			return oResponse
 
+		# If there is no next bill date
+		if not oResponse.data['nextBillDate']:
+			return Services.Error(1519)
+
 		# Get the delta between now and the next bill date
 		oDelta = arrow.get(oResponse.data['nextBillDate']) - arrow.get()
 
