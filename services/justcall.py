@@ -107,7 +107,7 @@ class JustCall(Services.Service):
 			iAttempts = 0
 			while True:
 				try:
-					oRes = requests.post(sURL, data=sBody, headers=dHeaders)
+					oRes = requests.post(sURL, data=sBody, headers=dHeaders, timeout=10)
 					break
 				except requests.exceptions.ConnectionError as e:
 					iAttempts += 1
@@ -176,7 +176,7 @@ class JustCall(Services.Service):
 		iAttempts = 0
 		while True:
 			try:
-				oRes = requests.post(sURL, data=sBody, headers=dHeaders)
+				oRes = requests.post(sURL, data=sBody, headers=dHeaders, timeout=10)
 				break
 			except requests.exceptions.ConnectionError as e:
 				iAttempts += 1
