@@ -1650,6 +1650,10 @@ class Monolith(Services.Service):
 			# Generate the unique key based on the form
 			k = '%s|%s' % (dForms[d['landing_id'].lower()], d['ref'])
 
+			# If the question has no categories
+			if k not in dQuestions:
+				continue
+
 			# Go through each category for the associated question
 			for s in dQuestions[k]:
 

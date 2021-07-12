@@ -91,7 +91,7 @@ class Konnektive(Services.Service):
 			iAttempts = 0
 			while True:
 				try:
-					oRes = requests.post(sURL, headers={"Content-Type": 'application/json; charset=utf-8'})
+					oRes = requests.post(sURL, headers={"Content-Type": 'application/json; charset=utf-8'}, timeout=10)
 					break
 				except requests.exceptions.ConnectionError as e:
 					iAttempts += 1
@@ -140,7 +140,7 @@ class Konnektive(Services.Service):
 		iAttempts = 0
 		while True:
 			try:
-				oRes = requests.post(sURL, headers={"Content-Type": 'application/json; charset=utf-8'})
+				oRes = requests.post(sURL, headers={"Content-Type": 'application/json; charset=utf-8'}, timeout=10)
 				break
 			except requests.exceptions.ConnectionError as e:
 				iAttempts += 1
