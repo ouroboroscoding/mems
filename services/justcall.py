@@ -115,6 +115,8 @@ class JustCall(Services.Service):
 						sleep(1)
 						continue
 					raise e
+				except requests.exceptions.ReadTimeout as e:
+					raise Services.ResponseException(error=1004)
 
 			# If we got a 200 back
 			if oRes.status_code == 200:
@@ -184,6 +186,8 @@ class JustCall(Services.Service):
 					sleep(1)
 					continue
 				raise e
+			except requests.exceptions.ReadTimeout as e:
+				raise Services.ResponseException(error=1004)
 
 		# If we got a 200 back
 		if oRes.status_code == 200:

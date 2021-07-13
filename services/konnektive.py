@@ -99,6 +99,8 @@ class Konnektive(Services.Service):
 						sleep(1)
 						continue
 					raise e
+				except requests.exceptions.ReadTimeout as e:
+					raise Services.ResponseException(error=1004)
 
 			# Pull out the data
 			dData = oRes.json()
@@ -148,6 +150,8 @@ class Konnektive(Services.Service):
 					sleep(1)
 					continue
 				raise e
+			except requests.exceptions.ReadTimeout as e:
+				raise Services.ResponseException(error=1004)
 
 		# Pull out the reponse and return it
 		return oRes.json()
