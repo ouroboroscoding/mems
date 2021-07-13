@@ -201,12 +201,15 @@ class Prescriptions(Services.Service):
 		}
 
 		# Make the request for the token
-		oRes = requests.post(
-			'https://%s/webapi/token' % self._host,
-			data=dData,
-			headers=dHeaders,
-			timeout=10
-		)
+		try:
+			oRes = requests.post(
+				'https://%s/webapi/token' % self._host,
+				data=dData,
+				headers=dHeaders,
+				timeout=10
+			)
+		except requests.exceptions.ReadTimeout as e:
+			raise Services.ResponseException(error=1004)
 
 		# If we didn't get success
 		if oRes.status_code != 200:
@@ -307,20 +310,17 @@ class Prescriptions(Services.Service):
 		}
 
 		# Make the request
-		oRes = requests.post(sURL, data=dData, headers=dHeaders, timeout=10)
-
-		print(oRes)
+		try:
+			oRes = requests.post(sURL, data=dData, headers=dHeaders, timeout=10)
+		except requests.exceptions.ReadTimeout as e:
+			raise Services.ResponseException(error=1004)
 
 		# If we didn't get a 200
 		if oRes.status_code != 200:
 			return Services.Response(error=(1601, oRes.text))
 
-		print(oRes.text)
-
 		# Get the response
 		dRes = oRes.json()
-
-		print(dRes)
 
 		# If we got an error
 		if dRes['Result']['ResultCode'] == 'ERROR':
@@ -451,7 +451,10 @@ class Prescriptions(Services.Service):
 		}
 
 		# Make the request
-		oRes = requests.post(sURL, data=dData, headers=dHeaders, timeout=10)
+		try:
+			oRes = requests.post(sURL, data=dData, headers=dHeaders, timeout=10)
+		except requests.exceptions.ReadTimeout as e:
+			raise Services.ResponseException(error=1004)
 
 		# If we didn't get a 200
 		if oRes.status_code != 200:
@@ -522,7 +525,10 @@ class Prescriptions(Services.Service):
 			}
 
 			# Make the request
-			oRes = requests.get(sURL, headers=dHeaders, timeout=10)
+			try:
+				oRes = requests.get(sURL, headers=dHeaders, timeout=10)
+			except requests.exceptions.ReadTimeout as e:
+				raise Services.ResponseException(error=1004)
 
 			# If we didn't get a 200
 			if oRes.status_code != 200:
@@ -631,7 +637,10 @@ class Prescriptions(Services.Service):
 		}
 
 		# Make the request
-		oRes = requests.get(sURL, headers=dHeaders, timeout=10)
+		try:
+			oRes = requests.get(sURL, headers=dHeaders, timeout=10)
+		except requests.exceptions.ReadTimeout as e:
+			raise Services.ResponseException(error=1004)
 
 		# If we didn't get a 200
 		if oRes.status_code != 200:
@@ -694,7 +703,10 @@ class Prescriptions(Services.Service):
 		}
 
 		# Make the request
-		oRes = requests.post(sURL, headers=dHeaders, timeout=10)
+		try:
+			oRes = requests.post(sURL, headers=dHeaders, timeout=10)
+		except requests.exceptions.ReadTimeout as e:
+			raise Services.ResponseException(error=1004)
 
 		# If we didn't get a 200
 		if oRes.status_code != 200:
@@ -759,7 +771,10 @@ class Prescriptions(Services.Service):
 		}
 
 		# Make the request
-		oRes = requests.delete(sURL, headers=dHeaders, timeout=10)
+		try:
+			oRes = requests.delete(sURL, headers=dHeaders, timeout=10)
+		except requests.exceptions.ReadTimeout as e:
+			raise Services.ResponseException(error=1004)
 
 		# If we didn't get a 200
 		if oRes.status_code != 200:
@@ -847,8 +862,6 @@ class Prescriptions(Services.Service):
 		if 'effective' in data:
 			dData['EffectiveDate'] = data['effective']
 
-		print(dData)
-
 		# Generate the token
 		sToken = self._generateToken(data['clinician_id'])
 
@@ -865,7 +878,10 @@ class Prescriptions(Services.Service):
 		}
 
 		# Make the request
-		oRes = requests.post(sURL, headers=dHeaders, json=dData, timeout=10)
+		try:
+			oRes = requests.post(sURL, headers=dHeaders, json=dData, timeout=10)
+		except requests.exceptions.ReadTimeout as e:
+			raise Services.ResponseException(error=1004)
 
 		# If we didn't get a 200
 		if oRes.status_code != 200:
@@ -946,7 +962,10 @@ class Prescriptions(Services.Service):
 		}
 
 		# Make the request
-		oRes = requests.get(sURL, headers=dHeaders, timeout=10)
+		try:
+			oRes = requests.get(sURL, headers=dHeaders, timeout=10)
+		except requests.exceptions.ReadTimeout as e:
+			raise Services.ResponseException(error=1004)
 
 		# If we didn't get a 200
 		if oRes.status_code != 200:
@@ -1593,7 +1612,10 @@ class Prescriptions(Services.Service):
 		}
 
 		# Make the request
-		oRes = requests.get(sURL, headers=dHeaders, timeout=10)
+		try:
+			oRes = requests.get(sURL, headers=dHeaders, timeout=10)
+		except ValueError as e:
+			return Services.Response(error=(1001, e.args[0]))
 
 		# If we didn't get a 200
 		if oRes.status_code != 200:

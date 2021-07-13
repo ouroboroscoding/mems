@@ -4549,7 +4549,7 @@ class Monolith(Services.Service):
 			else:
 
 				# Keep the existing agent and save
-				oCustClaim['agent'] = dOldClaim['user']
+				oCustClaim['user'] = dOldClaim['user']
 				oCustClaim.save()
 
 				# Notify the agent the claim has been update
