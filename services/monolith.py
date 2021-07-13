@@ -1366,9 +1366,13 @@ class Monolith(Services.Service):
 		Rights.check(sesh, 'customers', Rights.UPDATE, data['customerId'])
 
 		# Try to find the record
-		oHrtPatient = HrtPatient.filter({
-			"ktCustomerId": data['customerId']
-		}, limit=1)
+		try:
+			oHrtPatient = HrtPatient.filter({
+				"ktCustomerId": data['customerId']
+			}, limit=1)
+		except ValueError as e:
+			return Services.Error(1005)
+
 		if not oHrtPatient:
 			return Services.Error(1104)
 
