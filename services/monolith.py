@@ -3474,6 +3474,7 @@ class Monolith(Services.Service):
 
 		# Must search at least one
 		if 'id' not in data and \
+			'phone' not in data and \
 			'email' not in data:
 			return Services.Response(error=(1001, [('id', 'missing')]))
 
@@ -3481,11 +3482,12 @@ class Monolith(Services.Service):
 		dFilter = {}
 		if 'id' in data: dFilter['customerId'] = data['id']
 		if 'email' in data: dFilter['emailAddress'] = data['email']
+		if 'phone' in data: dFilter['phoneNumber'] = data['phone']
 
 		# Try to find the customer
 		dCustomer = KtCustomer.filter(
 			dFilter,
-			raw=['phoneNumber'],
+			raw=['phoneNumber', 'firstName', 'lastName'],
 			orderby=[['updatedAt', 'DESC']],
 			limit=1
 		)
@@ -3494,10 +3496,28 @@ class Monolith(Services.Service):
 		if not dCustomer:
 			return Services.Response([])
 
+		# Look up the customer convo
+		lConvos = CustomerMsgPhone.search({"phone": dCustomer['phoneNumber']})
+
+		# If there's no conversation this is most likely a bug on Memo side
+		#	where no conversation was made
+		if not lConvos:
+			sDT = arrow.get().format('YYYY-MM-DD HH:mm:ss')
+			oCMP = CustomerMsgPhone({
+				"customerPhone": dCustomer['phoneNumber'],
+				"customerName": '%s %s' % (dCustomer['firstName'], dCustomer['lastName']),
+				"lastMsgAt": sDT,
+				"hiddenFlag": 'N',
+				"totalIncoming": 0,
+				"totalOutGoing": 0,
+				"createdAt": sDT,
+				"updatedAt": sDT
+			})
+			oCMP.create()
+			lConvos = CustomerMsgPhone.search({"phone": dCustomer['phoneNumber']})
+
 		# Fetch and return the data based on the phone number
-		return Services.Response(
-			CustomerMsgPhone.search({"phone": dCustomer['phoneNumber']})
-		)
+		return Services.Response(lConvos)
 
 	def msgsStatus_read(self, data, sesh):
 		"""Messages: Status
