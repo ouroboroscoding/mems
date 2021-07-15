@@ -372,7 +372,7 @@ def _stepThree():
 
 			# If it failed
 			if dRes['result'] != 'SUCCESS':
-				emailError('Expiring Error', 'Couldn\'t pause purchase:\n\n%s\n\n%s' % (str(o.record(), str(dRes))))
+				emailError('Expiring Error', 'Couldn\'t pause purchase:\n\n%s\n\n%s' % (str(o.record()), str(dRes)))
 				continue
 
 			# Process the template
@@ -475,7 +475,7 @@ def _stepFour():
 
 			# If it failed
 			if dRes['result'] != 'SUCCESS':
-				emailError('Expiring Error', 'Couldn\'t cancel purchase:\n\n%s\n\n%s' % (str(o.record(), str(dRes))))
+				emailError('Expiring Error', 'Couldn\'t cancel purchase:\n\n%s\n\n%s' % (str(o.record()), str(dRes)))
 				continue
 
 			# Delete the continuous order
