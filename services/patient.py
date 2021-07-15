@@ -18,8 +18,8 @@ from time import time
 # Pip imports
 import arrow
 from redis import StrictRedis
-from RestOC import Conf, DictHelper, Errors, Services, \
-					Sesh, StrHelper, Templates
+from RestOC import Conf, DictHelper, Errors, Record_MySQL, \
+					Services, Sesh, StrHelper, Templates
 
 # Shared imports
 from shared import Environment, Rights
