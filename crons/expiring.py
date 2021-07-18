@@ -109,7 +109,10 @@ def _stepZero():
 
 			# Catch duplicate errors on continuous model
 			except Record_MySQL.DuplicateException as e:
-				pass
+
+				# Delete the record
+				o.delete()
+				continue
 
 			# Update the step
 			o['step'] = 1
