@@ -1109,6 +1109,75 @@ class CustomerMsgPhone(Record_MySQL.Record):
 			Record_MySQL.ESelect.CELL
 		)
 
+# CustomerReviews class
+class CustomerReviews(Record_MySQL.Record):
+	"""Customer Reviews
+
+	Represents the count and total of customer reviews by customer
+	"""
+
+	_conf = None
+	"""Configuration"""
+
+	@classmethod
+	def addReview(cls, customer_id, review, custom={}):
+		"""Add Review
+
+		Adds a new record or updates the existing using the latest review
+
+		Argumens:
+			customer_id (uint): The ID of the customer
+			review (uint): The review (1-10) the customer gave
+			custom (dict): Custom Host and DB info
+				'host' the name of the host to get/set data on
+				'append' optional postfix for dynamic DBs
+
+		Returns:
+			None
+		"""
+
+		# Fetch the record structure
+		dStruct = cls.struct(custom)
+
+		# Generate SQL
+		sSQL = "INSERT INTO `%(db)s`.`%(table)s` (`customerId`, `count`, `total`, `last`)\n" \
+				"VALUES (%(id)d, 1, %(review)d, %(review)d)\n" \
+				"ON DUPLICATE KEY UPDATE\n" \
+				"	`count` = `count` + 1,\n" \
+				"	`total` = `total` + %(review)d,\n" \
+				"	`last` = %(review)d" % {
+			"db": dStruct['db'],
+			"table": dStruct['table'],
+			"id": customer_id,
+			"review": review
+		}
+
+		# Execute the statement
+		return Record_MySQL.Commands.execute(
+			dStruct['host'],
+			sSQL
+		)
+
+	@classmethod
+	def config(cls):
+		"""Config
+
+		Returns the configuration data associated with the record type
+
+		Returns:
+			dict
+		"""
+
+		# If we haven loaded the config yet
+		if not cls._conf:
+			cls._conf = Record_MySQL.Record.generateConfig(
+				Tree.fromFile('definitions/monolith/customer_reviews.json'),
+				'mysql'
+			)
+
+		# Return the config
+		return cls._conf
+
 # DsApproved class
 class DsApproved(Record_MySQL.Record):
 	"""DsApproved
@@ -3355,6 +3424,44 @@ class TfAnswer(Record_MySQL.Record):
 
 		# Return the answer
 		return dAnswer['value']
+
+	@classmethod
+	def reviewWithCustomerId(cls, last_id, custom={}):
+		"""Review With Customer Id
+
+		Returns the newest reviews with their corresponding customer ID
+
+		Arguments:
+			last_id (uint): The last ID that was fetched
+			custom (dict): Custom Host and DB info
+				'host' the name of the host to get/set data on
+				'append' optional postfix for dynamic DBs
+
+		Returns:
+			dict
+		"""
+
+		# Fetch the record structure
+		dStruct = cls.struct(custom)
+
+		# Generate SQL
+		sSQL = "SELECT `tfa`.`id`, `tfa`.`value` as `review`, `tfl`.`ktCustomerId`\n" \
+				"FROM `%(db)s`.`%(table)s` as `tfa`\n" \
+				"JOIN `%(db)s`.`tf_landing` as `tfl` ON `tfa`.`landing_id` = `tfl`.`landing_id`\n" \
+				"WHERE `tfa`.`id` > %(last_id)d\n" \
+				"AND `ref` = 'revitaExpectationsCHRT'\n" \
+				"ORDER BY `id`" % {
+			"db": dStruct['db'],
+			"table": dStruct['table'],
+			"last_id": last_id
+		}
+
+		# Fetch and return the records
+		return Record_MySQL.Commands.select(
+			dStruct['host'],
+			sSQL,
+			Record_MySQL.ESelect.ALL
+		)
 
 # TfLanding class
 class TfLanding(Record_MySQL.Record):
