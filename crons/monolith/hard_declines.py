@@ -76,6 +76,10 @@ def run():
 		if d['txnType'] not in ['SALE', 'AUTHORIZE', 'CAPTURE']:
 			continue
 
+		# If it's a duplicate transaction, no need to notify the customer
+		if 'Duplicate transaction' in d['responseText']:
+			continue
+
 		# Add the decline as an incoming SMS
 		oResponse = Services.create('monolith', 'message/incoming', {
 			"_internal_": Services.internalKey(),
