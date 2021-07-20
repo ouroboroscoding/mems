@@ -13,6 +13,7 @@ __created__		= "2020-04-26"
 
 # Python imports
 from base64 import b64encode
+from decimal import Decimal
 import re
 from time import time
 
@@ -5528,6 +5529,31 @@ class Monolith(Services.Service):
 				"activeFlag": 'Y'
 			}, raw=['id', 'firstName', 'lastName'], orderby=['firstName', 'lastName'])
 		])
+
+	def reviewsAverage_read(self, data, sesh):
+		"""Reviews Average
+
+		Returns the average of all reviews for every CHRT
+
+		Arguments:
+			data (dict): Data sent with the request
+			sesh (Sesh._Session): The session associated with the request
+
+		Returns:
+			Services.Response
+		"""
+
+		# Get the sums
+		dSums = CustomerReviews.sums()
+
+		# If there's no count
+		if dSums['count'] == 0:
+			return Services.Response(Decimal('0.0'))
+
+		# Return the average
+		return Services.Response(
+			Decimal(dSums['total']) / Decimal(dSums['count'])
+		)
 
 	def signin_create(self, data):
 		"""Signin
