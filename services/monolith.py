@@ -137,6 +137,10 @@ class Monolith(Services.Service):
 			None
 		"""
 
+		# If there's no data
+		if not records:
+			return
+
 		# Get a list of reviews by customer ID
 		dReviews = {
 			dR['customerId']: {
