@@ -1178,6 +1178,38 @@ class CustomerReviews(Record_MySQL.Record):
 		# Return the config
 		return cls._conf
 
+	@classmethod
+	def sums(cls, custom={}):
+		"""Counts
+
+		Returns the total sums of the count and total columns
+
+		Arguments:
+			custom (dict): Custom Host and DB info
+				'host' the name of the host to get/set data on
+				'append' optional postfix for dynamic DBs
+
+		Returns:
+			None
+		"""
+
+		# Fetch the record structure
+		dStruct = cls.struct(custom)
+
+		# Generate SQL
+		sSQL = "SELECT SUM(`count`) as `count`, SUM(`total`) as `total`\n" \
+				"FROM `%(db)s`.`%(table)s`\n" % {
+			"db": dStruct['db'],
+			"table": dStruct['table']
+		}
+
+		# Run and return the results from the select statement
+		return Record_MySQL.Commands.select(
+			dStruct['host'],
+			sSQL,
+			Record_MySQL.ESelect.ROW
+		)
+
 # DsApproved class
 class DsApproved(Record_MySQL.Record):
 	"""DsApproved
