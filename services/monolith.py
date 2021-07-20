@@ -3406,16 +3406,19 @@ class Monolith(Services.Service):
 				)
 			}
 
-		# Get a list of reviews by customer ID
-		dReviews = {
-			dR['customerId']: {
-				"count": dR['count'],
-				"total": dR['total'],
-				"last": dR['last']
-			} for dR in CustomerReviews.filter({
-				"customerId": [dC['customerId'] for dC in dCustomers.values()]
-			})
-		}
+		# If we have any customers
+		if dCustomers:
+
+			# Get a list of reviews by customer ID
+			dReviews = {
+				dR['customerId']: {
+					"count": dR['count'],
+					"total": dR['total'],
+					"last": dR['last']
+				} for dR in CustomerReviews.filter({
+					"customerId": [dC['customerId'] for dC in dCustomers.values()]
+				})
+			}
 
 		# Get a list of all the user IDs
 		lUserIDs = set()
