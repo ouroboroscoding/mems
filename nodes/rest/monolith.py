@@ -122,6 +122,8 @@ if __name__ == "__main__":
 
 		"/providers": {"methods": REST.READ, "session": True},
 
+		"/reviews/average": {"methods": REST.READ, "session": True},
+
 		"/signin": {"methods": REST.POST},
 
 		"/stats/claimed": {"methods": REST.READ, "session": True},
