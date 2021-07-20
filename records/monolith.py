@@ -3481,7 +3481,7 @@ class TfAnswer(Record_MySQL.Record):
 				"FROM `%(db)s`.`%(table)s` as `tfa`\n" \
 				"JOIN `%(db)s`.`tf_landing` as `tfl` ON `tfa`.`landing_id` = `tfl`.`landing_id`\n" \
 				"WHERE `tfa`.`id` > %(last_id)d\n" \
-				"AND `ref` = 'revitaExpectationsCHRT'\n" \
+				"AND `ref` IN ('revitaExpectationsCHRT', 'teamExpectationsCED')\n" \
 				"ORDER BY `id`" % {
 			"db": dStruct['db'],
 			"table": dStruct['table'],
