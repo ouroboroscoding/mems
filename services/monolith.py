@@ -32,7 +32,7 @@ from shared import Memo, Rights, SMSWorkflow, Sync
 from records.monolith import \
 	Calendly, CalendlyEvent, \
 	Campaign, \
-	CustomerClaimed, CustomerClaimedLast, \
+	CustomerClaimed, CustomerClaimedLast, CustomerReviews, \
 	CustomerCommunication, CustomerMsgPhone, \
 	DsApproved, DsPatient, \
 	Forgot, \
@@ -123,6 +123,41 @@ class Monolith(Services.Service):
 			# Install the table
 			if not o.tableCreate():
 				print("Failed to create `%s` table" % o.tableName())
+
+	def _addReviews(self, records, id_field):
+		"""Add Reviews
+
+		Looks up and adds reviews to existing customer records
+
+		Arguments:
+			records (list): The list of records to add reviews to
+			id_field (str): The field that represents the customer ID
+
+		Returns:
+			None
+		"""
+
+		# Get a list of reviews by customer ID
+		dReviews = {
+			dR['customerId']: {
+				"count": dR['count'],
+				"total": dR['total'],
+				"last": dR['last']
+			} for dR in CustomerReviews.filter({
+				"customerId": [dC[id_field] for dC in records]
+			})
+		}
+
+		# Go through all the records
+		for d in records:
+
+			# Make sure we have an int
+			try: iID = int(d[id_field], 0)
+			except: iID = d[id_field]
+
+			# If there's a review
+			if iID in dReviews:
+				d['reviews'] = dReviews[iID]
 
 	def agentClaim_delete(self, data, sesh):
 		"""Agent Claim Delete
@@ -1701,6 +1736,11 @@ class Monolith(Services.Service):
 		if not dRes:
 			return Services.Response(0)
 
+		# Add the review (if it exists)
+		dReview = CustomerReviews.get(dRes['customerId'], raw=['count', 'total', 'last'])
+		if dReview:
+			dRes['reviews'] = dReview
+
 		# Return the ID
 		return Services.Response(dRes)
 
@@ -2889,6 +2929,9 @@ class Monolith(Services.Service):
 			data['droppedReason']
 		)
 
+		# Add reviews
+		self._addReviews(lPatients, 'customerId')
+
 		# Return all customers
 		return Services.Response(lPatients)
 
@@ -2915,14 +2958,14 @@ class Monolith(Services.Service):
 			return Services.Response(error=Errors.SERVICE_INTERNAL_KEY)
 		del data['_internal_']
 
-		# Fetch the records and store them by ID
-		dRecords = {
-			d['customerId']:d
-			for d in KtCustomer.withClaimed(data['customerIds'])
-		}
+		# Get the customer data
+		lCustomers = KtCustomer.withClaimed(data['customerIds'])
+
+		# Add reviews
+		self._addReviews(lCustomers, 'customerId')
 
 		# Return whatever is found
-		return Services.Response(dRecords)
+		return Services.Response({d['customerId']:d for d in lCustomers})
 
 	def internalIncomingSms_read(self, data):
 		"""Internal: Incoming SMS
@@ -3358,6 +3401,17 @@ class Monolith(Services.Service):
 				)
 			}
 
+		# Get a list of reviews by customer ID
+		dReviews = {
+			dR['customerId']: {
+				"count": dR['count'],
+				"total": dR['total'],
+				"last": dR['last']
+			} for dR in CustomerReviews.filter({
+				"customerId": [dC['customerId'] for dC in dCustomers.values()]
+			})
+		}
+
 		# Get a list of all the user IDs
 		lUserIDs = set()
 		for d in lClaimed:
@@ -3378,10 +3432,17 @@ class Monolith(Services.Service):
 		# Go through each claimed and associate the correct customer ID
 		for d in lClaimed:
 
-			# Add customer ID
+			# Add customer ID if it exists
 			if d['customerPhone'] in dCustomers:
 				d['customerId'] = dCustomers[d['customerPhone']]['customerId']
 				d['customerName'] = dCustomers[d['customerPhone']]['customerName']
+				iCustomerId = int(d['customerId'], 0)
+
+				# If there's a review for that ID
+				if iCustomerId in dReviews:
+					d['reviews'] = dReviews[iCustomerId]
+
+			# No customer, set ID to 0
 			else:
 				d['customerId'] = 0
 
@@ -3450,10 +3511,18 @@ class Monolith(Services.Service):
 			'content' not in data:
 			return Services.Response(error=(1001, [('content', 'missing')]))
 
+		# Fetch conversations
+		lConvos = CustomerMsgPhone.search(data)
+
+		# If there's none
+		if not lConvos:
+			return Services.Response([])
+
+		# Add reviews
+		self._addReviews(lConvos, 'customerId')
+
 		# Fetch and return the data
-		return Services.Response(
-			CustomerMsgPhone.search(data)
-		)
+		return Services.Response(lConvos)
 
 	def msgsSearchCustomer_read(self, data, sesh):
 		"""Messages: Search Customer
@@ -3487,7 +3556,7 @@ class Monolith(Services.Service):
 		# Try to find the customer
 		dCustomer = KtCustomer.filter(
 			dFilter,
-			raw=['phoneNumber', 'firstName', 'lastName'],
+			raw=['customerId', 'phoneNumber', 'firstName', 'lastName'],
 			orderby=[['updatedAt', 'DESC']],
 			limit=1
 		)
@@ -3515,6 +3584,11 @@ class Monolith(Services.Service):
 			})
 			oCMP.create()
 			lConvos = CustomerMsgPhone.search({"phone": dCustomer['phoneNumber']})
+
+		# Look for reviews for the customer
+		dReviews = CustomerReviews.get(int(dCustomer['customerId'], 0), raw=['count', 'total', 'last'])
+		if dReviews:
+			lConvos[0]['reviews'] = dReviews
 
 		# Fetch and return the data based on the phone number
 		return Services.Response(lConvos)
@@ -3570,10 +3644,18 @@ class Monolith(Services.Service):
 		if data['order'] not in ['ASC', 'DESC']:
 			return Services.Response(error=(1001, [('order', 'invalid')]))
 
-		# Fetch and return the data
-		return Services.Response(
-			CustomerMsgPhone.unclaimed(data['order'])
-		)
+		# Get all unclaimed messages
+		lUnclaimed = CustomerMsgPhone.unclaimed(data['order'])
+
+		# If there's none
+		if not lUnclaimed:
+			return Services.Response([])
+
+		# Add reviews
+		self._addReviews(lUnclaimed, 'customerId')
+
+		# Return the data
+		return Services.Response(lUnclaimed)
 
 	def msgsUnclaimedCount_read(self, data, sesh):
 		"""Messages: Unclaimed Count
@@ -4748,6 +4830,9 @@ class Monolith(Services.Service):
 		for d in lPending:
 			if d['lastProviderId']:
 				d['lastProviderName'] = d['lastProviderId'] in dUsers and dUsers[d['lastProviderId']] or 'N/A'
+
+		# Add reviews
+		self._addReviews(lPending, 'customerId')
 
 		# Sort them by date
 		lPending.sort(key=lambda d: d['updatedAt'])
