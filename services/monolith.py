@@ -2123,17 +2123,24 @@ class Monolith(Services.Service):
 			"updatedAt": sDT
 		}
 
-		# If we got a label
-		if 'label' in data:
+		# If we got an attention role or label
+		if 'role' in data or 'label' in data:
 
 			# If we have no order
 			if 'orderId' not in data:
 				return Services.Response(error=(1001, [('orderId', 'missing')]))
 
-			# Figure out the role based on the label
-			lLabel = data['label'].split(' - ')
-			if lLabel[0] == 'Provider':
-				lLabel[0] = 'Doctor'
+			# If the attention role is missing
+			if 'role' not in data or data['role'] == '':
+				data['role'] = None
+
+			# Or because CLT is so stupid it baffles me
+			elif data['role'] == 'Provider':
+				data['role'] = 'Doctor'
+
+			# If the label is missing
+			if 'label' not in data:
+				data['label'] = ''
 
 			# Find the latest status for this order
 			oStatus = SmpOrderStatus.filter(
@@ -2145,20 +2152,20 @@ class Monolith(Services.Service):
 			if not oStatus:
 
 				# Figure out the action
-				if lLabel[0] == 'CSR':
-					sAction = 'Send to CSR'
-				elif lLabel[0] == 'Doctor':
+				if data['role'] == None:
+					sAction = 'Set Label'
+				elif data['role'] == 'Doctor':
 					sAction = 'Send to Provider'
 				else:
-					sAction = 'Set Label'
+					sAction = 'Send to %s' % data['role']
 
 				# Create a new status
 				oStatus = SmpOrderStatus({
 					"orderId": data['orderId'],
 					"orderStatus": '',
 					"reviewStatus": '',
-					"attentionRole": lLabel[0] != '' and lLabel[0] or None,
-					"orderLabel": len(lLabel) == 2 and data['label'] or '',
+					"attentionRole": data['role'],
+					"orderLabel": data['label'],
 					"declineReason": None,
 					"smpNoteId": None,
 					"hrtProviderReviewOrderFlag": 'N',
@@ -2175,16 +2182,19 @@ class Monolith(Services.Service):
 			else:
 
 				# Figure out the action
-				if lLabel[0] == 'CSR' and oStatus['attentionRole'] != 'CSR':
-					sAction = 'Send to CSR'
-				elif lLabel[0] == 'Doctor' and oStatus['attentionRole'] != 'Doctor':
-					sAction = 'Send to Provider'
+				if data['role'] != oStatus['attentionRole']:
+					if data['role'] == None:
+						sAction = 'Remove Attention'
+					elif data['role'] == 'Doctor':
+						sAction = 'Send to Provider'
+					else:
+						sAction = 'Send to %s' % data['role']
 				else:
 					sAction = 'Set Label'
 
 				# Update the existing status
-				oStatus['attentionRole'] = lLabel[0] != '' and lLabel[0] or None
-				oStatus['orderLabel'] = len(lLabel) == 2 and data['label'] or ''
+				oStatus['attentionRole'] = data['role']
+				oStatus['orderLabel'] = data['label']
 				oStatus['updatedAt']: sDT
 				oStatus.save()
 
@@ -2244,20 +2254,14 @@ class Monolith(Services.Service):
 		# If we got a status
 		if dStatus:
 
-			# If the label is blank
-			if dStatus['orderLabel'] in [None, '']:
-
-				# If we have an attention role
-				if dStatus['attentionRole']:
-					dStatus['orderLabel'] = dStatus['attentionRole'] == 'Doctor' and 'Provider' or dStatus['attentionRole']
-
-				# Else, make sure it's an empty string
-				else:
-					dStatus['orderLabel'] = ''
+			# If the role is Doctor
+			if dStatus['attentionRole'] == 'Doctor':
+				dStatus['attentionRole'] = 'Provider'
 
 			# Set just the useful info
 			dStatus = {
 				"orderId": dStatus['orderId'],
+				"role": dStatus['attentionRole'] or '',
 				"label": dStatus['orderLabel']
 			}
 
@@ -4452,17 +4456,24 @@ class Monolith(Services.Service):
 		# Get current date/time
 		sDT = arrow.get().format('YYYY-MM-DD HH:mm:ss')
 
-		# If we got a label
-		if 'label' in data:
+		# If we got an attention role or label
+		if 'role' in data or 'label' in data:
 
-			# If we have no label
+			# If we have no order
 			if 'orderId' not in data:
-				return Services.Response(error=(1001, [('label', 'missing')]))
+				return Services.Response(error=(1001, [('orderId', 'missing')]))
 
-			# Figure out the role based on the label
-			lLabel = data['label'].split(' - ')
-			if lLabel[0] == 'Provider':
-				lLabel[0] = 'Doctor'
+			# If the attention role is missing
+			if 'role' not in data or data['role'] == '':
+				data['role'] = None
+
+			# Or because CLT is so stupid it baffles me
+			elif data['role'] == 'Provider':
+				data['role'] = 'Doctor'
+
+			# If the label is missing
+			if 'label' not in data:
+				data['label'] = ''
 
 			# Find the latest status for this order
 			oStatus = SmpOrderStatus.filter(
@@ -4473,21 +4484,13 @@ class Monolith(Services.Service):
 			# If there's none
 			if not oStatus:
 
-				# Figure out the action
-				if lLabel[0] == 'CSR':
-					sAction = 'Send to CSR'
-				elif lLabel[0] == 'Doctor':
-					sAction = 'Send to Provider'
-				else:
-					sAction = 'Set Label'
-
 				# Create a new status
 				oStatus = SmpOrderStatus({
 					"orderId": data['orderId'],
 					"orderStatus": '',
 					"reviewStatus": '',
-					"attentionRole": lLabel[0] != '' and lLabel[0] or None,
-					"orderLabel": len(lLabel) == 2 and data['label'] or '',
+					"attentionRole": data['role'],
+					"orderLabel": data['label'],
 					"declineReason": None,
 					"smpNoteId": None,
 					"currentFlag": 'Y',
@@ -4501,17 +4504,9 @@ class Monolith(Services.Service):
 			# Else
 			else:
 
-				# Figure out the action
-				if lLabel[0] == 'CSR' and oStatus['attentionRole'] != 'CSR':
-					sAction = 'Send to CSR'
-				elif lLabel[0] == 'Doctor' and oStatus['attentionRole'] != 'Doctor':
-					sAction = 'Send to Provider'
-				else:
-					sAction = 'Set Label'
-
 				# Update the existing status
-				oStatus['attentionRole'] = lLabel[0] != '' and lLabel[0] or None
-				oStatus['orderLabel'] = len(lLabel) == 2 and data['label'] or ''
+				oStatus['attentionRole'] = data['role']
+				oStatus['orderLabel'] = data['label']
 				oStatus['updatedAt']: sDT
 				oStatus.save()
 
