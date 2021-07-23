@@ -126,6 +126,7 @@ class CSR(Services.Service):
 			"permissions": {
 				"calendly": 1,				# Read
 				"calendly_admin": 1,		# Read
+				"campaigns": 1,				# Read
 				"csr_claims": 14,			# Update, Create, Delete
 				"csr_messaging": 5,			# Read, Create
 				"csr_templates": 1,			# Read
@@ -137,6 +138,7 @@ class CSR(Services.Service):
 				"orders": 7,				# Read, Update, Create
 				"patient_account": 1,		# Read
 				"prescriptions": 3,			# Read, Update
+				"products": 1,				# Read
 				"pharmacy_fill": 1,			# Read
 				"welldyne_adhoc": 4			# Create
 			}

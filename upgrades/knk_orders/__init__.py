@@ -1,6 +1,6 @@
 # Import version files
-from . import create_tables
+from . import add_agent_perms, create_tables
 
 modules = [
-	create_tables
+	create_tables, add_agent_perms
 ]
