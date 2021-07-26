@@ -42,6 +42,7 @@ if __name__ == "__main__":
 		"/customer/calendly": {"methods": REST.READ, "session": True},
 		"/customer/claim": {"methods": REST.CREATE | REST.UPDATE | REST.DELETE, "session": True},
 		"/customer/claim/view": {"methods": REST.UPDATE, "session": True},
+		"/customer/continuous": {"methods": REST.READ, "session": True},
 		"/customer/dob": {"methods": REST.READ, "session": True},
 		"/customer/dsid": {"methods": REST.CREATE | REST.READ | REST.UPDATE, "session": True},
 		"/customer/everify": {"methods": REST.READ | REST.UPDATE, "session": True},
