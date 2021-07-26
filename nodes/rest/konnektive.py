@@ -40,7 +40,7 @@ if __name__ == "__main__":
 		"/customer/purchases": {"methods": REST.READ, "session": True},
 		"/customer/orders": {"methods": REST.READ, "session": True},
 		"/customer/transactions": {"methods": REST.READ, "session": True},
-		"/order": {"methods": REST.CREATE | REST.READ, "session": True},
+		"/order": {"methods": REST.CREATE | REST.READ, "session": True, "environ": True},
 		"/order/cancel": {"methods": REST.UPDATE, "session": True},
 		"/order/qa": {"methods": REST.UPDATE, "session": True},
 		"/order/transactions": {"methods": REST.READ, "session": True},

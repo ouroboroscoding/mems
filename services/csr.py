@@ -1538,6 +1538,7 @@ class CSR(Services.Service):
 		# Store the user ID and claim vars in the session
 		oSesh['user_id'] = dAgent['_id']
 		oSesh['claims_max'] = dAgent['claims_max']
+		oSesh['type'] = dAgent['type'].split(',')
 		oSesh.save()
 
 		# Return the session ID and primary user data
@@ -2615,3 +2616,32 @@ class CSR(Services.Service):
 
 		# Return the counts
 		return Services.Response(sorted(list(dAgents.values()), key=itemgetter('name')))
+
+	def user_read(self, data, sesh):
+		"""User Read
+
+		Returns the data associated with the currently logged in user
+
+		Arguments:
+			data (mixed): Data sent with the request
+			sesh (Sesh._Session): The session associated with the request
+
+		Returns:
+			Services.Response
+		"""
+
+		# First, get the monolith user data
+		oResponse = Services.read('monolith', 'user', {}, sesh)
+		if oResponse.errorExists():
+			return oResponse
+
+		# Get the agent data and add it to the monolith data
+		dAgent = Agent.get(sesh['user_id'], raw=True)
+		for k in dAgent:
+			oResponse.data[k] = dAgent[k]
+
+		# Split the type
+		oResponse.data['type'] = oResponse.data['type'].split(',')
+
+		# Return all the data
+		return Services.Response(oResponse.data)

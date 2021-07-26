@@ -700,7 +700,7 @@ class Konnektive(Services.Service):
 		Arguments:
 			data (dict): Data sent with the request
 			sesh (Sesh._Session): The session associated with the request
-			environ (dict): Info related to the request
+			environ (dict): Environment info related to the request
 
 		Returns:
 			Services.Response
@@ -730,7 +730,7 @@ class Konnektive(Services.Service):
 				"qty": 1
 			}],
 			"qa": True
-		}, sesh, False)
+		}, sesh, environ, False)
 
 		# If there's an error
 		if oResponse.errorExists():
@@ -998,7 +998,7 @@ class Konnektive(Services.Service):
 			"currency": d['currencySymbol']
 		} for d in lTransactions])
 
-	def order_create(self, data, sesh, verify=True):
+	def order_create(self, data, sesh, environ, verify=True):
 		"""Order Create
 
 		Creates a new order
@@ -1006,6 +1006,7 @@ class Konnektive(Services.Service):
 		Arguments:
 			data (dict): Data sent with the request
 			sesh (Sesh._Session): The session associated with the request
+			environ (dict): Environment info related to the request
 			verify (bool): Allow bypassing verification for internal calls
 
 		Returns:
@@ -1017,8 +1018,12 @@ class Konnektive(Services.Service):
 			Rights.check(sesh, 'orders', Rights.CREATE)
 
 		# Verify fields
-		try: DictHelper.eval(data, ['customerId', 'campaignId', 'products', 'payment', 'ip'])
+		try: DictHelper.eval(data, ['customerId', 'campaignId', 'products', 'payment'])
 		except ValueError as e: return Services.Error(1001, [(f, 'missing') for f in e.args])
+
+		# If the IP is not sent
+		if 'ip' not in data:
+			data['ip'] = Environment.getClientIP(environ)
 
 		# Init the data sent to Konnektive
 		dData = {}
@@ -1221,7 +1226,7 @@ class Konnektive(Services.Service):
 			# Return the message from konnektive
 			return Services.Error(1100, dRes['message'])
 
-	def order_read(self, data, sesh):
+	def order_read(self, data, sesh, environ):
 		"""Order Read
 
 		Fetches an order by ID
@@ -1229,6 +1234,7 @@ class Konnektive(Services.Service):
 		Arguments:
 			data (dict): Data sent with the request
 			sesh (Sesh._Session): The session associated with the request
+			environ (dict): Environment info related to the request
 
 		Returns:
 			Services.Response
