@@ -735,6 +735,59 @@ class Monolith(Services.Service):
 		# Return OK
 		return Services.Response(True)
 
+	def customerContinuous_read(self, data, sesh):
+		"""Customer Continuous Read
+
+		Returns all continuous records associated with the customer
+
+		Arguments:
+			data (dict): Data sent with the request
+			sesh (Sesh._Session): The session associated with the request
+
+		Returns:
+			Services.Response
+		"""
+
+		# Make sure the user has the proper permission to do this
+		Rights.check(sesh, 'orders', Rights.READ)
+
+		# If the customer ID is missing
+		if 'customerId' not in data:
+			return Services.Error(1001, [('customerId', 'missing')])
+
+		# Fetch all continuous records
+		lRecords = KtOrderContinuous.filter({
+			"customerId": data['customerId']
+		}, raw=True, orderby=[['updatedAt', 'DESC']])
+
+		# If there's none
+		if not lRecords:
+			return Services.Response([]);
+
+		# Pull out all provider IDs
+		lIDs = list(set([
+			d['user'] for d in lRecords if d['user']
+		]))
+
+		# If there's no IDs
+		if not lIDs:
+			return Services.Response(lRecords)
+
+		# Get providers
+		dProviders = {
+			d['id']: '%s %s' % (d['firstName'], d['lastName'])
+			for d in User.get(lIDs, raw=['id', 'firstName', 'lastName'])
+		}
+
+		# Go through each record and add the provider if found
+		for d in lRecords:
+			if d['user']:
+				try: d['providerName'] = dProviders[d['user']]
+				except KeyError: d['providerName'] = 'UNKNOWN PROVIDER'
+
+		# Return all the records
+		return Services.Response(lRecords)
+
 	def customerDob_read(self, data, sesh):
 		"""Customer DoseSpot ID
 
