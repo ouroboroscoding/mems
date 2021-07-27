@@ -41,7 +41,7 @@ DAY_OF_WEEK = ['mon', 'tue', 'wed', 'thu', 'fri', 'sat', 'sun']
 
 # Total types
 TOTAL_TYPES = {
-	"items": ['jc_call', 'note', 'sms'],
+	"items": ['jc_call', 'note', 'order', 'sms'],
 	"opened": ['Call', 'Follow_Up', 'Provider', 'Script_Entry', 'SMS___Voicemail'],
 	"resolved": ['Contact_Attempted', 'Follow_Up_Complete', 'Information_Provided', 'Issue_Resolved', 'Provider_Confirmed Prescription', 'QA_Order_Declined', 'Recurring_Purchase_Canceled', 'Script_Entered', 'Invalid_Transfer:_No_Purchase_Information']
 }
