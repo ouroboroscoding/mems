@@ -5903,7 +5903,7 @@ class Monolith(Services.Service):
 		# Return the user's ID
 		return Services.Response(dUser['id'])
 
-	def userName_read(self, data, sesh):
+	def userName_read(self, data):
 		"""User Name
 
 		Fetchs one or more names based on IDs, returns as a dictionary (one ID)
@@ -5911,7 +5911,6 @@ class Monolith(Services.Service):
 
 		Arguments:
 			data (dict): Data sent with the request
-			sesh (Sesh._Session): The session associated with the user
 
 		Returns:
 			Services.Response

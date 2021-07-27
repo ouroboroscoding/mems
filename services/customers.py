@@ -449,7 +449,7 @@ class Customers(Services.Service):
 		# Get all the user's associated with the notes
 		oResponse = Services.read('auth', 'user/names', {
 			"_id": [d['user'] for d in lNotes]
-		}, sesh)
+		})
 		if oResponse.errorExists(): return oResponse
 		dUsers = oResponse.data
 

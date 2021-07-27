@@ -24,7 +24,7 @@ import requests
 from RestOC import Conf, DictHelper, Errors, Record_MySQL, Services, StrHelper
 
 # Shared imports
-from shared import Rights
+from shared import Memo, Rights
 
 # Records imports
 from records.prescriptions import Medication, Pharmacy, PharmacyFill, \
@@ -1099,12 +1099,7 @@ class Prescriptions(Services.Service):
 			return Services.Response(error=1003)
 
 		# Get the user name
-		oResponse = Services.read('monolith', 'user/name', {
-			"_internal_": Services.internalKey(),
-			"id": sesh['memo_id']
-		}, sesh)
-		if oResponse.errorExists(): return oResponse
-		dUser = oResponse.data
+		dUser = Memo.name(sesh['memo_id'])
 
 		# Try to create a new instance of the adhoc
 		try:
@@ -1163,7 +1158,7 @@ class Prescriptions(Services.Service):
 			oResponse = Services.read('monolith', 'user/name', {
 				"_internal_": Services.internalKey(),
 				"id": list(set([d['memo_user'] for d in lFills]))
-			}, sesh)
+			})
 			if oResponse.errorExists(): return oResponse
 			dUsers = {k:'%s %s' % (d['firstName'], d['lastName']) for k,d in oResponse.data.items()}
 
