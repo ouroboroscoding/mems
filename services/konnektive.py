@@ -227,10 +227,14 @@ class Konnektive(Services.Service):
 		except ValueError as e:
 			return Services.Error(1001, e.args[0])
 
-		# Add the record to the DB and return the ID
-		return Services.Response(
-			oCampaign.create()
-		)
+		# Try to create the record
+		try:
+			sID = oCampaign.create()
+		except Record_MySQL.DuplicateException:
+			return Services.Error(1101)
+
+		# Return the ID
+		return Services.Response(sID)
 
 	def campaign_read(self, data, sesh):
 		"""Campaign Read
@@ -300,10 +304,14 @@ class Konnektive(Services.Service):
 		if lErrors:
 			return Services.Error(1001, lErrors)
 
-		# Save the record and return the result
-		return Services.Response(
-			oCampaign.save()
-		)
+		# Try to save the record
+		try:
+			bRes = oCampaign.save()
+		except Record_MySQL.DuplicateException:
+			return Services.Error(1101)
+
+		# Return the result
+		return Services.Response(bRes)
 
 	def campaignProduct_create(self, data, sesh):
 		"""Campaign Product Create
@@ -335,10 +343,14 @@ class Konnektive(Services.Service):
 		except ValueError as e:
 			return Services.Error(1001, e.args[0])
 
-		# Add the record to the DB and return the ID
-		return Services.Response(
-			oProduct.create()
-		)
+		# Try to create the record
+		try:
+			sID = oProduct.create()
+		except Record_MySQL.DuplicateException:
+			return Services.Error(1101)
+
+		# Return the ID
+		return Services.Response(sID)
 
 	def campaignProduct_delete(self, data, sesh):
 		"""Campaign Product Delete
@@ -437,10 +449,14 @@ class Konnektive(Services.Service):
 		if lErrors:
 			return Services.Error(1001, lErrors)
 
-		# Save the record and return the result
-		return Services.Response(
-			oProduct.save()
-		)
+		# Try to save the record
+		try:
+			bRes = oProduct.save()
+		except Record_MySQL.DuplicateException:
+			return Services.Error(1101)
+
+		# Return the result
+		return Services.Response(bRes)
 
 	def campaignProducts_read(self, data, sesh):
 		"""Campaign Products Read

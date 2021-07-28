@@ -1,4 +1,10 @@
 {
+	"anazao": {
+		"base": "https://myanazao.com/sandbox/apis/myAnazaoAPI/",
+		"email": "",
+		"password": ""
+	},
+
 	"contact_form": {
 		"key": "",
 		"worksheet": ""

@@ -13,7 +13,7 @@ __created__		= "2020-05-04"
 
 # Pip imports
 import requests
-from RestOC import Conf, JSON
+from RestOC import Conf, DictHelper, JSON, Services
 
 __funcToRequest = {
 	'create': [requests.post, 'POST'],
@@ -97,6 +97,42 @@ def delete(path, data):
 		dict
 	"""
 	return __request('delete', path, data)
+
+def name(_id):
+	"""Name
+
+	Returns the first and last name of a single ID, or a dict of memo IDs to
+	names of users for multiple IDs
+
+	Arguments:
+		_id (uint|uint[]): A single ID or multiple IDs
+
+	Returns:
+		dict
+	"""
+
+	# If there's no IDs
+	if not _id:
+		return {}
+
+	# Fetch their names
+	oResponse = Services.read('monolith', 'user/name', {
+		"_internal_": Services.internalKey(),
+		"id": _id
+	})
+
+	# If there's an error
+	if oResponse.errorExists():
+		raise Services.ResponseException(oResponse)
+
+	# If there's multiple IDs
+	if isinstance(_id, list):
+
+		# Convert the IDs and return
+		return DictHelper.keysToInts(oResponse.data)
+
+	# Else, return as is
+	return oResponse.data
 
 def read(path, data):
 	"""Read

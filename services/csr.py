@@ -22,7 +22,7 @@ from FormatOC import Node
 from RestOC import DictHelper, Errors, JSON, Record_MySQL, Services, Sesh
 
 # Shared imports
-from shared import Rights
+from shared import Memo, Rights
 
 # Records imports
 from records.csr import Agent, AgentOfficeHours, CustomList, CustomListItem, \
@@ -41,7 +41,7 @@ DAY_OF_WEEK = ['mon', 'tue', 'wed', 'thu', 'fri', 'sat', 'sun']
 
 # Total types
 TOTAL_TYPES = {
-	"items": ['jc_call', 'note', 'sms'],
+	"items": ['jc_call', 'note', 'order' ,'sms'],
 	"opened": ['Call', 'Follow_Up', 'Provider', 'Script_Entry', 'SMS___Voicemail'],
 	"resolved": ['Contact_Attempted', 'Follow_Up_Complete', 'Information_Provided', 'Issue_Resolved', 'Provider_Confirmed Prescription', 'QA_Order_Declined', 'Recurring_Purchase_Canceled', 'Script_Entered', 'Invalid_Transfer:_No_Purchase_Information']
 }
@@ -692,13 +692,7 @@ class CSR(Services.Service):
 			except KeyError: dOfficeHours[d['memo_id']] = {d['dow']:{"start": d['start'],"end": d['end']}}
 
 		# Fetch their names
-		oResponse = Services.read('monolith', 'user/name', {
-			"_internal_": Services.internalKey(),
-			"id": [d['memo_id'] for d in lAgents]
-		}, sesh)
-
-		# Convert the IDs
-		dMemoNames = DictHelper.keysToInts(oResponse.data)
+		dMemoNames = Memo.name([d['memo_id'] for d in lAgents])
 
 		# Go through each agent
 		for d in lAgents:
@@ -1938,34 +1932,27 @@ class CSR(Services.Service):
 			dResolved['name'] = 'Resolved'
 			lDetails.append(dResolved)
 
-		# Fetch all the user names
-		oResponse = Services.read('monolith', 'user/name', {
-			"_internal_": Services.internalKey(),
-			"id": list(lUserIDs)
-		}, sesh)
-
-		# Convert the IDs
-		dMemoNames = DictHelper.keysToInts(oResponse.data)
-
-		# Go through each detail and add the name
-		for d in lDetails:
-			try: dName = dMemoNames[d['memo_id']]
-			except KeyError: dName = {"firstName": 'NAME', "lastName": 'MISSING'}
-			d['created_by'] = '%s %s' % (dName['firstName'], dName['lastName'])
-
 		# Init the types of items
 		dItemTypes = {
 			"email": [],
 			"jc_call": [],
 			"jc_sms": [],
 			"note": [],
+			"order": [],
 			"sms": []
 		}
 
 		# Get the items
-		lItems = TicketItem.filter({"ticket": data['_id']}, raw=['type', 'identifier'])
+		lItems = TicketItem.filter({"ticket": data['_id']}, raw=['_created', 'type', 'identifier', 'memo_id'])
 		for d in lItems:
-			dItemTypes[d['type']].append(int(d['identifier']))
+
+			# If it's an order
+			if d['type'] == 'order':
+				dItemTypes[d['type']].append(d)
+
+			# Else, store just the identifier
+			else:
+				dItemTypes[d['type']].append(int(d['identifier']))
 
 		# Init the memo call data
 		dData = {}
@@ -2004,14 +1991,37 @@ class CSR(Services.Service):
 				"id": dItemTypes['jc_call']
 			}, sesh)
 
-			print(oResponse.data)
-
 			# If we have data
 			if oResponse.data:
 				for d in oResponse.data:
 					d['msgType'] = 'justcall'
 					d['_created'] = arrow.get('%s+00:00' % d['time_utc']).int_timestamp
 					lDetails.append(d)
+
+		# If we have any orders
+		if dItemTypes['order']:
+
+			# Go through each order
+			for d in dItemTypes['order']:
+
+				# Add the memo ID
+				lUserIDs.add(d['memo_id'])
+
+				# Add the record to the details
+				d['msgType'] = 'order'
+				lDetails.append(d)
+
+		# Fetch all the user names
+		dMemoNames = Memo.name(list(lUserIDs))
+
+		# Go through each detail and add the name
+		for d in lDetails:
+			if 'memo_id' in d:
+				try:
+					dName = dMemoNames[d['memo_id']]
+					d['created_by'] = '%s %s' % (dName['firstName'], dName['lastName'])
+				except KeyError:
+					d['created_by'] = 'NAME MISSING'
 
 		# Sort the details by created timestamp
 		lDetails.sort(key=itemgetter('_created'))
@@ -2275,13 +2285,7 @@ class CSR(Services.Service):
 				lUsersIDs.add(d['resolved_user'])
 
 		# Fetch their names
-		oResponse = Services.read('monolith', 'user/name', {
-			"_internal_": Services.internalKey(),
-			"id": list(lUsersIDs)
-		}, sesh)
-
-		# Convert the IDs
-		dMemoNames = DictHelper.keysToInts(oResponse.data)
+		dMemoNames = Memo.name(list(lUsersIDs))
 
 		# Add the names to the agents
 		for d in lTickets:
@@ -2352,13 +2356,7 @@ class CSR(Services.Service):
 		if lUsersIDs:
 
 			# Fetch their names
-			oResponse = Services.read('monolith', 'user/name', {
-				"_internal_": Services.internalKey(),
-				"id": list(lUsersIDs)
-			}, sesh)
-
-			# Convert the IDs
-			dMemoNames = DictHelper.keysToInts(oResponse.data)
+			dMemoNames = Memo.name(list(lUsersIDs))
 
 		# Else,
 		else:
@@ -2593,13 +2591,7 @@ class CSR(Services.Service):
 			dAgents[d['memo_id']][d['type'].replace(' ', '_').replace('/', '_')] = d['count']
 
 		# Fetch their names
-		oResponse = Services.read('monolith', 'user/name', {
-			"_internal_": Services.internalKey(),
-			"id": list(dAgents.keys())
-		}, sesh)
-
-		# Convert the IDs
-		dMemoNames = DictHelper.keysToInts(oResponse.data)
+		dMemoNames = Memo.name(list(dAgents.keys()))
 
 		# Go through each agent
 		for agent in dAgents:
