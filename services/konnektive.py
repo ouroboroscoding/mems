@@ -22,6 +22,9 @@ import requests
 from RestOC import Conf, DictHelper, JSON, Services, StrHelper
 import xmltodict
 
+# Records imports
+from records.konnektive import Campaign, CampaignProduct
+
 # Shared imports
 from shared import Environment, Rights, USPS
 
@@ -33,6 +36,9 @@ class Konnektive(Services.Service):
 
 	Service for Konnektive CRM access
 	"""
+
+	_install = [Campaign, CampaignProduct]
+	"""Record types called in install"""
 
 	def _generateURL(self, path, params={}):
 		"""Generate URL
@@ -188,7 +194,302 @@ class Konnektive(Services.Service):
 		Returns:
 			bool
 		"""
+
+		# Go through each Record type
+		for o in cls._install:
+
+			# Install the table
+			if not o.tableCreate():
+				print("Failed to create `%s` table" % o.tableName())
+
+		# Return OK
 		return True
+
+	def campaign_create(self, data, sesh):
+		"""Campaign Create
+
+		Creates a new campaign based on an existing one in Konnektive
+
+		Arguments:
+			data (dict): Data sent with the request
+			sesh (Sesh._Session): The session associated with the request
+
+		Returns:
+			Services.Response
+		"""
+
+		# Make sure the user has the proper permission to do this
+		Rights.check(sesh, 'campaigns', Rights.CREATE)
+
+		# Create a new instance
+		try:
+			oCampaign = Campaign(data)
+		except ValueError as e:
+			return Services.Error(1001, e.args[0])
+
+		# Add the record to the DB and return the ID
+		return Services.Response(
+			oCampaign.create()
+		)
+
+	def campaign_read(self, data, sesh):
+		"""Campaign Read
+
+		Fetches and returns an existing campaign
+
+		Arguments:
+			data (dict): Data sent with the request
+			sesh (Sesh._Session): The session associated with the request
+
+		Returns:
+			Services.Response
+		"""
+
+		# Make sure the user has the proper permission to do this
+		Rights.check(sesh, 'campaigns', Rights.READ)
+
+		# If the ID is missing
+		if '_id' not in data:
+			return Services.Error(1001, [('_id', 'missing')])
+
+		# Fetch the record
+		dCampaign = Campaign.get(data['id'], raw=True)
+		if not dCampaign:
+			return Services.Error(1104)
+
+		# Return the record
+		return Services.Response(dCampaign)
+
+	def campaign_update(self, data, sesh):
+		"""Campaign Update
+
+		Updates an existing campaign
+
+		Arguments:
+			data (dict): Data sent with the request
+			sesh (Sesh._Session): The session associated with the request
+
+		Returns:
+			Services.Response
+		"""
+
+		# Make sure the user has the proper permission to do this
+		Rights.check(sesh, 'campaigns', Rights.UPDATE)
+
+		# If the ID is missing
+		if '_id' not in data:
+			return Services.Error(1001, [('_id', 'missing')])
+
+		# Fetch the record
+		oCampaign = Campaign.get(data['id'])
+		if not oCampaign:
+			return Services.Error(1104)
+
+		# Remove fields that can't change
+		for k in ['_id', '_created', '_updated']:
+			if k in data:
+				del data[k]
+
+		# Go through the remaining fields and attempt to update
+		lErrors = []
+		for k in data:
+			try: oCampaign[k] = data[k]
+			except ValueError as e: lErrors.extend(e.args[0])
+
+		# If there was any errors returns them all
+		if lErrors:
+			return Services.Error(1001, lErrors)
+
+		# Save the record and return the result
+		return Services.Response(
+			oCampaign.save()
+		)
+
+	def campaignProduct_create(self, data, sesh):
+		"""Campaign Product Create
+
+		Creates a new campaign product based on an existing one in Konnektive
+
+		Arguments:
+			data (dict): Data sent with the request
+			sesh (Sesh._Session): The session associated with the request
+
+		Returns:
+			Services.Response
+		"""
+
+		# Make sure the user has the proper permission to do this
+		Rights.check(sesh, 'products', Rights.CREATE)
+
+		# Make sure we have a campaign ID
+		if 'campaign_id' not in data:
+			return Services.Error(1001, [('campaign_id', 'missing')])
+
+		# Make sure the campaign ID is valid
+		if not Campaign.exists(data['campaign_id']):
+			return Services.Error(1104, 'campaign_id')
+
+		# Create a new instance
+		try:
+			oProduct = CampaignProduct(data)
+		except ValueError as e:
+			return Services.Error(1001, e.args[0])
+
+		# Add the record to the DB and return the ID
+		return Services.Response(
+			oProduct.create()
+		)
+
+	def campaignProduct_delete(self, data, sesh):
+		"""Campaign Product Delete
+
+		Deletes an existing campaign product record
+
+		Arguments:
+			data (dict): Data sent with the request
+			sesh (Sesh._Session): The session associated with the request
+
+		Returns:
+			Services.Response
+		"""
+
+		# Make sure the user has the proper permission to do this
+		Rights.check(sesh, 'products', Rights.DELETE)
+
+		# If the ID is missing
+		if '_id' not in data:
+			return Services.Error(1001, [('_id', 'missing')])
+
+		# If the product doesn't exist
+		if not CampaignProduct.exists(data['_id']):
+			return Services.Error(1104)
+
+		# Delete and return the result
+		return Services.Response(
+			CampaignProduct.deleteGet(data['_id'])
+		)
+
+	def campaignProduct_read(self, data, sesh):
+		"""Campaign Create Read
+
+		Fetches and returns an existing campaign product
+
+		Arguments:
+			data (dict): Data sent with the request
+			sesh (Sesh._Session): The session associated with the request
+
+		Returns:
+			Services.Response
+		"""
+
+		# Make sure the user has the proper permission to do this
+		Rights.check(sesh, 'products', Rights.CREATE)
+
+		# If the ID is missing
+		if '_id' not in data:
+			return Services.Error(1001, [('_id', 'missing')])
+
+		# Fetch the record
+		dProduct = CampaignProduct.get(data['id'], raw=True)
+		if not dProduct:
+			return Services.Error(1104)
+
+		# Return the record
+		return Services.Response(dProduct)
+
+	def campaignProduct_update(self, data, sesh):
+		"""Campaign Product Update
+
+		Updates an existing campaign product
+
+		Arguments:
+			data (dict): Data sent with the request
+			sesh (Sesh._Session): The session associated with the request
+
+		Returns:
+			Services.Response
+		"""
+
+		# Make sure the user has the proper permission to do this
+		Rights.check(sesh, 'products', Rights.UPDATE)
+
+		# If the ID is missing
+		if '_id' not in data:
+			return Services.Error(1001, [('_id', 'missing')])
+
+		# Fetch the record
+		oProduct = CampaignProduct.get(data['_id'])
+		if not oProduct:
+			return Services.Error(1104)
+
+		# Remove fields that can't change
+		for k in ['_id', 'campaign_id', '_created', '_updated']:
+			if k in data:
+				del data[k]
+
+		# Go through the remaining fields and attempt to update
+		lErrors = []
+		for k in data:
+			try: oProduct[k] = data[k]
+			except ValueError as e: lErrors.extend(e.args[0])
+
+		# If there was any errors returns them all
+		if lErrors:
+			return Services.Error(1001, lErrors)
+
+		# Save the record and return the result
+		return Services.Response(
+			oProduct.save()
+		)
+
+	def campaignProducts_read(self, data, sesh):
+		"""Campaign Products Read
+
+		Fetches and returns all the campaign products in a specific campaign
+
+		Arguments:
+			data (dict): Data sent with the request
+			sesh (Sesh._Session): The session associated with the request
+
+		Returns:
+			Services.Response
+		"""
+
+		# Make sure the user has the proper permission to do this
+		Rights.check(sesh, 'products', Rights.READ)
+
+		# If the Campaign ID is missing
+		if 'campaign_id' not in data:
+			return Services.Error(1001, [('campaign_id', 'missing')])
+
+		# Find the record
+		lProducts = CampaignProduct.filter({
+			"campaign_id": data['campaign_id']
+		}, raw=True, orderby='name')
+
+		# Return the records
+		return Services.Response(lProducts)
+
+	def campaigns_read(self, data, sesh):
+		"""Campaigns Read
+
+		Fetches and returns all campaigns
+
+		Arguments:
+			data (dict): Data sent with the request
+			sesh (Sesh._Session): The session associated with the request
+
+		Returns:
+			Services.Response
+		"""
+
+		# Make sure the user has the proper permission to do this
+		Rights.check(sesh, 'campaigns', Rights.READ)
+
+		# Fetch and return the records
+		return Services.Response(
+			Campaign.get(raw=True, orderby='name')
+		)
 
 	def customer_read(self, data, sesh):
 		"""Customer Read
@@ -399,7 +700,7 @@ class Konnektive(Services.Service):
 		Arguments:
 			data (dict): Data sent with the request
 			sesh (Sesh._Session): The session associated with the request
-			environ (dict): Info related to the request
+			environ (dict): Environment info related to the request
 
 		Returns:
 			Services.Response
@@ -429,7 +730,7 @@ class Konnektive(Services.Service):
 				"qty": 1
 			}],
 			"qa": True
-		}, sesh, False)
+		}, sesh, environ, False)
 
 		# If there's an error
 		if oResponse.errorExists():
@@ -608,7 +909,10 @@ class Konnektive(Services.Service):
 				"postalCode": dO['postalCode'],
 				"state": dO['state']
 			},
-			"campaign": dO['campaignName'],
+			"campaign": {
+				"id": dO['campaignId'],
+				"name": dO['campaignName']
+			},
 			"couponCode": dO['couponCode'],
 			"customerId": dO['customerId'],
 			"date": dO['dateUpdated'],
@@ -694,7 +998,7 @@ class Konnektive(Services.Service):
 			"currency": d['currencySymbol']
 		} for d in lTransactions])
 
-	def order_create(self, data, sesh, verify=True):
+	def order_create(self, data, sesh, environ, verify=True):
 		"""Order Create
 
 		Creates a new order
@@ -702,6 +1006,7 @@ class Konnektive(Services.Service):
 		Arguments:
 			data (dict): Data sent with the request
 			sesh (Sesh._Session): The session associated with the request
+			environ (dict): Environment info related to the request
 			verify (bool): Allow bypassing verification for internal calls
 
 		Returns:
@@ -713,8 +1018,12 @@ class Konnektive(Services.Service):
 			Rights.check(sesh, 'orders', Rights.CREATE)
 
 		# Verify fields
-		try: DictHelper.eval(data, ['customerId', 'campaignId', 'products', 'payment', 'ip'])
+		try: DictHelper.eval(data, ['customerId', 'campaignId', 'products', 'payment'])
 		except ValueError as e: return Services.Error(1001, [(f, 'missing') for f in e.args])
+
+		# If the IP is not sent
+		if 'ip' not in data:
+			data['ip'] = Environment.getClientIP(environ)
 
 		# Init the data sent to Konnektive
 		dData = {}
@@ -917,7 +1226,7 @@ class Konnektive(Services.Service):
 			# Return the message from konnektive
 			return Services.Error(1100, dRes['message'])
 
-	def order_read(self, data, sesh):
+	def order_read(self, data, sesh, environ):
 		"""Order Read
 
 		Fetches an order by ID
@@ -925,6 +1234,7 @@ class Konnektive(Services.Service):
 		Arguments:
 			data (dict): Data sent with the request
 			sesh (Sesh._Session): The session associated with the request
+			environ (dict): Environment info related to the request
 
 		Returns:
 			Services.Response
@@ -993,7 +1303,10 @@ class Konnektive(Services.Service):
 				"postalCode": dOrder['postalCode'],
 				"state": dOrder['state']
 			},
-			"campaign": dOrder['campaignName'],
+			"campaign": {
+				"id": dOrder['campaignId'],
+				"name": dOrder['campaignName']
+			},
 			"couponCode": dOrder['couponCode'],
 			"customerId": dOrder['customerId'],
 			"date": dOrder['dateUpdated'],

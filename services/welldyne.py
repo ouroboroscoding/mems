@@ -21,7 +21,7 @@ import pysftp
 from RestOC import Conf, DictHelper, Record_MySQL, Services
 
 # Shared imports
-from shared import Environment, Excel, Rights
+from shared import Environment, Excel, Memo, Rights
 
 # Records imports
 from records.welldyne import \
@@ -145,12 +145,7 @@ class WellDyne(Services.Service):
 			return Services.Response(error=1003)
 
 		# Get the user name
-		oResponse = Services.read('monolith', 'user/name', {
-			"_internal_": Services.internalKey(),
-			"id": sesh['memo_id']
-		}, sesh)
-		if oResponse.errorExists(): return oResponse
-		dUser = oResponse.data
+		dUser = Memo.name(sesh['memo_id'])
 
 		# Try to create a new instance of the adhoc
 		try:
@@ -328,7 +323,7 @@ class WellDyne(Services.Service):
 			oResponse = Services.read('monolith', 'user/name', {
 				"_internal_": Services.internalKey(),
 				"id": list(set([d['memo_user'] for d in lRecords]))
-			}, sesh)
+			})
 			if oResponse.errorExists(): return oResponse
 			dUsers = {k:'%s %s' % (d['firstName'], d['lastName']) for k,d in oResponse.data.items()}
 
@@ -674,12 +669,7 @@ class WellDyne(Services.Service):
 			return Services.Response(error=1003)
 
 		# Get the user name
-		oResponse = Services.read('monolith', 'user/name', {
-			"_internal_": Services.internalKey(),
-			"id": sesh['memo_id']
-		}, sesh)
-		if oResponse.errorExists(): return oResponse
-		dUser = oResponse.data
+		dUser = Memo.name(sesh['memo_id'])
 
 		# Try to create a new adhoc instance
 		try:

@@ -23,7 +23,7 @@ from RestOC import Conf, DictHelper, Errors, Record_MySQL, Services, Sesh, \
 					StrHelper
 
 # Shared imports
-from shared import Rights, SMSWorkflow
+from shared import Memo, Rights, SMSWorkflow
 
 # Records imports
 from records.providers import CalendlySingleUse, ProductToRx, Provider, \
@@ -941,13 +941,10 @@ class Providers(Services.Service):
 		lProviders = Provider.get(raw=['memo_id'])
 
 		# Fetch their names
-		oResponse = Services.read('monolith', 'user/name', {
-			"_internal_": Services.internalKey(),
-			"id": [d['memo_id'] for d in lProviders]
-		}, sesh)
+		dNames = Memo.name([d['memo_id'] for d in lProviders])
 
-		# Regardless of what we got, retun the effect
-		return oResponse
+		# Return the names
+		return Services.Response(dNames)
 
 	def providers_read(self, data, sesh):
 		"""Providers

@@ -72,7 +72,9 @@ if __name__ == "__main__":
 		"/ticket/stats/graph": {"methods": REST.READ, "session": True},
 		"/ticket/stats/totals": {"methods": REST.READ, "session": True},
 		"/tickets": {"methods": REST.READ, "session": True},
-		"/tickets/customer": {"methods": REST.READ, "session": True}
+		"/tickets/customer": {"methods": REST.READ, "session": True},
+
+		"/user": {"methods": REST.READ, "session": True}
 
 		},
 		'csr',

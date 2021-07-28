@@ -25,17 +25,22 @@ if __name__ == "__main__":
 
 	# Init the REST info
 	oRestConf = init(
+		dbs=['primary'],
 		services={'konnektive':Konnektive()}
 	)
 
 	# Create the HTTP server and map requests to service
 	REST.Server({
+		"/campaign": {"methods": REST.CREATE | REST.READ | REST.UPDATE, "session": True},
+		"/campaigns": {"methods": REST.READ, "session": True},
+		"/campaign/product": {"methods": REST.ALL, "session": True},
+		"/campaign/products": {"methods": REST.READ, "session": True},
 		"/customer": {"methods": REST.READ | REST.UPDATE, "session": True},
 		"/customer/payment": {"methods": REST.UPDATE, "session": True, "environ": True},
 		"/customer/purchases": {"methods": REST.READ, "session": True},
 		"/customer/orders": {"methods": REST.READ, "session": True},
 		"/customer/transactions": {"methods": REST.READ, "session": True},
-		"/order": {"methods": REST.CREATE | REST.READ, "session": True},
+		"/order": {"methods": REST.CREATE | REST.READ, "session": True, "environ": True},
 		"/order/cancel": {"methods": REST.UPDATE, "session": True},
 		"/order/qa": {"methods": REST.UPDATE, "session": True},
 		"/order/transactions": {"methods": REST.READ, "session": True},

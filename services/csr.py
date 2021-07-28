@@ -22,7 +22,7 @@ from FormatOC import Node
 from RestOC import DictHelper, Errors, JSON, Record_MySQL, Services, Sesh
 
 # Shared imports
-from shared import Rights
+from shared import Memo, Rights
 
 # Records imports
 from records.csr import Agent, AgentOfficeHours, CustomList, CustomListItem, \
@@ -41,7 +41,7 @@ DAY_OF_WEEK = ['mon', 'tue', 'wed', 'thu', 'fri', 'sat', 'sun']
 
 # Total types
 TOTAL_TYPES = {
-	"items": ['jc_call', 'note', 'sms'],
+	"items": ['jc_call', 'note', 'order' ,'sms'],
 	"opened": ['Call', 'Follow_Up', 'Provider', 'Script_Entry', 'SMS___Voicemail'],
 	"resolved": ['Contact_Attempted', 'Follow_Up_Complete', 'Information_Provided', 'Issue_Resolved', 'Provider_Confirmed Prescription', 'QA_Order_Declined', 'Recurring_Purchase_Canceled', 'Script_Entered', 'Invalid_Transfer:_No_Purchase_Information']
 }
@@ -126,6 +126,7 @@ class CSR(Services.Service):
 			"permissions": {
 				"calendly": 1,				# Read
 				"calendly_admin": 1,		# Read
+				"campaigns": 1,				# Read
 				"csr_claims": 14,			# Update, Create, Delete
 				"csr_messaging": 5,			# Read, Create
 				"csr_templates": 1,			# Read
@@ -137,6 +138,7 @@ class CSR(Services.Service):
 				"orders": 7,				# Read, Update, Create
 				"patient_account": 1,		# Read
 				"prescriptions": 3,			# Read, Update
+				"products": 1,				# Read
 				"pharmacy_fill": 1,			# Read
 				"welldyne_adhoc": 4			# Create
 			}
@@ -690,13 +692,7 @@ class CSR(Services.Service):
 			except KeyError: dOfficeHours[d['memo_id']] = {d['dow']:{"start": d['start'],"end": d['end']}}
 
 		# Fetch their names
-		oResponse = Services.read('monolith', 'user/name', {
-			"_internal_": Services.internalKey(),
-			"id": [d['memo_id'] for d in lAgents]
-		}, sesh)
-
-		# Convert the IDs
-		dMemoNames = DictHelper.keysToInts(oResponse.data)
+		dMemoNames = Memo.name([d['memo_id'] for d in lAgents])
 
 		# Go through each agent
 		for d in lAgents:
@@ -1536,6 +1532,7 @@ class CSR(Services.Service):
 		# Store the user ID and claim vars in the session
 		oSesh['user_id'] = dAgent['_id']
 		oSesh['claims_max'] = dAgent['claims_max']
+		oSesh['type'] = dAgent['type'].split(',')
 		oSesh.save()
 
 		# Return the session ID and primary user data
@@ -1935,34 +1932,27 @@ class CSR(Services.Service):
 			dResolved['name'] = 'Resolved'
 			lDetails.append(dResolved)
 
-		# Fetch all the user names
-		oResponse = Services.read('monolith', 'user/name', {
-			"_internal_": Services.internalKey(),
-			"id": list(lUserIDs)
-		}, sesh)
-
-		# Convert the IDs
-		dMemoNames = DictHelper.keysToInts(oResponse.data)
-
-		# Go through each detail and add the name
-		for d in lDetails:
-			try: dName = dMemoNames[d['memo_id']]
-			except KeyError: dName = {"firstName": 'NAME', "lastName": 'MISSING'}
-			d['created_by'] = '%s %s' % (dName['firstName'], dName['lastName'])
-
 		# Init the types of items
 		dItemTypes = {
 			"email": [],
 			"jc_call": [],
 			"jc_sms": [],
 			"note": [],
+			"order": [],
 			"sms": []
 		}
 
 		# Get the items
-		lItems = TicketItem.filter({"ticket": data['_id']}, raw=['type', 'identifier'])
+		lItems = TicketItem.filter({"ticket": data['_id']}, raw=['_created', 'type', 'identifier', 'memo_id'])
 		for d in lItems:
-			dItemTypes[d['type']].append(int(d['identifier']))
+
+			# If it's an order
+			if d['type'] == 'order':
+				dItemTypes[d['type']].append(d)
+
+			# Else, store just the identifier
+			else:
+				dItemTypes[d['type']].append(int(d['identifier']))
 
 		# Init the memo call data
 		dData = {}
@@ -2001,14 +1991,37 @@ class CSR(Services.Service):
 				"id": dItemTypes['jc_call']
 			}, sesh)
 
-			print(oResponse.data)
-
 			# If we have data
 			if oResponse.data:
 				for d in oResponse.data:
 					d['msgType'] = 'justcall'
 					d['_created'] = arrow.get('%s+00:00' % d['time_utc']).int_timestamp
 					lDetails.append(d)
+
+		# If we have any orders
+		if dItemTypes['order']:
+
+			# Go through each order
+			for d in dItemTypes['order']:
+
+				# Add the memo ID
+				lUserIDs.add(d['memo_id'])
+
+				# Add the record to the details
+				d['msgType'] = 'order'
+				lDetails.append(d)
+
+		# Fetch all the user names
+		dMemoNames = Memo.name(list(lUserIDs))
+
+		# Go through each detail and add the name
+		for d in lDetails:
+			if 'memo_id' in d:
+				try:
+					dName = dMemoNames[d['memo_id']]
+					d['created_by'] = '%s %s' % (dName['firstName'], dName['lastName'])
+				except KeyError:
+					d['created_by'] = 'NAME MISSING'
 
 		# Sort the details by created timestamp
 		lDetails.sort(key=itemgetter('_created'))
@@ -2272,13 +2285,7 @@ class CSR(Services.Service):
 				lUsersIDs.add(d['resolved_user'])
 
 		# Fetch their names
-		oResponse = Services.read('monolith', 'user/name', {
-			"_internal_": Services.internalKey(),
-			"id": list(lUsersIDs)
-		}, sesh)
-
-		# Convert the IDs
-		dMemoNames = DictHelper.keysToInts(oResponse.data)
+		dMemoNames = Memo.name(list(lUsersIDs))
 
 		# Add the names to the agents
 		for d in lTickets:
@@ -2349,13 +2356,7 @@ class CSR(Services.Service):
 		if lUsersIDs:
 
 			# Fetch their names
-			oResponse = Services.read('monolith', 'user/name', {
-				"_internal_": Services.internalKey(),
-				"id": list(lUsersIDs)
-			}, sesh)
-
-			# Convert the IDs
-			dMemoNames = DictHelper.keysToInts(oResponse.data)
+			dMemoNames = Memo.name(list(lUsersIDs))
 
 		# Else,
 		else:
@@ -2590,13 +2591,7 @@ class CSR(Services.Service):
 			dAgents[d['memo_id']][d['type'].replace(' ', '_').replace('/', '_')] = d['count']
 
 		# Fetch their names
-		oResponse = Services.read('monolith', 'user/name', {
-			"_internal_": Services.internalKey(),
-			"id": list(dAgents.keys())
-		}, sesh)
-
-		# Convert the IDs
-		dMemoNames = DictHelper.keysToInts(oResponse.data)
+		dMemoNames = Memo.name(list(dAgents.keys()))
 
 		# Go through each agent
 		for agent in dAgents:
@@ -2613,3 +2608,32 @@ class CSR(Services.Service):
 
 		# Return the counts
 		return Services.Response(sorted(list(dAgents.values()), key=itemgetter('name')))
+
+	def user_read(self, data, sesh):
+		"""User Read
+
+		Returns the data associated with the currently logged in user
+
+		Arguments:
+			data (mixed): Data sent with the request
+			sesh (Sesh._Session): The session associated with the request
+
+		Returns:
+			Services.Response
+		"""
+
+		# First, get the monolith user data
+		oResponse = Services.read('monolith', 'user', {}, sesh)
+		if oResponse.errorExists():
+			return oResponse
+
+		# Get the agent data and add it to the monolith data
+		dAgent = Agent.get(sesh['user_id'], raw=True)
+		for k in dAgent:
+			oResponse.data[k] = dAgent[k]
+
+		# Split the type
+		oResponse.data['type'] = oResponse.data['type'].split(',')
+
+		# Return all the data
+		return Services.Response(oResponse.data)

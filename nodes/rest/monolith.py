@@ -135,7 +135,7 @@ if __name__ == "__main__":
 		"/users": {"methods": REST.READ, "session": True},
 		"/user/active": {"methods": REST.UPDATE, "session": True},
 		"/user/id": {"methods": REST.READ},
-		"/user/name": {"methods": REST.READ, "session": True},
+		"/user/name": {"methods": REST.READ},
 		"/user/passwd": {"methods": REST.UPDATE, "session": True},
 
 		"/workflow": {"methods": REST.POST}

@@ -659,7 +659,7 @@ class TicketItem(Record_MySQL.Record):
 				"WHERE `_created` BETWEEN FROM_UNIXTIME(%(start)d) AND FROM_UNIXTIME(%(end)d)\n" \
 				"AND (\n" \
 				"	(`type` IN ('sms', 'note') AND `direction` = 'outgoing') OR\n" \
-				"	`type` = 'jc_call'\n" \
+				"	`type` IN ('jc_call', 'order')\n" \
 				")\n" \
 				"%(memo_id)s" \
 				"GROUP BY `memo_id`, `type`" % {
