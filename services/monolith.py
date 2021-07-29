@@ -2103,7 +2103,7 @@ class Monolith(Services.Service):
 		# Return the result of the update/create
 		return Services.Response(mRes)
 
-	def customerName_read(self, data, sesh):
+	def customerName_read(self, data):
 		"""Customer Name
 
 		Fetchs one or more names based on IDs, returns as a dictionary (one ID)
@@ -2111,7 +2111,6 @@ class Monolith(Services.Service):
 
 		Arguments:
 			data (dict): Data sent with the request
-			sesh (Sesh._Session): The session associated with the user
 
 		Returns:
 			Services.Response
@@ -3025,6 +3024,35 @@ class Monolith(Services.Service):
 
 		# Add reviews
 		self._addReviews(lCustomers, 'customerId')
+
+		# Return whatever is found
+		return Services.Response({d['customerId']:d for d in lCustomers})
+
+	def internalCustomersWithOrderClaimed_read(self, data, sesh):
+		"""Internal: Customers with Order Claimed
+
+		Returns data on the list of customer IDs passed including whether
+		they're claimed by a provider or not
+
+		Arguments:
+			data (dict): Data sent with the request
+			sesh (Sesh._Session): The session associated with the request
+
+		Returns:
+			Services.Response
+		"""
+
+		# Verify fields
+		try: DictHelper.eval(data, ['_internal_', 'customerIds'])
+		except ValueError as e: return Services.Response(error=(1001, [(f, 'missing') for f in e.args]))
+
+		# Verify the key, remove it if it's ok
+		if not Services.internalKey(data['_internal_']):
+			return Services.Response(error=Errors.SERVICE_INTERNAL_KEY)
+		del data['_internal_']
+
+		# Get the customer data
+		lCustomers = KtCustomer.withOrderClaimed(data['customerIds'])
 
 		# Return whatever is found
 		return Services.Response({d['customerId']:d for d in lCustomers})
