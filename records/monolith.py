@@ -1812,6 +1812,50 @@ class KtCustomer(Record_MySQLSearch.Record):
 			Record_MySQL.ESelect.ALL
 		)
 
+	@classmethod
+	def withOrderClaimed(cls, customer_ids, custom={}):
+		"""With Order Claimed
+
+		Returns the id and name, as well as order claimed status for all the
+		customers requested
+
+		Arguments:
+			customer_ids (str[]): The list of ID to fetch
+			custom (dict): Custom Host and DB info
+				'host' the name of the host to get/set data on
+				'append' optional postfix for dynamic DBs
+
+		Returns:
+			list
+		"""
+
+		# Fetch the record structure
+		dStruct = cls.struct(custom)
+
+		# Generate the SQL
+		sSQL = "SELECT\n" \
+				"	`ktc`.`customerId`,\n" \
+				"	CONCAT_WS(' ', `ktc`.`firstName`, `ktc`.`lastName`) as `customerName`,\n" \
+				"	`user`.`id` as `userId`,\n" \
+				"	CONCAT_WS(' ', `user`.`firstName`, `user`.`lastName`) AS `claimedBy`,\n" \
+				"	`ktoc`.`createdAt` AS `claimedAt`\n" \
+				"FROM `%(db)s`.`%(table)s` as `ktc`\n" \
+				"LEFT JOIN `%(db)s`.`kt_order_claim` as `ktoc` ON `ktoc`.`customerId` = CONVERT(`ktc`.`customerId`, UNSIGNED)\n" \
+				"LEFT JOIN `%(db)s`.`user`  ON `user`.`id` = `ktoc`.`user`\n" \
+				"WHERE `ktc`.`customerId` IN ('%(customerIds)s')\n" % {
+			"db": dStruct['db'],
+			"table": dStruct['table'],
+			"customerIds": "','".join(customer_ids)
+		}
+
+		# Execute and return the select
+		return Record_MySQL.Commands.select(
+			dStruct['host'],
+			sSQL,
+			Record_MySQL.ESelect.ALL
+		)
+
+
 # KtOrder class
 class KtOrder(Record_MySQL.Record):
 	"""KtOrder

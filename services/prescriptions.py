@@ -1090,7 +1090,7 @@ class Prescriptions(Services.Service):
 			oResponse = Services.read('monolith', 'customer/name', {
 				"_internal_": Services.internalKey(),
 				"customerId": data['crm_id']
-			}, sesh)
+			})
 			if oResponse.errorExists(): return oResponse
 			dCustomer = oResponse.data
 
@@ -1247,7 +1247,7 @@ class Prescriptions(Services.Service):
 			oResponse = Services.read('monolith', 'customer/name', {
 				"_internal_": Services.internalKey(),
 				"customerId": data['crm_id']
-			}, sesh)
+			})
 			if oResponse.errorExists(): return oResponse
 			dCustomer = oResponse.data
 
@@ -1386,7 +1386,7 @@ class Prescriptions(Services.Service):
 			oResponse = Services.read('monolith', 'customer/name', {
 				"_internal_": Services.internalKey(),
 				"customerId": [d['crm_id'] for d in lRecords]
-			}, sesh)
+			})
 			if oResponse.errorExists(): return oResponse
 			dCustomers = {k:'%s %s' % (d['firstName'], d['lastName']) for k,d in oResponse.data.items()}
 
