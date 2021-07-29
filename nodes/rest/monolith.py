@@ -58,7 +58,7 @@ if __name__ == "__main__":
 		"/customer/mip": {"methods": REST.READ, "session": True},
 		"/customer/mips": {"methods": REST.READ, "session": True},
 		"/customer/mip/answer": {"methods": REST.UPDATE, "session": True},
-		"/customer/name": {"methods": REST.READ, "session": True},
+		"/customer/name": {"methods": REST.READ},
 		"/customer/note": {"methods": REST.CREATE, "session": True},
 		"/customer/notes": {"methods": REST.READ, "session": True},
 		"/customer/search": {"methods": REST.READ, "session": True},
@@ -76,6 +76,7 @@ if __name__ == "__main__":
 		"/hrt/patients": {"methods": REST.READ, "session": True},
 
 		"/internal/customersWithClaimed": {"methods": REST.READ, "session": True},
+		"/internal/customersWithOrderClaimed": {"methods": REST.READ, "session": True},
 		"/internal/ticketInfo": {"methods": REST.READ},
 		"/internal/incoming_sms": {"methods": REST.READ},
 

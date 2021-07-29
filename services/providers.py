@@ -893,12 +893,15 @@ class Providers(Services.Service):
 			Services.Response
 		"""
 
-		# Make sure the user has the proper permission to do this
-		Rights.check(sesh, 'prov_stats', Rights.READ)
-
 		# Verify minimum fields
 		try: DictHelper.eval(data, ['start', 'end', 'memo_id'])
 		except ValueError as e: return Services.Error(1001, [(f, 'missing') for f in e.args])
+
+		# If it's not the user signed in
+		if sesh['memo_id'] != data['memo_id']:
+
+			# Make sure the user has the proper permission to do this
+			Rights.check(sesh, 'prov_stats', Rights.READ)
 
 		# Fetch all records in the given time period
 		lTracking = Tracking.range(data['start'], data['end'], data['memo_id'])
@@ -919,6 +922,61 @@ class Providers(Services.Service):
 			# Else
 			else:
 				d['time'] = ''
+
+		# Return the records
+		return Services.Response(lTracking)
+
+	def providerTrackingViewed_read(self, data, sesh):
+		"""Provider Tracking Viewed
+
+		Returns resolved viewed tracking records related to a specfic provider
+		in the given timeframe
+
+		Arguments:
+			data (mixed): Data sent with the request
+			sesh (Sesh._Session): The session associated with the request
+
+		Returns:
+			Services.Response
+		"""
+
+		# Verify minimum fields
+		try: DictHelper.eval(data, ['start', 'end', 'memo_id'])
+		except ValueError as e: return Services.Error(1001, [(f, 'missing') for f in e.args])
+
+		# If it's not the user signed in
+		if sesh['memo_id'] != data['memo_id']:
+
+			# Make sure the user has the proper permission to do this
+			Rights.check(sesh, 'prov_stats', Rights.READ)
+
+		# Fetch all records in the given time period
+		lTracking = Tracking.rangeViews(
+			data['start'], data['end'], data['memo_id']
+		)
+
+		# Get the claimed status and the customer name
+		oResponse = Services.read('monolith', 'internal/customersWithOrderClaimed', {
+			"_internal_": Services.internalKey(),
+			"customerIds": list(set([d['crm_id'] for d in lTracking]))
+		}, sesh)
+		if oResponse.errorExists(): return oResponse
+		dCustomers = oResponse.data
+
+		# Go through each record found
+		for d in lTracking:
+
+			# Calculate the hours, minutes, and seconds
+			iHours, iRemainder = divmod(d['resolution_ts'] - d['action_ts'], 3600)
+			iMinutes, iSeconds = divmod(iRemainder, 60)
+
+			# Add the time to the record
+			d['time'] = '{:0}:{:02}:{:02}'.format(iHours, iMinutes, iSeconds)
+
+			# Add the customer name and claimed status
+			try: dCustomer = dCustomers[d['crm_id']]
+			except KeyError: dCustomer = {'customerName': 'UNKNOWN CUSTOMER'}
+			d['claimed'] = dCustomer
 
 		# Return the records
 		return Services.Response(lTracking)

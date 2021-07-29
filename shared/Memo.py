@@ -84,6 +84,43 @@ def create(path, data):
 	"""
 	return __request('create', path, data)
 
+def customerName(customerId, to_int=False):
+	"""Customer Name
+
+	Returns the first and last name of a single ID, or a dict of KNK IDs to
+	names of customers for multiple IDs
+
+	Arguments:
+		customerId (uint|uint[]): A single ID or multiple IDs
+		to_int (bool): Optional, if set, converts IDs to ints
+
+	Returns:
+		dict
+	"""
+
+	# If there's no IDs
+	if not customerId:
+		return {}
+
+	# Fetch their names
+	oResponse = Services.read('monolith', 'customer/name', {
+		"_internal_": Services.internalKey(),
+		"customerId": customerId
+	})
+
+	# If there's an error
+	if oResponse.errorExists():
+		raise Services.ResponseException(oResponse)
+
+	# If there's multiple IDs
+	if isinstance(customerId, list) and to_int:
+
+		# Convert the IDs and return
+		return DictHelper.keysToInts(oResponse.data)
+
+	# Else, return as is
+	return oResponse.data
+
 def delete(path, data):
 	"""Delete
 

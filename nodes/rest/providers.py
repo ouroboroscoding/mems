@@ -51,6 +51,7 @@ if __name__ == "__main__":
 		{"uri": "/provider/passwd", "methods": REST.UPDATE, "session": True},
 		{"uri": "/provider/permissions", "methods": REST.READ | REST.UPDATE, "session": True},
 		{"uri": "/provider/tracking", "methods": REST.READ, "session": True},
+		{"uri": "/provider/tracking/viewed", "methods": REST.READ, "session": True},
 		{"uri": "/roundrobin", "methods": REST.READ, "session": True},
 
 		{"uri": "/request", "methods": REST.CREATE, "session": True},
