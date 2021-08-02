@@ -27,7 +27,8 @@ import requests
 import xmltodict
 
 # Shared imports
-from shared import Memo, Rights, SMSWorkflow, Sync
+from shared import Memo, Rights, Sync
+from shared.SMSWorkflow import ED as EDWorkflow
 
 # Records imports
 from records.monolith import \
@@ -3893,7 +3894,7 @@ class Monolith(Services.Service):
 			oStatus.save()
 
 		# Notify the patient of the approval
-		SMSWorkflow.providerApproves(data['orderId'], sesh['memo_id'], self)
+		EDWorkflow.providerApproves(data['orderId'], sesh['memo_id'], self)
 
 		# Return OK
 		return Services.Response(True)
@@ -3951,7 +3952,7 @@ class Monolith(Services.Service):
 			oKtOrderClaim.create()
 
 			# Send to SMSWorkflow
-			SMSWorkflow.providerOpens(data['orderId'], sesh['memo_id'], self)
+			EDWorkflow.providerOpens(data['orderId'], sesh['memo_id'], self)
 
 			# Add tracking
 			oResponse = Services.create('providers', 'tracking', {
@@ -4277,7 +4278,7 @@ class Monolith(Services.Service):
 				return oResponse
 
 		# Notify the patient
-		SMSWorkflow.providerApprovesContinuous(data['orderId'], sesh['memo_id'], self)
+		EDWorkflow.providerApprovesContinuous(data['orderId'], sesh['memo_id'], self)
 
 		# Get current date/time
 		sDT = arrow.get().format('YYYY-MM-DD HH:mm:ss')
@@ -4414,7 +4415,7 @@ class Monolith(Services.Service):
 		oOrder.save()
 
 		# Notify the patient
-		SMSWorkflow.providerDeclinesContinuous(data['orderId'], sesh['memo_id'], self)
+		EDWorkflow.providerDeclinesContinuous(data['orderId'], sesh['memo_id'], self)
 
 		# Get current date/time
 		sDT = arrow.get().format('YYYY-MM-DD HH:mm:ss')
@@ -4509,7 +4510,7 @@ class Monolith(Services.Service):
 		if data['reason'] == 'Medical':
 
 			# Notify the patient of the decline
-			SMSWorkflow.providerDeclines(data['orderId'], sesh['memo_id'], self)
+			EDWorkflow.providerDeclines(data['orderId'], sesh['memo_id'], self)
 
 		# Return the note ID
 		return Services.Response(sNoteID)
@@ -5569,7 +5570,7 @@ class Monolith(Services.Service):
 
 		# Pass the info along to SMS workflow if we have an order ID
 		if 'orderId' in data:
-			SMSWorkflow.providerMessaged(data['orderId'], oSmpNote['id'])
+			EDWorkflow.providerMessaged(data['orderId'], oSmpNote['id'])
 
 		# Init warning
 		mWarning = None

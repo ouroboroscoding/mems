@@ -21,7 +21,8 @@ import pysftp
 from RestOC import Conf
 
 # Shared imports
-from shared import Excel, SMSWorkflow
+from shared import Excel
+from shared.SMSWorkflow import ED as EDWorkflow
 
 # Service imports
 from records.monolith import ShippingInfo
@@ -371,7 +372,7 @@ def shipped_claims(tod):
 
 			# If the record didn't exist, send an SMS
 			if bCreated:
-				SMSWorkflow.shipping(oShippingInfo.record())
+				EDWorkflow.shipping(oShippingInfo.record())
 		except ValueError as e:
 			emailError('Welldyne Incoming Failed', 'Invalid shipping info: %s\n\n%s' % (
 				str(e.args[0]),
