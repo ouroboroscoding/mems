@@ -1653,7 +1653,7 @@ class Konnektive(Services.Service):
 		if self._allowPurchaseChange:
 
 			# Cancel the purchase
-			dRes = self._post('purchase/cancel', {
+			dRes = self._post('purchase/update', {
 				"billNow": True,
 				"purchaseId": data['purchaseId']
 			})
