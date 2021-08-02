@@ -179,18 +179,21 @@ class Service(Services.Service):
 				# Set the attachments from the data
 				mAttachments = data['attachments']
 
-			# Send the e-mail
-			iRes = SMTP.send(
-				data['to'], data['subject'],
-				text_body=data['text_body'],
-				html_body=data['html_body'],
-				from_=data['from'],
-				attachments=mAttachments
-			)
+			# Only send if anyone is allowed, or the to is in the allowed
+			if not self.emailAllowed or data['to'] in self.emailAllowed:
 
-			# If there was an error
-			if iRes != SMTP.OK:
-				return Services.Response(error=(1303, '%i %s' % (iRes, SMTP.lastError())))
+				# Send the e-mail
+				iRes = SMTP.send(
+					data['to'], data['subject'],
+					text_body=data['text_body'],
+					html_body=data['html_body'],
+					from_=data['from'],
+					attachments=mAttachments
+				)
+
+				# If there was an error
+				if iRes != SMTP.OK:
+					return Services.Response(error=(1303, '%i %s' % (iRes, SMTP.lastError())))
 
 		# Else, we are sending to the queue first
 		else:
@@ -235,6 +238,9 @@ class Service(Services.Service):
 		# If it's invalid
 		if self.emailMethod not in ['direct']:
 			raise ValueError('Communications.emailMethod', self.emailMethod)
+
+		# Get allowed addresses
+		self.emailAllowed = Conf.get(('email', 'allowed'), [])
 
 		# Get allowed numbers
 		self.smsAllowed = Conf.get(('sms', 'allowed'), [])
