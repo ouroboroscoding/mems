@@ -33,6 +33,7 @@
 	},
 
 	"email": {
+		"allowed": [],
 		"errors": "webmaster@localhost",
 		"from": "noreply@localhost",
 		"method": "direct",

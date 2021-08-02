@@ -17,9 +17,11 @@ import traceback
 
 # Pip imports
 import arrow
+from RestOC import Conf
 
 # Shared imports
-from shared import Email, SMSWorkflow
+from shared import Email
+from shared.SMSWorkflow import HRT as HRTWorkflow
 
 # Service imports
 from records.monolith import KtCustomer, ShippingInfo
@@ -64,12 +66,15 @@ def run():
 	if isRunning('anazao_shipped'):
 		return True
 
+	# Fetch the configs
+	dImapConf = Conf.get(('email', 'imap'))
+
 	# Try to get UPS emails
 	lEmails = Email.fetch_imap(
-		user='sg@maleexcel.com',
-		passwd='Revita123!',
-		host='maleexcel.com',
-		port=993,
+		user=dImapConf['auth']['user'],
+		passwd=dImapConf['auth']['pass'],
+		host=dImapConf['server']['host'],
+		port=dImapConf['server']['port'],
 		tls=True,
 		from_='myAnazao@AnazaoHealth.com',
 		markread=True
@@ -89,10 +94,17 @@ def run():
 		if 'Have Shipped' not in d['headers']['Subject']:
 			continue
 
+		# Decode the HTML
+		sHTML = d['html'].decode('utf-8')
+
+		# If there's no tracking code
+		if 'The tracking number for this shipment is unavailable' in sHTML:
+			continue
+
 		try:
 
 			# Parse the email
-			oMatch = reEmail.search(d['html'].decode('utf-8'))
+			oMatch = reEmail.search(sHTML)
 			lMatches = oMatch.groups()
 
 			# Split the address into parts
@@ -128,7 +140,7 @@ def run():
 
 				# If the record didn't exist, send an SMS
 				if bCreated:
-					SMSWorkflow.shipping(oShippingInfo.record())
+					HRTWorkflow.shipping(oShippingInfo.record())
 			except ValueError as e:
 				emailError('Welldyne Incoming Failed', 'Invalid shipping info: %s\n\n%s' % (
 					str(e.args[0]),
@@ -141,19 +153,10 @@ def run():
 			sBody = '%s\n\n%s\n\n%s' % (
 				', '.join([str(s) for s in e.args]),
 				traceback.format_exc(),
-				d['html']
+				sHTML
 			)
 			emailError('Anazao Email Error', sBody)
 			continue
-
-	# If we got any valid emails
-	if lCodes:
-
-		# Send the tracking to Memo
-		dRes = Memo.create('rest/shipping', lCodes)
-		if dRes['error']:
-			print(dRes['error'])
-			return False
 
 	# Return OK
 	return True
