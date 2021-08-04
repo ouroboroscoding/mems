@@ -116,8 +116,9 @@ def prescriptions(l, max_date=None):
 			print('SKIPPING PRESCRIPTION')
 			continue
 
-		# If it's an error, requested, or deleted, skip it
-		if d['Status'] in [6,7,8]:
+		# If it's not valid, skip it
+		#	4: 'eRxSent', 5: 'FaxSent', 11: 'EpcsSigned', 13: 'PharmacyVerified'
+		if d['Status'] not in [4, 5, 11, 13]:
 			continue
 
 		# If the ID is 0, find the product by description
