@@ -118,7 +118,7 @@ def prescriptions(l, max_date=None):
 
 		# If it's not valid, skip it
 		#	4: 'eRxSent', 5: 'FaxSent', 11: 'EpcsSigned', 13: 'PharmacyVerified'
-		if d['Status'] not in in [4, 5, 11, 13]:
+		if d['Status'] not in [4, 5, 11, 13]:
 			continue
 
 		# If the ID is 0, find the product by description
