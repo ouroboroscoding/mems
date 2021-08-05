@@ -992,7 +992,6 @@ class CustomerMsgPhone(Record_MySQL.Record):
 				"	`cmp`.`customerPhone` AS `customerPhone`,\n" \
 				"	CONCAT(`ktc`.`firstName`, ' ', `ktc`.`lastName`) AS `customerName`,\n" \
 				"	CONVERT(`ktc`.`customerId`, UNSIGNED) as `customerId`,\n" \
-				"	CONVERT(`ktc`.`customerId`, UNSIGNED) as `numberOfOrders`,\n" \
 				"	`cmp`.`lastMsg` AS `lastMsg`,\n" \
 				"	`cmp`.`hiddenFlag` AS `hiddenFlag`,\n" \
 				"	`cmp`.`totalIncoming` AS `totalIncoming`,\n" \
@@ -1041,7 +1040,6 @@ class CustomerMsgPhone(Record_MySQL.Record):
 				"	`cmp`.`customerPhone` AS `customerPhone`,\n" \
 				"	CONCAT(`ktc`.`firstName`, ' ', `ktc`.`lastName`) AS `customerName`,\n" \
 				"	CONVERT(`ktc`.`customerId`, UNSIGNED) as `customerId`,\n" \
-				"	CONVERT(`ktc`.`customerId`, UNSIGNED) as `numberOfOrders`,\n" \
 				"	`cmp`.`lastMsgAt` as `lastMsgAt`,\n" \
 				"	`cmp`.`lastMsg` AS `lastMsg`,\n" \
 				"	`cmp`.`totalIncoming` AS `totalIncoming`,\n" \
@@ -1953,6 +1951,47 @@ class KtOrder(Record_MySQL.Record):
 			dStruct['host'],
 			sSQL,
 			Record_MySQL.ESelect.COLUMN
+		)
+
+	@classmethod
+	def orderCounts(cls, customer_ids, custom={}):
+		"""Order Counts
+
+		Returns the count of orders per customer ID passed
+
+		Arguments:
+			customer_ids (list): The list of customer IDs to get order counts by
+			custom (dict): Custom Host and DB info
+				'host' the name of the host to get/set data on
+				'append' optional postfix for dynamic DBs
+
+		Returns:
+			dict
+		"""
+
+		# Fetch the record structure
+		dStruct = cls.struct(custom)
+
+		# Generate the SQL
+		sSQL = "SELECT CONVERT(`customerId`, UNSIGNED), COUNT(*)\n" \
+				"FROM `%(db)s`.`%(table)s`\n" \
+				"WHERE `customerId` IN (%(ids)s)\n" \
+				"AND (\n" \
+				"	`cardType` <> 'TESTCARD' OR\n" \
+				"	ISNULL(`cardType`)\n" \
+				")\n" \
+				"GROUP BY `customerId`" % {
+			"db": dStruct['db'],
+			"table": dStruct['table'],
+			"ids": ",".join([str(s) for s in customer_ids])
+		}
+
+		# Fetch and return the records as a dictionary of customer ID to order
+		#	count
+		return Record_MySQL.Commands.select(
+			dStruct['host'],
+			sSQL,
+			Record_MySQL.ESelect.HASH
 		)
 
 	@classmethod
