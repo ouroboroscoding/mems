@@ -898,7 +898,7 @@ class Providers(Services.Service):
 		except ValueError as e: return Services.Error(1001, [(f, 'missing') for f in e.args])
 
 		# If it's not the user signed in
-		if sesh['memo_id'] != data['memo_id']:
+		if 'memo_id' not in sesh or sesh['memo_id'] != data['memo_id']:
 
 			# Make sure the user has the proper permission to do this
 			Rights.check(sesh, 'prov_stats', Rights.READ)
