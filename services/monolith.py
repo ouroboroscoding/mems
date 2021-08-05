@@ -166,39 +166,6 @@ class Monolith(Services.Service):
 			if iID in dReviews:
 				d['reviews'] = dReviews[iID]
 
-	@classmethod
-	def _customerOrders(cls, records, field='customerId'):
-		"""Customer Orders
-
-		Returns the order stats for each customer passed and adds them to the
-		records
-
-		Arguments:
-			records (list): The list to get the customer IDs as well as to add
-							the order count to
-			field (str): The name of the field to use as the customer ID
-
-		Returns:
-			None
-		"""
-
-		# Go through each record and pull out all the unique customer IDs
-		lIDs = list(set([
-			d[field] for d in records if d[field] is not None
-		]))
-
-		# If there's none
-		if not lIDs:
-			return
-
-		# Fetch the counts
-		dCounts = KtOrder.orderCounts(lIDs)
-
-		# Go through each record and add the count or set to 0
-		for d in records:
-			try: d['numberOfOrders'] = dCounts[d[field]]
-			except KeyError: d['numberOfOrders'] = 0
-
 	def agentClaim_delete(self, data, sesh):
 		"""Agent Claim Delete
 
@@ -3646,9 +3613,6 @@ class Monolith(Services.Service):
 		if not lConvos:
 			return Services.Response([])
 
-		# Add customer orders
-		self._customerOrders(lConvos, 'customerId')
-
 		# Add reviews
 		self._addReviews(lConvos, 'customerId')
 
@@ -3716,9 +3680,6 @@ class Monolith(Services.Service):
 			oCMP.create()
 			lConvos = CustomerMsgPhone.search({"phone": dCustomer['phoneNumber']})
 
-		# Add the orders
-		self._customerOrders(lConvos, 'customerId')
-
 		# Look for reviews for the customer
 		dReviews = CustomerReviews.get(int(dCustomer['customerId'], 0), raw=['count', 'total', 'last'])
 		if dReviews:
@@ -3784,9 +3745,6 @@ class Monolith(Services.Service):
 		# If there's none
 		if not lUnclaimed:
 			return Services.Response([])
-
-		# Add the order counts
-		self._customerOrders(lUnclaimed, 'customerId')
 
 		# Add reviews
 		self._addReviews(lUnclaimed, 'customerId')
