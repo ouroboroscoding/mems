@@ -184,7 +184,7 @@ class Monolith(Services.Service):
 
 		# Go through each record and pull out all the unique customer IDs
 		lIDs = list(set([
-			d[field] for d in records
+			d[field] for d in records if d[field] is not None
 		]))
 
 		# If there's none
