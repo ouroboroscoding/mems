@@ -28,7 +28,6 @@ from shared import Record_MySQLSearch
 # Custome SQL
 sLatestStatusSQL = ''
 sNumOfOrdersSQL = ''
-sSearchSQL = ''
 
 def init():
 	"""Ugly Hack
@@ -36,15 +35,13 @@ def init():
 	Need to find a better way to do this
 	"""
 
-	global sLatestStatusSQL, sNumOfOrdersSQL, sSearchSQL
+	global sLatestStatusSQL, sNumOfOrdersSQL
 
 	# SQL files
 	with open('records/sql/latest_status.sql') as oF:
 		sLatestStatusSQL = oF.read()
 	with open('records/sql/number_of_orders.sql') as oF:
 		sNumOfOrdersSQL = oF.read()
-	with open('records/sql/search.sql') as oF:
-		sSearchSQL = oF.read()
 
 # Calendly class
 class Calendly(Record_MySQL.Record):
@@ -990,7 +987,23 @@ class CustomerMsgPhone(Record_MySQL.Record):
 			lWhere.append("`lastMsg` LIKE '%%%s%%'" % Record_MySQL.Commands.escape(dStruct['host'], q['content']))
 
 		# Generate SQL
-		sSQL = sSearchSQL % {
+		sSQL = "SELECT\n" \
+				"	`cmp`.`id` AS `id`,\n" \
+				"	`cmp`.`customerPhone` AS `customerPhone`,\n" \
+				"	CONCAT(`ktc`.`firstName`, ' ', `ktc`.`lastName`) AS `customerName`,\n" \
+				"	CONVERT(`ktc`.`customerId`, UNSIGNED) as `customerId`,\n" \
+				"	`cmp`.`lastMsg` AS `lastMsg`,\n" \
+				"	`cmp`.`hiddenFlag` AS `hiddenFlag`,\n" \
+				"	`cmp`.`totalIncoming` AS `totalIncoming`,\n" \
+				"	`cmp`.`totalOutGoing` AS `totalOutGoing`,\n" \
+				"	`user`.`id` as `userId`,\n" \
+				"	CONCAT_WS(' ', `user`.`firstName`, `user`.`lastName`) AS `claimedBy`,\n" \
+				"	`cc`.`createdAt` AS `claimedAt`\n" \
+				"FROM `%(db)s`.`customer_msg_phone` AS `cmp`\n" \
+				"LEFT JOIN `%(db)s`.`kt_customer` as `ktc` ON `ktc`.`phoneNumber` = `cmp`.`customerPhone`\n" \
+				"LEFT JOIN `%(db)s`.`customer_claimed` as `cc` ON `cc`.`phoneNumber` = `cmp`.`customerPhone`\n" \
+				"LEFT JOIN `%(db)s`.`user`  ON `user`.`id` = `cc`.`user`\n" \
+				"WHERE %(where)s" % {
 			"db": dStruct['db'],
 			"where": ' AND '.join(lWhere)
 		}
@@ -1025,26 +1038,14 @@ class CustomerMsgPhone(Record_MySQL.Record):
 		sSQL = "SELECT\n" \
 				"	`cmp`.`id` AS `id`,\n" \
 				"	`cmp`.`customerPhone` AS `customerPhone`,\n" \
-				"	IFNULL(`cmp`.`customerName`, 'N/A') AS `customerName`,\n" \
-				"	CONVERT(`ktot`.`customerId`, UNSIGNED) as `customerId`,\n" \
-				"	`ktot`.`numberOfOrders` AS `numberOfOrders`,\n" \
-				"	`ktot`.`latest_kto_id` AS `latest_kto_id`,\n" \
+				"	CONCAT(`ktc`.`firstName`, ' ', `ktc`.`lastName`) AS `customerName`,\n" \
+				"	CONVERT(`ktc`.`customerId`, UNSIGNED) as `customerId`,\n" \
 				"	`cmp`.`lastMsgAt` as `lastMsgAt`,\n" \
 				"	`cmp`.`lastMsg` AS `lastMsg`,\n" \
 				"	`cmp`.`totalIncoming` AS `totalIncoming`,\n" \
 				"	`cmp`.`totalOutGoing` AS `totalOutGoing`\n" \
 				"FROM `%(db)s`.`customer_msg_phone` AS `cmp`\n" \
-				"LEFT JOIN (\n" \
-				"	SELECT `cmp1`.`id` AS `id`, COUNT(0) AS `numberOfOrders`,\n" \
-				"			MAX(`kto`.`id`) AS `latest_kto_id`, `kto`.`customerId`\n" \
-				"	FROM `%(db)s`.`customer_msg_phone` `cmp1`\n" \
-				"	JOIN `%(db)s`.`kt_order` AS `kto` ON (\n" \
-				"		`cmp1`.`customerPhone` = SUBSTR(`kto`.`phoneNumber`, -(10))\n" \
-				"		AND ((`kto`.`cardType` <> 'TESTCARD')\n" \
-				"		OR ISNULL(`kto`.`cardType`))\n" \
-				"	)\n" \
-				"	GROUP BY `cmp1`.`id`\n" \
-				") `ktot` ON `ktot`.`id` = `cmp`.`id`\n" \
+				"LEFT JOIN `%(db)s`.`kt_customer` as `ktc` ON `ktc`.`phoneNumber` = `cmp`.`customerPhone`\n" \
 				"LEFT JOIN `%(db)s`.`customer_claimed` as `cc` ON `cc`.`phoneNumber` = `cmp`.`customerPhone`\n" \
 				"WHERE `hiddenFlag` = 'N'\n" \
 				"AND `lastMsgDir` = 'Incoming'\n" \
@@ -1084,17 +1085,6 @@ class CustomerMsgPhone(Record_MySQL.Record):
 		sSQL = "SELECT\n" \
 				"	COUNT(*) as `count`\n" \
 				"FROM `%(db)s`.`customer_msg_phone` AS `cmp`\n" \
-				"LEFT JOIN (\n" \
-				"	SELECT `cmp1`.`id` AS `id`, COUNT(0) AS `numberOfOrders`,\n" \
-				"			MAX(`kto`.`id`) AS `latest_kto_id`, `kto`.`customerId`\n" \
-				"	FROM `%(db)s`.`customer_msg_phone` `cmp1`\n" \
-				"	JOIN `%(db)s`.`kt_order` AS `kto` ON (\n" \
-				"		`cmp1`.`customerPhone` = SUBSTR(`kto`.`phoneNumber`, -(10))\n" \
-				"		AND ((`kto`.`cardType` <> 'TESTCARD')\n" \
-				"		OR ISNULL(`kto`.`cardType`))\n" \
-				"	)\n" \
-				"	GROUP BY `cmp1`.`id`\n" \
-				") `ktot` ON `ktot`.`id` = `cmp`.`id`\n" \
 				"LEFT JOIN `%(db)s`.`customer_claimed` as `cc` ON `cc`.`phoneNumber` = `cmp`.`customerPhone`\n" \
 				"WHERE `hiddenFlag` = 'N'\n" \
 				"AND `lastMsgDir` = 'Incoming'\n" \
@@ -1855,7 +1845,6 @@ class KtCustomer(Record_MySQLSearch.Record):
 			Record_MySQL.ESelect.ALL
 		)
 
-
 # KtOrder class
 class KtOrder(Record_MySQL.Record):
 	"""KtOrder
@@ -1962,6 +1951,47 @@ class KtOrder(Record_MySQL.Record):
 			dStruct['host'],
 			sSQL,
 			Record_MySQL.ESelect.COLUMN
+		)
+
+	@classmethod
+	def orderCounts(cls, customer_ids, custom={}):
+		"""Order Counts
+
+		Returns the count of orders per customer ID passed
+
+		Arguments:
+			customer_ids (list): The list of customer IDs to get order counts by
+			custom (dict): Custom Host and DB info
+				'host' the name of the host to get/set data on
+				'append' optional postfix for dynamic DBs
+
+		Returns:
+			dict
+		"""
+
+		# Fetch the record structure
+		dStruct = cls.struct(custom)
+
+		# Generate the SQL
+		sSQL = "SELECT CONVERT(`customerId`, UNSIGNED), COUNT(*)\n" \
+				"FROM `%(db)s`.`%(table)s`\n" \
+				"WHERE `customerId` IN (%(ids)s)\n" \
+				"AND (\n" \
+				"	`cardType` <> 'TESTCARD' OR\n" \
+				"	ISNULL(`cardType`)\n" \
+				")\n" \
+				"GROUP BY `customerId`" % {
+			"db": dStruct['db'],
+			"table": dStruct['table'],
+			"ids": ",".join([str(s) for s in customer_ids])
+		}
+
+		# Fetch and return the records as a dictionary of customer ID to order
+		#	count
+		return Record_MySQL.Commands.select(
+			dStruct['host'],
+			sSQL,
+			Record_MySQL.ESelect.HASH
 		)
 
 	@classmethod
