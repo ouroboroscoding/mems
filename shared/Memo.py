@@ -65,7 +65,7 @@ def __request(action, path, data):
 
 	# If the request wasn't successful
 	if oRes.status_code != 200:
-		return None;
+		return {"error": {"code": 1005}}
 
 	# Convert the result from JSON and return
 	return JSON.decode(oRes.text)
