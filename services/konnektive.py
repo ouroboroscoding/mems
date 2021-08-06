@@ -12,6 +12,7 @@ __email__		= "bast@maleexcel.com"
 __created__		= "2020-05-09"
 
 # Python imports
+import json
 import math
 import sys
 from time import sleep
@@ -106,10 +107,13 @@ class Konnektive(Services.Service):
 						continue
 					raise e
 				except requests.exceptions.ReadTimeout as e:
-					raise Services.ResponseException(error=1004)
+					raise Services.ResponseException(error=(1004, 'Konnektive'))
 
 			# Pull out the data
-			dData = oRes.json()
+			try:
+				dData = oRes.json()
+			except json.decoder.JSONDecodeError:
+				raise Services.ResponseException(error=(1006, 'konnektive:%s' % path))
 
 			# If we don't get success
 			if dData['result'] != 'SUCCESS':
@@ -157,10 +161,13 @@ class Konnektive(Services.Service):
 					continue
 				raise e
 			except requests.exceptions.ReadTimeout as e:
-				raise Services.ResponseException(error=1004)
+				raise Services.ResponseException(error=(1004, 'Konnektive'))
 
 		# Pull out the reponse and return it
-		return oRes.json()
+		try:
+			return oRes.json()
+		except json.decoder.JSONDecodeError:
+			raise Services.ResponseException(error=(1006, 'konnektive:%s' % path))
 
 	def initialise(self):
 		"""Initialise
