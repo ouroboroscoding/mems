@@ -209,7 +209,7 @@ class Prescriptions(Services.Service):
 				timeout=30
 			)
 		except requests.exceptions.ReadTimeout as e:
-			raise Services.ResponseException(error=1004)
+			raise Services.ResponseException(error=(1004, 'DoseSpot'))
 
 		# If we didn't get success
 		if oRes.status_code != 200:
@@ -313,7 +313,7 @@ class Prescriptions(Services.Service):
 		try:
 			oRes = requests.post(sURL, data=dData, headers=dHeaders, timeout=30)
 		except requests.exceptions.ReadTimeout as e:
-			raise Services.ResponseException(error=1004)
+			raise Services.ResponseException(error=(1004, 'DoseSpot'))
 
 		# If we didn't get a 200
 		if oRes.status_code != 200:
@@ -378,7 +378,7 @@ class Prescriptions(Services.Service):
 		try:
 			oRes = requests.get(sURL, headers=dHeaders, timeout=30)
 		except requests.exceptions.ReadTimeout as e:
-			raise Services.ResponseException(error=1004)
+			raise Services.ResponseException(error=(1004, 'DoseSpot'))
 
 		# If we didn't get a 200
 		if oRes.status_code != 200:
@@ -457,7 +457,7 @@ class Prescriptions(Services.Service):
 		try:
 			oRes = requests.post(sURL, data=dData, headers=dHeaders, timeout=30)
 		except requests.exceptions.ReadTimeout as e:
-			raise Services.ResponseException(error=1004)
+			raise Services.ResponseException(error=(1004, 'DoseSpot'))
 
 		# If we didn't get a 200
 		if oRes.status_code != 200:
@@ -531,7 +531,7 @@ class Prescriptions(Services.Service):
 			try:
 				oRes = requests.get(sURL, headers=dHeaders, timeout=30)
 			except requests.exceptions.ReadTimeout as e:
-				raise Services.ResponseException(error=1004)
+				raise Services.ResponseException(error=(1004, 'DoseSpot'))
 
 			# If we didn't get a 200
 			if oRes.status_code != 200:
@@ -564,7 +564,7 @@ class Prescriptions(Services.Service):
 					try:
 						oRes = requests.post(sConsentURL, headers=dHeaders, timeout=30)
 					except requests.exceptions.ReadTimeout as e:
-						raise Services.ResponseException(error=1004)
+						raise Services.ResponseException(error=(1004, 'DoseSpot'))
 
 					# If we didn't get a 200
 					if oRes.status_code != 200:
@@ -646,7 +646,7 @@ class Prescriptions(Services.Service):
 		try:
 			oRes = requests.get(sURL, headers=dHeaders, timeout=30)
 		except requests.exceptions.ReadTimeout as e:
-			raise Services.ResponseException(error=1004)
+			raise Services.ResponseException(error=(1004, 'DoseSpot'))
 
 		# If we didn't get a 200
 		if oRes.status_code != 200:
@@ -712,7 +712,7 @@ class Prescriptions(Services.Service):
 		try:
 			oRes = requests.post(sURL, headers=dHeaders, timeout=30)
 		except requests.exceptions.ReadTimeout as e:
-			raise Services.ResponseException(error=1004)
+			raise Services.ResponseException(error=(1004, 'DoseSpot'))
 
 		# If we didn't get a 200
 		if oRes.status_code != 200:
@@ -780,7 +780,7 @@ class Prescriptions(Services.Service):
 		try:
 			oRes = requests.delete(sURL, headers=dHeaders, timeout=30)
 		except requests.exceptions.ReadTimeout as e:
-			raise Services.ResponseException(error=1004)
+			raise Services.ResponseException(error=(1004, 'DoseSpot'))
 
 		# If we didn't get a 200
 		if oRes.status_code != 200:
@@ -887,7 +887,7 @@ class Prescriptions(Services.Service):
 		try:
 			oRes = requests.post(sURL, headers=dHeaders, json=dData, timeout=30)
 		except requests.exceptions.ReadTimeout as e:
-			raise Services.ResponseException(error=1004)
+			raise Services.ResponseException(error=(1004, 'DoseSpot'))
 
 		# If we didn't get a 200
 		if oRes.status_code != 200:
@@ -971,7 +971,7 @@ class Prescriptions(Services.Service):
 		try:
 			oRes = requests.get(sURL, headers=dHeaders, timeout=30)
 		except requests.exceptions.ReadTimeout as e:
-			raise Services.ResponseException(error=1004)
+			raise Services.ResponseException(error=(1004, 'DoseSpot'))
 
 		# If we didn't get a 200
 		if oRes.status_code != 200:
@@ -1616,7 +1616,7 @@ class Prescriptions(Services.Service):
 		try:
 			oRes = requests.get(sURL, headers=dHeaders, timeout=30)
 		except requests.exceptions.ReadTimeout as e:
-			raise Services.ResponseException(error=1004)
+			raise Services.ResponseException(error=(1004, 'DoseSpot'))
 
 		# If we didn't get a 200
 		if oRes.status_code != 200:
