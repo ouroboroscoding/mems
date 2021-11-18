@@ -89,6 +89,7 @@ def _stepZero():
 				# Send the SMS to the patient
 				oResponse = Services.create('monolith', 'message/outgoing', {
 					"_internal_": Services.internalKey(),
+					"store_on_error": True,
 					"name": "SMS Workflow",
 					"customerPhone": lPurchases[0]['phoneNumber'],
 					"content": sContent,
@@ -188,6 +189,7 @@ def _stepOne():
 			# Send the SMS to the patient
 			oResponse = Services.create('monolith', 'message/outgoing', {
 				"_internal_": Services.internalKey(),
+				"store_on_error": True,
 				"name": "SMS Workflow",
 				"customerPhone": lPurchases[0]['phoneNumber'],
 				"content": sContent,
@@ -280,6 +282,7 @@ def _stepTwo():
 			# Send the SMS to the patient
 			oResponse = Services.create('monolith', 'message/outgoing', {
 				"_internal_": Services.internalKey(),
+				"store_on_error": True,
 				"name": "SMS Workflow",
 				"customerPhone": lPurchases[0]['phoneNumber'],
 				"content": sContent,
@@ -386,6 +389,7 @@ def _stepThree():
 			# Send the SMS to the patient
 			oResponse = Services.create('monolith', 'message/outgoing', {
 				"_internal_": Services.internalKey(),
+				"store_on_error": True,
 				"name": "SMS Workflow",
 				"customerPhone": lPurchases[0]['phoneNumber'],
 				"content": sContent,
@@ -490,6 +494,7 @@ def _stepFour():
 			# Send the SMS to the patient
 			oResponse = Services.create('monolith', 'message/outgoing', {
 				"_internal_": Services.internalKey(),
+				"store_on_error": True,
 				"name": "SMS Workflow",
 				"customerPhone": lPurchases[0]['phoneNumber'],
 				"content": sContent,

@@ -1,0 +1,7 @@
+crons.csr.tickets.weekly module
+===============================
+
+.. automodule:: crons.csr.tickets.weekly
+   :members:
+   :undoc-members:
+   :show-inheritance:

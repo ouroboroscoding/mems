@@ -1,5 +1,17 @@
-shared.SMSWorkflow module
-=========================
+shared.SMSWorkflow package
+==========================
+
+Submodules
+----------
+
+.. toctree::
+   :maxdepth: 4
+
+   shared.SMSWorkflow.ED
+   shared.SMSWorkflow.HRT
+
+Module contents
+---------------
 
 .. automodule:: shared.SMSWorkflow
    :members:

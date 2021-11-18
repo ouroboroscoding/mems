@@ -1,6 +1,14 @@
 shared package
 ==============
 
+Subpackages
+-----------
+
+.. toctree::
+   :maxdepth: 4
+
+   shared.SMSWorkflow
+
 Submodules
 ----------
 
@@ -15,7 +23,6 @@ Submodules
    shared.Record_MySQLSearch
    shared.Rights
    shared.RocketGate
-   shared.SMSWorkflow
    shared.Shipping
    shared.Sync
    shared.USPS

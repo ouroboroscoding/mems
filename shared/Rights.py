@@ -148,5 +148,9 @@ def internalOrCheck(data, sesh, name, right, ident=None):
 	# Else,
 	else:
 
+		# If there's no session
+		if not sesh:
+			return Services.Error(Errors.REST_AUTHORIZATION, 'Unauthorized')
+
 		# Make sure the user has the proper permission to do this
 		check(sesh, name, right, ident)

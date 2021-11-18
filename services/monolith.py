@@ -46,11 +46,10 @@ from records.monolith import \
 	SmpCustomer, SmpImage, SmpNote, SmpOrderStatus, SmpState, \
 	SMSStop, SMSStopChange, SMSTemplate, \
 	TfAnswer, TfLanding, TfQuestion, TfQuestionOption, \
-	User, \
-	init as recInit
+	User
 
 # Service imports
-from . import emailError
+from services import emailError
 
 # Regex for validating email
 _emailRegex = re.compile(r"[^@\s]+@[^@\s]+\.[a-zA-Z0-9]{2,}$")
@@ -65,7 +64,7 @@ class Monolith(Services.Service):
 	"""Record types called in install"""
 
 	_TRACKING_LINKS = {
-		"FDX": "http://www.fedex.com/Tracking?tracknumbers=%s",
+		"FDX": "https://www.fedex.com/fedextrack/?trknbr=%s",
 		"UPS": "https://www.ups.com/track?tracknum=%s",
 		"USPS": "https://tools.usps.com/go/TrackConfirmAction?qtc_tLabels1=%s"
 	}
@@ -88,9 +87,6 @@ class Monolith(Services.Service):
 		Returns:
 			Monolith
 		"""
-
-		# Init the records
-		recInit()
 
 		# Create a connection to Redis
 		self._redis = StrictRedis(**Conf.get(('redis', 'primary'), {
@@ -150,9 +146,7 @@ class Monolith(Services.Service):
 				"count": dR['count'],
 				"total": dR['total'],
 				"last": dR['last']
-			} for dR in CustomerReviews.filter({
-				"customerId": [dC[id_field] for dC in records]
-			})
+			} for dR in CustomerReviews.get([dC[id_field] for dC in records], raw=True)
 		}
 
 		# Go through all the records
@@ -721,7 +715,7 @@ class Monolith(Services.Service):
 			"claim": dData
 		})
 
-		# If the claim was forceable removed
+		# If the claim was forcibly removed
 		if iOldUser:
 
 			# Notify the user they lost the claim
@@ -823,21 +817,21 @@ class Monolith(Services.Service):
 		# Return all the records
 		return Services.Response(lRecords)
 
-	def customerDob_read(self, data, sesh):
+	def customerDob_read(self, data, sesh=None):
 		"""Customer DoseSpot ID
 
-		Returns the ID of the DoseSpote patient based on their customer ID
+		Returns the ID of the DoseSpot patient based on their customer ID
 
 		Arguments:
 			data (dict): Data sent with the request
-			sesh (Sesh._Session): The session associated with the request
+			sesh (Sesh._Session): Optiona, the session associated with the request
 
 		Returns:
 			Services.Response
 		"""
 
 		# Make sure the user has the proper permission to do this
-		Rights.check(sesh, 'memo_mips', Rights.READ)
+		Rights.internalOrCheck(data, sesh, 'memo_mips', Rights.READ)
 
 		# Verify fields
 		try: DictHelper.eval(data, ['customerId'])
@@ -857,6 +851,7 @@ class Monolith(Services.Service):
 
 		# Look for a landing by customerId
 		dLanding = TfLanding.filter({
+			"complete": 'Y',
 			"ktCustomerId": str(data['customerId']),
 			"formId": ['MIP-A1', 'MIP-A2', 'MIP-H1', 'MIP-H2']
 		}, raw=['landing_id'], limit=1, orderby=[['submitted_at', 'DESC']])
@@ -869,7 +864,8 @@ class Monolith(Services.Service):
 				dCustomer['lastName'],
 				dCustomer['emailAddress'] or '',
 				dCustomer['phoneNumber'],
-				['MIP-A1', 'MIP-A2', 'MIP-H1', 'MIP-H2']
+				form=['MIP-A1', 'MIP-A2', 'MIP-H1', 'MIP-H2'],
+				completed_only=True
 			)
 			if not lLandings:
 				return Services.Response(False)
@@ -907,43 +903,31 @@ class Monolith(Services.Service):
 		try: DictHelper.eval(data, ['customerId', 'clinician_id'])
 		except ValueError as e: return Services.Response(error=(1001, [(f, 'missing') for f in e.args]))
 
-		# Find the customer in Konnektive
-		oResponse = Services.read('konnektive', 'customer', {
-			"customerId": data['customerId']
-		}, sesh)
-		if oResponse.errorExists(): return oResponse
-		dCustomer = oResponse.data
-
 		# Make sure we don't already have the patient record
 		dDsPatient = DsPatient.filter({
 			"customerId": str(data['customerId'])
 		}, raw=['id'], limit=1)
 		if dDsPatient:
-			return Services.Response(error=1101)
+			return Services.Error(1101)
 
-		# Get the latest landing
-		lLandings = TfLanding.find(
-			dCustomer['shipping']['lastName'],
-			dCustomer['email'] or '',
-			dCustomer['phone'],
-			['MIP-A1', 'MIP-A2', 'MIP-H1', 'MIP-H2']
-		)
-		if not lLandings:
-			return Services.Response(error=(1104, 'mip'))
+		# If the customer info was passed in (thanks DoseSpot, you're the worst)
+		if 'customer' in data:
+			dData = data['customer']
 
-		# Get the DOB
-		sDOB = TfAnswer.dob(lLandings[0]['landing_id'])
-		if not sDOB:
-			return Services.Response(error=1910)
+		# Else, get the info from Konnektive
+		else:
 
-		# Try to create the DsInstance to check field values
-		try:
-			sDT = arrow.get().format('YYYY-MM-DD HH:mm:ss')
+			# Find the customer in Konnektive
+			oResponse = Services.read('konnektive', 'customer', {
+				"customerId": data['customerId']
+			}, sesh)
+			if oResponse.errorExists(): return oResponse
+			dCustomer = oResponse.data
+
+			# Set the data from Konnektive
 			dData = {
-				"customerId": str(dCustomer['customerId']),
 				"firstName": dCustomer['shipping']['firstName'] and dCustomer['shipping']['firstName'][:35],
 				"lastName": dCustomer['shipping']['lastName'] and dCustomer['shipping']['lastName'][:35],
-				"dateOfBirth": sDOB,
 				"gender": '1',
 				"email": dCustomer['email'] and dCustomer['email'][:255],
 				"address1": dCustomer['shipping']['address1'] and dCustomer['shipping']['address1'][:35],
@@ -952,19 +936,55 @@ class Monolith(Services.Service):
 				"state": dCustomer['shipping']['state'] and dCustomer['shipping']['state'][:35],
 				"zipCode": dCustomer['shipping']['postalCode'] and dCustomer['shipping']['postalCode'][:10],
 				"primaryPhone": dCustomer['phone'] and dCustomer['phone'][:25],
-				"primaryPhoneType": '4',
-				"active": 'Y',
-				"createdAt": sDT,
-				"updatedAt": sDT
 			}
+
+			# Get the latest landing by customer ID
+			lLandings = TfLanding.filter({
+				"complete": 'Y',
+				"ktCustomerId": str(data['customerId']),
+				"formId": ['MIP-A1', 'MIP-A2', 'MIP-H1', 'MIP-H2']
+			}, raw=['landing_id', 'formId', 'submitted_at', 'complete'], orderby=[['submitted_at', 'DESC']])
+
+			# If we got nothing
+			if not lLandings:
+
+				# Get the latest landing by the old last name + (email || phone)
+				lLandings = TfLanding.find(
+					dData['lastName'],
+					dData['email'] or '',
+					dData['primaryPhone'],
+					form=['MIP-A1', 'MIP-A2', 'MIP-H1', 'MIP-H2'],
+					completed_only=True
+				)
+				if not lLandings:
+					return Services.Error(1104, 'mip')
+
+			# Get the DOB
+			sDOB = TfAnswer.dob(lLandings[0]['landing_id'])
+			if not sDOB:
+				return Services.Response(error=1910)
+
+			# Set the DOB
+			dData['dateOfBirth'] = sDOB
+
+		# Add the extra details
+		sDT = arrow.get().format('YYYY-MM-DD HH:mm:ss')
+		dData['customerId'] = str(data['customerId'])
+		dData['primaryPhoneType'] = '4'
+		dData['active'] = 'Y'
+		dData['createdAt'] = sDT
+		dData['updatedAt'] = sDT
+
+		# Try to create the DsInstance to check field values
+		try:
 			oDsPatient = DsPatient(dData)
 		except ValueError as e:
 			return Services.Response(error=(1001, e.args[0]))
 
 		# Send the data to the prescriptions service to get the patient ID
 		oResponse = Services.create('prescriptions', 'patient', {
-				"patient": dData,
-				"clinician_id": data['clinician_id']
+			"patient": dData,
+			"clinician_id": data['clinician_id']
 		}, sesh)
 		if oResponse.errorExists():
 			return oResponse
@@ -1017,12 +1037,19 @@ class Monolith(Services.Service):
 		# Find the patient ID
 		dPatient = DsPatient.filter(
 			{"customerId": str(data['customerId'])},
-			raw=['patientId'],
+			raw=['id', 'patientId'],
 			limit=1
 		)
 
 		# If there's no patient
 		if not dPatient:
+			return Services.Response(0)
+
+		# If there's a patient but no patient ID
+		if not dPatient['patientId']:
+
+			# Delete the record and return nothing found
+			DsPatient.deleteGet(dPatient['id'])
 			return Services.Response(0)
 
 		# Return the ID
@@ -1055,60 +1082,81 @@ class Monolith(Services.Service):
 		if not oDsPatient:
 			return Services.Response(error=(1104, 'patient'))
 
-		# Find the customer in Konnektive
-		oResponse = Services.read('konnektive', 'customer', {
-			"customerId": data['customerId']
-		}, sesh)
-		if oResponse.errorExists():
-			if oResponse.error['code'] == 1104:
-				oResponse.error['msg'] = 'konnektive'
-			return oResponse
+		# If the customer info was passed in (thanks DoseSpot, you're the worst)
+		if 'customer' in data:
+			dData = data['customer']
 
-		# Store the customer data
-		dCustomer = oResponse.data
+		# Else, get the info from Konnektive
+		else:
 
-		# Look for a landing by customerId
-		dLanding = TfLanding.filter({
-			"ktCustomerId": str(data['customerId']),
-			"formId": ['MIP-A1', 'MIP-A2', 'MIP-H1', 'MIP-H2']
-		}, raw=['landing_id'], limit=1, orderby=[['submitted_at', 'DESC']])
+			# Find the customer in Konnektive
+			oResponse = Services.read('konnektive', 'customer', {
+				"customerId": data['customerId']
+			}, sesh)
+			if oResponse.errorExists(): return oResponse
+			dCustomer = oResponse.data
 
-		# If there's no landing
-		if not dLanding:
+			# Set the data from Konnektive
+			dData = {
+				"firstName": dCustomer['shipping']['firstName'] and dCustomer['shipping']['firstName'][:35],
+				"lastName": dCustomer['shipping']['lastName'] and dCustomer['shipping']['lastName'][:35],
+				"gender": '1',
+				"email": dCustomer['email'] and dCustomer['email'][:255],
+				"address1": dCustomer['shipping']['address1'] and dCustomer['shipping']['address1'][:35],
+				"address2": dCustomer['shipping']['address2'] and dCustomer['shipping']['address2'][:35],
+				"city": dCustomer['shipping']['city'] and dCustomer['shipping']['city'][:35],
+				"state": dCustomer['shipping']['state'] and dCustomer['shipping']['state'][:35],
+				"zipCode": dCustomer['shipping']['postalCode'] and dCustomer['shipping']['postalCode'][:10],
+				"primaryPhone": dCustomer['phone'] and dCustomer['phone'][:25],
+			}
 
-			# Get the latest landing
-			lLandings = TfLanding.find(
-				dCustomer['shipping']['lastName'],
-				dCustomer['email'] or '',
-				dCustomer['phone'],
-				['MIP-A1', 'MIP-A2', 'MIP-H1', 'MIP-H2']
-			)
+			# Get the latest landing by customer ID
+			lLandings = TfLanding.filter({
+				"complete": 'Y',
+				"ktCustomerId": str(data['customerId']),
+				"formId": ['MIP-A1', 'MIP-A2', 'MIP-H1', 'MIP-H2']
+			}, raw=['landing_id', 'formId', 'submitted_at', 'complete'], orderby=[['submitted_at', 'DESC']])
+
+			# If we got nothing
 			if not lLandings:
-				return Services.Response(error=(1104, 'mip'))
 
-			# Store the latest
-			dLanding = lLandings[0]
+				# Get the latest landing by the old last name + (email || phone)
+				lLandings = TfLanding.find(
+					dData['lastName'],
+					dData['email'] or '',
+					dData['primaryPhone'],
+					form=['MIP-A1', 'MIP-A2', 'MIP-H1', 'MIP-H2'],
+					completed_only=True
+				)
+				if not lLandings:
+					return Services.Error(1104, 'mip')
 
-		# Get the DOB
-		sDOB = TfAnswer.dob(dLanding['landing_id'])
-		if not sDOB:
-			return Services.Response(error=1910)
+			# Get the DOB
+			sDOB = TfAnswer.dob(lLandings[0]['landing_id'])
+			if not sDOB:
+				return Services.Response(error=1910)
+
+			# Set the DOB
+			dData['dateOfBirth'] = sDOB
 
 		# Try to update the fields
 		try:
-			sDT = arrow.get().format('YYYY-MM-DD HH:mm:ss')
-			oDsPatient['firstName'] = dCustomer['shipping']['firstName'] and dCustomer['shipping']['firstName'][:35];
-			oDsPatient['lastName'] = dCustomer['shipping']['lastName'] and dCustomer['shipping']['lastName'][:35];
-			oDsPatient['dateOfBirth'] = sDOB;
-			oDsPatient['email'] = dCustomer['email'] and dCustomer['email'][:255];
-			oDsPatient['address1'] = dCustomer['shipping']['address1'] and dCustomer['shipping']['address1'][:35];
-			oDsPatient['address2'] = dCustomer['shipping']['address2'] and dCustomer['shipping']['address2'][:35];
-			oDsPatient['city'] = dCustomer['shipping']['city'] and dCustomer['shipping']['city'][:35];
-			oDsPatient['state'] = dCustomer['shipping']['state'] and dCustomer['shipping']['state'][:35];
-			oDsPatient['zipCode'] = dCustomer['shipping']['postalCode'] and dCustomer['shipping']['postalCode'][:10];
-			oDsPatient['primaryPhone'] = dCustomer['phone'] and dCustomer['phone'][:25];
-			oDsPatient['updatedAt'] = sDT
+
+			# Update the fields passed
+			for f in ['firstName', 'lastName', 'gender', 'dateOfBirth', 'email',
+						'address1', 'address2', 'city', 'state', 'zipCode',
+						'primaryPhone']:
+				if f in dData:
+					oDsPatient[f] = dData[f]
+				else:
+					oDsPatient[f] = ''
+
+			# Update the timestamp
+			oDsPatient['updatedAt'] = arrow.get().format('YYYY-MM-DD HH:mm:ss')
+
+			# Save the record
 			oDsPatient.save()
+
 		except ValueError as e:
 			return Services.Response(error=(1001, [e.args[0]]))
 
@@ -1116,17 +1164,17 @@ class Monolith(Services.Service):
 		oResponse = Services.update('prescriptions', 'patient', {
 			"patient": {
 				"id": int(oDsPatient['patientId']),
-				"firstName": dCustomer['shipping']['firstName'],
-				"lastName": dCustomer['shipping']['lastName'],
-				"dateOfBirth": sDOB,
-				"gender": '1',
-				"email": dCustomer['email'],
-				"address1": dCustomer['shipping']['address1'],
-				"address2": dCustomer['shipping']['address2'],
-				"city": dCustomer['shipping']['city'],
-				"state": dCustomer['shipping']['state'],
-				"zipCode": dCustomer['shipping']['postalCode'],
-				"primaryPhone": dCustomer['phone'],
+				"firstName": oDsPatient['firstName'],
+				"lastName": oDsPatient['lastName'],
+				"dateOfBirth": oDsPatient['dateOfBirth'],
+				"gender": oDsPatient['gender'],
+				"email": oDsPatient['email'],
+				"address1": oDsPatient['address1'],
+				"address2": oDsPatient['address2'],
+				"city": oDsPatient['city'],
+				"state": oDsPatient['state'],
+				"zipCode": oDsPatient['zipCode'],
+				"primaryPhone": oDsPatient['primaryPhone'],
 				"primaryPhoneType": '4',
 				"active": 'Y'
 			},
@@ -1230,6 +1278,7 @@ class Monolith(Services.Service):
 
 		# Look for a landing by customerId
 		dLanding = TfLanding.filter({
+			"complete": 'Y',
 			"ktCustomerId": dCustomer['customerId'],
 			"formId": ['MIP-A1', 'MIP-A2', 'MIP-H1', 'MIP-H2']
 		}, raw=['landing_id'], limit=1, orderby=[['submitted_at', 'DESC']])
@@ -1242,7 +1291,8 @@ class Monolith(Services.Service):
 				dCustomer['lastName'],
 				dCustomer['email'] or '',
 				dCustomer['primaryPhone'],
-				['MIP-A1', 'MIP-A2', 'MIP-H1', 'MIP-H2']
+				form=['MIP-A1', 'MIP-A2', 'MIP-H1', 'MIP-H2'],
+				completed_only=True
 			)
 			if not lLandings:
 				return Services.Error(1517)
@@ -1805,7 +1855,7 @@ class Monolith(Services.Service):
 			"categories": dCategories
 		})
 
-	def customerIdByPhone_read(self, data, sesh):
+	def customerIdByPhone_read(self, data, sesh=None):
 		"""Customer ID By Phone
 
 		Fetches a customer's ID by their phone number
@@ -1817,6 +1867,10 @@ class Monolith(Services.Service):
 		Returns:
 			Services.Response
 		"""
+
+		# If there's no session
+		if not sesh:
+			Rights.internal(data)
 
 		# Verify fields
 		try: DictHelper.eval(data, ['phoneNumber'])
@@ -1919,7 +1973,7 @@ class Monolith(Services.Service):
 
 		# Fetch the incoming messages
 		lMsgs = CustomerCommunication.incoming(
-			data['customerPhone'],
+			data['customerPhone'][-10:],
 			data['start'],
 			data['count']
 		)
@@ -2151,23 +2205,35 @@ class Monolith(Services.Service):
 			Services.Response
 		"""
 
-		# Verify fields
-		try: DictHelper.eval(data, ['_internal_', 'customerId'])
-		except ValueError as e: return Services.Response(error=(1001, [(f, 'missing') for f in e.args]))
+		# Check internal key
+		Rights.internal(data)
 
-		# Verify the key, remove it if it's ok
-		if not Services.internalKey(data['_internal_']):
-			return Services.Response(error=Errors.SERVICE_INTERNAL_KEY)
-		del data['_internal_']
+		# Make sure we have customerId(s)
+		if 'customerId' not in data:
+			return Services.Error(1001, [('customerId', 'missing')])
+
+		# Raw fields
+		lRaw = ['firstName', 'lastName']
+
+		# If additional fields are requested
+		if 'additional_fields' in data:
+			if isinstance(data['additional_fields'], str):
+				lRaw.extend([s.strip() for s in data['additional_fields'].split(',')])
+			elif isinstance(data['additional_fields'], list):
+				lRaw.extend(data['additional_fields'])
+			else:
+				return Services.Error(1001, [('additional_fields', 'invalid')])
 
 		# If there's only one
 		if isinstance(data['customerId'], str):
-			mRet = KtCustomer.filter({"customerId": data['customerId']}, raw=['firstName', 'lastName'], limit=1)
+			mRet = KtCustomer.filter({"customerId": data['customerId']}, raw=lRaw, limit=1)
 		elif isinstance(data['customerId'], list):
-			mRet = {
-				d['customerId']: {"firstName": d['firstName'], "lastName": d['lastName']}
-				for d in KtCustomer.filter({"customerId": data['customerId']}, raw=['customerId', 'firstName', 'lastName'])
-			}
+			lRaw.append('customerId')
+			mRet = {}
+			lResults = KtCustomer.filter({"customerId": data['customerId']}, raw=lRaw)
+			for d in lResults:
+				sID = d.pop('customerId')
+				mRet[sID] = d
 		else:
 			return Services.Response(error=(1001, [('customerId', 'invalid')]))
 
@@ -2285,8 +2351,11 @@ class Monolith(Services.Service):
 				oStatus['updatedAt']: sDT
 				oStatus.save()
 
-			# Set the note to an order
+			# Set the action
 			dNote['action'] = sAction
+
+		# If we have an orderId
+		if 'orderId' in data:
 			dNote['parentTable'] = 'kt_order'
 			dNote['parentColumn'] = 'orderId'
 			dNote['columnValue'] = str(data['orderId'])
@@ -2332,8 +2401,12 @@ class Monolith(Services.Service):
 		try: data['customerId'] = int(data['customerId'])
 		except ValueError: return Services.Response(error=(1001, [('customerId', "invalid")]))
 
+		# If we don't have an action list
+		if 'action' not in data:
+			data['action'] = None
+
 		# Fetch all notes
-		lNotes = SmpNote.byCustomer(data['customerId'])
+		lNotes = SmpNote.byCustomer(data['customerId'], data['action'])
 
 		# Fetch the latest order status
 		dStatus = SmpOrderStatus.latest(data['customerId'])
@@ -2349,7 +2422,7 @@ class Monolith(Services.Service):
 			dStatus = {
 				"orderId": dStatus['orderId'],
 				"role": dStatus['attentionRole'] or '',
-				"label": dStatus['orderLabel']
+				"label": dStatus['orderLabel'] or ''
 			}
 
 		# Fetch and return all notes
@@ -2639,7 +2712,7 @@ class Monolith(Services.Service):
 			if not dDetails:
 				return Services.Response(error=(1104, 'order'))
 
-			# Find the order status (fuck this is fucking stupid as fuck, fuck memo)
+			# Find the order status
 			oStatus = SmpOrderStatus.filter({
 				"orderId": oClaim['orderId']
 			}, limit=1)
@@ -2803,8 +2876,7 @@ class Monolith(Services.Service):
 			"ticket": oClaim['ticket'],
 			"user": data['user_id'],
 			"transferredBy": sesh['memo_id'],
-			"viewed": False,
-			"ticket": oClaim['ticket']
+			"viewed": False
 		}
 
 		# Create a new claim instance for the agent and store in the DB
@@ -2901,15 +2973,17 @@ class Monolith(Services.Service):
 		# If we're looking for ED
 		if data['type'] == 'ed':
 			lUsers = User.filter({
-				'eDFlag': 'Y',
-				'practiceStates': {'like': '%%%s%%' % dCustomer['shipState']}
+				"activeFlag": 'Y',
+				"eDFlag": 'Y',
+				"practiceStates": {'like': '%%%s%%' % dCustomer['shipState']}
 			}, raw=['id', 'firstName', 'lastName'])
 
 		# Else, if we're looking for HRT
 		elif data['type'] == 'hrt':
 			lUsers = User.filter({
-				'hormoneFlag': 'Y',
-				'hrtPracticeStates': {'like': '%%%s%%' % dCustomer['shipState']}
+				"activeFlag": 'Y',
+				"hormoneFlag": 'Y',
+				"hrtPracticeStates": {'like': '%%%s%%' % dCustomer['shipState']}
 			}, raw=['id', 'firstName', 'lastName'])
 
 		# Return the list of users
@@ -3045,14 +3119,12 @@ class Monolith(Services.Service):
 			Services.Response
 		"""
 
-		# Verify fields
-		try: DictHelper.eval(data, ['_internal_', 'customerIds'])
-		except ValueError as e: return Services.Response(error=(1001, [(f, 'missing') for f in e.args]))
+		# Check internal key
+		Rights.internal(data)
 
-		# Verify the key, remove it if it's ok
-		if not Services.internalKey(data['_internal_']):
-			return Services.Response(error=Errors.SERVICE_INTERNAL_KEY)
-		del data['_internal_']
+		# If we have no customerIds
+		if 'customerIds' not in data:
+			return Services.Error(1001, [('customerIds', 'missing')])
 
 		# Get the customer data
 		lCustomers = KtCustomer.withClaimed(data['customerIds'])
@@ -3333,9 +3405,21 @@ class Monolith(Services.Service):
 		if 'auto_response' not in data:
 			data['auto_response'] = False
 
+		# If the store on error flag is missing
+		if 'store_on_error' not in data:
+			data['store_on_error'] = False
+
+		# Init possible error message
+		sErrorMsg = None
+
 		# Check the number isn't blocked
 		if SMSStop.filter({"phoneNumber": data['customerPhone'], "service": data['type']}):
-			return Services.Response(error=1500)
+
+			# Check if we store on errors
+			if data['store_on_error']:
+				sErrorMsg = 'STOP'
+			else:
+				return Services.Response(error=1500)
 
 		# If the content is too long
 		if len(data['content']) >= 1600:
@@ -3373,6 +3457,8 @@ class Monolith(Services.Service):
 		# Validate values by creating an instance
 		try:
 			oCustomerCommunication = CustomerCommunication({
+				"status": sErrorMsg and 'Undelivered' or None,
+				"errorMessage": sErrorMsg,
 				"type": "Outgoing",
 				"fromName": data['name'],
 				"toPhone": data['customerPhone'],
@@ -3383,20 +3469,30 @@ class Monolith(Services.Service):
 		except ValueError as e:
 			return Services.Response(error=(1001, e.args[0]))
 
-		# Send the SMS
-		oResponse = Services.create('communications', 'sms', {
-			"_internal_": Services.internalKey(),
-			"to": data['customerPhone'],
-			"content": data['content'],
-			"service": data['type']
-		})
+		# Send the SMS (If we don't have a STOP)
+		if not sErrorMsg:
+			oResponse = Services.create('communications', 'sms', {
+				"_internal_": Services.internalKey(),
+				"to": data['customerPhone'],
+				"content": data['content'],
+				"service": data['type']
+			})
 
-		# If we got an error
-		if oResponse.errorExists():
-			return oResponse
+			# If we got an error
+			if oResponse.errorExists():
+
+				# Check if we store on errors
+				if data['store_on_error']:
+					oCustomerCommunication['status'] = 'Undelivered'
+					oCustomerCommunication['errorMessage'] = oResponse.error['msg']
+				else:
+					return oResponse
+
+			# Else, store the SID
+			else:
+				oCustomerCommunication['sid'] = oResponse.data
 
 		# Store the message record
-		oCustomerCommunication['sid'] = oResponse.data
 		oCustomerCommunication.create()
 
 		# Catch issues with summary
@@ -3535,9 +3631,7 @@ class Monolith(Services.Service):
 					"count": dR['count'],
 					"total": dR['total'],
 					"last": dR['last']
-				} for dR in CustomerReviews.filter({
-					"customerId": [dC['customerId'] for dC in dCustomers.values()]
-				})
+				} for dR in CustomerReviews.get([dC['customerId'] for dC in dCustomers.values()], raw=True)
 			}
 
 		# Get a list of all the user IDs
@@ -3883,7 +3977,7 @@ class Monolith(Services.Service):
 		oKtOrder['orderStatus'] = 'COMPLETE'
 		oKtOrder.save()
 
-		# Update memo cause it sucks
+		# Update memo
 		self.orderRefresh_update({
 			"orderId": data['orderId']
 		}, sesh)
@@ -3922,7 +4016,7 @@ class Monolith(Services.Service):
 		})
 		oSmpNote.create()
 
-		# Find the order status (fuck this is fucking stupid as fuck, fuck memo)
+		# Find the order status
 		oStatus = SmpOrderStatus.filter({
 			"orderId": data['orderId']
 		}, limit=1)
@@ -4073,6 +4167,106 @@ class Monolith(Services.Service):
 			oClaim.delete(),
 			warning=mWarning
 		)
+
+	def orderClaim_update(self, data, sesh):
+		"""Order Claim Update
+
+		Transfers an order claim from one provider to another
+
+		Arguments:
+			data (dict): Data sent with the request
+			sesh (Sesh._Session): The session associated with the request
+
+		Returns:
+			Services.Response
+		"""
+
+		# Make sure the user has the proper permission to do this
+		Rights.check(sesh, 'order_claims', Rights.UPDATE)
+
+		# Verify fields
+		try: DictHelper.eval(data, ['customerId', 'user_id', 'note'])
+		except ValueError as e: return Services.Response(error=(1001, [(f, 'missing') for f in e.args]))
+
+		# Find the claim with campaign and customer info
+		dClaim = KtOrderClaim.withType(data['customerId'])
+		if not dClaim:
+			return Services.Response(False)
+
+		# If the current owner of the claim is not the person transferring,
+		#	check permissions
+		if dClaim['user'] != sesh['memo_id']:
+			return Services.Error(1000)
+
+		# Pull off the customer name and type
+		sCustomerName = dClaim.pop('customerName')
+		sType = dClaim.pop('type')
+
+		# Create a claim instance
+		oClaim = KtOrderClaim(dClaim)
+
+		# Find the user
+		dUser = User.get(data['user_id'], raw=['firstName', 'lastName'])
+		if not dUser:
+			return Services.Error(1104, 'user_id')
+
+		# Switch the user associated to the logged in user
+		oClaim['user'] = data['user_id']
+		oClaim['transferredBy'] = sesh['memo_id']
+		oClaim['viewed'] = False
+		oClaim.save()
+
+		# Claim data
+		dData = {
+			"customerId": dClaim['customerId'],
+			"customerName": sCustomerName,
+			"orderId": dClaim['orderId'],
+			"continuous": dClaim['continuous'],
+			"user": data['user_id'],
+			"transferredBy": sesh['memo_id'],
+			"viewed": False,
+			"ticket": dClaim['ticket'],
+			"type": sType
+		}
+
+		# Get the name of the transfer user
+		dUser = User.get(dData['transferredBy'], raw=['id', 'firstName', 'lastName'])
+		dData['transferredByName'] = dUser and '%s %s' % (dUser['firstName'], dUser['lastName']) or 'N/A'
+
+		# Sync the transfer for anyone interested
+		Sync.push('monolith', 'user-%s' % str(data['user_id']), {
+			"type": 'claim_transfered',
+			"claim": dData
+		})
+
+		# Get current date/time
+		sDT = arrow.get().format('YYYY-MM-DD HH:mm:ss')
+
+		# Init note fields
+		dNote = {
+			"action": 'Provider Transfer',
+			"createdBy": sesh['memo_id'],
+			"note": data['note'],
+			"createdAt": sDT,
+			"updatedAt": sDT
+		}
+
+		# If we have an order ID
+		if dClaim['orderId']:
+			dNote['parentTable'] = 'kt_order'
+			dNote['parentColumn'] = 'orderId'
+			dNote['columnValue'] = dClaim['orderId']
+		else:
+			dNote['parentTable'] = 'kt_customer'
+			dNote['parentColumn'] = 'customerId'
+			dNote['columnValue'] = dClaim['customerId']
+
+		# Store transfer note
+		oSmpNote = SmpNote(dNote)
+		sNoteID = oSmpNote.create()
+
+		# Return the note ID
+		return Services.Response(sNoteID)
 
 	def orderClaimView_update(self, data, sesh):
 		"""Order Claim View
@@ -4303,6 +4497,7 @@ class Monolith(Services.Service):
 
 		# If there is no next bill date
 		if not oResponse.data['nextBillDate']:
+			oOrder.delete()
 			return Services.Error(1519)
 
 		# Get the delta between now and the next bill date
@@ -4314,10 +4509,11 @@ class Monolith(Services.Service):
 			# Charge the purchase immediately
 			oResponse = Services.update('konnektive', 'purchase/charge', {
 				"purchaseId": oOrder['purchaseId']
-			})
+			}, sesh)
 
 			# If there's an error
 			if oResponse.errorExists():
+				emailError('Continuous Approve ERROR', 'Data: %s\n\nResponse: %s' % (str(data), str(oResponse)))
 				return oResponse
 
 		# Notify the patient
@@ -4535,7 +4731,7 @@ class Monolith(Services.Service):
 		})
 		sNoteID = oSmpNote.create()
 
-		# Find the order status (fuck this is fucking stupid as fuck, fuck memo)
+		# Find the order status
 		oStatus = SmpOrderStatus.filter({
 			"orderId": data['orderId']
 		}, limit=1)
@@ -4557,6 +4753,35 @@ class Monolith(Services.Service):
 
 		# Return the note ID
 		return Services.Response(sNoteID)
+
+	def orderId_read(self, data, sesh):
+		"""Order ID
+
+		Returns monolith's ID for the KNK order
+
+		Arguments:
+			data (dict): Data sent with the request
+			sesh (Sesh._Session): The session associated with the request
+
+		Returns:
+			Services.Response
+		"""
+
+		# If the order ID is missing
+		if 'orderId' not in data:
+			return Services.Error(1001, [('orderId', 'missing')])
+
+		# Look for the order
+		dKtOrder = KtOrder.filter({
+			"orderId": data['orderId']
+		}, raw=['id'], limit=1)
+
+		# If there's no such order
+		if not dKtOrder:
+			return Services.Error(1104)
+
+		# Return the ID
+		return Services.Response(dKtOrder['id'])
 
 	def orderLabel_update(self, data, sesh):
 		"""Order Label
@@ -4652,7 +4877,7 @@ class Monolith(Services.Service):
 		try: DictHelper.eval(data, ['orderId'])
 		except ValueError as e: return Services.Response(error=(1001, [(f, 'missing') for f in e.args]))
 
-		# Make the request of Memo to refresh it's shitty data from KNK
+		# Make the request of Memo to refresh
 		oRes = Memo.update('rest/order/refresh', {
 			"orderId": data['orderId']
 		})
@@ -4808,7 +5033,7 @@ class Monolith(Services.Service):
 		# If we have an order ID
 		if oOrderClaim['orderId']:
 
-			# Find the order status (fuck this is fucking stupid as fuck, fuck memo)
+			# Find the order status
 			oStatus = SmpOrderStatus.filter({
 				"orderId": oOrderClaim['orderId']
 			}, limit=1)

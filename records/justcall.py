@@ -15,6 +15,66 @@ __created__		= "2021-06-24"
 from FormatOC import Tree
 from RestOC import Record_MySQL
 
+# QueueCall class
+class QueueCall(Record_MySQL.Record):
+	"""Queue Call
+
+	Represents a JustCall queued call
+	"""
+
+	_conf = None
+	"""Configuration"""
+
+	@classmethod
+	def config(cls):
+		"""Config
+
+		Returns the configuration data associated with the record type
+
+		Returns:
+			dict
+		"""
+
+		# If we haven loaded the config yet
+		if not cls._conf:
+			cls._conf = Record_MySQL.Record.generateConfig(
+				Tree.fromFile('definitions/justcall/queue_call.json'),
+				'mysql'
+			)
+
+		# Return the config
+		return cls._conf
+
+# QueueNumber class
+class QueueNumber(Record_MySQL.Record):
+	"""Queue Number
+
+	Represents a JustCall queue number and it's CS type
+	"""
+
+	_conf = None
+	"""Configuration"""
+
+	@classmethod
+	def config(cls):
+		"""Config
+
+		Returns the configuration data associated with the record type
+
+		Returns:
+			dict
+		"""
+
+		# If we haven loaded the config yet
+		if not cls._conf:
+			cls._conf = Record_MySQL.Record.generateConfig(
+				Tree.fromFile('definitions/justcall/queue_number.json'),
+				'mysql'
+			)
+
+		# Return the config
+		return cls._conf
+
 # MemoId class
 class MemoId(Record_MySQL.Record):
 	"""Memo ID

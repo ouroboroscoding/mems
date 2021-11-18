@@ -15,6 +15,7 @@ __created__		= "2020-05-10"
 from base64 import b64encode
 from decimal import Decimal
 from hashlib import sha512
+from operator import itemgetter
 from time import time
 from urllib.parse import urlencode
 
@@ -27,7 +28,8 @@ from RestOC import Conf, DictHelper, Errors, Record_MySQL, Services, StrHelper
 from shared import Memo, Rights
 
 # Records imports
-from records.prescriptions import Medication, Pharmacy, PharmacyFill, \
+from records.prescriptions import Diagnosis, HrtOrder, Medication, \
+									Pharmacy, PharmacyFill, \
 									PharmacyFillError, Product
 
 _dPharmacies = {
@@ -42,7 +44,7 @@ _dProviders = {
 	43331: 'Kelley Wyant',
 	43332: 'Peter Fotinos',
 	43410: 'Veronica Pike',
-	43411: 'Elizabeth Hernandez ',
+	43411: 'Elizabeth Hernandez',
 	43423: 'Stephenie Brinson',
 	43424: 'Jonathan Figg',
 	43425: 'Roland Green',
@@ -75,13 +77,21 @@ _dProviders = {
 	53780: 'Muna Orra',
 	54215: 'Jamie Bittar',
 	57458: 'Sasha Hanson',
-	58275: 'Stacy Comeau ',
+	58275: 'Stacy MacFarlane',
 	59335: 'Jessica Toath',
 	62726: 'Yannick Ferreri',
 	65753: 'Neifa Nayor',
 	66591: 'Marc Calabrese',
 	76563: 'Andrew Abraham',
-	85007: 'Grace Oropesa'
+	85007: 'Grace Oropesa',
+	159367: 'Courtney Durbin',
+	159371: 'Meagan Gregory',
+	160012: 'Brittany Newberry',
+	162961: 'Ebony Jenkins',
+	162955: 'Jana Mervine',
+	162993: 'Craig Walker',
+	164319: 'Elaine Zamora',
+	165147: 'Dorianne Williams'
 }
 
 _dStatus = {
@@ -123,7 +133,10 @@ class Prescriptions(Services.Service):
 	Service for Prescriptions access
 	"""
 
-	_install = [Medication, Pharmacy, PharmacyFill, PharmacyFillError, Product]
+	_install = [
+		Diagnosis, HrtOrder, Medication, Pharmacy, PharmacyFill, \
+		PharmacyFillError, Product
+	]
 	"""Record types called in install"""
 
 	def _generateIds(self, clinician_id):
@@ -257,6 +270,698 @@ class Prescriptions(Services.Service):
 			if not o.tableCreate():
 				print("Failed to create `%s` table" % o.tableName())
 
+	def diagnoses_read(self, data, sesh):
+		"""Diagnoses Read
+
+		Fetches and returns all ICD to DoseSpot Diagnosis ID records
+
+		Arguments:
+			data (dict): Data sent with the request
+			sesh (Sesh._Session): The session associated with the request
+
+		Returns:
+			Services.Response
+		"""
+
+		# Make sure the user has the proper rights
+		Rights.check(sesh, 'rx_diagnosis', Rights.READ)
+
+		# Find and return the records
+		return Services.Response(
+			Diagnosis.get(raw=True, orderby='title')
+		)
+
+	def diagnosis_create(self, data, sesh):
+		"""Diagnosis Create
+
+		Creates a new ICD to DoseSpot Diagnosis ID record
+
+		Arguments:
+			data (dict): Data sent with the request
+			sesh (Sesh._Session): The session associated with the request
+
+		Returns:
+			Services.Response
+		"""
+
+		# Make sure the user has the proper rights
+		Rights.check(sesh, 'rx_diagnosis', Rights.CREATE)
+
+		# Create a new instance
+		try:
+			oDiagnosis = Diagnosis(data)
+		except ValueError as e:
+			return Services.Response(error=(1001, e.args[0]))
+
+		# Create the record and get the ID
+		try:
+			sID = oDiagnosis.create()
+		except Record_MySQL.DuplicateException:
+			return Services.Error(1101)
+
+		# Return the ID
+		return Services.Response(sID)
+
+	def diagnosis_delete(self, data, sesh):
+		"""Diagnosis Delete
+
+		Deletes an existing ICD to DoseSpot Diagnosis ID record
+
+		Arguments:
+			data (dict): Data sent with the request
+			sesh (Sesh._Session): The session associated with the request
+
+		Returns:
+			Services.Response
+		"""
+
+		# Check for ID
+		if '_id' not in data:
+			return Services.Error(1001, [('_id', 'missing')])
+
+		# Make sure the user has the proper rights
+		Rights.check(sesh, 'rx_diagnosis', Rights.DELETE)
+
+		# Find the record
+		oDiagnosis = Diagnosis.get(data['_id'])
+
+		# Delete the record and return the result
+		return Services.Response(
+			oDiagnosis.delete()
+		)
+
+	def diagnosis_read(self, data, sesh):
+		"""Diagnosis Read
+
+		Fetches and returns an existing ICD to DoseSpot Diagnosis ID record
+
+		Arguments:
+			data (dict): Data sent with the request
+			sesh (Sesh._Session): The session associated with the request
+
+		Returns:
+			Services.Response
+		"""
+
+		# Check for ID
+		if '_id' not in data:
+			return Services.Error(1001, [('_id', 'missing')])
+
+		# Make sure the user has the proper rights
+		Rights.check(sesh, 'rx_diagnosis', Rights.READ)
+
+		# Find the record
+		dDiagnosis = Diagnosis.get(data['_id'])
+
+		# Return the product
+		return Services.Response(dDiagnosis)
+
+	def diagnosis_update(self, data, sesh):
+		"""Diagnosis Update
+
+		Updates an existing ICD to DoseSpot Diagnosis ID record
+
+		Arguments:
+			data (dict): Data sent with the request
+			sesh (Sesh._Session): The session associated with the request
+
+		Returns:
+			Services.Response
+		"""
+
+		# Check for ID
+		if '_id' not in data:
+			return Services.Error(1001, [('_id', 'missing')])
+
+		# Make sure the user has the proper rights
+		Rights.check(sesh, 'rx_diagnosis', Rights.UPDATE)
+
+		# Find the record
+		oDiagnosis = Diagnosis.get(data['_id'])
+
+		# Remove fields that can't be changed
+		del data['_id']
+		if '_created' in data: del data['_created']
+		if '_updated' in data: del data['_updated']
+
+		# If there's nothing left
+		if not data:
+			return Services.Response(False)
+
+		# Step through each field passed and update/validate it
+		lErrors = []
+		for f in data:
+			try: oDiagnosis[f] = data[f]
+			except ValueError as e: lErrors.append(e.args[0])
+
+		# If there was any errors
+		if lErrors:
+			return Services.Error(1001, lErrors)
+
+		# Update the record and return the result
+		return Services.Response(
+			oDiagnosis.save()
+		)
+
+	def diagnosisLookup_read(self, data, sesh):
+		"""Diagnosis Lookup
+
+		Searches ICD diagnosis in DoseSpot and returns diagnosisId
+
+		Arguments:
+			data (dict): Data sent with the request
+			sesh (Sesh._Session): The session associated with the request
+
+		Returns:
+			Services.Response
+		"""
+
+		# Verify minimum fields
+		try: DictHelper.eval(data, ['clinician_id', 'icd',])
+		except ValueError as e: return Services.Error(1001, [(f, 'missing') for f in e.args])
+
+		# Make sure the user has the proper rights
+		Rights.check(sesh, 'prescriptions', Rights.READ)
+
+		# Make sure we got an int
+		if not isinstance(data['clinician_id'], int):
+			return Services.Error(1001, [('clinician_id', 'must be integer')])
+
+		# Generate the token
+		sToken = self._generateToken(data['clinician_id'])
+
+		# Generate the URL
+		sURL = 'https://%s/webapi/api/diagnosis/searchByICD?searchString=%s' % (
+			self._host,
+			data['icd']
+		)
+
+		# Generate the headers
+		dHeaders = {
+			"Accept": "application/json",
+			"Authorization": "Bearer %s" % sToken
+		}
+
+		# Make the request
+		try:
+			oRes = requests.get(sURL, headers=dHeaders, timeout=30)
+		except requests.exceptions.ReadTimeout as e:
+			raise Services.ResponseException(error=(1004, 'DoseSpot'))
+
+		# If we didn't get a 200
+		if oRes.status_code != 200:
+			return Services.Error(1601, oRes.text)
+
+		# Get the data
+		dData = oRes.json()
+
+		# If we got an error
+		if dData['Result']['ResultCode'] == 'ERROR':
+			return Services.Error(1602, dData['Result']['ResultDescription'])
+
+		# Return the total count
+		return Services.Response(dData)
+
+	def dsDispenseunits_read(self, data, sesh):
+		"""Dispense Units
+
+		Returns the list of available dispense units in DoseSpot
+
+		Arguments:
+			data (dict): Data sent with the request
+			sesh (Sesh._Session): The session associated with the request
+
+		Returns:
+			Services.Response
+		"""
+
+		# Make sure the user has the proper rights
+		Rights.check(sesh, 'prescriptions', Rights.READ)
+
+		# If the clinician ID is missing
+		if 'clinician_id' not in data:
+
+			# Use the default
+			data['clinician_id'] = self._clinician_id
+
+		# Generate the token
+		sToken = self._generateToken(data['clinician_id'])
+
+		# Generate the URL
+		sURL = 'https://%s/webapi/api/dispenseUnits/' % (
+			self._host
+		)
+
+		# Generate the headers
+		dHeaders = {
+			"Accept": "application/json",
+			"Authorization": "Bearer %s" % sToken
+		}
+
+		# Make the request
+		oRes = requests.get(sURL, headers=dHeaders)
+
+		# If we didn't get a 200
+		if oRes.status_code != 200:
+			return Services.Error(1601, oRes.text)
+
+		# Get the data
+		dData = oRes.json()
+
+		# If we got an error
+		if dData['Result']['ResultCode'] == 'ERROR':
+			return Services.Error(1602, dData['Result']['ResultDescription'])
+
+		# Create the list
+		lUnits = [{
+			"unit_id": d['StandardDispenseUnitTypeID'],
+			"name": d['SingularOrPlural']
+		} for d in dData['Items'] if d['IsActive']]
+
+		# Return the ordered list
+		return Services.Response(
+			sorted(lUnits, key=itemgetter('name'))
+		)
+
+	def dsPharmacies_read(self, data, sesh):
+		"""DoseSpot Pharmacies
+
+		Searches DoseSpot for pharmacies and returns the IDs so they can be
+		added to patients
+
+		Arguments:
+			data (dict): Data sent with the request
+			sesh (Sesh._Session): The session associated with the request
+
+		Returns:
+			Services.Response
+		"""
+
+		# Make sure the user has the proper rights
+		Rights.check(sesh, 'prescriptions', Rights.READ)
+
+		# Verify fields
+		try: DictHelper.eval(data, ['clinician_id', 'search'])
+		except ValueError as e: return Services.Error(1001, [(f, 'missing') for f in e.args])
+
+		# Remove empty search fields
+		data['search'] = {
+			f: data['search'][f].strip()
+			for f in data['search']
+			if data['search'][f].strip() != ''
+		}
+
+		# Generate the token
+		sToken = self._generateToken(data['clinician_id'])
+
+		# Generate the URL
+		sURL = 'https://%s/webapi/api/pharmacies/search?%s' % (
+			self._host,
+			urlencode(data['search'])
+		)
+
+		# Generate the headers
+		dHeaders = {
+			"Accept": "application/json",
+			"Authorization": "Bearer %s" % sToken
+		}
+
+		# Make the request
+		oRes = requests.get(sURL, headers=dHeaders)
+
+		# If we didn't get a 200
+		if oRes.status_code != 200:
+			return Services.Error(1601, oRes.text)
+
+		# Get the data
+		dData = oRes.json()
+
+		# If we got an error
+		if dData['Result']['ResultCode'] == 'ERROR':
+			return Services.Error(1602, dData['Result']['ResultDescription'])
+
+		# Return the list
+		return Services.Response([
+			{"pharmacyId": d['PharmacyId'], "name": d['StoreName']}
+			for d in dData['Items']
+		])
+
+	def hrtOrder_delete(self, data, sesh):
+		"""HRT Order Delete
+
+		Deletes an HRT order so that no prescription needs to be made
+
+		Arguments:
+			data (dict): Data sent with the request
+			sesh (Sesh._Session): The session associated with the request
+
+		Returns:
+			Services.Response
+		"""
+
+		# Make sure the user has the proper rights
+		Rights.check(sesh, 'rx_hrt_order', Rights.DELETE)
+
+		# If the ID is missing
+		if '_id' not in data:
+			return Services.Error(1001, [('_id', 'missing')])
+
+		# Delete the record and return the result
+		return Services.Response(
+			HrtOrder.deleteGet(data['_id']) and True or False
+		)
+
+	def hrtOrderClaim_update(self, data, sesh):
+		"""HRT Order Claim
+
+		Claims the order for a specific agent
+
+		Arguments:
+			data (dict): Data sent with the request
+			sesh (Sesh._Session): The session associated with the request
+
+		Returns:
+			Services.Response
+		"""
+
+		# Make sure the user has the proper rights
+		Rights.check(sesh, 'rx_hrt_order', Rights.UPDATE)
+
+		# If the ID is missing
+		if '_id' not in data:
+			return Services.Error(1001, [('_id', 'missing')])
+
+		# Find the record
+		oOrder = HrtOrder.get(data['_id'])
+
+		# If it's not found
+		if not oOrder:
+			return Services.Error(1104)
+
+		# If it's already claimed
+		if 'claimed_by' in oOrder and oOrder['claimed_by']:
+
+			# Init the return
+			dError = {
+				"claimed_by": oOrder['claimed_by'],
+				"ticket": oOrder['ticket']
+			}
+
+			# Get the username
+			dUser = Memo.name(oOrder['claimed_by'])
+			try: dError['claimedName'] = '%s %s' % (dUser['firstName'], dUser['lastName'])
+			except KeyError: dError['claimedName'] = 'NOT FOUND'
+
+			# Return the claimed info
+			return Services.Error(1604, dError)
+
+		# If the user has no memo ID
+		if 'memo_id' not in sesh:
+			return Services.Error(1002)
+
+		# Update the claim using the logged in user
+		oOrder['claimed_by'] = sesh['memo_id']
+
+		# If a ticket was passed
+		if 'ticket' in data:
+			oOrder['ticket'] = data['ticket']
+
+		# Save the record and return the response
+		return Services.Response(
+			oOrder.save()
+		)
+
+	def hrtOrderComplete_update(self, data, sesh):
+		"""HRT Order Complete
+
+		Updates the completed field of the order
+
+		Arguments:
+			data (dict): Data sent with the request
+			sesh (Sesh._Session): The session associated with the request
+
+		Returns:
+			Services.Response
+		"""
+
+		# Make sure the user has the proper rights
+		Rights.check(sesh, 'rx_hrt_order', Rights.UPDATE)
+
+		# Verify fields
+		try: DictHelper.eval(data, ['_id'])
+		except ValueError as e: return Services.Error(1001, [(f, 'missing') for f in e.args])
+
+		# Find the record
+		oHrt = HrtOrder.get(data['_id'])
+
+		# If it's not found
+		if not oHrt:
+			return Services.Error(1104)
+
+		# If the user has no memo ID
+		if 'memo_id' not in sesh:
+			return Services.Error(1002)
+
+		# Clear the claimed and flagged
+		oHrt['claimed_by'] = None
+		oHrt['flagged'] = False
+
+		# Set the completed
+		oHrt['completed'] = data['completed']
+		oHrt['completed_by'] = sesh['memo_id']
+
+		# Save the record and return the response
+		return Services.Response(
+			oHrt.save()
+		)
+
+	def hrtOrderFlag_update(self, data, sesh):
+		"""HRT Order Flag
+
+		Marks an order as flagged for further review
+
+		Arguments:
+			data (dict): Data sent with the request
+			sesh (Sesh._Session): The session associated with the request
+
+		Returns:
+			Services.Response
+		"""
+
+		# Make sure the user has the proper rights
+		Rights.check(sesh, 'rx_hrt_order', Rights.UPDATE)
+
+		# Make sure we have an ID
+		if '_id' not in data:
+			return Services.Error(1001, [('_id', 'missing')])
+
+		# Find the record
+		oHrt = HrtOrder.get(data['_id'])
+
+		# If it's not found
+		if not oHrt:
+			return Services.Error(1104)
+
+		# If the user has no memo ID
+		if 'memo_id' not in sesh:
+			return Services.Error(1002)
+
+		# Clear the claimed and completed
+		oHrt['claimed_by'] = None
+		oHrt['completed'] = False
+		oHrt['completed_by'] = None
+
+		# Mark as flagged
+		oHrt['flagged'] = True
+
+		# Save the record and return the response
+		return Services.Response(
+			oHrt.save()
+		)
+
+	def hrtOrderIncomplete_read(self, data, sesh):
+		"""HRT Order Incomplete
+
+		Returns all records that aren't marked as completed or refunded
+
+		Arguments:
+			data (dict): Data sent with the request
+			sesh (Sesh._Session): The session associated with the request
+
+		Returns:
+			Services.Response
+		"""
+
+		# Make sure the user has the proper rights
+		Rights.check(sesh, 'rx_hrt_order', Rights.READ)
+
+		# Fetch all the records that aren't completed
+		lOrders = HrtOrder.filter(
+			{"completed": False},
+			raw=True,
+			orderby='_created'
+		)
+
+		# Fetch the customer names
+		dCustomers = Memo.customerName(
+			list(set([d['crm_id'] for d in lOrders])),
+			False,
+			['phoneNumber']
+		)
+
+		# Fetch the user names
+		dUsers = Memo.name(list(set(
+			[d['claimed_by'] for d in lOrders if d['claimed_by']]
+		)))
+
+		# Go through each order
+		for d in lOrders:
+
+			# Add the customer name
+			try: dCustomer = dCustomers[d['crm_id']]
+			except KeyError: dCustomer = {'firstName': 'NOT', 'lastName': 'FOUND', 'phoneNumber': ''}
+			d['customerName'] = '%s %s' % (dCustomer['firstName'], dCustomer['lastName'])
+			d['customerPhone'] = dCustomer['phoneNumber']
+
+			# Add the claimed name
+			if d['claimed_by']:
+				try: dUser = dUsers[d['claimed_by']]
+				except KeyError: dUser = {'firstName': 'NOT', 'lastName': 'FOUND'}
+				d['claimedName'] = '%s %s' % (dUser['firstName'], dUser['lastName'])
+
+		# Return the orders
+		return Services.Response(lOrders)
+
+	def hrtOrderIncompleteCount_read(self, data, sesh):
+		"""HRT Order Incomplete Count
+
+		Returns the count of all records that aren't marked as completed
+
+		Arguments:
+			data (dict): Data sent with the request
+			sesh (Sesh._Session): The session associated with the request
+
+		Returns:
+			Services.Response
+		"""
+
+		# Make sure the user has the proper rights
+		Rights.check(sesh, 'rx_hrt_order', Rights.READ)
+
+		# Fetch the count of all the records that aren't completed and return it
+		return Services.Response(
+			HrtOrder.count(filter={"completed": False})
+		)
+
+	def hrtOrderSearch_read(self, data, sesh):
+		"""HRT Order Search
+
+		Searches HRT Orders
+
+		Arguments:
+			data (dict): Data sent with the request
+			sesh (Sesh._Session): The session associated with the request
+
+		Returns:
+			Services.Response
+		"""
+
+		# Make sure the user has the proper rights
+		Rights.check(sesh, 'rx_hrt_order', Rights.READ)
+
+		# Verify minimum fields
+		try: DictHelper.eval(data, ['start', 'end',])
+		except ValueError as e: return Services.Error(1001, [(f, 'missing') for f in e.args])
+
+		# Init the filter
+		dFilter = {
+			"date": {"between": [data['start'], data['end']]}
+		}
+
+		# Check for other filters
+		for f in ['claimed_by', 'flagged', 'completed', 'completed_by']:
+			if f in data:
+				dFilter[f] = data[f]
+
+		# Fetch the orders
+		Record_MySQL.verbose(True)
+		lOrders = HrtOrder.filter(dFilter, raw=True, orderby='date')
+		Record_MySQL.verbose(False)
+
+		# Fetch the customer names
+		dCustomers = Memo.customerName(list(set([d['crm_id'] for d in lOrders])))
+
+		# Fetch the user names
+		dUsers = Memo.name(list(set(
+			[d['claimed_by'] for d in lOrders if d['claimed_by']] +
+			[d['completed_by'] for d in lOrders if d['completed_by']]
+		)))
+
+		# Go through each order
+		for d in lOrders:
+
+			# Add the customer name
+			try: dCustomer = dCustomers[d['crm_id']]
+			except KeyError: dCustomer = {'firstName': 'NOT', 'lastName': 'FOUND'}
+			d['customerName'] = '%s %s' % (dCustomer['firstName'], dCustomer['lastName'])
+
+			# Add the claimed name
+			if d['claimed_by']:
+				try: dUser = dUsers[d['claimed_by']]
+				except KeyError: dUser = {'firstName': 'NOT', 'lastName': 'FOUND'}
+				d['claimedName'] = '%s %s' % (dUser['firstName'], dUser['lastName'])
+			else:
+				d['claimedName'] = ''
+
+			# Add the completed name
+			if d['completed_by']:
+				try: dUser = dUsers[d['completed_by']]
+				except KeyError: dUser = {'firstName': 'NOT', 'lastName': 'FOUND'}
+				d['completedName'] = '%s %s' % (dUser['firstName'], dUser['lastName'])
+			else:
+				d['completedName'] = ''
+
+		# Return the orders
+		return Services.Response(lOrders)
+
+	def hrtOrderTicket_update(self, data, sesh):
+		"""HRT Order Ticket
+
+		Attaches a ticket to the order
+
+		Arguments:
+			data (dict): Data sent with the request
+			sesh (Sesh._Session): The session associated with the request
+
+		Returns:
+			Services.Response
+		"""
+
+		# Make sure the user has the proper rights
+		Rights.check(sesh, 'rx_hrt_order', Rights.UPDATE)
+
+		# Verify fields
+		try: DictHelper.eval(data, ['_id', 'ticket'])
+		except ValueError as e: return Services.Error(1001, [(f, 'missing') for f in e.args])
+
+		# Find the record
+		oOrder = HrtOrder.get(data['_id'])
+
+		# If it's not found
+		if not oOrder:
+			return Services.Error(1104)
+
+		# Add the ticket
+		try:
+			oOrder['ticket'] = data['ticket']
+		except ValueError as e:
+			return Services.Error(1001, e.args[0])
+
+		# Save the order and return the result
+		return Services.Response(
+			oOrder.save()
+		)
+
 	def patient_create(self, data, sesh):
 		"""Patient Create
 
@@ -275,7 +980,7 @@ class Prescriptions(Services.Service):
 
 		# Verify fields
 		try: DictHelper.eval(data, ['clinician_id', 'patient'])
-		except ValueError as e: return Services.Response(error=(1001, [(f, 'missing') for f in e.args]))
+		except ValueError as e: return Services.Error(1001, [(f, 'missing') for f in e.args])
 
 		# Convert the keys
 		try:
@@ -286,7 +991,7 @@ class Prescriptions(Services.Service):
 				"Gender": data['patient']['gender'],
 				"Email": data['patient']['email'],
 				"Address1": (data['patient']['address1'] or '')[0:35],
-				"Address2": (data['patient']['address2'] or '')[0:35],
+				"Address2": ('address2' in data['patient'] and data['patient']['address2'] or '')[0:35],
 				"City": data['patient']['city'],
 				"State": data['patient']['state'],
 				"ZipCode": data['patient']['zipCode'],
@@ -295,7 +1000,7 @@ class Prescriptions(Services.Service):
 				"Active": 'true'
 			}
 		except Exception as e:
-			return Services.Response(error=(1001, str(e)))
+			return Services.Error(1001, str(e))
 
 		# Generate the token
 		sToken = self._generateToken(data['clinician_id'])
@@ -317,14 +1022,14 @@ class Prescriptions(Services.Service):
 
 		# If we didn't get a 200
 		if oRes.status_code != 200:
-			return Services.Response(error=(1601, oRes.text))
+			return Services.Error(1601, oRes.text)
 
 		# Get the response
 		dRes = oRes.json()
 
 		# If we got an error
 		if dRes['Result']['ResultCode'] == 'ERROR':
-			return Services.Response(error=(1602, dRes['Result']['ResultDescription']))
+			return Services.Error(1602, dRes['Result']['ResultDescription'])
 
 		# Return the ID
 		return Services.Response(dRes['Id'])
@@ -344,7 +1049,7 @@ class Prescriptions(Services.Service):
 
 		# Verify fields
 		try: DictHelper.eval(data, ['patient_id'])
-		except ValueError as e: return Services.Response(error=(1001, [(f, 'missing') for f in e.args]))
+		except ValueError as e: return Services.Error(1001, [(f, 'missing') for f in e.args])
 
 		# Make sure the user has the proper rights
 		Rights.check(sesh, 'prescriptions', Rights.READ, data['patient_id'])
@@ -357,7 +1062,7 @@ class Prescriptions(Services.Service):
 		for s in ['clinician_id', 'patient_id']:
 			lErrors = []
 			if not isinstance(data[s], int): lErrors.append((s, 'must be integer'))
-			if lErrors: return Services.Response(error=(1001, lErrors))
+			if lErrors: return Services.Error(1001, lErrors)
 
 		# Generate the token
 		sToken = self._generateToken(data['clinician_id'])
@@ -382,14 +1087,14 @@ class Prescriptions(Services.Service):
 
 		# If we didn't get a 200
 		if oRes.status_code != 200:
-			return Services.Response(error=(1601, oRes.text))
+			return Services.Error(1601, oRes.text)
 
 		# Get the data
 		dData = oRes.json()
 
 		# If we got an error
 		if dData['Result']['ResultCode'] == 'ERROR':
-			return Services.Response(error=(1602, dData['Result']['ResultDescription']))
+			return Services.Error(1602, dData['Result']['ResultDescription'])
 
 		# Return the pharmacies
 		return Services.Response(dData['Item'])
@@ -412,11 +1117,11 @@ class Prescriptions(Services.Service):
 
 		# Verify fields
 		try: DictHelper.eval(data, ['clinician_id', 'patient'])
-		except ValueError as e: return Services.Response(error=(1001, [(f, 'missing') for f in e.args]))
+		except ValueError as e: return Services.Error(1001, [(f, 'missing') for f in e.args])
 
 		# Make sure patient is a dict and has at least an id
 		if not isinstance(data['patient'], dict) or 'id' not in data['patient']:
-			return Services.Response(error=(1001, [('patient', 'invalid')]))
+			return Services.Error(1001, [('patient', 'invalid')])
 
 		# Convert the keys
 		try:
@@ -436,7 +1141,7 @@ class Prescriptions(Services.Service):
 				"Active": 'true'
 			}
 		except Exception as e:
-			return Services.Response(error=(1001, str(e)))
+			return Services.Error(1001, str(e))
 
 		# Generate the token
 		sToken = self._generateToken(data['clinician_id'])
@@ -461,14 +1166,14 @@ class Prescriptions(Services.Service):
 
 		# If we didn't get a 200
 		if oRes.status_code != 200:
-			return Services.Response(error=(1601, oRes.text))
+			return Services.Error(1601, oRes.text)
 
 		# Get the response
 		dRes = oRes.json()
 
 		# If we got an error
 		if dRes['Result']['ResultCode'] == 'ERROR':
-			return Services.Response(error=(1602, dData['Result']['ResultDescription']))
+			return Services.Error(1602, dData['Result']['ResultDescription'])
 
 		# Return OK
 		return Services.Response(True)
@@ -488,14 +1193,14 @@ class Prescriptions(Services.Service):
 
 		# Verify fields
 		try: DictHelper.eval(data, ['clinician_id', 'patient_id'])
-		except ValueError as e: return Services.Response(error=(1001, [(f, 'missing') for f in e.args]))
+		except ValueError as e: return Services.Error(1001, [(f, 'missing') for f in e.args])
 
 		# If it's internal
 		if '_internal_' in data:
 
 			# Verify the key, remove it if it's ok
 			if not Services.internalKey(data['_internal_']):
-				return Services.Response(error=Errors.SERVICE_INTERNAL_KEY)
+				return Services.Error(Errors.SERVICE_INTERNAL_KEY)
 			del data['_internal_']
 
 		# Else
@@ -509,7 +1214,7 @@ class Prescriptions(Services.Service):
 		for s in ['clinician_id', 'patient_id']:
 			if not isinstance(data[s], int):
 				lErrors.append((s, 'must be integer'))
-		if lErrors: return Services.Response(error=(1001, lErrors))
+		if lErrors: return Services.Error(1001, lErrors)
 
 		# Generate the URL
 		sURL = 'https://%s/webapi/api/patients/%d/medications/history?start=1900-01-01&end=%s' % (
@@ -535,7 +1240,7 @@ class Prescriptions(Services.Service):
 
 			# If we didn't get a 200
 			if oRes.status_code != 200:
-				return Services.Response(error=(1601, oRes.text))
+				return Services.Error(1601, oRes.text)
 
 			# Get the data
 			dData = oRes.json()
@@ -568,7 +1273,7 @@ class Prescriptions(Services.Service):
 
 					# If we didn't get a 200
 					if oRes.status_code != 200:
-						return Services.Response(error=(1601, oRes.text))
+						return Services.Error(1601, oRes.text)
 
 					# Get the data
 					dData = oRes.json()
@@ -578,14 +1283,14 @@ class Prescriptions(Services.Service):
 
 					# If we did not get consent
 					if dData['Result']['ResultCode'] == 'ERROR':
-						return Services.Response(error=(1602, dData['Result']['ResultDescription']))
+						return Services.Error(1602, dData['Result']['ResultDescription'])
 
 					# We got consent, loop back around
 					continue
 
 				# Unknown DoseSpot error
 				else:
-					return Services.Response(error=(1602, dData['Result']['ResultDescription']))
+					return Services.Error(1602, dData['Result']['ResultDescription'])
 
 			# We got a result, quit the consent loop
 			break
@@ -612,7 +1317,7 @@ class Prescriptions(Services.Service):
 
 		# Verify fields
 		try: DictHelper.eval(data, ['patient_id'])
-		except ValueError as e: return Services.Response(error=(1001, [(f, 'missing') for f in e.args]))
+		except ValueError as e: return Services.Error(1001, [(f, 'missing') for f in e.args])
 
 		# Make sure the user has the proper rights
 		Rights.check(sesh, 'prescriptions', Rights.READ, data['patient_id'])
@@ -625,7 +1330,7 @@ class Prescriptions(Services.Service):
 		for s in ['clinician_id', 'patient_id']:
 			lErrors = []
 			if not isinstance(data[s], int): lErrors.append((s, 'must be integer'))
-			if lErrors: return Services.Response(error=(1001, lErrors))
+			if lErrors: return Services.Error(1001, lErrors)
 
 		# Generate the token
 		sToken = self._generateToken(data['clinician_id'])
@@ -650,14 +1355,14 @@ class Prescriptions(Services.Service):
 
 		# If we didn't get a 200
 		if oRes.status_code != 200:
-			return Services.Response(error=(1601, oRes.text))
+			return Services.Error(1601, oRes.text)
 
 		# Get the data
 		dData = oRes.json()
 
 		# If we got an error
 		if dData['Result']['ResultCode'] == 'ERROR':
-			return Services.Response(error=(1602, dData['Result']['ResultDescription']))
+			return Services.Error(1602, dData['Result']['ResultDescription'])
 
 		# Return the pharmacies
 		return Services.Response(dData['Items'])
@@ -677,7 +1382,7 @@ class Prescriptions(Services.Service):
 
 		# Verify fields
 		try: DictHelper.eval(data, ['patient_id', 'pharmacy_id'])
-		except ValueError as e: return Services.Response(error=(1001, [(f, 'missing') for f in e.args]))
+		except ValueError as e: return Services.Error(1001, [(f, 'missing') for f in e.args])
 
 		# Make sure the user has the proper rights
 		Rights.check(sesh, 'prescriptions', Rights.UPDATE, data['patient_id'])
@@ -690,7 +1395,7 @@ class Prescriptions(Services.Service):
 		for s in ['clinician_id', 'patient_id', 'pharmacy_id']:
 			lErrors = []
 			if not isinstance(data[s], int): lErrors.append((s, 'must be integer'))
-			if lErrors: return Services.Response(error=(1001, lErrors))
+			if lErrors: return Services.Error(1001, lErrors)
 
 		# Generate the token
 		sToken = self._generateToken(data['clinician_id'])
@@ -716,14 +1421,14 @@ class Prescriptions(Services.Service):
 
 		# If we didn't get a 200
 		if oRes.status_code != 200:
-			return Services.Response(error=(1601, oRes.text))
+			return Services.Error(1601, oRes.text)
 
 		# Get the data
 		dData = oRes.json()
 
 		# If we got an error
 		if dData['Result']['ResultCode'] == 'ERROR':
-			return Services.Response(error=(1602, dData['Result']['ResultDescription']))
+			return Services.Error(1602, dData['Result']['ResultDescription'])
 
 		# Return the pharmacies
 		return Services.Response(True)
@@ -745,7 +1450,7 @@ class Prescriptions(Services.Service):
 
 		# Verify fields
 		try: DictHelper.eval(data, ['patient_id', 'pharmacy_id'])
-		except ValueError as e: return Services.Response(error=(1001, [(f, 'missing') for f in e.args]))
+		except ValueError as e: return Services.Error(1001, [(f, 'missing') for f in e.args])
 
 		# Make sure the user has the proper rights
 		Rights.check(sesh, 'prescriptions', Rights.UPDATE, data['patient_id'])
@@ -758,7 +1463,7 @@ class Prescriptions(Services.Service):
 		for s in ['clinician_id', 'patient_id', 'pharmacy_id']:
 			lErrors = []
 			if not isinstance(data[s], int): lErrors.append((s, 'must be integer'))
-			if lErrors: return Services.Response(error=(1001, lErrors))
+			if lErrors: return Services.Error(1001, lErrors)
 
 		# Generate the token
 		sToken = self._generateToken(data['clinician_id'])
@@ -784,14 +1489,14 @@ class Prescriptions(Services.Service):
 
 		# If we didn't get a 200
 		if oRes.status_code != 200:
-			return Services.Response(error=(1601, oRes.text))
+			return Services.Error(1601, oRes.text)
 
 		# Get the data
 		dData = oRes.json()
 
 		# If we got an error
 		if dData['Result']['ResultCode'] == 'ERROR':
-			return Services.Response(error=(1602, dData['Result']['ResultDescription']))
+			return Services.Error(1602, dData['Result']['ResultDescription'])
 
 		# Return the pharmacies
 		return Services.Response(True)
@@ -811,7 +1516,7 @@ class Prescriptions(Services.Service):
 
 		# Verify fields
 		try: DictHelper.eval(data, ['patient_id', 'clinician_id', 'product_id'])
-		except ValueError as e: return Services.Response(error=(1001, [(f, 'missing') for f in e.args]))
+		except ValueError as e: return Services.Error(1001, [(f, 'missing') for f in e.args])
 
 		# Make sure the user has the proper rights
 		Rights.check(sesh, 'prescriptions', Rights.CREATE, data['patient_id'])
@@ -891,7 +1596,7 @@ class Prescriptions(Services.Service):
 
 		# If we didn't get a 200
 		if oRes.status_code != 200:
-			return Services.Response(error=(1601, oRes.text))
+			return Services.Error(1601, oRes.text)
 
 		# Get the data
 		dData = oRes.json()
@@ -900,7 +1605,7 @@ class Prescriptions(Services.Service):
 
 		# If we got an error
 		if dData['Result']['ResultCode'] == 'ERROR':
-			return Services.Response(error=(1602, dData['Result']['ResultDescription']))
+			return Services.Error(1602, dData['Result']['ResultDescription'])
 
 		# Return the new prescription's ID
 		return Services.Response(dData['Id'])
@@ -921,18 +1626,18 @@ class Prescriptions(Services.Service):
 
 		# If we have no session and no key
 		if not sesh and '_internal_' not in data:
-			return Services.Response(error=(1001, [('_internal_', 'missing')]))
+			return Services.Error(1001, [('_internal_', 'missing')])
 
 		# Verify fields
 		try: DictHelper.eval(data, ['patient_id'])
-		except ValueError as e: return Services.Response(error=(1001, [(f, 'missing') for f in e.args]))
+		except ValueError as e: return Services.Error(1001, [(f, 'missing') for f in e.args])
 
 		# If it's internal
 		if '_internal_' in data:
 
 			# Verify the key, remove it if it's ok
 			if not Services.internalKey(data['_internal_']):
-				return Services.Response(error=Errors.SERVICE_INTERNAL_KEY)
+				return Services.Error(Errors.SERVICE_INTERNAL_KEY)
 			del data['_internal_']
 
 		# Else
@@ -950,7 +1655,7 @@ class Prescriptions(Services.Service):
 		for s in ['clinician_id', 'patient_id']:
 			if not isinstance(data[s], int):
 				lErrors.append((s, 'must be integer'))
-		if lErrors: return Services.Response(error=(1001, lErrors))
+		if lErrors: return Services.Error(1001, lErrors)
 
 		# Generate the token
 		sToken = self._generateToken(data['clinician_id'])
@@ -975,14 +1680,14 @@ class Prescriptions(Services.Service):
 
 		# If we didn't get a 200
 		if oRes.status_code != 200:
-			return Services.Response(error=(1601, oRes.text))
+			return Services.Error(1601, oRes.text)
 
 		# Get the data
 		dData = oRes.json()
 
 		# If we got an error
 		if dData['Result']['ResultCode'] == 'ERROR':
-			return Services.Response(error=(1602, dData['Result']['ResultDescription']))
+			return Services.Error(1602, dData['Result']['ResultDescription'])
 
 		# If there's no items
 		if not dData['Items']:
@@ -1013,7 +1718,7 @@ class Prescriptions(Services.Service):
 
 		# Verify fields
 		try: DictHelper.eval(data, ['clinician_id', 'patient_id'])
-		except ValueError as e: return Services.Response(error=(1001, [(f, 'missing') for f in e.args]))
+		except ValueError as e: return Services.Error(1001, [(f, 'missing') for f in e.args])
 
 		# Make sure the user has the proper rights
 		Rights.check(sesh, 'prescriptions', Rights.UPDATE, data['patient_id'])
@@ -1022,7 +1727,7 @@ class Prescriptions(Services.Service):
 		for s in ['clinician_id', 'patient_id']:
 			lErrors = []
 			if not isinstance(data[s], int): lErrors.append((s, 'must be integer'))
-			if lErrors: return Services.Response(error=(1001, lErrors))
+			if lErrors: return Services.Error(1001, lErrors)
 
 		# Generate the IDs
 		lIDs = self._generateIds(data['clinician_id'])
@@ -1081,7 +1786,7 @@ class Prescriptions(Services.Service):
 
 		# Verify minimum fields
 		try: DictHelper.eval(data, ['crm_type', 'crm_id', 'crm_order'])
-		except ValueError as e: return Services.Response(error=(1001, [(f, 'missing') for f in e.args]))
+		except ValueError as e: return Services.Error(1001, [(f, 'missing') for f in e.args])
 
 		# If the CRM is Konnektive
 		if data['crm_type'] == 'knk':
@@ -1096,7 +1801,7 @@ class Prescriptions(Services.Service):
 
 		# Else, invalid CRM
 		else:
-			return Services.Response(error=1003)
+			return Services.Error(1003)
 
 		# Get the user name
 		dUser = Memo.name(sesh['memo_id'])
@@ -1112,7 +1817,7 @@ class Prescriptions(Services.Service):
 		try:
 			sID = oFill.create()
 		except Record_MySQL.DuplicateException:
-			return Services.Response(error=1101)
+			return Services.Error(1101)
 
 		# Return the ID
 		return Services.Response({
@@ -1203,7 +1908,7 @@ class Prescriptions(Services.Service):
 		# Find the fill
 		oFill = PharmacyFill.get(data['_id'])
 		if not oFill:
-			return Services.Response(error=1104)
+			return Services.Error(1104)
 
 		# Delete the record and return the result
 		return Services.Response(
@@ -1253,7 +1958,7 @@ class Prescriptions(Services.Service):
 
 		# Else, invalid CRM
 		else:
-			return Services.Response(error=1003)
+			return Services.Error(1003)
 
 		# If type is still being sent
 		if 'type' in data:
@@ -1269,7 +1974,7 @@ class Prescriptions(Services.Service):
 		try:
 			sID = oFillError.create()
 		except Record_MySQL.DuplicateException:
-			return Services.Response(error=1101)
+			return Services.Error(1101)
 
 		# Return the ID and customer name
 		return Services.Response({
@@ -1300,7 +2005,7 @@ class Prescriptions(Services.Service):
 		# Find the record
 		oPharmacyFillError = PharmacyFillError.get(data['_id'])
 		if not oPharmacyFillError:
-			return Services.Response(error=1104)
+			return Services.Error(1104)
 
 		# Delete the record and return the result
 		return Services.Response(
@@ -1334,7 +2039,7 @@ class Prescriptions(Services.Service):
 		# Find the record
 		oPharmacyFillError = PharmacyFillError.get(data['_id'])
 		if not oPharmacyFillError:
-			return Services.Response(error=1104)
+			return Services.Error(1104)
 
 		# Update the ready state if we got it
 		if 'ready' in data:
@@ -1431,7 +2136,7 @@ class Prescriptions(Services.Service):
 		try:
 			sID = oProduct.create(changes={"user": sesh['user_id']})
 		except Record_MySQL.DuplicateException:
-			return Services.Response(error=1101)
+			return Services.Error(1101)
 
 		# Return the ID
 		return Services.Response(sID)
@@ -1523,6 +2228,10 @@ class Prescriptions(Services.Service):
 		# Remove fields that can't be changed
 		del data['_id']
 		if '_created' in data: del data['_created']
+
+		# If there's nothing left
+		if not data:
+			return Services.Response(False)
 
 		# Step through each field passed and update/validate it
 		lErrors = []

@@ -15,6 +15,7 @@ __created__		= "2020-03-29"
 import atexit
 import os
 import sys
+from time import time
 
 # Pip imports
 from RestOC import Conf, Services
@@ -90,7 +91,19 @@ def isRunning(name):
 
 	# If the file already exists
 	if os.path.isfile(sFile):
-		return True
+
+		# Pull out the PID
+		oF = open(sFile, 'r')
+		iPID = int(oF.read())
+
+		# Check if the process is still running
+		try:
+			os.kill(iPID, 0)
+			return True
+
+		# If it fails, the process doesn't exist
+		except OSError:
+			os.unlink(sFile)
 
 	# Create the file, write to, and close the file
 	oFile = open(sFile, 'w')

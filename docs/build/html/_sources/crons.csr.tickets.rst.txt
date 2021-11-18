@@ -1,0 +1,20 @@
+crons.csr.tickets package
+=========================
+
+Submodules
+----------
+
+.. toctree::
+   :maxdepth: 4
+
+   crons.csr.tickets.daily
+   crons.csr.tickets.monthly
+   crons.csr.tickets.weekly
+
+Module contents
+---------------
+
+.. automodule:: crons.csr.tickets
+   :members:
+   :undoc-members:
+   :show-inheritance:

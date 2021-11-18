@@ -166,6 +166,168 @@
 <p>Konnektive Service class</p>
 <p>Service for Konnektive CRM access</p>
 <dl class="py method">
+<dt class="sig sig-object py" id="services.konnektive.Konnektive.campaignProduct_create">
+<span class="sig-name descname"><span class="pre">campaignProduct_create</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sesh</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#services.konnektive.Konnektive.campaignProduct_create" title="Permalink to this definition">¶</a></dt>
+<dd><p>Campaign Product Create</p>
+<p>Creates a new campaign product based on an existing one in Konnektive</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>data</strong> (<em>dict</em>) – Data sent with the request</p></li>
+<li><p><strong>sesh</strong> (<em>Sesh._Session</em>) – The session associated with the request</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>Services.Response</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="services.konnektive.Konnektive.campaignProduct_delete">
+<span class="sig-name descname"><span class="pre">campaignProduct_delete</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sesh</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#services.konnektive.Konnektive.campaignProduct_delete" title="Permalink to this definition">¶</a></dt>
+<dd><p>Campaign Product Delete</p>
+<p>Deletes an existing campaign product record</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>data</strong> (<em>dict</em>) – Data sent with the request</p></li>
+<li><p><strong>sesh</strong> (<em>Sesh._Session</em>) – The session associated with the request</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>Services.Response</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="services.konnektive.Konnektive.campaignProduct_read">
+<span class="sig-name descname"><span class="pre">campaignProduct_read</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sesh</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#services.konnektive.Konnektive.campaignProduct_read" title="Permalink to this definition">¶</a></dt>
+<dd><p>Campaign Create Read</p>
+<p>Fetches and returns an existing campaign product</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>data</strong> (<em>dict</em>) – Data sent with the request</p></li>
+<li><p><strong>sesh</strong> (<em>Sesh._Session</em>) – The session associated with the request</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>Services.Response</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="services.konnektive.Konnektive.campaignProduct_update">
+<span class="sig-name descname"><span class="pre">campaignProduct_update</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sesh</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#services.konnektive.Konnektive.campaignProduct_update" title="Permalink to this definition">¶</a></dt>
+<dd><p>Campaign Product Update</p>
+<p>Updates an existing campaign product</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>data</strong> (<em>dict</em>) – Data sent with the request</p></li>
+<li><p><strong>sesh</strong> (<em>Sesh._Session</em>) – The session associated with the request</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>Services.Response</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="services.konnektive.Konnektive.campaignProducts_read">
+<span class="sig-name descname"><span class="pre">campaignProducts_read</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sesh</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#services.konnektive.Konnektive.campaignProducts_read" title="Permalink to this definition">¶</a></dt>
+<dd><p>Campaign Products Read</p>
+<p>Fetches and returns all the campaign products in a specific campaign</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>data</strong> (<em>dict</em>) – Data sent with the request</p></li>
+<li><p><strong>sesh</strong> (<em>Sesh._Session</em>) – The session associated with the request</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>Services.Response</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="services.konnektive.Konnektive.campaign_create">
+<span class="sig-name descname"><span class="pre">campaign_create</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sesh</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#services.konnektive.Konnektive.campaign_create" title="Permalink to this definition">¶</a></dt>
+<dd><p>Campaign Create</p>
+<p>Creates a new campaign based on an existing one in Konnektive</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>data</strong> (<em>dict</em>) – Data sent with the request</p></li>
+<li><p><strong>sesh</strong> (<em>Sesh._Session</em>) – The session associated with the request</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>Services.Response</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="services.konnektive.Konnektive.campaign_read">
+<span class="sig-name descname"><span class="pre">campaign_read</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sesh</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#services.konnektive.Konnektive.campaign_read" title="Permalink to this definition">¶</a></dt>
+<dd><p>Campaign Read</p>
+<p>Fetches and returns an existing campaign</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>data</strong> (<em>dict</em>) – Data sent with the request</p></li>
+<li><p><strong>sesh</strong> (<em>Sesh._Session</em>) – The session associated with the request</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>Services.Response</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="services.konnektive.Konnektive.campaign_update">
+<span class="sig-name descname"><span class="pre">campaign_update</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sesh</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#services.konnektive.Konnektive.campaign_update" title="Permalink to this definition">¶</a></dt>
+<dd><p>Campaign Update</p>
+<p>Updates an existing campaign</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>data</strong> (<em>dict</em>) – Data sent with the request</p></li>
+<li><p><strong>sesh</strong> (<em>Sesh._Session</em>) – The session associated with the request</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>Services.Response</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="services.konnektive.Konnektive.campaigns_read">
+<span class="sig-name descname"><span class="pre">campaigns_read</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sesh</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#services.konnektive.Konnektive.campaigns_read" title="Permalink to this definition">¶</a></dt>
+<dd><p>Campaigns Read</p>
+<p>Fetches and returns all campaigns</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>data</strong> (<em>dict</em>) – Data sent with the request</p></li>
+<li><p><strong>sesh</strong> (<em>Sesh._Session</em>) – The session associated with the request</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>Services.Response</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
 <dt class="sig sig-object py" id="services.konnektive.Konnektive.customerOrders_read">
 <span class="sig-name descname"><span class="pre">customerOrders_read</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sesh</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#services.konnektive.Konnektive.customerOrders_read" title="Permalink to this definition">¶</a></dt>
 <dd><p>Customer Orders</p>
@@ -193,7 +355,7 @@
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>data</strong> (<em>dict</em>) – Data sent with the request</p></li>
 <li><p><strong>sesh</strong> (<em>Sesh._Session</em>) – The session associated with the request</p></li>
-<li><p><strong>environ</strong> (<em>dict</em>) – Info related to the request</p></li>
+<li><p><strong>environ</strong> (<em>dict</em>) – Environment info related to the request</p></li>
 </ul>
 </dd>
 <dt class="field-even">Returns</dt>
@@ -338,6 +500,24 @@ install configurations</p>
 </dd></dl>
 
 <dl class="py method">
+<dt class="sig sig-object py" id="services.konnektive.Konnektive.orderRefund_update">
+<span class="sig-name descname"><span class="pre">orderRefund_update</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sesh</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#services.konnektive.Konnektive.orderRefund_update" title="Permalink to this definition">¶</a></dt>
+<dd><p>Order Refund</p>
+<p>Adds a refund to a specific order</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>data</strong> (<em>dict</em>) – Data sent with the request</p></li>
+<li><p><strong>sesh</strong> (<em>Sesh._Session</em>) – The session associated with the request</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>Services.Response</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
 <dt class="sig sig-object py" id="services.konnektive.Konnektive.orderTransactions_read">
 <span class="sig-name descname"><span class="pre">orderTransactions_read</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sesh</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">verify</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#services.konnektive.Konnektive.orderTransactions_read" title="Permalink to this definition">¶</a></dt>
 <dd><p>Order Transactions</p>
@@ -358,7 +538,7 @@ install configurations</p>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="services.konnektive.Konnektive.order_create">
-<span class="sig-name descname"><span class="pre">order_create</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sesh</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">verify</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#services.konnektive.Konnektive.order_create" title="Permalink to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">order_create</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sesh</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">environ</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">verify</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#services.konnektive.Konnektive.order_create" title="Permalink to this definition">¶</a></dt>
 <dd><p>Order Create</p>
 <p>Creates a new order</p>
 <dl class="field-list simple">
@@ -366,6 +546,7 @@ install configurations</p>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>data</strong> (<em>dict</em>) – Data sent with the request</p></li>
 <li><p><strong>sesh</strong> (<em>Sesh._Session</em>) – The session associated with the request</p></li>
+<li><p><strong>environ</strong> (<em>dict</em>) – Environment info related to the request</p></li>
 <li><p><strong>verify</strong> (<em>bool</em>) – Allow bypassing verification for internal calls</p></li>
 </ul>
 </dd>
@@ -377,7 +558,7 @@ install configurations</p>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="services.konnektive.Konnektive.order_read">
-<span class="sig-name descname"><span class="pre">order_read</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sesh</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#services.konnektive.Konnektive.order_read" title="Permalink to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">order_read</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sesh</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">environ</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#services.konnektive.Konnektive.order_read" title="Permalink to this definition">¶</a></dt>
 <dd><p>Order Read</p>
 <p>Fetches an order by ID</p>
 <dl class="field-list simple">
@@ -385,6 +566,7 @@ install configurations</p>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>data</strong> (<em>dict</em>) – Data sent with the request</p></li>
 <li><p><strong>sesh</strong> (<em>Sesh._Session</em>) – The session associated with the request</p></li>
+<li><p><strong>environ</strong> (<em>dict</em>) – Environment info related to the request</p></li>
 </ul>
 </dd>
 <dt class="field-even">Returns</dt>
@@ -404,7 +586,42 @@ will stop being billed at intervals</p>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>data</strong> (<em>dict</em>) – Data sent with the request</p></li>
 <li><p><strong>sesh</strong> (<em>Sesh._Session</em>) – The session associated with the request</p></li>
-<li><p><strong>verify</strong> (<em>bool</em>) – Allow bypassing verification for internal calls</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>Services.Response</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="services.konnektive.Konnektive.purchaseCharge_update">
+<span class="sig-name descname"><span class="pre">purchaseCharge_update</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sesh</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#services.konnektive.Konnektive.purchaseCharge_update" title="Permalink to this definition">¶</a></dt>
+<dd><p>Purchase Charge</p>
+<p>Charges the purchase immediately</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>data</strong> (<em>dict</em>) – Data sent with the request</p></li>
+<li><p><strong>sesh</strong> (<em>Sesh._Session</em>) – The session associated with the request</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>Services.Response</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="services.konnektive.Konnektive.purchase_read">
+<span class="sig-name descname"><span class="pre">purchase_read</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sesh</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#services.konnektive.Konnektive.purchase_read" title="Permalink to this definition">¶</a></dt>
+<dd><p>Purchase read</p>
+<p>Returns data on one specific purchase</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>data</strong> (<em>dict</em>) – Data sent with the request</p></li>
+<li><p><strong>sesh</strong> (<em>Sesh._Session</em>) – The session associated with the request</p></li>
 </ul>
 </dd>
 <dt class="field-even">Returns</dt>

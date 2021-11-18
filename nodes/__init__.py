@@ -13,7 +13,7 @@ __created__		= "2021-03-08"
 
 # Pip imports
 import bottle
-from RestOC import JSON, Services
+from RestOC import Conf, JSON, Services
 
 def emailError(subject, error):
 	"""Email Error

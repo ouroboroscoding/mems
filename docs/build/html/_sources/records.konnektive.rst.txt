@@ -1,0 +1,7 @@
+records.konnektive module
+=========================
+
+.. automodule:: records.konnektive
+   :members:
+   :undoc-members:
+   :show-inheritance:

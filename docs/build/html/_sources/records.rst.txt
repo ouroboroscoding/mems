@@ -11,6 +11,8 @@ Submodules
    records.csr
    records.customers
    records.docs
+   records.justcall
+   records.konnektive
    records.link
    records.monolith
    records.patient

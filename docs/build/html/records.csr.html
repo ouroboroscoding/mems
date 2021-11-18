@@ -160,6 +160,66 @@
 <p>CSR Records</p>
 <p>Handles the record structures for the CSR service</p>
 <dl class="py class">
+<dt class="sig sig-object py" id="records.csr.Action">
+<em class="property"><span class="pre">class</span> </em><span class="sig-prename descclassname"><span class="pre">records.csr.</span></span><span class="sig-name descname"><span class="pre">Action</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">record</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">{}</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">custom</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">{}</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#records.csr.Action" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">RestOC.Record_MySQL.Record</span></code></p>
+<p>Represents an action taken</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="records.csr.Action.agentCounts">
+<em class="property"><span class="pre">classmethod</span> </em><span class="sig-name descname"><span class="pre">agentCounts</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">range_</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">memo_ids</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">custom</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">{}</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#records.csr.Action.agentCounts" title="Permalink to this definition">¶</a></dt>
+<dd><p>Agent Counts</p>
+<p>Returns the count per type of outgoing item by agent</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>range</strong> (<em>list</em>) – The timestamp start and end to look up</p></li>
+<li><p><strong>memo_ids</strong> (<em>list</em>) – Optional, the list of agents to look for</p></li>
+<li><p><strong>custom</strong> (<em>dict</em>) – Custom Host and DB info
+‘host’ the name of the host to get/set data on
+‘append’ optional postfix for dynamic DBs</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>list</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="records.csr.Action.byRange">
+<em class="property"><span class="pre">classmethod</span> </em><span class="sig-name descname"><span class="pre">byRange</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">start</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">end</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">memo_id</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">custom</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">{}</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#records.csr.Action.byRange" title="Permalink to this definition">¶</a></dt>
+<dd><p>By Range</p>
+<p>Returns the actions in the given date/time range and single or group of
+agents</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>start</strong> (<em>uint</em>) – The start timestamp of the range</p></li>
+<li><p><strong>end</strong> (<em>uint</em>) – The end timestamp of the range</p></li>
+<li><p><strong>memo_id</strong> (<em>int</em>) – The ID of the memo user to fetch tickets for</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>list</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="records.csr.Action.config">
+<em class="property"><span class="pre">classmethod</span> </em><span class="sig-name descname"><span class="pre">config</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#records.csr.Action.config" title="Permalink to this definition">¶</a></dt>
+<dd><p>Config</p>
+<p>Returns the configuration data associated with the record type</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>dict</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
 <dt class="sig sig-object py" id="records.csr.Agent">
 <em class="property"><span class="pre">class</span> </em><span class="sig-prename descclassname"><span class="pre">records.csr.</span></span><span class="sig-name descname"><span class="pre">Agent</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">record</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">{}</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">custom</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">{}</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#records.csr.Agent" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">RestOC.Record_MySQL.Record</span></code></p>
@@ -167,6 +227,47 @@
 <dl class="py method">
 <dt class="sig sig-object py" id="records.csr.Agent.config">
 <em class="property"><span class="pre">classmethod</span> </em><span class="sig-name descname"><span class="pre">config</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#records.csr.Agent.config" title="Permalink to this definition">¶</a></dt>
+<dd><p>Config</p>
+<p>Returns the configuration data associated with the record type</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>dict</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="records.csr.Agent.memoIdsByType">
+<em class="property"><span class="pre">classmethod</span> </em><span class="sig-name descname"><span class="pre">memoIdsByType</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">type_</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">custom</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">{}</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#records.csr.Agent.memoIdsByType" title="Permalink to this definition">¶</a></dt>
+<dd><p>Memo IDs by Type</p>
+<p>Returns the memo IDs of all agents with the given type set</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>type</strong> (<em>str</em>) – The type to return IDs for</p></li>
+<li><p><strong>custom</strong> (<em>dict</em>) – Custom Host and DB info
+‘host’ the name of the host to get/set data on
+‘append’ optional postfix for dynamic DBs</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>uint[]</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="records.csr.AgentOfficeHours">
+<em class="property"><span class="pre">class</span> </em><span class="sig-prename descclassname"><span class="pre">records.csr.</span></span><span class="sig-name descname"><span class="pre">AgentOfficeHours</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">record</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">{}</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">custom</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">{}</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#records.csr.AgentOfficeHours" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">RestOC.Record_MySQL.Record</span></code></p>
+<p>Agent Office Hours</p>
+<p>Represents the hours an agent is in the office during a specific day of the
+week</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="records.csr.AgentOfficeHours.config">
+<em class="property"><span class="pre">classmethod</span> </em><span class="sig-name descname"><span class="pre">config</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#records.csr.AgentOfficeHours.config" title="Permalink to this definition">¶</a></dt>
 <dd><p>Config</p>
 <p>Returns the configuration data associated with the record type</p>
 <dl class="field-list simple">
@@ -230,6 +331,36 @@
 </dd>
 <dt class="field-even">Returns</dt>
 <dd class="field-even"><p>dict</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="records.csr.Lead">
+<em class="property"><span class="pre">class</span> </em><span class="sig-prename descclassname"><span class="pre">records.csr.</span></span><span class="sig-name descname"><span class="pre">Lead</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">record</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">{}</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">custom</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">{}</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#records.csr.Lead" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">RestOC.Record_MySQL.Record</span></code></p>
+<p>Represents a possible customer upsell lead</p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="records.csr.Lead.MEDICATION_ED">
+<span class="sig-name descname"><span class="pre">MEDICATION_ED</span></span><em class="property"> <span class="pre">=</span> <span class="pre">1</span></em><a class="headerlink" href="#records.csr.Lead.MEDICATION_ED" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="records.csr.Lead.MEDICATION_HRT">
+<span class="sig-name descname"><span class="pre">MEDICATION_HRT</span></span><em class="property"> <span class="pre">=</span> <span class="pre">2</span></em><a class="headerlink" href="#records.csr.Lead.MEDICATION_HRT" title="Permalink to this definition">¶</a></dt>
+<dd><p>Defines</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="records.csr.Lead.config">
+<em class="property"><span class="pre">classmethod</span> </em><span class="sig-name descname"><span class="pre">config</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#records.csr.Lead.config" title="Permalink to this definition">¶</a></dt>
+<dd><p>Config</p>
+<p>Returns the configuration data associated with the record type</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>dict</p>
 </dd>
 </dl>
 </dd></dl>
@@ -479,6 +610,27 @@ on the given IDs. To first get IDs take a look at the idsByRange method</p>
 </dd></dl>
 
 <dl class="py method">
+<dt class="sig sig-object py" id="records.csr.TicketItem.agentCounts">
+<em class="property"><span class="pre">classmethod</span> </em><span class="sig-name descname"><span class="pre">agentCounts</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">range_</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">memo_ids</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">custom</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">{}</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#records.csr.TicketItem.agentCounts" title="Permalink to this definition">¶</a></dt>
+<dd><p>Agent Counts</p>
+<p>Returns the count per type of outgoing item by agent</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>range</strong> (<em>list</em>) – The timestamp start and end to look up</p></li>
+<li><p><strong>memo_ids</strong> (<em>list</em>) – Optional, the list of agents to look for</p></li>
+<li><p><strong>custom</strong> (<em>dict</em>) – Custom Host and DB info
+‘host’ the name of the host to get/set data on
+‘append’ optional postfix for dynamic DBs</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>list</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
 <dt class="sig sig-object py" id="records.csr.TicketItem.config">
 <em class="property"><span class="pre">classmethod</span> </em><span class="sig-name descname"><span class="pre">config</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#records.csr.TicketItem.config" title="Permalink to this definition">¶</a></dt>
 <dd><p>Config</p>
@@ -499,6 +651,27 @@ on the given IDs. To first get IDs take a look at the idsByRange method</p>
 <p>Ticket Opened</p>
 <p>Represents when a support ticket was opened</p>
 <dl class="py method">
+<dt class="sig sig-object py" id="records.csr.TicketOpened.agentCounts">
+<em class="property"><span class="pre">classmethod</span> </em><span class="sig-name descname"><span class="pre">agentCounts</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">range_</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">memo_ids</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">custom</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">{}</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#records.csr.TicketOpened.agentCounts" title="Permalink to this definition">¶</a></dt>
+<dd><p>Agent Counts</p>
+<p>Returns the count per type of opened ticket by agent</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>range</strong> (<em>list</em>) – The timestamp start and end to look up</p></li>
+<li><p><strong>memo_ids</strong> (<em>list</em>) – Optional, the list of agents to look for</p></li>
+<li><p><strong>custom</strong> (<em>dict</em>) – Custom Host and DB info
+‘host’ the name of the host to get/set data on
+‘append’ optional postfix for dynamic DBs</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>list</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
 <dt class="sig sig-object py" id="records.csr.TicketOpened.config">
 <em class="property"><span class="pre">classmethod</span> </em><span class="sig-name descname"><span class="pre">config</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#records.csr.TicketOpened.config" title="Permalink to this definition">¶</a></dt>
 <dd><p>Config</p>
@@ -512,7 +685,7 @@ on the given IDs. To first get IDs take a look at the idsByRange method</p>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="records.csr.TicketOpened.countByUser">
-<em class="property"><span class="pre">classmethod</span> </em><span class="sig-name descname"><span class="pre">countByUser</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">memo_id</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">range</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">custom</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">{}</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#records.csr.TicketOpened.countByUser" title="Permalink to this definition">¶</a></dt>
+<em class="property"><span class="pre">classmethod</span> </em><span class="sig-name descname"><span class="pre">countByUser</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">memo_id</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">range_</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">custom</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">{}</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#records.csr.TicketOpened.countByUser" title="Permalink to this definition">¶</a></dt>
 <dd><p>Count By User</p>
 <p>Returns the total count of opened tickets by a specific user, with or
 without a specific range</p>
@@ -521,6 +694,27 @@ without a specific range</p>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>memo_id</strong> (<em>uint</em>) – The ID of the user</p></li>
 <li><p><strong>range</strong> (<em>list</em>) – Optional range to filter by, 0 = start, 1 = end</p></li>
+<li><p><strong>custom</strong> (<em>dict</em>) – Custom Host and DB info
+‘host’ the name of the host to get/set data on
+‘append’ optional postfix for dynamic DBs</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>uint</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="records.csr.TicketOpened.counts">
+<em class="property"><span class="pre">classmethod</span> </em><span class="sig-name descname"><span class="pre">counts</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">start</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">end</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">custom</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">{}</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#records.csr.TicketOpened.counts" title="Permalink to this definition">¶</a></dt>
+<dd><p>Counts</p>
+<p>Returns the counts group by the users</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>start</strong> (<em>int</em>) – The starting timestamp</p></li>
+<li><p><strong>end</strong> (<em>int</em>) – The ending timestamp</p></li>
 <li><p><strong>custom</strong> (<em>dict</em>) – Custom Host and DB info
 ‘host’ the name of the host to get/set data on
 ‘append’ optional postfix for dynamic DBs</p></li>
@@ -541,6 +735,27 @@ without a specific range</p>
 <p>Ticket Resolved</p>
 <p>Represents when a support ticket was resolved</p>
 <dl class="py method">
+<dt class="sig sig-object py" id="records.csr.TicketResolved.agentCounts">
+<em class="property"><span class="pre">classmethod</span> </em><span class="sig-name descname"><span class="pre">agentCounts</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">range_</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">memo_ids</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">custom</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">{}</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#records.csr.TicketResolved.agentCounts" title="Permalink to this definition">¶</a></dt>
+<dd><p>Agent Counts</p>
+<p>Returns the count per type of opened ticket by agent</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>range</strong> (<em>list</em>) – The timestamp start and end to look up</p></li>
+<li><p><strong>memo_ids</strong> (<em>list</em>) – Optional, the list of agents to look for</p></li>
+<li><p><strong>custom</strong> (<em>dict</em>) – Custom Host and DB info
+‘host’ the name of the host to get/set data on
+‘append’ optional postfix for dynamic DBs</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>list</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
 <dt class="sig sig-object py" id="records.csr.TicketResolved.config">
 <em class="property"><span class="pre">classmethod</span> </em><span class="sig-name descname"><span class="pre">config</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#records.csr.TicketResolved.config" title="Permalink to this definition">¶</a></dt>
 <dd><p>Config</p>
@@ -554,7 +769,7 @@ without a specific range</p>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="records.csr.TicketResolved.countByUser">
-<em class="property"><span class="pre">classmethod</span> </em><span class="sig-name descname"><span class="pre">countByUser</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">memo_id</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">range</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">custom</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">{}</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#records.csr.TicketResolved.countByUser" title="Permalink to this definition">¶</a></dt>
+<em class="property"><span class="pre">classmethod</span> </em><span class="sig-name descname"><span class="pre">countByUser</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">memo_id</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">range_</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">custom</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">{}</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#records.csr.TicketResolved.countByUser" title="Permalink to this definition">¶</a></dt>
 <dd><p>Count By User</p>
 <p>Returns the total count of opened tickets by a specific user, with or
 without a specific range</p>
@@ -570,6 +785,47 @@ without a specific range</p>
 </dd>
 <dt class="field-even">Returns</dt>
 <dd class="field-even"><p>uint</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="records.csr.TicketResolved.counts">
+<em class="property"><span class="pre">classmethod</span> </em><span class="sig-name descname"><span class="pre">counts</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">start</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">end</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">custom</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">{}</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#records.csr.TicketResolved.counts" title="Permalink to this definition">¶</a></dt>
+<dd><p>Counts</p>
+<p>Returns the counts group by the users</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>start</strong> (<em>int</em>) – The starting timestamp</p></li>
+<li><p><strong>end</strong> (<em>int</em>) – The ending timestamp</p></li>
+<li><p><strong>custom</strong> (<em>dict</em>) – Custom Host and DB info
+‘host’ the name of the host to get/set data on
+‘append’ optional postfix for dynamic DBs</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>uint</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="records.csr.TicketStat">
+<em class="property"><span class="pre">class</span> </em><span class="sig-prename descclassname"><span class="pre">records.csr.</span></span><span class="sig-name descname"><span class="pre">TicketStat</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">record</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">{}</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">custom</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">{}</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#records.csr.TicketStat" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">RestOC.Record_MySQL.Record</span></code></p>
+<p>Ticket Stat</p>
+<p>Represents a single state by day/week/month for a user or group of users</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="records.csr.TicketStat.config">
+<em class="property"><span class="pre">classmethod</span> </em><span class="sig-name descname"><span class="pre">config</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#records.csr.TicketStat.config" title="Permalink to this definition">¶</a></dt>
+<dd><p>Config</p>
+<p>Returns the configuration data associated with the record type</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>dict</p>
 </dd>
 </dl>
 </dd></dl>

@@ -13,6 +13,7 @@ __created__		= "2020-10-15"
 
 # Python imports
 from datetime import timedelta
+from operator import itemgetter
 from time import time
 import uuid
 
@@ -110,14 +111,16 @@ class Providers(Services.Service):
 			"user": sID,
 			"permissions": {
 				"calendly": 1,			# Read
-				"order_claims": 12,		# Create, Delete
+				"order_claims": 14,		# Update, Create, Delete
 				"prov_templates": 1,	# Read
 				"customers": 1,			# Read
 				"medications": 1,		# Read
 				"memo_mips": 3,			# Read, Update
 				"memo_notes": 5,		# Read, Update, Create
 				"orders": 3,			# Read, Update
-				"prescriptions": 7		# Read, Update, Create
+				"prescriptions": 7,		# Read, Update, Create
+				"rx_diagnosis": 1,		# Read
+				"rx_product": 1			# Read
 			}
 		}, sesh)
 		if oResponse.errorExists():
@@ -492,7 +495,8 @@ class Providers(Services.Service):
 				"effective": o['effective'],
 				"patient_id": data['patient_id'],
 				"product_id": o['product_id'],
-				"refills": o['refills']
+				"refills": o['refills'],
+				"directions": o['directions']
 			}, sesh)
 			if oResponse.errorExists():
 				return oResponse
@@ -879,6 +883,44 @@ class Providers(Services.Service):
 			"claims_max": 20
 		}, sesh)
 
+	def providerNames_read(self, data, sesh):
+		"""Provider Names
+
+		Returns the list of providers who can have issues transfered / escalated to
+		them
+
+		Arguments:
+			data (mixed): Data sent with the request
+			sesh (Sesh._Session): The session associated with the request
+
+		Returns:
+			Services.Response
+		"""
+
+		# Fetch all the providers
+		lProviders = Provider.get(raw=['memo_id'])
+
+		# Fetch their names
+		dNames = Memo.name([d['memo_id'] for d in lProviders])
+
+		# Go through each agent
+		for d in lProviders:
+
+			# Try to find the name for the agent
+			try: dName = dNames[d['memo_id']]
+			except KeyError: dName = {"firstName": 'NAME', "lastName": 'MISSING'}
+			d['firstName'] = dName['firstName']
+			d['lastName'] = dName['lastName']
+
+		# Order by first then last name
+		lProviders = sorted(lProviders, key=itemgetter('firstName', 'lastName'))
+
+		# Return the agents
+		return Services.Response(lProviders)
+
+		# Return the names
+		return Services.Response(dNames)
+
 	def providerTracking_read(self, data, sesh):
 		"""Provider Tracking
 
@@ -950,6 +992,14 @@ class Providers(Services.Service):
 			# Make sure the user has the proper permission to do this
 			Rights.check(sesh, 'prov_stats', Rights.READ)
 
+		# If the start or end are invalid
+		lErrors = []
+		for s in ['start', 'end']:
+			if not isinstance(data[s], int):
+				lErrors.append((s, 'invalid'))
+		if lErrors:
+			return Services.Error(1001, lErrors)
+
 		# Fetch all records in the given time period
 		lTracking = Tracking.rangeViews(
 			data['start'], data['end'], data['memo_id']
@@ -980,29 +1030,6 @@ class Providers(Services.Service):
 
 		# Return the records
 		return Services.Response(lTracking)
-
-	def providerNames_read(self, data, sesh):
-		"""Provider Names
-
-		Returns the list of providers who can have issues transfered / escalated to
-		them
-
-		Arguments:
-			data (mixed): Data sent with the request
-			sesh (Sesh._Session): The session associated with the request
-
-		Returns:
-			Services.Response
-		"""
-
-		# Fetch all the providers
-		lProviders = Provider.get(raw=['memo_id'])
-
-		# Fetch their names
-		dNames = Memo.name([d['memo_id'] for d in lProviders])
-
-		# Return the names
-		return Services.Response(dNames)
 
 	def providers_read(self, data, sesh):
 		"""Providers

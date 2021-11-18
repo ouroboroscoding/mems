@@ -553,12 +553,21 @@ class Konnektive(Services.Service):
 		# Generate the base data
 		dData = {
 			"customerId": lCustomers[0]['customerId'],
-			"pay": {
-				"source": lCustomers[0]['paySource'],
-				"type": lCustomers[0]['cardType'],
-				"last4": lCustomers[0]['cardLast4'],
-				"expires": lCustomers[0]['cardExpiryDate']
-			},
+			"paySources": [{
+				"default": dPS['IsPrimary'] == '1',
+				"id": dPS['paySourceId'],
+				"type": dPS['paySourceType'],
+
+				"achType": dPS['achAccountType'],
+				"achName": dPS['achBankName'],
+				"achLast4": dPS['achLast4'],
+				"achRouting": dPS['achRoutingNumber'],
+
+				"cardType": dPS['cardType'],
+				"cardLast4": dPS['cardLast4'],
+				"cardExpires": '%s%s' % (dPS['cardMonth'], dPS['cardYear'][2:])
+
+			} for dPS in lCustomers[0]['paySources']],
 			"billing": {
 				"address1": lCustomers[0]['address1'],
 				"address2": lCustomers[0]['address2'] and lCustomers[0]['address2'].strip() or None,
@@ -736,42 +745,33 @@ class Konnektive(Services.Service):
 		# Make sure the user has the proper permission to do this
 		Rights.check(sesh, 'customers', Rights.UPDATE, data['customerId'])
 
-		# Create a fake order to be able to run the card
-		oResponse = self.order_create({
-			"customerId": data['customerId'],
-			"ip": Environment.getClientIP(environ),
-			"payment": {
-				"type": 'CREDITCARD',
-				"number": data['cc_number'],
-				"month": data['cc_expiry'][:2],
-				"year": data['cc_expiry'][2:],
-				"code": data['cc_cvc']
-			},
-			"campaignId": '139',
-			"products": [{
-				"id": '994',
-				"qty": 1
-			}],
-			"qa": True
-		}, sesh, environ, False)
+		# Init data
+		dData = {
+			"cardMonth": data['cc_expiry'][:2],
+			"cardNumber": data['cc_number'],
+			"cardSecurityCode": data['cc_cvc'],
+			"cardYear": data['cc_expiry'][2:],
+			"customerId": data['customerId']
+		}
 
-		# If there's an error
-		if oResponse.errorExists():
-			return oResponse
+		# If we have a pay source ID
+		if 'source_id' in data and data['source_id']:
+			dData['paySourceId'] = data['source_id']
 
-		# Cancel the order
-		oResponse = self.orderCancel_update({
-			"orderId": oResponse.data,
-			"reason": "CC Change Order",
-			"refund": True
-		}, sesh, False)
+		# Send the card update to konnektive
+		dRes = self._post('customer/cardupdate', dData)
 
-		# If it failed
-		if oResponse.errorExists():
-			emailError('CC Change Cancel Order Failed', "Customer: %s\n\nOrder: %s" % (
-				str(data['customerId']),
-				oResponse.data
-			))
+		# If we we successful
+		if dRes['result'] == 'SUCCESS':
+
+			# Return the orderId
+			return Services.Response(True)
+
+		# else, we failed
+		else:
+
+			# Return the message from konnektive
+			return Services.Error(1103, dRes['message'])
 
 		# Return OK
 		return Services.Response(True)
@@ -802,6 +802,10 @@ class Konnektive(Services.Service):
 			"customerId": data['customerId'],
 			"sortDir": 0
 		});
+
+		# If there's nothing
+		if not lPurchases:
+			return Services.Response([])
 
 		# Return what ever's found after removing unnecessary data
 		return Services.Response([{
@@ -947,7 +951,8 @@ class Konnektive(Services.Service):
 				"itemId": dI['orderItemId'],
 				"price": dI['price'],
 				"productId": dI['productId'],
-				"shipping": dI['shipping']
+				"shipping": dI['shipping'],
+				"quantity": dI['qty']
 			} for dI in dO['items'].values()] or [],
 			"orderId": dO['orderId'],
 			"phone": dO['phoneNumber'],
@@ -1234,7 +1239,7 @@ class Konnektive(Services.Service):
 		else:
 			dData['billShipSame'] = '1'
 
-		# Send the order to konnektice
+		# Send the order to konnektive
 		dRes = self._post('order/import', dData)
 
 		# If we we successful
@@ -1341,7 +1346,8 @@ class Konnektive(Services.Service):
 				"itemId": dI['orderItemId'],
 				"price": dI['price'],
 				"productId": dI['productId'],
-				"shipping": dI['shipping']
+				"shipping": dI['shipping'],
+				"quantity": dI['qty']
 			} for dI in dOrder['items'].values()] or [],
 			"orderId": dOrder['orderId'],
 			"phone": dOrder['phoneNumber'],
@@ -1441,6 +1447,60 @@ class Konnektive(Services.Service):
 				"action": data['action'],
 				"orderId": data['orderId']
 			})
+
+			# If we failed
+			if dRes['result'] != 'SUCCESS':
+				return Services.Error(1103, ('message' in dRes and dRes['message'] or None))
+
+		# Return OK
+		return Services.Response(True)
+
+	def orderRefund_update(self, data, sesh):
+		"""Order Refund
+
+		Adds a refund to a specific order
+
+		Arguments:
+			data (dict): Data sent with the request
+			sesh (Sesh._Session): The session associated with the request
+
+		Returns:
+			Services.Response
+		"""
+
+		# Validate rights
+		Rights.check(sesh, 'orders', Rights.UPDATE)
+
+		# Make sure we have an orderId
+		if 'orderId' not in data:
+			return Services.Error(1001, [('orderId', 'missing')])
+
+		# Init the data to send
+		dData = {
+			"orderId": data['orderId']
+		}
+
+		# Is it a full refund
+		if 'full' in data and data['full']:
+			dData['fullRefund'] = True
+
+		# Else, it's a partial refund
+		elif 'amount' in data and data['amount']:
+			dData['refundAmount'] = data['amount']
+
+		# Else, missing data
+		else:
+			return Services.Error(1001, [('amount', 'missing')])
+
+		# If there's a reason
+		if 'reason' in data:
+			dData['cancelReason'] = data['reason']
+
+		# If Purchase changes are allowed
+		if self._allowPurchaseChange:
+
+			# Send the update to Konnektive
+			dRes = self._post('order/refund', dData)
 
 			# If we failed
 			if dRes['result'] != 'SUCCESS':

@@ -166,6 +166,97 @@
 <p>CSR Service class</p>
 <p>Service for CSR access</p>
 <dl class="py method">
+<dt class="sig sig-object py" id="services.csr.CSR.action_create">
+<span class="sig-name descname"><span class="pre">action_create</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sesh</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#services.csr.CSR.action_create" title="Permalink to this definition">¶</a></dt>
+<dd><p>Action Create</p>
+<p>Adds an action from an agent</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>data</strong> (<em>mixed</em>) – Data sent with the request</p></li>
+<li><p><strong>sesh</strong> (<em>Sesh._Session</em>) – The session associated with the request</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>Services.Response</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="services.csr.CSR.action_delete">
+<span class="sig-name descname"><span class="pre">action_delete</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sesh</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#services.csr.CSR.action_delete" title="Permalink to this definition">¶</a></dt>
+<dd><p>Action Delete</p>
+<p>Deletes a ticket if it was recently created or if the user has rights
+to do so</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>data</strong> (<em>mixed</em>) – Data sent with the request</p></li>
+<li><p><strong>sesh</strong> (<em>Sesh._Session</em>) – The session associated with the request</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>Services.Response</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="services.csr.CSR.actions_read">
+<span class="sig-name descname"><span class="pre">actions_read</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sesh</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#services.csr.CSR.actions_read" title="Permalink to this definition">¶</a></dt>
+<dd><p>Actions by User</p>
+<p>Returns all the actions a user has done in a time range</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>data</strong> (<em>mixed</em>) – Data sent with the request</p></li>
+<li><p><strong>sesh</strong> (<em>Sesh._Session</em>) – The session associated with the request</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>Services.Response</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="services.csr.CSR.agentHours_read">
+<span class="sig-name descname"><span class="pre">agentHours_read</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sesh</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#services.csr.CSR.agentHours_read" title="Permalink to this definition">¶</a></dt>
+<dd><p>Agent Hours read</p>
+<p>Fetches the list of days and hours the agent works</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>data</strong> (<em>mixed</em>) – Data sent with the request</p></li>
+<li><p><strong>sesh</strong> (<em>Sesh._Session</em>) – The session associated with the request</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>Services.Response</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="services.csr.CSR.agentHours_update">
+<span class="sig-name descname"><span class="pre">agentHours_update</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sesh</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#services.csr.CSR.agentHours_update" title="Permalink to this definition">¶</a></dt>
+<dd><p>Agent Hours update</p>
+<p>Overwrites the hours the agent works</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>data</strong> (<em>mixed</em>) – Data sent with the request</p></li>
+<li><p><strong>sesh</strong> (<em>Sesh._Session</em>) – The session associated with the request</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>Services.Response</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
 <dt class="sig sig-object py" id="services.csr.CSR.agentMemo_create">
 <span class="sig-name descname"><span class="pre">agentMemo_create</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sesh</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#services.csr.CSR.agentMemo_create" title="Permalink to this definition">¶</a></dt>
 <dd><p>Agent from Memo</p>
@@ -185,11 +276,29 @@ a new one</p>
 </dd></dl>
 
 <dl class="py method">
+<dt class="sig sig-object py" id="services.csr.CSR.agentNamesTransfer_read">
+<span class="sig-name descname"><span class="pre">agentNamesTransfer_read</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sesh</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#services.csr.CSR.agentNamesTransfer_read" title="Permalink to this definition">¶</a></dt>
+<dd><p>Agent Names Transfer</p>
+<p>Returns the list of agents who can have issues transfered / escalated to
+them</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>data</strong> (<em>mixed</em>) – Data sent with the request</p></li>
+<li><p><strong>sesh</strong> (<em>Sesh._Session</em>) – The session associated with the request</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>Services.Response</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
 <dt class="sig sig-object py" id="services.csr.CSR.agentNames_read">
 <span class="sig-name descname"><span class="pre">agentNames_read</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sesh</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#services.csr.CSR.agentNames_read" title="Permalink to this definition">¶</a></dt>
 <dd><p>Agent Names</p>
-<p>Returns the list of agents who can have issues transfered / escalated to
-them</p>
+<p>Returns the list of agents with their names</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
@@ -369,6 +478,42 @@ install configurations</p>
 <dl class="field-list simple">
 <dt class="field-odd">Returns</dt>
 <dd class="field-odd"><p>bool</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="services.csr.CSR.leadClosed_update">
+<span class="sig-name descname"><span class="pre">leadClosed_update</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sesh</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#services.csr.CSR.leadClosed_update" title="Permalink to this definition">¶</a></dt>
+<dd><p>Lead Closed Updated</p>
+<p>Marks a lead as upsold or failed</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>data</strong> (<em>mixed</em>) – Data sent with the request</p></li>
+<li><p><strong>sesh</strong> (<em>Sesh._Session</em>) – The session associated with the request</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>Services.Response</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="services.csr.CSR.leads_read">
+<span class="sig-name descname"><span class="pre">leads_read</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sesh</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#services.csr.CSR.leads_read" title="Permalink to this definition">¶</a></dt>
+<dd><p>Leads Read</p>
+<p>Fetches leads based on status/type/medication</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>data</strong> (<em>mixed</em>) – Data sent with the request</p></li>
+<li><p><strong>sesh</strong> (<em>Sesh._Session</em>) – The session associated with the request</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>Services.Response</p>
 </dd>
 </dl>
 </dd></dl>
@@ -652,6 +797,24 @@ previous days, for the signed in agent</p>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>data</strong> (<em>dict</em>) – Data sent with the request</p></li>
 <li><p><strong>sesh</strong> (<em>Sesh._Session</em>) – The session associated with the user</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>Services.Response</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="services.csr.CSR.statsTotals_read">
+<span class="sig-name descname"><span class="pre">statsTotals_read</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sesh</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#services.csr.CSR.statsTotals_read" title="Permalink to this definition">¶</a></dt>
+<dd><p>Stats Totals</p>
+<p>Returns the totals of actions by agent</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>data</strong> (<em>mixed</em>) – Data sent with the request</p></li>
+<li><p><strong>sesh</strong> (<em>Sesh._Session</em>) – The session associated with the request</p></li>
 </ul>
 </dd>
 <dt class="field-even">Returns</dt>
@@ -967,6 +1130,42 @@ associated or not. Returns the ID of the ticket, else False</p>
 </dd></dl>
 
 <dl class="py method">
+<dt class="sig sig-object py" id="services.csr.CSR.ticketStatsGraph_read">
+<span class="sig-name descname"><span class="pre">ticketStatsGraph_read</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sesh</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#services.csr.CSR.ticketStatsGraph_read" title="Permalink to this definition">¶</a></dt>
+<dd><p>Ticket Stats Graph</p>
+<p>Fetches the stats for the given group/user in the given range</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>data</strong> (<em>mixed</em>) – Data sent with the request</p></li>
+<li><p><strong>sesh</strong> (<em>Sesh._Session</em>) – The session associated with the request</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>Services.Response</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="services.csr.CSR.ticketStatsTotals_read">
+<span class="sig-name descname"><span class="pre">ticketStatsTotals_read</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sesh</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#services.csr.CSR.ticketStatsTotals_read" title="Permalink to this definition">¶</a></dt>
+<dd><p>Ticket Stats Totals</p>
+<p>Returns the totals of ticket info by agent</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>data</strong> (<em>mixed</em>) – Data sent with the request</p></li>
+<li><p><strong>sesh</strong> (<em>Sesh._Session</em>) – The session associated with the request</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>Services.Response</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
 <dt class="sig sig-object py" id="services.csr.CSR.ticketStats_read">
 <span class="sig-name descname"><span class="pre">ticketStats_read</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sesh</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#services.csr.CSR.ticketStats_read" title="Permalink to this definition">¶</a></dt>
 <dd><p>Ticket Stats</p>
@@ -1044,6 +1243,24 @@ to do so</p>
 <span class="sig-name descname"><span class="pre">tickets_read</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sesh</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#services.csr.CSR.tickets_read" title="Permalink to this definition">¶</a></dt>
 <dd><p>Tickets by User</p>
 <p>Returns all the tickets a user has any action on</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>data</strong> (<em>mixed</em>) – Data sent with the request</p></li>
+<li><p><strong>sesh</strong> (<em>Sesh._Session</em>) – The session associated with the request</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>Services.Response</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="services.csr.CSR.user_read">
+<span class="sig-name descname"><span class="pre">user_read</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sesh</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#services.csr.CSR.user_read" title="Permalink to this definition">¶</a></dt>
+<dd><p>User Read</p>
+<p>Returns the data associated with the currently logged in user</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">

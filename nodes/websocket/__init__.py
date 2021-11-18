@@ -270,7 +270,7 @@ class SyncApplication(WebSocketApplication):
 				# Else if it's a message to track something new
 				elif data['_type'] == 'track':
 
-					# Make sure we are authorized or else fuck off
+					# Make sure we are authorized
 					if not self.authorized:
 						if _verbose: print('Received track message before authorization')
 						self._fail(8, 'Received track message before authorization')
@@ -304,7 +304,7 @@ class SyncApplication(WebSocketApplication):
 				# Else if it's a message to stop tracking something
 				elif data['_type'] == 'untrack':
 
-					# Make sure we are authorized or else fuck off
+					# Make sure we are authorized
 					if not self.authorized:
 						if _verbose: print('Received untrack message before authorization')
 						self._fail(8, 'Received untrack message before authorization')

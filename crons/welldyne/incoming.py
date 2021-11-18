@@ -359,20 +359,33 @@ def shipped_claims(tod):
 
 		# Create the shipping info
 		try:
-			dShipInfo = {
+
+			# Look if we have this exact tracking info already
+			dTrack = ShippingInfo.filter({
 				"code": d['tracking'],
 				"customerId": d['customerId'],
-				"date": d['shipped'][0:10],
-				"type": d['tracking'][0:2] == '1Z' and 'UPS' or 'USPS',
-				"createdAt": sDT,
-				"updatedAt": sDT
-			}
-			oShippingInfo = ShippingInfo(dShipInfo)
-			bCreated = oShippingInfo.create(conflict="ignore")
+				"date": d['shipped'][0:10]
+			}, raw=True)
 
-			# If the record didn't exist, send an SMS
-			if bCreated:
-				EDWorkflow.shipping(oShippingInfo.record())
+			# If we don't have it
+			if not dTrack:
+
+				# Create the record
+				dShipInfo = {
+					"code": d['tracking'],
+					"customerId": d['customerId'],
+					"date": d['shipped'][0:10],
+					"type": d['tracking'][0:2] == '1Z' and 'UPS' or 'USPS',
+					"createdAt": sDT,
+					"updatedAt": sDT
+				}
+				oShippingInfo = ShippingInfo(dShipInfo)
+				bCreated = oShippingInfo.create(conflict="replace")
+
+				# If the record didn't exist, send an SMS
+				if bCreated:
+					EDWorkflow.shipping(oShippingInfo.record())
+
 		except ValueError as e:
 			emailError('Welldyne Incoming Failed', 'Invalid shipping info: %s\n\n%s' % (
 				str(e.args[0]),

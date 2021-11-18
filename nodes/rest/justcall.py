@@ -31,8 +31,17 @@ if __name__ == "__main__":
 
 	# Create the HTTP server and map requests to service
 	REST.Server({
+
+		"/agent/memo": {"methods": REST.READ | REST.UPDATE, "session": True},
+
+		"/details": {"methods": REST.READ},
+
 		"/log": {"methods": REST.READ},
 		"/logs": {"methods": REST.READ, "session": True},
+
+		"/queue": {"methods": REST.READ | REST.CREATE | REST.DELETE},
+
+		"/queue/number": {"methods": REST.READ | REST.CREATE | REST.DELETE, "session": True},
 
 		"/users": {"methods": REST.READ, "session": True}
 

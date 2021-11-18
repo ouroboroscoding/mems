@@ -25,24 +25,6 @@ from RestOC import Conf, Record_MySQL
 # Shared imports
 from shared import Record_MySQLSearch
 
-# Custome SQL
-sLatestStatusSQL = ''
-sNumOfOrdersSQL = ''
-
-def init():
-	"""Ugly Hack
-
-	Need to find a better way to do this
-	"""
-
-	global sLatestStatusSQL, sNumOfOrdersSQL
-
-	# SQL files
-	with open('records/sql/latest_status.sql') as oF:
-		sLatestStatusSQL = oF.read()
-	with open('records/sql/number_of_orders.sql') as oF:
-		sNumOfOrdersSQL = oF.read()
-
 # Calendly class
 class Calendly(Record_MySQL.Record):
 	"""Calendly
@@ -2014,14 +1996,24 @@ class KtOrder(Record_MySQL.Record):
 		# Fetch the record structure
 		dStruct = cls.struct(custom)
 
+		# Generate SQL
+		sSQL = "SELECT\n" \
+				"	`orderId`\n" \
+				"FROM\n" \
+				"	`%(db)s`.`%(table)s` as `kto`\n" \
+				"WHERE\n" \
+				"	`kto`.`phoneNumber` IN('%(phone)s', '1%(phone)s')\n" \
+				"	AND (`kto`.`cardType` <> 'TESTCARD'\n" \
+				"	OR ISNULL(`kto`.`cardType`))" % {
+			"db": dStruct['db'],
+			"table": dStruct['table'],
+			"phone": Record_MySQL.Commands.escape(dStruct['host'], phone)
+		}
+
 		# Fetch the orders
 		return Record_MySQL.Commands.select(
 			dStruct['host'],
-			sNumOfOrdersSQL % {
-				"db": dStruct['db'],
-				"table": dStruct['table'],
-				"phone": Record_MySQL.Commands.escape(dStruct['host'], phone)
-			},
+			sSQL,
 			Record_MySQL.ESelect.COLUMN
 		)
 
@@ -2385,6 +2377,47 @@ class KtOrderClaim(Record_MySQL.Record):
 
 		# Return the config
 		return cls._conf
+
+	@classmethod
+	def withType(cls, customerId, custom={}):
+		"""With Type
+
+		Fetches a claim with the campaign type info
+
+		Arguments:
+			user (int): The ID of the user
+			custom (dict): Custom Host and DB info
+				'host' the name of the host to get/set data on
+				'append' optional postfix for dynamic DBs
+
+		Returns:
+			dict
+		"""
+
+		# Fetch the record structure
+		dStruct = cls.struct(custom)
+
+		# Generate the SQL
+		sSQL = "SELECT\n" \
+				"	`ktoc`.*,\n" \
+				"	CONCAT(`ktc`.`firstName`, ' ', `ktc`.`lastName`) as `customerName`,\n" \
+				"	IFNULL(`c`.`type`, 'view') as `type`\n" \
+				"FROM `%(db)s`.`%(table)s` as `ktoc`\n" \
+				"JOIN `%(db)s`.`kt_customer` as `ktc` ON CONVERT(`ktc`.`customerId`, UNSIGNED) = `ktoc`.`customerId`\n" \
+				"LEFT JOIN `%(db)s`.`kt_order` as `kto` ON `kto`.`orderId` = `ktoc`.`orderId`\n" \
+				"LEFT JOIN `%(db)s`.`campaign` as `c` ON `c`.`id` = `kto`.`campaignId`\n" \
+				"WHERE `ktoc`.`customerId` = %(customerId)d" % {
+			"db": dStruct['db'],
+			"table": dStruct['table'],
+			"customerId": customerId
+		}
+
+		# Fetch and return the data
+		return Record_MySQL.Commands.select(
+			dStruct['host'],
+			sSQL,
+			Record_MySQL.ESelect.ROW
+		)
 
 # KtOrderClaimLast class
 class KtOrderClaimLast(Record_MySQL.Record):
@@ -2986,8 +3019,7 @@ class SmpCustomer(Record_MySQL.Record):
 class SmpImage(Record_MySQL.Record):
 	"""SmpImage
 
-	Represents and stores images, which is just about the dumbest fucking thing
-	imaginable. What kind of idiot stores images in a DB?
+	Represents and stores images
 	"""
 
 	_conf = None
@@ -3024,13 +3056,14 @@ class SmpNote(Record_MySQL.Record):
 	"""Configuration"""
 
 	@classmethod
-	def byCustomer(cls, customer_id, custom={}):
+	def byCustomer(cls, customer_id, action=None, custom={}):
 		"""By Customer
 
 		Fetches all notes associated with the customer's orders
 
 		Arguments:
 			customer_id (int): The unique ID of the customer
+			action (str|str[]): Action(s) to filter by
 			custom (dict): Custom Host and DB info
 				'host' the name of the host to get/set data on
 				'append' optional postfix for dynamic DBs
@@ -3041,6 +3074,11 @@ class SmpNote(Record_MySQL.Record):
 
 		# Fetch the record structure
 		dStruct = cls.struct(custom)
+
+		# If we have actions to filter
+		sActions = action and \
+					('	`action` %s AND\n' % cls.processValue(dStruct, 'action', action)) or \
+					''
 
 		# Generate SQL
 		sSQL = "SELECT\n" \
@@ -3059,6 +3097,7 @@ class SmpNote(Record_MySQL.Record):
 				"	`smp`.`parentTable` = 'kt_order' AND\n" \
 				"	`smp`.`parentColumn` = 'orderId' AND\n" \
 				"	`smp`.`columnValue` = `kto`.`orderId` AND\n" \
+				"%(action)s" \
 				"	`smp`.`createdBy` = `user`.`id`\n" \
 				"\n" \
 				"UNION\n" \
@@ -3077,12 +3116,14 @@ class SmpNote(Record_MySQL.Record):
 				"	`smp`.`parentTable` = 'kt_customer' AND\n" \
 				"	`smp`.`parentColumn` = 'customerId' AND\n" \
 				"	`smp`.`columnValue` = %(id)d AND\n" \
+				"%(action)s" \
 				"	`smp`.`createdBy` = `user`.`id`\n" \
 				"\n" \
 				"ORDER BY `createdAt`" % {
 			"db": dStruct['db'],
 			"table": dStruct['table'],
-			"id": customer_id
+			"id": customer_id,
+			"action": sActions
 		}
 
 		# Execute and return the select
@@ -3280,7 +3321,16 @@ class SmpOrderStatus(Record_MySQL.Record):
 		dStruct = cls.struct(custom)
 
 		# Generate SQL
-		sSQL = sLatestStatusSQL % {
+		sSQL = "SELECT\n" \
+				"	`kto`.`orderId`,\n" \
+				"	`sos`.`attentionRole`,\n" \
+				"	`sos`.`orderLabel`\n" \
+				"FROM `%(db)s`.`kt_order` as `kto`\n" \
+				"LEFT JOIN `%(db)s`.`%(table)s` as `sos`\n" \
+				"	ON `kto`.`orderId` = `sos`.`orderId`\n" \
+				"WHERE `kto`.`customerId` = %(customerId)d\n" \
+				"ORDER BY `kto`.`createdAt` DESC\n" \
+				"LIMIT 1\n" % {
 			"db": dStruct['db'],
 			"table": dStruct['table'],
 			"customerId": customer_id
@@ -3600,7 +3650,7 @@ class TfLanding(Record_MySQL.Record):
 		return cls._conf
 
 	@classmethod
-	def find(cls, last_name, email, phone, form=None, custom={}):
+	def find(cls, last_name, email, phone, form=None, completed_only=False, custom={}):
 		"""Find
 
 		Attempts to find landings using customer info
@@ -3610,6 +3660,7 @@ class TfLanding(Record_MySQL.Record):
 			email (str): The email of the customer
 			phone (str): The phone number of the customer
 			form (str[str[]): A form type of types to filter by
+			completed_only (bool): Optional, True to return only completed MIPs
 			custom (dict): Custom Host and DB info
 				'host' the name of the host to get/set data on
 				'append' optional postfix for dynamic DBs
@@ -3645,6 +3696,10 @@ class TfLanding(Record_MySQL.Record):
 				)
 			else:
 				raise ValueError('form must be str|str[]')
+
+		# If we only want completed
+		if completed_only:
+			lWhere.append('`complete` = \'Y\'')
 
 		# Generate SQL
 		sSQL = "SELECT `landing_id`, `formId`, `submitted_at`, `complete`\n" \

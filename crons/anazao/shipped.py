@@ -30,6 +30,7 @@ from records.monolith import KtCustomer, ShippingInfo
 from crons import isRunning, emailError
 
 reEmail = re.compile(r'(\d{2}\/\d{2}\/\d{2}) for the patients listed below:(?:<br>){4}([^<]+)(?:<br>){4}The order is being shipped to the following address:(?:<br>){3}([^<]+)(?:<br>){4}The tracking number for this shipment is <a href="[^"]+">([^<]+)<\/a>')
+dZip = {3: 2, 4: 3}
 
 # ([^,]+), ([^,]+), ([A-Z]{2}) (\d{5}) US  ([^<]+)
 
@@ -109,7 +110,7 @@ def run():
 
 			# Split the address into parts
 			lAddress = lMatches[2].split(', ')
-			sZip = lAddress[len(lAddress) == 3 and 2 or 3].split(' ')[1]
+			sZip = lAddress[len(lAddress) - 1].split(' ')[1][:5]
 
 			# Try to find the customer by Name and Zip
 			dKtCustomer = KtCustomer.byNameAndZip(

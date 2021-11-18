@@ -1,0 +1,26 @@
+crons.csr package
+=================
+
+Subpackages
+-----------
+
+.. toctree::
+   :maxdepth: 4
+
+   crons.csr.tickets
+
+Submodules
+----------
+
+.. toctree::
+   :maxdepth: 4
+
+   crons.csr.lead_gen
+
+Module contents
+---------------
+
+.. automodule:: crons.csr
+   :members:
+   :undoc-members:
+   :show-inheritance:

@@ -25,7 +25,8 @@ from RestOC import DictHelper, Errors, JSON, Record_MySQL, Services, Sesh
 from shared import Memo, Rights
 
 # Records imports
-from records.csr import Agent, AgentOfficeHours, CustomList, CustomListItem, \
+from records.csr import Action, Agent, AgentOfficeHours, \
+						CustomList, CustomListItem, Lead, \
 						Reminder, TemplateEmail, TemplateSMS, \
 						Ticket, TicketAction, TicketItem, \
 						TicketOpened, TicketResolved, TicketStat
@@ -52,9 +53,9 @@ class CSR(Services.Service):
 	Service for CSR access
 	"""
 
-	_install = [Agent, AgentOfficeHours, CustomList, CustomListItem,
-				TemplateEmail, TemplateSMS, Ticket, TicketAction, TicketItem,
-				TicketOpened, TicketResolved, TicketStat]
+	_install = [Action, Agent, AgentOfficeHours, CustomList, CustomListItem,
+				Lead, TemplateEmail, TemplateSMS, Ticket, TicketAction,
+				TicketItem, TicketOpened, TicketResolved, TicketStat]
 	"""Record types called in install"""
 
 	def initialise(self):
@@ -140,6 +141,8 @@ class CSR(Services.Service):
 				"prescriptions": 3,			# Read, Update
 				"products": 1,				# Read
 				"pharmacy_fill": 1,			# Read
+				"rx_diagnosis": 1,			# Read
+				"rx_product": 1,			# Read
 				"welldyne_adhoc": 4			# Create
 			}
 		}, sesh)
@@ -433,6 +436,135 @@ class CSR(Services.Service):
 		# Create the agent record
 		return self._agent_create(dAgent, sesh)
 
+	def action_create(self, data, sesh):
+		"""Action Create
+
+		Adds an action from an agent
+
+		Arguments:
+			data (mixed): Data sent with the request
+			sesh (Sesh._Session): The session associated with the request
+
+		Returns:
+			Services.Response
+		"""
+
+		# Check rights
+		Rights.check(sesh, 'csr_claims', Rights.CREATE)
+
+		# Add/overwrite the memo_id with the current session user
+		data['memo_id'] = sesh['memo_id']
+
+		# Create a new instance
+		try:
+			oAction = Action(data)
+		except ValueError as e:
+			return Services.Error(1001, e.args[0])
+
+		# Create the action
+		return Services.Response(
+			oAction.create()
+		)
+
+	def action_delete(self, data, sesh):
+		"""Action Delete
+
+		Deletes a ticket if it was recently created or if the user has rights
+		to do so
+
+		Arguments:
+			data (mixed): Data sent with the request
+			sesh (Sesh._Session): The session associated with the request
+
+		Returns:
+			Services.Response
+		"""
+
+		# If the ID is missing
+		if '_id' not in data:
+			return Services.Error(1001, [('_id', 'missing')])
+
+		# Find the ticket
+		oAction = Action.get(data['_id'])
+		if not oAction:
+			return Services.Error(1104)
+
+		# If the ticket is older than a minute
+		if oAction['_created'] - int(time()) > 60:
+
+			# Check permissions
+			Rights.check(sesh, 'csr_overwrite', Rights.CREATE)
+
+		# Delete the ticket
+		oAction.delete()
+
+		# Return OK
+		return Services.Response(True)
+
+	def actions_read(self, data, sesh):
+		"""Actions by User
+
+		Returns all the actions a user has done in a time range
+
+		Arguments:
+			data (mixed): Data sent with the request
+			sesh (Sesh._Session): The session associated with the request
+
+		Returns:
+			Services.Response
+		"""
+
+		# If there's no memo_id in the session
+		if 'memo_id' not in sesh:
+
+			# Check rights
+			Rights.check(sesh, 'csr_overwrite', Rights.READ)
+
+			# If an agent type is passed
+			if 'agent_type' in data:
+
+				# Find the ids of all agents with the type
+				lIDs = Agent.memoIdsByType(data['agent_type'])
+				if lIDs:
+					data['memo_id'] = lIDs
+				else:
+					return Services.Response([])
+
+		# Else,
+		else:
+
+			# If the user is not sent, or not the one signed in
+			if 'memo_id' not in data or data['memo_id'] != sesh['memo_id']:
+				return Services.Error(Rights.INVALID)
+
+		# Verify minimum fields
+		try: DictHelper.eval(data, ['start', 'end'])
+		except ValueError as e: return Services.Response(error=(1001, [(f, 'missing') for f in e.args]))
+
+		# Get a list of the unique tickets IDS the user is associated with
+		lActions = Action.byRange(
+			data['start'], data['end'],
+			'memo_id' in data and data['memo_id'] or None
+		)
+
+		# If there's no tickets
+		if not lActions:
+			return Services.Response([])
+
+		# Fetch their names
+		dMemoNames = Memo.name(
+			list(set([d['memo_id'] for d in lActions]))
+		)
+
+		# Add the names to the agents
+		for d in lActions:
+			try: dName = dMemoNames[d['memo_id']]
+			except KeyError: dName = {"firstName": 'NAME', "lastName": 'MISSING'}
+			d['action_by'] = '%s %s' % (dName['firstName'], dName['lastName'])
+
+		# Return the tickets
+		return Services.Response(lActions)
+
 	def agent_delete(self, data, sesh):
 		"""Agent Delete
 
@@ -612,11 +744,14 @@ class CSR(Services.Service):
 		# Delete any existing hours for the user
 		AgentOfficeHours.deleteGet(data['memo_id'], index='memo_id')
 
-		# Add the new ones
-		if len(lHours) > 1:
-			AgentOfficeHours.createMany(lHours)
-		else:
-			lHours[0].create()
+		# If there's any hours
+		if lHours:
+
+			# Add the new ones
+			if len(lHours) > 1:
+				AgentOfficeHours.createMany(lHours)
+			else:
+				lHours[0].create()
 
 		# Return OK
 		return Services.Response(True)
@@ -661,6 +796,40 @@ class CSR(Services.Service):
 
 	def agentNames_read(self, data, sesh):
 		"""Agent Names
+
+		Returns the list of agents with their names
+
+		Arguments:
+			data (mixed): Data sent with the request
+			sesh (Sesh._Session): The session associated with the request
+
+		Returns:
+			Services.Response
+		"""
+
+		# Fetch all the agents
+		lAgents = Agent.get(raw=['memo_id', 'type'])
+
+		# Fetch their names
+		dMemoNames = Memo.name([d['memo_id'] for d in lAgents])
+
+		# Go through each agent
+		for d in lAgents:
+
+			# Try to find the name for the agent
+			try: dName = dMemoNames[d['memo_id']]
+			except KeyError: dName = {"firstName": 'NAME', "lastName": 'MISSING'}
+			d['firstName'] = dName['firstName']
+			d['lastName'] = dName['lastName']
+
+		# Order by first then last name
+		lAgents = sorted(lAgents, key=itemgetter('firstName', 'lastName'))
+
+		# Return the agents
+		return Services.Response(lAgents)
+
+	def agentNamesTransfer_read(self, data, sesh):
+		"""Agent Names Transfer
 
 		Returns the list of agents who can have issues transfered / escalated to
 		them
@@ -879,6 +1048,95 @@ class CSR(Services.Service):
 
 		# Return the agents in order of userName
 		return Services.Response(sorted(lAgents, key=lambda o: o['userName']))
+
+	def leadClosed_update(self, data, sesh):
+		"""Lead Closed Updated
+
+		Marks a lead as upsold or failed
+
+		Arguments:
+			data (mixed): Data sent with the request
+			sesh (Sesh._Session): The session associated with the request
+
+		Returns:
+			Services.Response
+		"""
+
+		# Make sure the user has at least csr leads permission
+		Rights.check(sesh, 'csr_leads', Rights.READ)
+
+		# Verify minimum fields
+		try: DictHelper.eval(data, ['customerId', 'status'])
+		except ValueError as e: return Services.Response(error=(1001, [(f, 'missing') for f in e.args]))
+
+		# Find the lead
+		oLead = Lead.get(data['customerId'])
+
+		# If it doesn't exist
+		if not oLead:
+			return Services.Response(1104)
+
+		# Update the lead status
+		try:
+			oLead['status'] = data['status']
+		except ValueError as e:
+			return Services.Error(1001, e.args[0])
+
+		# Save the record
+		oLead.save()
+
+		# Return OK
+		return Services.Response(True)
+
+	def leads_read(self, data, sesh):
+		"""Leads Read
+
+		Fetches leads based on status/type/medication
+
+		Arguments:
+			data (mixed): Data sent with the request
+			sesh (Sesh._Session): The session associated with the request
+
+		Returns:
+			Services.Response
+		"""
+
+		# Make sure the user has at least csr leads permission
+		Rights.check(sesh, 'csr_leads', Rights.READ)
+
+		# Init the filter
+		dFilter = {}
+
+		# Check for possible data passed
+		for f in ['medications', 'status', 'type']:
+			if f in data:
+				dFilter[f] = data[f]
+
+		# If we have any filter
+		if dFilter:
+			dRecords = Lead.filter(dFilter, raw=True, orderby='_created')
+		else:
+			dRecords = Lead.get(raw=True, orderby='_created')
+
+		# Fetch all related info about the customers from Memo
+		oResponse = Services.read('monolith', 'internal/customersWithClaimed', {
+			"_internal_": Services.internalKey(),
+			"customerIds": [str(d['customerId']) for d in dRecords]
+		}, sesh)
+		if oResponse.errorExists():
+			return oResponse
+
+		# Add the customer data to the lead records
+		for d in dRecords:
+			try: dCustomer = oResponse.data[str(d['customerId'])]
+			except KeyError: dCustomer = {}
+			for f in ['customerPhone', 'customerName', 'userId', 'claimedBy', 'claimedAt']:
+				d[f] = f in dCustomer and dCustomer[f] or None
+			if 'reviews' in dCustomer:
+				d['reviews'] = dCustomer['reviews']
+
+		# Return the data
+		return Services.Response(dRecords)
 
 	def list_create(self, data, sesh):
 		"""List Create
@@ -1560,6 +1818,77 @@ class CSR(Services.Service):
 
 		# Return OK
 		return Services.Response(True)
+
+	def statsTotals_read(self, data, sesh):
+		"""Stats Totals
+
+		Returns the totals of actions by agent
+
+		Arguments:
+			data (mixed): Data sent with the request
+			sesh (Sesh._Session): The session associated with the request
+
+		Returns:
+			Services.Response
+		"""
+
+		# Check rights
+		Rights.check(sesh, 'csr_overwrite', Rights.READ)
+
+		# If an agent type is passed
+		if 'agent_type' in data:
+
+			# Find the ids of all agents with the type
+			lIDs = Agent.memoIdsByType(data['agent_type'])
+			if not lIDs:
+				return Services.Response([])
+
+		else:
+			lIDs = None
+
+		# Verify minimum fields
+		try: DictHelper.eval(data, ['start', 'end'])
+		except ValueError as e: return Services.Response(error=(1001, [(f, 'missing') for f in e.args]))
+
+		# Get the counts of type by agent
+		lCounts = Action.agentCounts([data['start'], data['end']], lIDs)
+
+		# If we got nothing
+		if not lCounts:
+			return Services.Response([])
+
+		# Init the dict of agents to types
+		dAgents = {}
+
+		# Go through the counts and store them by agent
+		for d in lCounts:
+
+			# If we haven't seen this agent yet
+			if d['memo_id'] not in dAgents:
+				dAgents[d['memo_id']] = {"memo_id": d['memo_id']}
+
+			# Add the type
+			dAgents[d['memo_id']][d['type'].replace(' ', '_').replace('/', '_')] = d['count']
+
+		# Fetch their names
+		dMemoNames = Memo.name(list(dAgents.keys()))
+
+		# Go through each agent
+		for agent in dAgents:
+
+			# Add the name
+			try: dName = dMemoNames[agent]
+			except KeyError: dName = {"firstName": 'NAME', "lastName": 'MISSING'}
+			dAgents[agent]['name'] = '%s %s' % (dName['firstName'], dName['lastName'])
+
+			# Make sure to add 0s (zeros) for missing types
+			for s in Action.struct()['tree']['type'].options():
+				s = s.replace(' ', '_').replace('/', '_')
+				if s not in dAgents[agent]:
+					dAgents[agent][s] = 0
+
+		# Return the counts
+		return Services.Response(sorted(list(dAgents.values()), key=itemgetter('name')))
 
 	def templateEmail_create(self, data, sesh):
 		"""Template Email Create

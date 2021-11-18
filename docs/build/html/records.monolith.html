@@ -687,6 +687,65 @@ any agent</p>
 </dd></dl>
 
 <dl class="py class">
+<dt class="sig sig-object py" id="records.monolith.CustomerReviews">
+<em class="property"><span class="pre">class</span> </em><span class="sig-prename descclassname"><span class="pre">records.monolith.</span></span><span class="sig-name descname"><span class="pre">CustomerReviews</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">record</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">{}</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">custom</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">{}</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#records.monolith.CustomerReviews" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">RestOC.Record_MySQL.Record</span></code></p>
+<p>Customer Reviews</p>
+<p>Represents the count and total of customer reviews by customer</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="records.monolith.CustomerReviews.addReview">
+<em class="property"><span class="pre">classmethod</span> </em><span class="sig-name descname"><span class="pre">addReview</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">customer_id</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">review</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">custom</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">{}</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#records.monolith.CustomerReviews.addReview" title="Permalink to this definition">¶</a></dt>
+<dd><p>Add Review</p>
+<p>Adds a new record or updates the existing using the latest review</p>
+<dl>
+<dt>Argumens:</dt><dd><p>customer_id (uint): The ID of the customer
+review (uint): The review (1-10) the customer gave
+custom (dict): Custom Host and DB info</p>
+<blockquote>
+<div><p>‘host’ the name of the host to get/set data on
+‘append’ optional postfix for dynamic DBs</p>
+</div></blockquote>
+</dd>
+</dl>
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>None</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="records.monolith.CustomerReviews.config">
+<em class="property"><span class="pre">classmethod</span> </em><span class="sig-name descname"><span class="pre">config</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#records.monolith.CustomerReviews.config" title="Permalink to this definition">¶</a></dt>
+<dd><p>Config</p>
+<p>Returns the configuration data associated with the record type</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>dict</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="records.monolith.CustomerReviews.sums">
+<em class="property"><span class="pre">classmethod</span> </em><span class="sig-name descname"><span class="pre">sums</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">custom</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">{}</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#records.monolith.CustomerReviews.sums" title="Permalink to this definition">¶</a></dt>
+<dd><p>Counts</p>
+<p>Returns the total sums of the count and total columns</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>custom</strong> (<em>dict</em>) – Custom Host and DB info
+‘host’ the name of the host to get/set data on
+‘append’ optional postfix for dynamic DBs</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>None</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
 <dt class="sig sig-object py" id="records.monolith.DsApproved">
 <em class="property"><span class="pre">class</span> </em><span class="sig-prename descclassname"><span class="pre">records.monolith.</span></span><span class="sig-name descname"><span class="pre">DsApproved</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">record</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">{}</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">custom</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">{}</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#records.monolith.DsApproved" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">RestOC.Record_MySQL.Record</span></code></p>
@@ -794,6 +853,26 @@ any agent</p>
 </dd>
 <dt class="field-even">Returns</dt>
 <dd class="field-even"><p>list</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="records.monolith.HormoneSymptomToQuestion">
+<em class="property"><span class="pre">class</span> </em><span class="sig-prename descclassname"><span class="pre">records.monolith.</span></span><span class="sig-name descname"><span class="pre">HormoneSymptomToQuestion</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">record</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">{}</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">custom</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">{}</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#records.monolith.HormoneSymptomToQuestion" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">RestOC.Record_MySQL.Record</span></code></p>
+<p>Hormone Sympton To Question</p>
+<p>Represents symptoms used in assessment and their corresponding category</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="records.monolith.HormoneSymptomToQuestion.config">
+<em class="property"><span class="pre">classmethod</span> </em><span class="sig-name descname"><span class="pre">config</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#records.monolith.HormoneSymptomToQuestion.config" title="Permalink to this definition">¶</a></dt>
+<dd><p>Config</p>
+<p>Returns the configuration data associated with the record type</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>dict</p>
 </dd>
 </dl>
 </dd></dl>
@@ -1016,6 +1095,27 @@ for all the customers requested</p>
 </dl>
 </dd></dl>
 
+<dl class="py method">
+<dt class="sig sig-object py" id="records.monolith.KtCustomer.withOrderClaimed">
+<em class="property"><span class="pre">classmethod</span> </em><span class="sig-name descname"><span class="pre">withOrderClaimed</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">customer_ids</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">custom</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">{}</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#records.monolith.KtCustomer.withOrderClaimed" title="Permalink to this definition">¶</a></dt>
+<dd><p>With Order Claimed</p>
+<p>Returns the id and name, as well as order claimed status for all the
+customers requested</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>customer_ids</strong> (<em>str</em><em>[</em><em>]</em>) – The list of ID to fetch</p></li>
+<li><p><strong>custom</strong> (<em>dict</em>) – Custom Host and DB info
+‘host’ the name of the host to get/set data on
+‘append’ optional postfix for dynamic DBs</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>list</p>
+</dd>
+</dl>
+</dd></dl>
+
 </dd></dl>
 
 <dl class="py class">
@@ -1069,6 +1169,26 @@ useful for claims</p>
 </dd>
 <dt class="field-even">Returns</dt>
 <dd class="field-even"><p>list</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="records.monolith.KtOrder.orderCounts">
+<em class="property"><span class="pre">classmethod</span> </em><span class="sig-name descname"><span class="pre">orderCounts</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">customer_ids</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">custom</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">{}</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#records.monolith.KtOrder.orderCounts" title="Permalink to this definition">¶</a></dt>
+<dd><p>Order Counts</p>
+<p>Returns the count of orders per customer ID passed</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>customer_ids</strong> (<em>list</em>) – The list of customer IDs to get order counts by</p></li>
+<li><p><strong>custom</strong> (<em>dict</em>) – Custom Host and DB info
+‘host’ the name of the host to get/set data on
+‘append’ optional postfix for dynamic DBs</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>dict</p>
 </dd>
 </dl>
 </dd></dl>
@@ -1232,6 +1352,26 @@ but such is life.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Returns</dt>
 <dd class="field-odd"><p>dict</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="records.monolith.KtOrderClaim.withType">
+<em class="property"><span class="pre">classmethod</span> </em><span class="sig-name descname"><span class="pre">withType</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">customerId</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">custom</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">{}</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#records.monolith.KtOrderClaim.withType" title="Permalink to this definition">¶</a></dt>
+<dd><p>With Type</p>
+<p>Fetches a claim with the campaign type info</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>user</strong> (<em>int</em>) – The ID of the user</p></li>
+<li><p><strong>custom</strong> (<em>dict</em>) – Custom Host and DB info
+‘host’ the name of the host to get/set data on
+‘append’ optional postfix for dynamic DBs</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>dict</p>
 </dd>
 </dl>
 </dd></dl>
@@ -1604,13 +1744,14 @@ imaginable. What kind of idiot stores images in a DB?</p>
 <p>Represents an internal note associated with a customer</p>
 <dl class="py method">
 <dt class="sig sig-object py" id="records.monolith.SmpNote.byCustomer">
-<em class="property"><span class="pre">classmethod</span> </em><span class="sig-name descname"><span class="pre">byCustomer</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">customer_id</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">custom</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">{}</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#records.monolith.SmpNote.byCustomer" title="Permalink to this definition">¶</a></dt>
+<em class="property"><span class="pre">classmethod</span> </em><span class="sig-name descname"><span class="pre">byCustomer</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">customer_id</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">action</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">custom</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">{}</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#records.monolith.SmpNote.byCustomer" title="Permalink to this definition">¶</a></dt>
 <dd><p>By Customer</p>
 <p>Fetches all notes associated with the customer’s orders</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>customer_id</strong> (<em>int</em>) – The unique ID of the customer</p></li>
+<li><p><strong>action</strong> (<em>str|str</em><em>[</em><em>]</em>) – Action(s) to filter by</p></li>
 <li><p><strong>custom</strong> (<em>dict</em>) – Custom Host and DB info
 ‘host’ the name of the host to get/set data on
 ‘append’ optional postfix for dynamic DBs</p></li>
@@ -1794,6 +1935,26 @@ IDs</p>
 </dl>
 </dd></dl>
 
+<dl class="py method">
+<dt class="sig sig-object py" id="records.monolith.TfAnswer.reviewWithCustomerId">
+<em class="property"><span class="pre">classmethod</span> </em><span class="sig-name descname"><span class="pre">reviewWithCustomerId</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">last_id</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">custom</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">{}</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#records.monolith.TfAnswer.reviewWithCustomerId" title="Permalink to this definition">¶</a></dt>
+<dd><p>Review With Customer Id</p>
+<p>Returns the newest reviews with their corresponding customer ID</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>last_id</strong> (<em>uint</em>) – The last ID that was fetched</p></li>
+<li><p><strong>custom</strong> (<em>dict</em>) – Custom Host and DB info
+‘host’ the name of the host to get/set data on
+‘append’ optional postfix for dynamic DBs</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>dict</p>
+</dd>
+</dl>
+</dd></dl>
+
 </dd></dl>
 
 <dl class="py class">
@@ -1815,7 +1976,7 @@ IDs</p>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="records.monolith.TfLanding.find">
-<em class="property"><span class="pre">classmethod</span> </em><span class="sig-name descname"><span class="pre">find</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">last_name</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">email</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">phone</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">form</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">custom</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">{}</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#records.monolith.TfLanding.find" title="Permalink to this definition">¶</a></dt>
+<em class="property"><span class="pre">classmethod</span> </em><span class="sig-name descname"><span class="pre">find</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">last_name</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">email</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">phone</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">form</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">completed_only</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">custom</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">{}</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#records.monolith.TfLanding.find" title="Permalink to this definition">¶</a></dt>
 <dd><p>Find</p>
 <p>Attempts to find landings using customer info</p>
 <dl class="field-list simple">
@@ -1825,6 +1986,7 @@ IDs</p>
 <li><p><strong>email</strong> (<em>str</em>) – The email of the customer</p></li>
 <li><p><strong>phone</strong> (<em>str</em>) – The phone number of the customer</p></li>
 <li><p><strong>form</strong> (<em>str</em><em>[</em><em>str</em><em>[</em><em>]</em>) – A form type of types to filter by</p></li>
+<li><p><strong>completed_only</strong> (<em>bool</em>) – Optional, True to return only completed MIPs</p></li>
 <li><p><strong>custom</strong> (<em>dict</em>) – Custom Host and DB info
 ‘host’ the name of the host to get/set data on
 ‘append’ optional postfix for dynamic DBs</p></li>
@@ -1908,13 +2070,6 @@ IDs</p>
 </dl>
 </dd></dl>
 
-</dd></dl>
-
-<dl class="py function">
-<dt class="sig sig-object py" id="records.monolith.init">
-<span class="sig-prename descclassname"><span class="pre">records.monolith.</span></span><span class="sig-name descname"><span class="pre">init</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#records.monolith.init" title="Permalink to this definition">¶</a></dt>
-<dd><p>Ugly Hack</p>
-<p>Need to find a better way to do this</p>
 </dd></dl>
 
 </div>

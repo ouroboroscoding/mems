@@ -15,6 +15,121 @@ __created__		= "2020-05-17"
 from FormatOC import Tree
 from RestOC import Conf, DictHelper, JSON, Record_MySQL
 
+# Action class
+class Action(Record_MySQL.Record):
+	""" Action
+
+	Represents an action taken
+	"""
+
+	_conf = None
+	"""Configuration"""
+
+	@classmethod
+	def config(cls):
+		"""Config
+
+		Returns the configuration data associated with the record type
+
+		Returns:
+			dict
+		"""
+
+		# If we haven loaded the config yet
+		if not cls._conf:
+			cls._conf = Record_MySQL.Record.generateConfig(
+				Tree.fromFile('definitions/csr/action.json'),
+				'mysql'
+			)
+
+		# Return the config
+		return cls._conf
+
+	@classmethod
+	def agentCounts(cls, range_, memo_ids=None, custom={}):
+		"""Agent Counts
+
+		Returns the count per type of outgoing item by agent
+
+		Arguments:
+			range_ (list): The timestamp start and end to look up
+			memo_ids (list): Optional, the list of agents to look for
+			custom (dict): Custom Host and DB info
+				'host' the name of the host to get/set data on
+				'append' optional postfix for dynamic DBs
+
+		Returns:
+			list
+		"""
+
+		# Fetch the record structure
+		dStruct = cls.struct(custom)
+
+		# Generate the SQL
+		sSQL = "SELECT `memo_id`, `type`, COUNT(*) as `count`\n" \
+				"FROM `%(db)s`.`%(table)s`\n" \
+				"WHERE `_created` BETWEEN FROM_UNIXTIME(%(start)d) AND FROM_UNIXTIME(%(end)d)\n" \
+				"%(memo_id)s" \
+				"GROUP BY `memo_id`, `type`" % {
+			"db": dStruct['db'],
+			"table": dStruct['table'],
+			"start": range_[0],
+			"end": range_[1],
+			"memo_id": memo_ids and ('AND `memo_id` IN (%s)\n' % ','.join([str(s) for s in memo_ids])) or ''
+		}
+
+		# Return the counts
+		return Record_MySQL.Commands.select(
+			dStruct['host'],
+			sSQL,
+			Record_MySQL.ESelect.ALL
+		)
+
+	@classmethod
+	def byRange(cls, start, end, memo_id=None, custom={}):
+		"""By Range
+
+		Returns the actions in the given date/time range and single or group of
+		agents
+
+		Arguments:
+			start (uint): The start timestamp of the range
+			end (uint): The end timestamp of the range
+			memo_id (int): The ID of the memo user to fetch tickets for
+
+		Returns:
+			list
+		"""
+
+		# Fetch the record structure
+		dStruct = cls.struct(custom)
+
+		# Generate the where clauses
+		sWhere = '`_created` BETWEEN FROM_UNIXTIME(%d) AND FROM_UNIXTIME(%d)' % (
+			start, end
+		)
+		if memo_id:
+			if isinstance(memo_id, list):
+				sWhere += '\nAND `memo_id` IN (%s)' % ','.join([str(s) for s in memo_id])
+			else:
+				sWhere += '\nAND `memo_id` = %d' % memo_id
+
+		# Generate the SQL
+		sSQL = "SELECT *\n" \
+				"FROM `%(db)s`.`%(table)s`\n" \
+				"WHERE %(where)s\n" % {
+			"db": dStruct['db'],
+			"table": dStruct['table'],
+			"where": sWhere
+		}
+
+		# Fetch and return the records
+		return Record_MySQL.Commands.select(
+			dStruct['host'],
+			sSQL,
+			Record_MySQL.ESelect.ALL
+		)
+
 # Agent class
 class Agent(Record_MySQL.Record):
 	"""Agent
@@ -111,7 +226,6 @@ class AgentOfficeHours(Record_MySQL.Record):
 		# Return the config
 		return cls._conf
 
-
 # CustomList class
 class CustomList(Record_MySQL.Record):
 	"""CustomList
@@ -204,6 +318,40 @@ class CustomListItem(Record_MySQL.Record):
 			dStruct['host'],
 			sSQL
 		)
+
+# Lead class
+class Lead(Record_MySQL.Record):
+	""" Lead
+
+	Represents a possible customer upsell lead
+	"""
+
+	MEDICATION_ED	= 0x01
+	MEDICATION_HRT	= 0x02
+	"""Defines"""
+
+	_conf = None
+	"""Configuration"""
+
+	@classmethod
+	def config(cls):
+		"""Config
+
+		Returns the configuration data associated with the record type
+
+		Returns:
+			dict
+		"""
+
+		# If we haven loaded the config yet
+		if not cls._conf:
+			cls._conf = Record_MySQL.Record.generateConfig(
+				Tree.fromFile('definitions/csr/lead.json'),
+				'mysql'
+			)
+
+		# Return the config
+		return cls._conf
 
 # Reminder class
 class Reminder(Record_MySQL.Record):

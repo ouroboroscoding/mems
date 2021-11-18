@@ -21,10 +21,10 @@ import requests
 from RestOC import Conf, DictHelper, JSON, Services
 
 # Records imports
-from records.justcall import MemoId
+from records.justcall import MemoId, QueueCall, QueueNumber
 
 # Shared imports
-from shared import Rights
+from shared import Rights, Sync
 
 # Call Types
 _CALL_TYPES = {
@@ -41,7 +41,7 @@ class JustCall(Services.Service):
 	Service for JustCall CRM access
 	"""
 
-	_install = [MemoId]
+	_install = [MemoId, QueueCall, QueueNumber]
 	"""Record types called in install"""
 
 	@classmethod
@@ -107,7 +107,7 @@ class JustCall(Services.Service):
 			iAttempts = 0
 			while True:
 				try:
-					oRes = requests.post(sURL, data=sBody, headers=dHeaders, timeout=20)
+					oRes = requests.post(sURL, data=sBody, headers=dHeaders, timeout=25)
 					break
 				except requests.exceptions.ConnectionError as e:
 					iAttempts += 1
@@ -178,7 +178,7 @@ class JustCall(Services.Service):
 		iAttempts = 0
 		while True:
 			try:
-				oRes = requests.post(sURL, data=sBody, headers=dHeaders, timeout=20)
+				oRes = requests.post(sURL, data=sBody, headers=dHeaders, timeout=25)
 				break
 			except requests.exceptions.ConnectionError as e:
 				iAttempts += 1
@@ -211,6 +211,9 @@ class JustCall(Services.Service):
 		# Store config data
 		self.conf = Conf.get(('justcall'))
 
+		# Init the Sync module
+		Sync.init()
+
 		# Return self for chaining
 		return self
 
@@ -224,7 +227,140 @@ class JustCall(Services.Service):
 		Returns:
 			bool
 		"""
+
+		# Go through each Record type
+		for o in cls._install:
+
+			# Install the table
+			if not o.tableCreate():
+				print("Failed to create `%s` table" % o.tableName())
+
+		# Return OK
 		return True
+
+	def agentMemo_read(self, data, sesh):
+		"""Agent Memo read
+
+		Fetches the list of days and hours the agent works
+
+		Arguments:
+			data (mixed): Data sent with the request
+			sesh (Sesh._Session): The session associated with the request
+
+		Returns:
+			Services.Response
+		"""
+
+		# Make sure the user has the proper permission to do this
+		Rights.check(sesh, 'csr_agents', Rights.READ)
+
+		# If we got the agent ID
+		if 'agent_id' in data:
+			dRecord = MemoId.get(data['agent_id'], raw=True)
+
+		# Else, if we got the memo_id
+		elif 'memo_id' in data:
+			dRecord = MemoId.filter({
+				"memo_id": data['memo_id']
+			}, raw=True, limit=1)
+
+		# Else, data missing
+		else:
+			return Services.Error(1001, [('agent_id', 'missing')])
+
+		# Return the found record
+		return Services.Response(dRecord)
+
+	def agentMemo_update(self, data, sesh):
+		"""Agent Memo update
+
+		Overwrites the hours the agent works
+
+		Arguments:
+			data (mixed): Data sent with the request
+			sesh (Sesh._Session): The session associated with the request
+
+		Returns:
+			Services.Response
+		"""
+
+		# Make sure the user has the proper permission to do this
+		Rights.check(sesh, 'csr_agents', Rights.UPDATE)
+
+		# Verify minimum fields
+		try: DictHelper.eval(data, ['agent_id', 'memo_id'])
+		except ValueError as e: return Services.Error(1001, [(f, 'missing') for f in e.args])
+
+		# If no type is specified
+		if 'index' not in data:
+			data['index'] = 'agent_id'
+
+		# Create the new record instance
+		try:
+			oMemoId = MemoId({
+				"agent_id": data['agent_id'],
+				"memo_id": data['memo_id']
+			})
+		except ValueError as e:
+			return Services.Error(1001, e.args[0])
+
+		# Delete any existing memo ID
+		if data['index'] == 'agent_id':
+			MemoId.deleteGet(data['agent_id'])
+		else:
+			MemoId.deleteGet(data[data['index']], index=data['index'])
+
+		# Create the new record and return the result
+		return Services.Response(
+			oMemoId.create()
+		)
+
+	def details_read(self, data, sesh=None):
+		"""Details
+
+		Returns details for a specific SID
+
+		Arguments:
+			data (dict): Data sent with the request
+			sesh (Sesh._Session): The session associated with the user
+
+		Returns:
+			Services.Response
+		"""
+
+		# Make sure the user has the proper permission to do this
+		Rights.internalOrCheck(data, sesh, 'justcall', Rights.READ)
+
+		# If the ID is missing
+		if 'sid' not in data:
+			return Services.Error(1001, [('sid', 'missing')])
+
+		# Are we in multiple mode?
+		if isinstance(data['sid'], list):
+			bMultiple = True
+		else:
+			bMultiple = False
+			data['sid'] = [data['sid']]
+
+		# Init the results
+		lResults = []
+
+		# For each ID
+		for sID in data['sid']:
+
+			# Make the request
+			dRes = self._one('calls/info', {
+				"callsid": sID
+			})
+
+			# Add the text version of the call type
+			dRes['typeText'] = _CALL_TYPES[dRes['type']]
+
+			# Store it
+			lResults.append(dRes)
+
+		# Return the data received
+		return Services.Response(bMultiple and lResults or lResults[0])
 
 	def log_read(self, data, sesh=None):
 		"""Log
@@ -353,6 +489,239 @@ class JustCall(Services.Service):
 
 		# Return the data received
 		return Services.Response(lRet)
+
+	def queue_create(self, data):
+		"""Queue Create
+
+		Creates a new queue call
+
+		Arguments:
+			data (dict): Data sent with the request
+			sesh (Sesh._Session): The session associated with the user
+
+		Returns:
+			Services.Response
+		"""
+
+		# Make sure the user has the proper permission to do this
+		Rights.internal(data)
+
+		# Verify fields
+		try: DictHelper.eval(data, ['call_sid', 'contact_number', 'justcall_number'])
+		except ValueError as e: return Services.Response(error=(1001, [(f, 'missing') for f in e.args]))
+
+		# Look for the number
+		dNumber = QueueNumber.get(data['justcall_number'], raw=['type'])
+		if not dNumber:
+			return Services.Response(False)
+
+		# Add the type
+		data['type'] = dNumber['type']
+
+		# Look for the customer by phone number
+		oResponse = Services.read('monolith', 'customer/id/byPhone', {
+			"_internal_": Services.internalKey(),
+			"phoneNumber": data['contact_number'][-10:]
+		})
+		if oResponse.errorExists():
+			return oResponse
+
+		# Store the response
+		mCustomer = oResponse.data
+
+		# Add the customer ID
+		if mCustomer:
+			data['crm_id'] = str(mCustomer.pop('customerId'))
+
+		# Store the record
+		try:
+			oQueueCall = QueueCall(data)
+		except ValueError as e:
+			return Services.Error(1001, e.args[0])
+
+		# Create the record
+		oQueueCall.create(conflict='replace')
+
+		# If there's a customer, append the additional data
+		if mCustomer:
+			data.update(mCustomer)
+
+		# Notify anyone interested
+		Sync.push('justcall', 'queue-%s' % data['type'], {
+			"type": 'call_added',
+			"data": data
+		})
+
+		# Return OK
+		return Services.Response(True)
+
+	def queue_delete(self, data):
+		"""Queue Delete
+
+		Deletes an existing queue call
+
+		Arguments:
+			data (dict): Data sent with the request
+			sesh (Sesh._Session): The session associated with the user
+
+		Returns:
+			Services.Response
+		"""
+
+		# Make sure the user has the proper permission to do this
+		Rights.internal(data)
+
+		# Make sure the SID is passed
+		if 'call_sid' not in data:
+			return Services.Error(1001, [('call_sid', 'missing')])
+
+		# Find the record
+		oCall = QueueCall.get(data['call_sid'])
+		if not oCall:
+			return Services.Response(False)
+
+		# Attempt to delete the call, and if it's successful
+		if oCall.delete():
+
+			# Notify anyone interested
+			Sync.push('justcall', 'queue-%s' % oCall['type'], {
+				"type": 'call_removed',
+				"data": data
+			})
+
+		# Return OK
+		return Services.Response(True);
+
+	def queue_read(self, data, sesh=None):
+		"""Queue Read
+
+		Returns the list of Queued calls
+
+		Arguments:
+			data (dict): Data sent with the request
+			sesh (Sesh._Session): The session associated with the user
+
+		Returns:
+			Services.Response
+		"""
+
+		# Make sure the user has the proper permission to do this
+		Rights.internalOrCheck(data, sesh, 'justcall', Rights.READ)
+
+		# Check for type
+		if 'type' not in data:
+			return Services.Error(1001, [('type', 'missing')])
+
+		# Fetch the calls
+		lCalls = QueueCall.filter({
+			"type": data['type']
+		}, raw=True, orderby='datetime')
+
+		# Get the IDs
+		lIDs = [d['crm_id'] for d in lCalls if d['crm_id'] is not None]
+
+		# If we have IDs
+		if lIDs:
+
+			# Get the customer info
+			oResponse = Services.read('monolith', 'internal/customersWithClaimed', {
+				"_internal_": Services.internalKey(),
+				"customerIds": [d['crm_id'] for d in lCalls]
+			}, sesh)
+			if oResponse.errorExists():
+				return oResponse
+
+			# Store the info
+			dInfo = oResponse.data
+
+		else:
+			dInfo = {}
+
+		# Go through each call and add customer info
+		for d in lCalls:
+			try: dCustomer = dInfo[d['crm_id']]
+			except KeyError: dCustomer = {"customerName": 'CUSTOMER MISSING', "userId": None}
+			d['customerName'] = dCustomer['customerName']
+			d['claimedUser'] = dCustomer['userId']
+			if 'reviews' in dCustomer:
+				d['reviews'] = dCustomer['reviews']
+
+		# Return the calls
+		return Services.Response(lCalls)
+
+	def queueNumber_create(self, data, sesh):
+		"""Queue Number Create
+
+		Creates a new queue number
+
+		Arguments:
+			data (dict): Data sent with the request
+			sesh (Sesh._Session): The session associated with the user
+
+		Returns:
+			Services.Response
+		"""
+
+		# Make sure the user has the proper permission to do this
+		Rights.check(sesh, 'justcall', Rights.CREATE)
+
+		# Store the record
+		try:
+			oQueueNumber = QueueNumber(data)
+		except ValueError as e:
+			return Services.Error(1001, e.args[0])
+
+		# Create the record
+		oQueueNumber.create(conflict='replace')
+
+		# Return OK
+		return Services.Response(True)
+
+	def queueNumber_delete(self, data, sesh):
+		"""Queue Number Delete
+
+		Deletes an existing queue number
+
+		Arguments:
+			data (dict): Data sent with the request
+			sesh (Sesh._Session): The session associated with the user
+
+		Returns:
+			Services.Response
+		"""
+
+		# Make sure the user has the proper permission to do this
+		Rights.check(sesh, 'justcall', Rights.READ)
+
+		# Make sure the number is passed
+		if 'justcall_number' not in data:
+			return Services.Error(1001, [('justcall_number', 'missing')])
+
+		# Try to delete the record and return the result
+		return Services.Response(
+			QueueNumber.deleteGet(data['justcall_number']) and True or False
+		)
+
+	def queueNumber_read(self, data, sesh):
+		"""Queue Number Read
+
+		Returns the list of queue numbers
+
+		Arguments:
+			data (dict): Data sent with the request
+			sesh (Sesh._Session): The session associated with the user
+
+		Returns:
+			Services.Response
+		"""
+
+		# Make sure the user has the proper permission to do this
+		Rights.check(sesh, 'justcall', Rights.READ)
+
+		# Fetch and return the calls
+		return Services.Response(
+			QueueNumber.get(raw=True, orderby='justcall_number')
+		)
 
 	def users_read(self, data, sesh):
 		"""Users

@@ -134,7 +134,7 @@ class TriggerFile(object):
 			data['address2'] or '',
 			data['city'] or '',
 			data['state'] or '',
-			data['postalCode'],
+			data['postalCode'] or '',
 			sMemberID,
 			Allergies.fetch(data)
 		];

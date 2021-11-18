@@ -61,8 +61,8 @@ def initialise():
 	_moKonnektive.initialise()
 
 	# Get 365 & 335 days ago
-	_moYearAgo = arrow.get().shift(years=-1)
-	_mo335Ago = arrow.get().shift(days=-335)
+	_moYearAgo = arrow.get().replace(hour=0, minute=0, second=0, microsecond=0).shift(years=-1)
+	_mo335Ago = arrow.get().shift(days=-333)
 
 def medication(descr):
 	"""Medication

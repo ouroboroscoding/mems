@@ -1,0 +1,7 @@
+crons.monolith.customer\_reviews module
+=======================================
+
+.. automodule:: crons.monolith.customer_reviews
+   :members:
+   :undoc-members:
+   :show-inheritance:

@@ -178,6 +178,26 @@
 </dd></dl>
 
 <dl class="py function">
+<dt class="sig sig-object py" id="shared.Memo.customerName">
+<span class="sig-prename descclassname"><span class="pre">shared.Memo.</span></span><span class="sig-name descname"><span class="pre">customerName</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">customerId</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">to_int</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">additional_fields</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#shared.Memo.customerName" title="Permalink to this definition">¶</a></dt>
+<dd><p>Customer Name</p>
+<p>Returns the first and last name of a single ID, or a dict of KNK IDs to
+names of customers for multiple IDs</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>customerId</strong> (<em>uint|uint</em><em>[</em><em>]</em>) – A single ID or multiple IDs</p></li>
+<li><p><strong>to_int</strong> (<em>bool</em>) – Optional, if set, converts IDs to ints</p></li>
+<li><p><strong>additional_fields</strong> – (False|list): Optional list of additional fields</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>dict</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
 <dt class="sig sig-object py" id="shared.Memo.delete">
 <span class="sig-prename descclassname"><span class="pre">shared.Memo.</span></span><span class="sig-name descname"><span class="pre">delete</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">path</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">data</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#shared.Memo.delete" title="Permalink to this definition">¶</a></dt>
 <dd><p>Delete</p>
@@ -188,6 +208,22 @@
 <li><p><strong>{str} -- The path on the service</strong> (<em>path</em>) – </p></li>
 <li><p><strong>{mixed} -- The data to pass to the request</strong> (<em>data</em>) – </p></li>
 </ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>dict</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="shared.Memo.name">
+<span class="sig-prename descclassname"><span class="pre">shared.Memo.</span></span><span class="sig-name descname"><span class="pre">name</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">_id</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#shared.Memo.name" title="Permalink to this definition">¶</a></dt>
+<dd><p>Name</p>
+<p>Returns the first and last name of a single ID, or a dict of memo IDs to
+names of users for multiple IDs</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>_id</strong> (<em>uint|uint</em><em>[</em><em>]</em>) – A single ID or multiple IDs</p>
 </dd>
 <dt class="field-even">Returns</dt>
 <dd class="field-even"><p>dict</p>

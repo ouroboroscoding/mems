@@ -385,15 +385,33 @@ either the customer’s email or phone number</p>
 </dd></dl>
 
 <dl class="py method">
-<dt class="sig sig-object py" id="services.monolith.Monolith.customerDob_read">
-<span class="sig-name descname"><span class="pre">customerDob_read</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sesh</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#services.monolith.Monolith.customerDob_read" title="Permalink to this definition">¶</a></dt>
-<dd><p>Customer DoseSpot ID</p>
-<p>Returns the ID of the DoseSpote patient based on their customer ID</p>
+<dt class="sig sig-object py" id="services.monolith.Monolith.customerContinuous_read">
+<span class="sig-name descname"><span class="pre">customerContinuous_read</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sesh</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#services.monolith.Monolith.customerContinuous_read" title="Permalink to this definition">¶</a></dt>
+<dd><p>Customer Continuous Read</p>
+<p>Returns all continuous records associated with the customer</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>data</strong> (<em>dict</em>) – Data sent with the request</p></li>
 <li><p><strong>sesh</strong> (<em>Sesh._Session</em>) – The session associated with the request</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>Services.Response</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="services.monolith.Monolith.customerDob_read">
+<span class="sig-name descname"><span class="pre">customerDob_read</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sesh</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#services.monolith.Monolith.customerDob_read" title="Permalink to this definition">¶</a></dt>
+<dd><p>Customer DoseSpot ID</p>
+<p>Returns the ID of the DoseSpot patient based on their customer ID</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>data</strong> (<em>dict</em>) – Data sent with the request</p></li>
+<li><p><strong>sesh</strong> (<em>Sesh._Session</em>) – Optiona, the session associated with the request</p></li>
 </ul>
 </dd>
 <dt class="field-even">Returns</dt>
@@ -620,7 +638,7 @@ either the customer’s email or phone number</p>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="services.monolith.Monolith.customerIdByPhone_read">
-<span class="sig-name descname"><span class="pre">customerIdByPhone_read</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sesh</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#services.monolith.Monolith.customerIdByPhone_read" title="Permalink to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">customerIdByPhone_read</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sesh</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#services.monolith.Monolith.customerIdByPhone_read" title="Permalink to this definition">¶</a></dt>
 <dd><p>Customer ID By Phone</p>
 <p>Fetches a customer’s ID by their phone number</p>
 <dl class="field-list simple">
@@ -712,16 +730,13 @@ customer</p>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="services.monolith.Monolith.customerName_read">
-<span class="sig-name descname"><span class="pre">customerName_read</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sesh</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#services.monolith.Monolith.customerName_read" title="Permalink to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">customerName_read</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#services.monolith.Monolith.customerName_read" title="Permalink to this definition">¶</a></dt>
 <dd><p>Customer Name</p>
 <p>Fetchs one or more names based on IDs, returns as a dictionary (one ID)
 or of ID to name (multiple IDs)</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><ul class="simple">
-<li><p><strong>data</strong> (<em>dict</em>) – Data sent with the request</p></li>
-<li><p><strong>sesh</strong> (<em>Sesh._Session</em>) – The session associated with the user</p></li>
-</ul>
+<dd class="field-odd"><p><strong>data</strong> (<em>dict</em>) – Data sent with the request</p>
 </dd>
 <dt class="field-even">Returns</dt>
 <dd class="field-even"><p>Services.Response</p>
@@ -1026,6 +1041,25 @@ they’re claimed by an agent or not</p>
 </dd></dl>
 
 <dl class="py method">
+<dt class="sig sig-object py" id="services.monolith.Monolith.internalCustomersWithOrderClaimed_read">
+<span class="sig-name descname"><span class="pre">internalCustomersWithOrderClaimed_read</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sesh</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#services.monolith.Monolith.internalCustomersWithOrderClaimed_read" title="Permalink to this definition">¶</a></dt>
+<dd><p>Internal: Customers with Order Claimed</p>
+<p>Returns data on the list of customer IDs passed including whether
+they’re claimed by a provider or not</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>data</strong> (<em>dict</em>) – Data sent with the request</p></li>
+<li><p><strong>sesh</strong> (<em>Sesh._Session</em>) – The session associated with the request</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>Services.Response</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
 <dt class="sig sig-object py" id="services.monolith.Monolith.internalIncomingSms_read">
 <span class="sig-name descname"><span class="pre">internalIncomingSms_read</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#services.monolith.Monolith.internalIncomingSms_read" title="Permalink to this definition">¶</a></dt>
 <dd><p>Internal: Incoming SMS</p>
@@ -1311,6 +1345,24 @@ or already claimed by a rep</p>
 </dd></dl>
 
 <dl class="py method">
+<dt class="sig sig-object py" id="services.monolith.Monolith.orderClaim_update">
+<span class="sig-name descname"><span class="pre">orderClaim_update</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sesh</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#services.monolith.Monolith.orderClaim_update" title="Permalink to this definition">¶</a></dt>
+<dd><p>Order Claim Update</p>
+<p>Transfers an order claim from one provider to another</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>data</strong> (<em>dict</em>) – Data sent with the request</p></li>
+<li><p><strong>sesh</strong> (<em>Sesh._Session</em>) – The session associated with the request</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>Services.Response</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
 <dt class="sig sig-object py" id="services.monolith.Monolith.orderClaimed_read">
 <span class="sig-name descname"><span class="pre">orderClaimed_read</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sesh</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#services.monolith.Monolith.orderClaimed_read" title="Permalink to this definition">¶</a></dt>
 <dd><p>Order Claimed</p>
@@ -1431,6 +1483,24 @@ as a starting point</p>
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>data</strong> (<em>mixed</em>) – Data sent with the request</p></li>
+<li><p><strong>sesh</strong> (<em>Sesh._Session</em>) – The session associated with the request</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>Services.Response</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="services.monolith.Monolith.orderId_read">
+<span class="sig-name descname"><span class="pre">orderId_read</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sesh</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#services.monolith.Monolith.orderId_read" title="Permalink to this definition">¶</a></dt>
+<dd><p>Order ID</p>
+<p>Returns monolith’s ID for the KNK order</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>data</strong> (<em>dict</em>) – Data sent with the request</p></li>
 <li><p><strong>sesh</strong> (<em>Sesh._Session</em>) – The session associated with the request</p></li>
 </ul>
 </dd>
@@ -1761,6 +1831,24 @@ associated with that number</p>
 </dd></dl>
 
 <dl class="py method">
+<dt class="sig sig-object py" id="services.monolith.Monolith.reviewsAverage_read">
+<span class="sig-name descname"><span class="pre">reviewsAverage_read</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sesh</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#services.monolith.Monolith.reviewsAverage_read" title="Permalink to this definition">¶</a></dt>
+<dd><p>Reviews Average</p>
+<p>Returns the average of all reviews for every CHRT</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>data</strong> (<em>dict</em>) – Data sent with the request</p></li>
+<li><p><strong>sesh</strong> (<em>Sesh._Session</em>) – The session associated with the request</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>Services.Response</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
 <dt class="sig sig-object py" id="services.monolith.Monolith.signin_create">
 <span class="sig-name descname"><span class="pre">signin_create</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#services.monolith.Monolith.signin_create" title="Permalink to this definition">¶</a></dt>
 <dd><p>Signin</p>
@@ -1781,6 +1869,42 @@ Can only be called by other services</p>
 <span class="sig-name descname"><span class="pre">statsClaimed_read</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sesh</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#services.monolith.Monolith.statsClaimed_read" title="Permalink to this definition">¶</a></dt>
 <dd><p>Stats: Claimed</p>
 <p>Fetchs the number of claims made by users</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>data</strong> (<em>dict</em>) – Data sent with the request</p></li>
+<li><p><strong>sesh</strong> (<em>Sesh._Session</em>) – The session associated with the user</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>Services.Response</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="services.monolith.Monolith.templateSms_read">
+<span class="sig-name descname"><span class="pre">templateSms_read</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sesh</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#services.monolith.Monolith.templateSms_read" title="Permalink to this definition">¶</a></dt>
+<dd><p>Template SMS read</p>
+<p>Returns all the templates in the sms worklow separated by type</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>data</strong> (<em>dict</em>) – Data sent with the request</p></li>
+<li><p><strong>sesh</strong> (<em>Sesh._Session</em>) – The session associated with the user</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>Services.Response</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="services.monolith.Monolith.templateSms_update">
+<span class="sig-name descname"><span class="pre">templateSms_update</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sesh</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#services.monolith.Monolith.templateSms_update" title="Permalink to this definition">¶</a></dt>
+<dd><p>Template SMS update</p>
+<p>Updates a single template in the SMS workflow</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
@@ -1830,16 +1954,13 @@ table</p>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="services.monolith.Monolith.userName_read">
-<span class="sig-name descname"><span class="pre">userName_read</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sesh</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#services.monolith.Monolith.userName_read" title="Permalink to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">userName_read</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#services.monolith.Monolith.userName_read" title="Permalink to this definition">¶</a></dt>
 <dd><p>User Name</p>
 <p>Fetchs one or more names based on IDs, returns as a dictionary (one ID)
 or of ID to name (multiple IDs)</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><ul class="simple">
-<li><p><strong>data</strong> (<em>dict</em>) – Data sent with the request</p></li>
-<li><p><strong>sesh</strong> (<em>Sesh._Session</em>) – The session associated with the user</p></li>
-</ul>
+<dd class="field-odd"><p><strong>data</strong> (<em>dict</em>) – Data sent with the request</p>
 </dd>
 <dt class="field-even">Returns</dt>
 <dd class="field-even"><p>Services.Response</p>
