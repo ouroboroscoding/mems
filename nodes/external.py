@@ -182,51 +182,108 @@ def justCallWebhook():
 	dData = reqJSON()
 	dData = dData['data']
 
-	# If the subject starts with 'Voicemail from ''
-	if dData['subject'][0:15] == 'Voicemail from ':
+	# If there's no type, but there is a signature, just return OK
+	if 'type' not in dData and 'signature' in dData:
+		return resJSON(True)
 
-		# Generate incoming content
-		sContent = "VOICEMAIL:\nSent to %s (%s)\n%s" % (
-			dData['agent_name'],
-			dData['called_via'][-10:],
-			dData['recording_url'] and \
-				('[url=Click to listen|%s]' % dData['recording_url']) or \
-				'no recording found'
-		)
+	pprint.pprint(dData)
 
-		# Add the request as an incoming SMS
-		oResponse = Services.create('monolith', 'message/incoming', {
+	# If the type is a call
+	if dData['type'] == 'call':
+
+		# If the subject starts with 'Voicemail from ''
+		if dData['subject'][0:15] == 'Voicemail from ':
+
+			# Generate incoming content
+			sContent = "VOICEMAIL:\nSent to %s (%s)\n%s%s" % (
+				dData['agent_name'],
+				dData['called_via'][-10:],
+				dData['ivr'] and ('(%s) %s\n' % (dData['ivr']['digit'], dData['ivr']['digit_description'])) or '',
+				dData['recording_url'] and \
+					('[url=Click to listen|%s]' % dData['recording_url']) or \
+					'no recording found'
+			)
+
+			# Add the request as an incoming SMS
+			oResponse = Services.create('monolith', 'message/incoming', {
+				"_internal_": Services.internalKey(),
+				"customerPhone": dData['contact_number'][-10:],
+				"recvPhone": "0000000000",
+				"content": sContent
+			})
+			if oResponse.errorExists():
+				emailError('JustCall Webhook Request Failed', 'Failed to add SMS\n\n%s\n\n%s' % (
+					str(dData),
+					str(oResponse)
+				))
+
+			# Generate outgoing content
+			sContent = "MALE EXCEL MEDICAL: We have missed a call from your number. " \
+						"All our agents are currently assisting other patients. The " \
+						"next available agent will contact you in the shortest " \
+						"possible delay. Please note that all calls outside of " \
+						"office hours  will be returned upon reopening.\n\n" \
+						"If you would prefer that we contact you via text please " \
+						"reply \"Text\" otherwise our agents will reach out by phone."
+
+			# Send the message to the customer
+			oResponse = Services.create('monolith', 'message/outgoing', {
+				"_internal_": Services.internalKey(),
+				"store_on_error": True,
+				"auto_response": True,
+				"customerPhone": dData['contact_number'][-10:],
+				"content": sContent,
+				"name": "SMS Workflow",
+				"type": "support"
+			})
+			if oResponse.errorExists():
+				emailError('JustCall Webhook Request Failed', 'Failed to send Auto-Response SMS\n\n%s\n\n%s' % (
+					str(dData),
+					str(oResponse)
+				))
+
+	# Else, if it's an incoming queue enter
+	elif dData['type'] == 'call_queue_enter':
+
+		# Store the call
+		oResponse = Services.create('justcall', 'queue', {
 			"_internal_": Services.internalKey(),
-			"customerPhone": dData['contact_number'][-10:],
-			"recvPhone": "0000000000",
-			"content": sContent
+			"call_sid": dData['call_sid'],
+			"datetime": dData['datetime'],
+			"contact_number": dData['contact_number'],
+			"justcall_number": dData['justcall_number'],
+			"ivr": '(%s) %s' % (
+				'ivr_digit' in dData and dData['ivr_digit'] or '?',
+				'ivr_digit_description' in dData and dData['ivr_digit_description'] or '',
+			)
 		})
+
+		# If there was an error
 		if oResponse.errorExists():
-			emailError('JustCall Webhook Request Failed', 'Failed to add SMS\n\n%s\n\n%s' % (
+			emailError('JustCall Webhook call_queue_enter Error', 'Failed to add call\n\n%s\n\n%s' % (
 				str(dData),
 				str(oResponse)
 			))
 
-		# Generate outgoing content
-		sContent = "MALE EXCEL MEDICAL: We have missed a call from your number. " \
-					"All our agents are currently assisting other patients. The " \
-					"next available agent will contact you in the shortest " \
-					"possible delay. Please note that all calls outside of " \
-					"office hours  will be returned upon reopening.\n\n" \
-					"If you would prefer that we contact you via text please " \
-					"reply \"Text\" otherwise our agents will reach out by phone."
+	# Else, if it's an incoming queue exit
+	elif dData['type'] == 'call_queue_exit':
 
-		# Send the message to the customer
-		oResponse = Services.create('monolith', 'message/outgoing', {
+		# Figure out the reason
+		if dData['reason']['code'] == '0' and 'voicemail' in dData['reason']['code_description']:
+			sReason = '2'
+		else:
+			sReason = dData['reason']['code']
+
+		# Delete the call
+		oResponse = Services.delete('justcall', 'queue', {
 			"_internal_": Services.internalKey(),
-			"auto_response": True,
-			"customerPhone": dData['contact_number'][-10:],
-			"content": sContent,
-			"name": "SMS Workflow",
-			"type": "support"
+			"call_sid": dData['call_sid'],
+			"reason": sReason
 		})
+
+		# If there was an error
 		if oResponse.errorExists():
-			emailError('JustCall Webhook Request Failed', 'Failed to send Auto-Response SMS\n\n%s\n\n%s' % (
+			emailError('JustCall Webhook call_queue_exit Error', 'Failed to remove call\n\n%s\n\n%s' % (
 				str(dData),
 				str(oResponse)
 			))

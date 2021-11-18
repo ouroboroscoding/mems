@@ -7,6 +7,8 @@ Submodules
 .. toctree::
    :maxdepth: 4
 
+   crons.monolith.cottonseed_refund
+   crons.monolith.customer_reviews
    crons.monolith.hard_declines
    crons.monolith.hrt_join_date
    crons.monolith.invalid_campaigns

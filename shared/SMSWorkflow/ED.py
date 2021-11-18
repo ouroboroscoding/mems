@@ -533,6 +533,7 @@ def shipping(info):
 		# Send the SMS to the patient
 		oResponse = Services.create('monolith', 'message/outgoing', {
 			"_internal_": Services.internalKey(),
+			"store_on_error": True,
 			"name": "SMS Workflow",
 			"customerPhone": dOrder['phoneNumber'],
 			"content": sContent,

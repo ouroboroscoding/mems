@@ -52,75 +52,62 @@ def shipping(info):
 		None
 	"""
 
-	print(info)
+	# Find the patient
+	oPatient = HrtPatient.filter({
+		"ktCustomerId": str(info['customerId'])
+	}, orderby=[['createdAt', 'ASC']], limit=1);
 
-	try:
+	# Check if the patient exists
+	if not oPatient:
+		return False
 
-		# Find the patient
-		oPatient = HrtPatient.filter({
-			"ktCustomerId": str(info['customerId'])
-		}, orderby=[['createdAt', 'ASC']], limit=1);
+	# Find the order
+	dOrder = KtOrder.filter(
+		{"customerId": str(info['customerId'])},
+		raw=['firstName', 'lastName', 'emailAddress', 'phoneNumber', 'state'],
+		orderby=[['dateCreated', 'DESC']],
+		limit=1
+	);
 
-		# Check if the patient exists
-		if not oPatient:
-			return False
+	# If there's no order or phone number, do nothing
+	if not dOrder or not dOrder['phoneNumber'] or \
+		dOrder['phoneNumber'].strip() == '':
+		return False
 
-		# Find the order
-		dOrder = KtOrder.filter(
-			{"customerId": str(info['customerId'])},
-			raw=['firstName', 'lastName', 'emailAddress', 'phoneNumber', 'state'],
-			orderby=[['dateCreated', 'DESC']],
-			limit=1
-		);
+	# Find the template
+	sContent = fetchTemplate(
+		GROUP_ZRT_LAB, 'sms', PACKAGE_SHIPPED
+	)
 
-		# If there's no order or phone number, do nothing
-		if not dOrder or not dOrder['phoneNumber'] or \
-			dOrder['phoneNumber'].strip() == '':
-			return False
+	# Generate the link
+	sLink = Shipping.generateLink(info['type'], info['code'])
 
-		# Find the template
-		sContent = fetchTemplate(
-			GROUP_ZRT_LAB, 'sms', PACKAGE_SHIPPED
-		)
+	# Process the template
+	sContent = processTemplate(sContent, dOrder, {
+		"tracking_code": info['code'],
+		"tracking_link": sLink,
+		"tracking_date": info['date']
+	});
 
-		# Generate the link
-		sLink = Shipping.generateLink(info['type'], info['code'])
-
-		# Process the template
-		sContent = processTemplate(sContent, dOrder, {
-			"tracking_code": info['code'],
-			"tracking_link": sLink,
-			"tracking_date": info['date']
-		});
-
-		print(sContent)
-
-		# Send the SMS to the patient
-		oResponse = Services.create('monolith', 'message/outgoing', {
-			"_internal_": Services.internalKey(),
-			"name": "HRT Workflow",
-			"customerPhone": dOrder['phoneNumber'],
-			"content": sContent,
-			"type": 'support'
-		})
-		if oResponse.errorExists():
-			if oResponse.error['code'] != 1500:
-				emailError(
-					'HRT Workflow Shipping Error',
-					'Couldn\'t send sms:\n\n%s\n\n%s\n\n%s' % (
-						str(info),
-						str(dOrder),
-						str(oResponse)
-					)
+	# Send the SMS to the patient
+	oResponse = Services.create('monolith', 'message/outgoing', {
+		"_internal_": Services.internalKey(),
+		"store_on_error": True,
+		"name": "HRT Workflow",
+		"customerPhone": dOrder['phoneNumber'],
+		"content": sContent,
+		"type": 'support'
+	})
+	if oResponse.errorExists():
+		if oResponse.error['code'] != 1500:
+			raise Exception(
+				'HRT Workflow Shipping Error',
+				'Couldn\'t send sms:\n\n%s\n\n%s\n\n%s' % (
+					str(info),
+					str(dOrder),
+					str(oResponse)
 				)
-			return False
-
-	except Exception as e:
-		sBody = '%s\n\n%s' % (
-			', '.join([str(s) for s in e.args]),
-			traceback.format_exc()
-		)
-		emailError('HRT Workflow Unknown Error', sBody)
+			)
 		return False
 
 	# Return OK

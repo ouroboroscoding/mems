@@ -12,7 +12,7 @@ __email__		= "bast@maleexcel.com"
 __created__		= "2020-09-01"
 
 TRACKING_LINKS = {
-	"FDX": "http://www.fedex.com/Tracking?tracknumbers=%s",
+	"FDX": "https://www.fedex.com/fedextrack/?trknbr=%s",
 	"UPS": "https://www.ups.com/track?tracknum=%s",
 	"USPS": "https://tools.usps.com/go/TrackConfirmAction?qtc_tLabels1=%s"
 }

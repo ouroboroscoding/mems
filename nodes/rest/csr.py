@@ -32,13 +32,20 @@ if __name__ == "__main__":
 
 	# Create the HTTP server and map requests to service
 	REST.Server({
+		"/action": {"methods": REST.CREATE | REST.DELETE, "session": True},
+		"/actions": {"methods": REST.READ, "session": True},
+
 		"/agent": {"methods": REST.ALL, "session": True},
 		"/agents": {"methods": REST.READ, "session": True},
 		"/agent/hours": {"methods": REST.READ | REST.UPDATE, "session": True},
 		"/agent/memo": {"methods": REST.CREATE, "session": True},
 		"/agent/names": {"methods": REST.READ, "session": True},
+		"/agent/names/transfer": {"methods": REST.READ, "session": True},
 		"/agent/passwd": {"methods": REST.UPDATE, "session": True},
 		"/agent/permissions": {"methods": REST.READ | REST.UPDATE, "session": True},
+
+		"/lead/closed": {"methods": REST.UPDATE, "session": True},
+		"/leads": {"methods": REST.READ, "session": True},
 
 		"/list": {"methods": REST.CREATE | REST.UPDATE | REST.DELETE, "session": True},
 		"/list/item": {"methods": REST.CREATE | REST.DELETE, "session": True},
@@ -54,6 +61,8 @@ if __name__ == "__main__":
 		"/session": {"methods": REST.READ, "session": True},
 		"/signin": {"methods": REST.CREATE},
 		"/signout": {"methods": REST.CREATE},
+
+		"/stats/totals": {"methods": REST.READ, "session": True},
 
 		"/template/email": {"methods": REST.ALL, "session": True},
 		"/template/emails": {"methods": REST.READ, "session": True},

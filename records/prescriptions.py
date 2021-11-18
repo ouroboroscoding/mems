@@ -15,6 +15,36 @@ __created__		= "2020-08-01"
 from FormatOC import Tree
 from RestOC import Record_MySQL
 
+# Diagnosis class
+class Diagnosis(Record_MySQL.Record):
+	"""Diagnosis
+
+	Represents an ICD code mapped to a DoseSpot diagnosis ID
+	"""
+
+	_conf = None
+	"""Configuration"""
+
+	@classmethod
+	def config(cls):
+		"""Config
+
+		Returns the configuration data associated with the record type
+
+		Returns:
+			dict
+		"""
+
+		# If we haven loaded the config yet
+		if not cls._conf:
+			cls._conf = Record_MySQL.Record.generateConfig(
+				Tree.fromFile('definitions/prescriptions/diagnosis.json'),
+				'mysql'
+			)
+
+		# Return the config
+		return cls._conf
+
 # Expiring class
 class Expiring(Record_MySQL.Record):
 	"""Expiring
@@ -39,6 +69,37 @@ class Expiring(Record_MySQL.Record):
 		if not cls._conf:
 			cls._conf = Record_MySQL.Record.generateConfig(
 				Tree.fromFile('definitions/prescriptions/expiring.json'),
+				'mysql'
+			)
+
+		# Return the config
+		return cls._conf
+
+# HrtOrder
+class HrtOrder(Record_MySQL.Record):
+	"""HRT Order
+
+	Represents an order specifically for HRT that needs a prescription created
+	for it
+	"""
+
+	_conf = None
+	"""Configuration"""
+
+	@classmethod
+	def config(cls):
+		"""Config
+
+		Returns the configuration data associated with the record type
+
+		Returns:
+			dict
+		"""
+
+		# If we haven loaded the config yet
+		if not cls._conf:
+			cls._conf = Record_MySQL.Record.generateConfig(
+				Tree.fromFile('definitions/prescriptions/hrt_order.json'),
 				'mysql'
 			)
 

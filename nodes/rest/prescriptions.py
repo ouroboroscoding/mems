@@ -31,6 +31,23 @@ if __name__ == "__main__":
 
 	# Create the HTTP server and map requests to service
 	REST.Server({
+		"/ds/dispenseunits": {"methods": REST.READ, "session": True},
+		"/ds/pharmacies": {"methods": REST.READ, "session": True},
+
+		"/diagnoses": {"methods": REST.READ, "session": True},
+		"/diagnosis": {"methods": REST.ALL, "session": True},
+		"/diagnosis/lookup": {"methods": REST.READ, "session": True},
+
+
+		"/hrt/order": {"methods": REST.DELETE, "session": True},
+		"/hrt/order/claim": {"methods": REST.UPDATE, "session": True},
+		"/hrt/order/complete": {"methods": REST.UPDATE, "session": True},
+		"/hrt/order/flag": {"methods": REST.UPDATE, "session": True},
+		"/hrt/order/incomplete": {"methods": REST.READ, "session": True},
+		"/hrt/order/incomplete/count": {"methods": REST.READ, "session": True},
+		"/hrt/order/search": {"methods": REST.READ, "session": True},
+		"/hrt/order/ticket": {"methods": REST.UPDATE, "session": True},
+
 		"/patient": {"methods": REST.CREATE | REST.READ | REST.UPDATE, "session": True},
 		"/patient/medications": {"methods": REST.READ, "session": True},
 		"/patient/pharmacies": {"methods": REST.READ, "session": True},

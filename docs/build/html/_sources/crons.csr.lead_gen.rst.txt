@@ -1,0 +1,7 @@
+crons.csr.lead\_gen module
+==========================
+
+.. automodule:: crons.csr.lead_gen
+   :members:
+   :undoc-members:
+   :show-inheritance:

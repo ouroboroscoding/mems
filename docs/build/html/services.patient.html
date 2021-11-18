@@ -234,6 +234,24 @@ password if they forgot it</p>
 </dd></dl>
 
 <dl class="py method">
+<dt class="sig sig-object py" id="services.patient.Patient.accountPasswd_update">
+<span class="sig-name descname"><span class="pre">accountPasswd_update</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sesh</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#services.patient.Patient.accountPasswd_update" title="Permalink to this definition">¶</a></dt>
+<dd><p>Account Password</p>
+<p>Updates the password associated with the patient</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>data</strong> (<em>dict</em>) – Data sent with the request</p></li>
+<li><p><strong>sesh</strong> (<em>Sesh._Session</em>) – The session associated with the request</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>Services.Response</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
 <dt class="sig sig-object py" id="services.patient.Patient.accountPayment_update">
 <span class="sig-name descname"><span class="pre">accountPayment_update</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sesh</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#services.patient.Patient.accountPayment_update" title="Permalink to this definition">¶</a></dt>
 <dd><p>Account Payment</p>
@@ -400,6 +418,24 @@ install configurations</p>
 </dd></dl>
 
 <dl class="py method">
+<dt class="sig sig-object py" id="services.patient.Patient.setupResend_update">
+<span class="sig-name descname"><span class="pre">setupResend_update</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sesh</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#services.patient.Patient.setupResend_update" title="Permalink to this definition">¶</a></dt>
+<dd><p>Setup Re-Send</p>
+<p>Re-sends the setup email to the requested account</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>data</strong> (<em>dict</em>) – Data sent with the request</p></li>
+<li><p><strong>sesh</strong> (<em>Sesh._Session</em>) – The session associated with the account</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>Services.Response</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
 <dt class="sig sig-object py" id="services.patient.Patient.setupReset_update">
 <span class="sig-name descname"><span class="pre">setupReset_update</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sesh</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#services.patient.Patient.setupReset_update" title="Permalink to this definition">¶</a></dt>
 <dd><p>Setup Reset</p>
@@ -516,6 +552,24 @@ is who they say they are,</p>
 <span class="sig-name descname"><span class="pre">supportRequest_create</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sesh</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#services.patient.Patient.supportRequest_create" title="Permalink to this definition">¶</a></dt>
 <dd><p>Support Request</p>
 <p>A patient is requesting support contact them</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>data</strong> (<em>dict</em>) – Data sent with the request</p></li>
+<li><p><strong>sesh</strong> (<em>Sesh._Session</em>) – The session associated with the account</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>Services.Response</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="services.patient.Patient.verificationResend_update">
+<span class="sig-name descname"><span class="pre">verificationResend_update</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sesh</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#services.patient.Patient.verificationResend_update" title="Permalink to this definition">¶</a></dt>
+<dd><p>Verification Re-Send</p>
+<p>Re-sends the email address verification email to the requested account</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">

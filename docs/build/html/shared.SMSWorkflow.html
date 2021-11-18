@@ -7,7 +7,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   
-  <title>shared.SMSWorkflow module &mdash; MeMS 1.50 documentation</title>
+  <title>shared.SMSWorkflow package &mdash; MeMS 1.50 documentation</title>
   
 
   
@@ -87,7 +87,11 @@
             
               <!-- Local TOC -->
               <div class="local-toc"><ul>
-<li><a class="reference internal" href="#">shared.SMSWorkflow module</a></li>
+<li><a class="reference internal" href="#">shared.SMSWorkflow package</a><ul>
+<li><a class="reference internal" href="#submodules">Submodules</a></li>
+<li><a class="reference internal" href="#module-shared.SMSWorkflow">Module contents</a></li>
+</ul>
+</li>
 </ul>
 </div>
             
@@ -136,7 +140,7 @@
     
       <li><a href="index.html" class="icon icon-home"></a> &raquo;</li>
         
-      <li>shared.SMSWorkflow module</li>
+      <li>shared.SMSWorkflow package</li>
     
     
       <li class="wy-breadcrumbs-aside">
@@ -155,11 +159,19 @@
           <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
            <div itemprop="articleBody">
             
-  <div class="section" id="module-shared.SMSWorkflow">
-<span id="shared-smsworkflow-module"></span><h1>shared.SMSWorkflow module<a class="headerlink" href="#module-shared.SMSWorkflow" title="Permalink to this headline">¶</a></h1>
-<p>SMS Workflow</p>
-<p>Handles finding the correct customer, generating the template, and sending
-off the SMS</p>
+  <div class="section" id="shared-smsworkflow-package">
+<h1>shared.SMSWorkflow package<a class="headerlink" href="#shared-smsworkflow-package" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="submodules">
+<h2>Submodules<a class="headerlink" href="#submodules" title="Permalink to this headline">¶</a></h2>
+<div class="toctree-wrapper compound">
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="shared.SMSWorkflow.ED.html">shared.SMSWorkflow.ED module</a></li>
+<li class="toctree-l1"><a class="reference internal" href="shared.SMSWorkflow.HRT.html">shared.SMSWorkflow.HRT module</a></li>
+</ul>
+</div>
+</div>
+<div class="section" id="module-shared.SMSWorkflow">
+<span id="module-contents"></span><h2>Module contents<a class="headerlink" href="#module-shared.SMSWorkflow" title="Permalink to this headline">¶</a></h2>
 <dl class="py function">
 <dt class="sig sig-object py" id="shared.SMSWorkflow.fetchState">
 <span class="sig-prename descclassname"><span class="pre">shared.SMSWorkflow.</span></span><span class="sig-name descname"><span class="pre">fetchState</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">abbr</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#shared.SMSWorkflow.fetchState" title="Permalink to this definition">¶</a></dt>
@@ -213,140 +225,7 @@ off the SMS</p>
 </dl>
 </dd></dl>
 
-<dl class="py function">
-<dt class="sig sig-object py" id="shared.SMSWorkflow.providerApproves">
-<span class="sig-prename descclassname"><span class="pre">shared.SMSWorkflow.</span></span><span class="sig-name descname"><span class="pre">providerApproves</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">order_id</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">user_id</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">monolith</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#shared.SMSWorkflow.providerApproves" title="Permalink to this definition">¶</a></dt>
-<dd><p>Provider Approves</p>
-<p>Called when the provider who claimed the order approves that order</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><ul class="simple">
-<li><p><strong>order_id</strong> (<em>str</em>) – The ID of the order approved</p></li>
-<li><p><strong>user_id</strong> (<em>int</em>) – The ID of the user (provider)</p></li>
-<li><p><strong>monolith</strong> (<a class="reference internal" href="services.monolith.html#services.monolith.Monolith" title="services.monolith.Monolith"><em>services.monolith.Monolith</em></a>) – An instance of the service used
-to send SMS messages</p></li>
-</ul>
-</dd>
-<dt class="field-even">Returns</dt>
-<dd class="field-even"><p>bool</p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py function">
-<dt class="sig sig-object py" id="shared.SMSWorkflow.providerApprovesContinuous">
-<span class="sig-prename descclassname"><span class="pre">shared.SMSWorkflow.</span></span><span class="sig-name descname"><span class="pre">providerApprovesContinuous</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">order_id</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">user_id</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">monolith</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#shared.SMSWorkflow.providerApprovesContinuous" title="Permalink to this definition">¶</a></dt>
-<dd><p>Provider Approves Continuous</p>
-<p>Called when the provider who claimed the continuous order approves it</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><ul class="simple">
-<li><p><strong>order_id</strong> (<em>str</em>) – The ID of the order approved</p></li>
-<li><p><strong>user_id</strong> (<em>int</em>) – The ID of the user (provider)</p></li>
-<li><p><strong>monolith</strong> (<a class="reference internal" href="services.monolith.html#services.monolith.Monolith" title="services.monolith.Monolith"><em>services.monolith.Monolith</em></a>) – An instance of the service used
-to send SMS messages</p></li>
-</ul>
-</dd>
-<dt class="field-even">Returns</dt>
-<dd class="field-even"><p>bool</p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py function">
-<dt class="sig sig-object py" id="shared.SMSWorkflow.providerDeclines">
-<span class="sig-prename descclassname"><span class="pre">shared.SMSWorkflow.</span></span><span class="sig-name descname"><span class="pre">providerDeclines</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">order_id</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">user_id</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">monolith</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#shared.SMSWorkflow.providerDeclines" title="Permalink to this definition">¶</a></dt>
-<dd><p>Provider Declines</p>
-<p>Called when the provider who claimed the order declines that order</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><ul class="simple">
-<li><p><strong>order_id</strong> (<em>str</em>) – The ID of the order declined</p></li>
-<li><p><strong>user_id</strong> (<em>int</em>) – The ID of the user (provider)</p></li>
-<li><p><strong>monolith</strong> (<a class="reference internal" href="services.monolith.html#services.monolith.Monolith" title="services.monolith.Monolith"><em>services.monolith.Monolith</em></a>) – An instance of the service used
-to send SMS messages</p></li>
-</ul>
-</dd>
-<dt class="field-even">Returns</dt>
-<dd class="field-even"><p>bool</p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py function">
-<dt class="sig sig-object py" id="shared.SMSWorkflow.providerDeclinesContinuous">
-<span class="sig-prename descclassname"><span class="pre">shared.SMSWorkflow.</span></span><span class="sig-name descname"><span class="pre">providerDeclinesContinuous</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">order_id</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">user_id</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">monolith</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#shared.SMSWorkflow.providerDeclinesContinuous" title="Permalink to this definition">¶</a></dt>
-<dd><p>Provider Declines Continuous</p>
-<p>Called when the provider who claimed the continuous order declines it</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><ul class="simple">
-<li><p><strong>order_id</strong> (<em>str</em>) – The ID of the order declined</p></li>
-<li><p><strong>user_id</strong> (<em>int</em>) – The ID of the user (provider)</p></li>
-<li><p><strong>monolith</strong> (<a class="reference internal" href="services.monolith.html#services.monolith.Monolith" title="services.monolith.Monolith"><em>services.monolith.Monolith</em></a>) – An instance of the service used
-to send SMS messages</p></li>
-</ul>
-</dd>
-<dt class="field-even">Returns</dt>
-<dd class="field-even"><p>bool</p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py function">
-<dt class="sig sig-object py" id="shared.SMSWorkflow.providerMessaged">
-<span class="sig-prename descclassname"><span class="pre">shared.SMSWorkflow.</span></span><span class="sig-name descname"><span class="pre">providerMessaged</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">order_id</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">note_id</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#shared.SMSWorkflow.providerMessaged" title="Permalink to this definition">¶</a></dt>
-<dd><p>Provider Messages</p>
-<p>Called when the provider sends a message to the patient, usually for further
-information</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><ul class="simple">
-<li><p><strong>order_id</strong> (<em>str</em>) – The order associated with the message</p></li>
-<li><p><strong>note_id</strong> (<em>int</em>) – The ID of the note created by the message</p></li>
-</ul>
-</dd>
-<dt class="field-even">Returns</dt>
-<dd class="field-even"><p>bool</p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py function">
-<dt class="sig sig-object py" id="shared.SMSWorkflow.providerOpens">
-<span class="sig-prename descclassname"><span class="pre">shared.SMSWorkflow.</span></span><span class="sig-name descname"><span class="pre">providerOpens</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">order_id</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">user_id</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">monolith</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#shared.SMSWorkflow.providerOpens" title="Permalink to this definition">¶</a></dt>
-<dd><p>Provider Opens</p>
-<p>Called when the provider opens the order record</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><ul class="simple">
-<li><p><strong>order_id</strong> (<em>str</em>) – The ID of the order</p></li>
-<li><p><strong>user_id</strong> (<em>int</em>) – The ID of the user (provider)</p></li>
-<li><p><strong>monolith</strong> (<a class="reference internal" href="services.monolith.html#services.monolith.Monolith" title="services.monolith.Monolith"><em>services.monolith.Monolith</em></a>) – An instance of the service used
-to send SMS messages</p></li>
-</ul>
-</dd>
-<dt class="field-even">Returns</dt>
-<dd class="field-even"><p>bool</p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py function">
-<dt class="sig sig-object py" id="shared.SMSWorkflow.shipping">
-<span class="sig-prename descclassname"><span class="pre">shared.SMSWorkflow.</span></span><span class="sig-name descname"><span class="pre">shipping</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">info</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#shared.SMSWorkflow.shipping" title="Permalink to this definition">¶</a></dt>
-<dd><p>Shipping</p>
-<p>Handles sending out a shipped order SMS</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><p><strong>info</strong> (<em>dict</em>) – Tracking info to handle</p>
-</dd>
-<dt class="field-even">Returns</dt>
-<dd class="field-even"><p>None</p>
-</dd>
-</dl>
-</dd></dl>
-
+</div>
 </div>
 
 

@@ -43,10 +43,12 @@ if __name__ == "__main__":
 		"/order": {"methods": REST.CREATE | REST.READ, "session": True, "environ": True},
 		"/order/cancel": {"methods": REST.UPDATE, "session": True},
 		"/order/qa": {"methods": REST.UPDATE, "session": True},
+		"/order/refund": {"methods": REST.UPDATE, "session": True},
 		"/order/transactions": {"methods": REST.READ, "session": True},
 		"/purchase": {"methods": REST.READ, "session": True},
 		"/purchase/cancel": {"methods": REST.UPDATE, "session": True},
-		"/purchase/charge": {"methods": REST.UPDATE, "session": True}
+		"/purchase/charge": {"methods": REST.UPDATE, "session": True},
+		"/purchase/refund": {"methods": REST.UPDATE, "session": True}
 
 		},
 		'konnektive',

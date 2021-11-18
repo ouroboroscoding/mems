@@ -107,6 +107,7 @@ def run():
 		# Send the message to the customer
 		oResponse = Services.create('monolith', 'message/outgoing', {
 			"_internal_": Services.internalKey(),
+			"store_on_error": True,
 			"auto_response": True,
 			"customerPhone": d['phoneNumber'][-10:],
 			"content": sContent,

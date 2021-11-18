@@ -329,6 +329,7 @@ def run():
 			# Send the SMS to the patient
 			oResponse = Services.create('monolith', 'message/outgoing', {
 				"_internal_": Services.internalKey(),
+				"store_on_error": True,
 				"name": "HRT Workflow",
 				"customerPhone": dKtCustomer['phoneNumber'],
 				"content": sContent,
