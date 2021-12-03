@@ -3397,6 +3397,32 @@ class Monolith(Services.Service):
 		if not sesh and '_internal_' not in data:
 			return Services.Response(error=(1001, [('_internal_', 'missing')]))
 
+		# If it's internal
+		if '_internal_' in data:
+
+			# Verify the key, remove it if it's ok
+			if not Services.internalKey(data['_internal_']):
+				return Services.Response(error=Errors.SERVICE_INTERNAL_KEY)
+			del data['_internal_']
+
+			# If we don't have the name
+			if 'name' not in data:
+				return Services.Response(error=(1001, [('name', 'missing')]))
+
+		# Else, verify the user and use their name
+		else:
+
+			# Make sure the user has the proper permission to do this
+			oResponse = Services.read('auth', 'rights/verify', {
+				"name": "csr_messaging",
+				"right": Rights.CREATE
+			}, sesh)
+			if not oResponse.data:
+				return Services.Response(error=Rights.INVALID)
+
+			dUser = User.get(sesh['memo_id'], raw=['firstName', 'lastName'])
+			data['name'] = '%s %s' % (dUser['firstName'], dUser['lastName'])
+
 		# Verify fields
 		try: DictHelper.eval(data, ['customerPhone', 'content', 'type'])
 		except ValueError as e: return Services.Response(error=(1001, [(f, 'missing') for f in e.args]))
@@ -3424,32 +3450,6 @@ class Monolith(Services.Service):
 		# If the content is too long
 		if len(data['content']) >= 1600:
 			return Services.Response(error=1510)
-
-		# If it's internal
-		if '_internal_' in data:
-
-			# Verify the key, remove it if it's ok
-			if not Services.internalKey(data['_internal_']):
-				return Services.Response(error=Errors.SERVICE_INTERNAL_KEY)
-			del data['_internal_']
-
-			# If we don't have the name
-			if 'name' not in data:
-				return Services.Response(error=(1001, [('name', 'missing')]))
-
-		# Else, verify the user and use their name
-		else:
-
-			# Make sure the user has the proper permission to do this
-			oResponse = Services.read('auth', 'rights/verify', {
-				"name": "csr_messaging",
-				"right": Rights.CREATE
-			}, sesh)
-			if not oResponse.data:
-				return Services.Response(error=Rights.INVALID)
-
-			dUser = User.get(sesh['memo_id'], raw=['firstName', 'lastName'])
-			data['name'] = '%s %s' % (dUser['firstName'], dUser['lastName'])
 
 		# Get current date/time
 		sDT = arrow.get().format('YYYY-MM-DD HH:mm:ss')
