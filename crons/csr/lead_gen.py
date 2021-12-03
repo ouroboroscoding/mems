@@ -66,14 +66,14 @@ def _orderCounts(customer_id):
 		if d['campaignId'] in [123, 138]:
 
 			# If we have a concierge fee item
-			if '860' in d['items']:
+			if 'items' in d and '860' in d['items']:
 				dRet['concierge'] += 1
 
 			# Else, it's products
 			else:
 				dRet['itemized'] += 1
 
-		# Else, jf the campaign is ed
+		# Else, if the campaign is ed
 		if d['campaignId'] in _campaigns and _campaigns[d['campaignId']] == 'ed':
 				dRet['ed'] += 1
 
