@@ -96,7 +96,7 @@ class Providers(Services.Service):
 		# Create a new provider instance using the memo ID
 		try:
 			oProvider = Provider(data)
-		except ValueError:
+		except ValueError as e:
 			return Services.Response(error=(1001, e.args[0]))
 
 		# Create the provider and store the ID
