@@ -81,39 +81,59 @@ def _stepZero():
 				})
 				oOC.create()
 
-				# Process the template
-				sContent = SMSWorkflow.processTemplate(sTemplate, lPurchases[0], {
-					"mip_link": '%s%s' % (_dMIP['domain'], _dMIP['ced'] % {"customerId": o['crm_id']})
-				});
-
-				# Send the SMS to the patient
-				oResponse = Services.create('monolith', 'message/outgoing', {
-					"_internal_": Services.internalKey(),
-					"store_on_error": True,
-					"name": "SMS Workflow",
-					"customerPhone": lPurchases[0]['phoneNumber'],
-					"content": sContent,
-					"type": 'support'
-				})
-				if oResponse.errorExists():
-					emailError('Expiring Error', 'Couldn\'t send sms:\n\n%s\n\n%s' % (str(o.record()), str(oResponse)))
-
-				# Send the email to the patient
-				oResponse = Services.create('communications', 'email', {
-					"_internal_": Services.internalKey(),
-					"text_body": sContent,
-					"subject": 'Your prescription is going to expire',
-					"to": lPurchases[0]['emailAddress']
-				})
-				if oResponse.errorExists():
-					emailError('Expiring Error', 'Couldn\'t send email:\n\n%s\n\n%s' % (str(o.record()), str(oResponse)))
-
 			# Catch duplicate errors on continuous model
 			except Record_MySQL.DuplicateException as e:
 
-				# Delete the record
-				o.delete()
-				continue
+				# Fetch the record
+				oOC = KtOrderContinuous.filter({
+					"customerId": int(o['crm_id']),
+					"purchaseId": o['crm_purchase']
+				})
+
+				# If it's COMPLETE
+				if oOC['status'] = 'COMPLETE':
+
+					# Update it
+					oOC['orderId'] = o['crm_order']
+					oOC['active'] = False
+					oOC['status'] = 'PENDING'
+					oOC['medsNotWorking'] = 0
+					oOC['user'] = None
+					oOC.save()
+
+				# Else, delete the expiring
+				else:
+					
+					# Delete the record
+					o.delete()
+					continue
+
+			# Process the template
+			sContent = SMSWorkflow.processTemplate(sTemplate, lPurchases[0], {
+				"mip_link": '%s%s' % (_dMIP['domain'], _dMIP['ced'] % {"customerId": o['crm_id']})
+			});
+
+			# Send the SMS to the patient
+			oResponse = Services.create('monolith', 'message/outgoing', {
+				"_internal_": Services.internalKey(),
+				"store_on_error": True,
+				"name": "SMS Workflow",
+				"customerPhone": lPurchases[0]['phoneNumber'],
+				"content": sContent,
+				"type": 'support'
+			})
+			if oResponse.errorExists():
+				emailError('Expiring Error', 'Couldn\'t send sms:\n\n%s\n\n%s' % (str(o.record()), str(oResponse)))
+
+			# Send the email to the patient
+			oResponse = Services.create('communications', 'email', {
+				"_internal_": Services.internalKey(),
+				"text_body": sContent,
+				"subject": 'Your prescription is going to expire',
+				"to": lPurchases[0]['emailAddress']
+			})
+			if oResponse.errorExists():
+				emailError('Expiring Error', 'Couldn\'t send email:\n\n%s\n\n%s' % (str(o.record()), str(oResponse)))
 
 			# Update the step
 			o['step'] = 1
